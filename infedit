@@ -219,7 +219,7 @@ Title.Text = "Infinite Yield FE Edit v" .. currentVersion
 
 do
 	local emoji = ({
-		["01 01"] = "🎆",
+		["01 01"] = "ðŸŽ†",
 		[(function(Year)
 			local A = math.floor(Year/100)
 			local B = math.floor((13+8*A)/25)
@@ -236,9 +236,9 @@ do
 				return ("04 %02d"):format(G-31)
 			end
 			return ("03 %02d"):format(G)
-		end)(tonumber(os.date"%Y"))] = "🥚",
-		["10 31"] = "🎃",
-		["12 25"] = "🎄"
+		end)(tonumber(os.date"%Y"))] = "ðŸ¥š",
+		["10 31"] = "ðŸŽƒ",
+		["12 25"] = "ðŸŽ„"
 	})[os.date("%m %d")]
 	if emoji then
 		Title.Text = ("%s %s %s"):format(emoji, Title.Text, emoji)
@@ -13071,37 +13071,37 @@ task.spawn(function()
     local LocalPlayer = Players.LocalPlayer
     local CoreGui = game:GetService("CoreGui")
 
-    --  To GUI ch�nh
+    --  To GUI chính
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Parent = CoreGui
 
-    --  To n�t Toggle (44.5x44.5)
+    --  To nút Toggle (44.5x44.5)
     local ToggleButton = Instance.new("TextButton")
     ToggleButton.Parent = ScreenGui
     ToggleButton.Size = UDim2.new(0, 44.5, 0, 44.5)
-    ToggleButton.Position = UDim2.new(0, 105, 0, 0)  -- v tr� n�t 
-    ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- M�u nn en (mc nh l� TT)
+    ToggleButton.Position = UDim2.new(0, 105, 0, 0)  -- v trí nút 
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- Màu nn en (mc nh là TT)
     ToggleButton.BackgroundTransparency = 0.3  --   trong sut 0.3
     ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- Ch trng
     ToggleButton.Text = "Close"
     ToggleButton.TextSize = 14
     ToggleButton.Font = Enum.Font.SourceSansBold
-    ToggleButton.Draggable = false  -- Kh�ng k�o th c
+    ToggleButton.Draggable = false  -- Không kéo th c
     ToggleButton.AutoButtonColor = false
 
-    --  Bo tr�n g�c
+    --  Bo tròn góc
     local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(1, 0)  -- Bo tr�n
+    UICorner.CornerRadius = UDim.new(1, 0)  -- Bo tròn
     UICorner.Parent = ToggleButton
 
-    --  Trng th�i bt/tt (mc nh TT)
+    --  Trng thái bt/tt (mc nh TT)
     local isHidden = false  -- Mc nh tt
     local wasStayOpen = false
     local cooldown = false  -- Bin cooldown
 
-    --  X l� khi bm n�t Toggle
+    --  X lý khi bm nút Toggle
     ToggleButton.MouseButton1Click:Connect(function()
-        if cooldown then return end  -- Nu cooldown ang hot ng, kh�ng cho bm
+        if cooldown then return end  -- Nu cooldown ang hot ng, không cho bm
         cooldown = true  -- Bt cooldown
 
         if isHidden then
@@ -13123,15 +13123,15 @@ task.spawn(function()
             wasStayOpen = StayOpen
             if StayOpen == true then
                 StayOpen = false
-                ToggleButton.BackgroundTransparency = 0.3 -- n ho�n to�n khi tt
+                ToggleButton.BackgroundTransparency = 0.3 -- n hoàn toàn khi tt
             end
             minimizeNum = 0
             minimizeHolder()
             ToggleButton.Text = "Open"
-            ToggleButton.BackgroundColor3 = Color3.fromRGB(128, 128, 128)  -- Chuyn X�m
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(128, 128, 128)  -- Chuyn Xám
         end
 
-        --  Ch 0.5 gi�y ri tt cooldown
+        --  Ch 0.5 giây ri tt cooldown
         task.wait(0.5)
         cooldown = false
     end)
