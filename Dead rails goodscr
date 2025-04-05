@@ -620,3 +620,49 @@ task.spawn(function()
         textLabel.TextStrokeTransparency = 0
         textLabel.BackgroundTransparency = 1
         textLabel.Size = UDim2.new(1, 0, 1, 0)
+        textLabel.TextSize = 15
+        textLabel.Font = Enum.Font.SourceSansBold
+
+        -- Tạo Highlight
+        local highlight = Instance.new("Highlight")
+        highlight.Name = "StrangeMaskHighlight"
+        highlight.FillColor = highlightColor
+        highlight.FillTransparency = 1
+        highlight.OutlineColor = outlineColor
+        highlight.OutlineTransparency = 0
+        highlight.Parent = item
+    end
+
+    -- Kiểm tra và thêm ESP + Highlight
+    local function checkForStrangeMasks()
+        for _, item in ipairs(workspace:GetDescendants()) do
+            if item:IsA("Model") and item.Name == "StrangeMask" then
+                if not item:FindFirstChild("StrangeMaskESP") then
+                    createESP(item)
+                end
+            end
+        end
+    end
+
+    -- Lắng nghe khi StrangeMask mới xuất hiện
+    workspace.DescendantAdded:Connect(function(descendant)
+        if descendant:IsA("Model") and descendant.Name == "StrangeMask" then
+            createESP(descendant)
+        end
+    end)
+
+    -- Xóa ESP khi StrangeMask biến mất
+    workspace.DescendantRemoving:Connect(function(descendant)
+        if descendant:IsA("Model") and descendant.Name == "StrangeMask" then
+            if descendant:FindFirstChild("StrangeMaskESP") then
+                descendant.StrangeMaskESP:Destroy()
+            end
+            if descendant:FindFirstChild("StrangeMaskHighlight") then
+                descendant.StrangeMaskHighlight:Destroy()
+            end
+        end
+    end)
+
+    -- Khởi động kiểm tra ban đầu
+    checkForStrangeMasks()
+end)
