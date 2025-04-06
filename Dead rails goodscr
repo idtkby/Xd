@@ -578,7 +578,7 @@ local PromptService = game:GetService("ProximityPromptService")
 -- Làm cho tất cả Prompt hiện tại có thời gian giữ = 0
 for _, v in ipairs(Workspace:GetDescendants()) do
 	if v:IsA("ProximityPrompt") then
-		v.HoldDuration = 0.3
+		v.HoldDuration = 1
 	end
 end
 
