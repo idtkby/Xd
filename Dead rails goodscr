@@ -585,7 +585,7 @@ end
 -- Tự động thiết lập với Prompt mới khi bắt đầu giữ phím
 PromptService.PromptButtonHoldBegan:Connect(function(prompt)
 	if prompt:IsA("ProximityPrompt") then
-		prompt.HoldDuration = 1
+		prompt.HoldDuration = 0.3
 	end
 end)
 end)
