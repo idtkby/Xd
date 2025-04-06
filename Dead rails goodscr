@@ -578,14 +578,14 @@ local PromptService = game:GetService("ProximityPromptService")
 -- Làm cho tất cả Prompt hiện tại có thời gian giữ = 0
 for _, v in ipairs(Workspace:GetDescendants()) do
 	if v:IsA("ProximityPrompt") then
-		v.HoldDuration = 0
+		v.HoldDuration = 0.3
 	end
 end
 
 -- Tự động thiết lập với Prompt mới khi bắt đầu giữ phím
 PromptService.PromptButtonHoldBegan:Connect(function(prompt)
 	if prompt:IsA("ProximityPrompt") then
-		prompt.HoldDuration = 0
+		prompt.HoldDuration = 1
 	end
 end)
 end)
