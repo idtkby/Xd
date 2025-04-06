@@ -572,15 +572,21 @@ end)
 end)
 
 task.spawn(function()
-for i,v in pairs(game:GetService("Workspace"):GetDescendants()) do
+local Workspace = game:GetService("Workspace")
+local PromptService = game:GetService("ProximityPromptService")
+
+-- Làm cho tất cả Prompt hiện tại có thời gian giữ = 0
+for _, v in ipairs(Workspace:GetDescendants()) do
 	if v:IsA("ProximityPrompt") then
-		v["HoldDuration"] = 0.5
+		v.HoldDuration = 0
 	end
 end
 
-
-game:GetService("ProximityPromptService").PromptButtonHoldBegan:Connect(function(v)
-    v["HoldDuration"] = 0.5
+-- Tự động thiết lập với Prompt mới khi bắt đầu giữ phím
+PromptService.PromptButtonHoldBegan:Connect(function(prompt)
+	if prompt:IsA("ProximityPrompt") then
+		prompt.HoldDuration = 0
+	end
 end)
 end)
 
