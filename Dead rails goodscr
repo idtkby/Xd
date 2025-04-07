@@ -672,3 +672,58 @@ task.spawn(function()
     -- Khởi động kiểm tra ban đầu
     checkForStrangeMasks()
 end)
+
+task.spawn(function()
+local CoreGui = game:GetService("CoreGui")
+
+-- Tạo GUI gốc
+local gui = Instance.new("ScreenGui")
+gui.Name = "FullFeatureButtonGUI"
+gui.IgnoreGuiInset = true
+gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent = CoreGui
+
+-- Tạo nút
+local button = Instance.new("TextButton")
+button.Name = "ActionButton"
+button.Size = UDim2.new(0, 120, 0, 44)
+button.Position = UDim2.new(0, 20, 0.5, -22)
+button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+button.TextColor3 = Color3.new(1, 1, 1)
+button.Font = Enum.Font.SourceSansBold
+button.TextSize = 14
+button.Text = "drop armor"
+button.AutoButtonColor = true
+button.Active = true
+button.Draggable = true -- Hỗ trợ kéo thả
+button.Parent = gui
+
+-- Hành động khi bấm (dán lệnh vào đây)
+button.MouseButton1Click:Connect(function()
+    local args = {
+    [1] = "Head"
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("Remotes"):WaitForChild("DropEquipment"):FireServer(unpack(args))
+wait(0.2)
+local args = {
+    [1] = "Torso"
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("Remotes"):WaitForChild("DropEquipment"):FireServer(unpack(args))
+wait(0.2)
+local args = {
+    [1] = "Left Arm"
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("Remotes"):WaitForChild("DropEquipment"):FireServer(unpack(args))
+wait(0.2)
+local args = {
+    [1] = "Right Arm"
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("Remotes"):WaitForChild("DropEquipment"):FireServer(unpack(args))
+
+end)
+end)
