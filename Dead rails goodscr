@@ -706,19 +706,19 @@ button.MouseButton1Click:Connect(function()
 }
 
 game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("Remotes"):WaitForChild("DropEquipment"):FireServer(unpack(args))
-wait(0.2)
+wait(0.05)
 local args = {
     [1] = "Torso"
 }
 
 game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("Remotes"):WaitForChild("DropEquipment"):FireServer(unpack(args))
-wait(0.2)
+wait(0.05)
 local args = {
     [1] = "Left Arm"
 }
 
 game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("Remotes"):WaitForChild("DropEquipment"):FireServer(unpack(args))
-wait(0.2)
+wait(0.05)
 local args = {
     [1] = "Right Arm"
 }
