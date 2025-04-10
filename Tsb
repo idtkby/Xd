@@ -58,6 +58,7 @@ end)
 loadstring(game:HttpGet("https://raw.githubusercontent.com/sdfesdfsedf/srgtergasdfs/main/aim"))()
 
 task.spawn(function()
+task.wait(3)
 local Players = game:GetService("Players")
 local speaker = Players.LocalPlayer
 
