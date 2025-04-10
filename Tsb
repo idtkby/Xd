@@ -1,0 +1,125 @@
+-- đŸ—‚ï¸ Láº¥y dá»‹ch vá»¥ cáº§n thiáº¿t
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local CoreGui = game:GetService("CoreGui")
+
+-- đŸ“‹ Táº¡o ScreenGui chá»©a nĂºt
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = CoreGui  -- Äáº·t vĂ o CoreGui Ä‘á»ƒ khĂ´ng máº¥t khi cháº¿t
+
+-- đŸ”˜ Táº¡o nĂºt RESET
+local ResetButton = Instance.new("TextButton")
+ResetButton.Parent = ScreenGui
+ResetButton.Size = UDim2.new(0, 44.5, 0, 44.5)  -- KĂ­ch thÆ°á»›c 44.5x44.5
+ResetButton.Position = UDim2.new(0, 509, 0, -46)  -- Vá»‹ trĂ­ nĂºt
+ResetButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- MĂ u ná»n Ä‘en
+ResetButton.BackgroundTransparency = 0.3  -- Äá»™ trong suá»‘t (0.3 giá»‘ng UI Roblox)
+ResetButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- Chá»¯ tráº¯ng
+ResetButton.Text = "DIE"  -- Icon Reset
+ResetButton.TextSize = 24
+ResetButton.Font = Enum.Font.SourceSansBold
+ResetButton.Draggable = false  -- KĂ©o tháº£ ko Ä‘Æ°á»£c
+ResetButton.AutoButtonColor = false
+ResetButton.BorderSizePixel = 0
+
+-- đŸ¨ LĂ m nĂºt hĂ¬nh trĂ²n
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(1, 0)  -- LĂ m trĂ²n hoĂ n toĂ n
+UICorner.Parent = ResetButton
+
+-- â™ï¸ Chá»©c nÄƒng RESET nhĂ¢n váº­t
+ResetButton.MouseButton1Click:Connect(function()
+    local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if Humanoid then
+        Humanoid:ChangeState(Enum.HumanoidStateType.Dead)  -- Giáº¿t nhĂ¢n váº­t
+    end
+end)
+
+-- đŸŸ¢ Chá»‰nh cháº¿ Ä‘á»™ Camera thĂ nh Classic vÄ©nh viá»…n
+task.spawn(function()
+    print("Camera mode fixed")  -- In thĂ´ng bĂ¡o kiá»ƒm tra
+    local player = game:GetService("Players").LocalPlayer
+
+    -- HĂ m thiáº¿t láº­p camera mode thĂ nh Classic vÄ©nh viá»…n
+    local function setCameraMode()
+        if player then
+            player.DevTouchCameraMode = Enum.DevTouchCameraMovementMode.Classic
+        end
+    end
+
+    -- Gá»i hĂ m ngay láº­p tá»©c
+    setCameraMode()
+
+    -- Giá»¯ cháº¿ Ä‘á»™ nĂ y vÄ©nh viá»…n báº±ng cĂ¡ch láº·p láº¡i khi cĂ³ thay Ä‘á»•i
+    player:GetPropertyChangedSignal("DevTouchCameraMode"):Connect(setCameraMode)
+end)
+
+-- đŸŒ Táº£i Ä‘oáº¡n mĂ£ má»Ÿ rá»™ng tá»« URL
+loadstring(game:HttpGet("https://raw.githubusercontent.com/sdfesdfsedf/srgtergasdfs/main/aim"))()
+
+task.spawn(function()
+local Players = game:GetService("Players")
+local speaker = Players.LocalPlayer
+
+-- Xoá camera hiện tại
+workspace.CurrentCamera:Destroy()
+task.wait(0.1)
+
+-- Đợi đến khi nhân vật được nạp
+repeat task.wait() until speaker.Character
+
+-- Gán camera theo nhân vật
+local cam = workspace.CurrentCamera
+cam.CameraSubject = speaker.Character:FindFirstChildWhichIsA("Humanoid")
+cam.CameraType = Enum.CameraType.Custom
+
+-- Cài đặt góc nhìn
+speaker.CameraMinZoomDistance = 0.5
+speaker.CameraMaxZoomDistance = 400
+speaker.CameraMode = Enum.CameraMode.Classic
+
+-- Bỏ neo đầu nếu bị anchor
+local head = speaker.Character:FindFirstChild("Head")
+if head then
+    head.Anchored = false
+end
+
+-- Đợi 1 giây rồi reset
+task.wait(2)
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- Hàm khôi phục camera
+local function restoreCamera()
+	task.spawn(function()
+		task.wait(0.1)
+		repeat task.wait() until player.Character
+		task.wait(0.1)
+
+		local cam = workspace.CurrentCamera
+		cam.CameraSubject = player.Character:FindFirstChildWhichIsA("Humanoid")
+		cam.CameraType = Enum.CameraType.Custom
+
+		player.CameraMinZoomDistance = 0.5
+		player.CameraMaxZoomDistance = 400
+		player.CameraMode = Enum.CameraMode.Classic
+
+		local head = player.Character:FindFirstChild("Head")
+		if head then
+			head.Anchored = false
+		end
+	end)
+end
+
+-- Thực hiện reset nhân vật
+local function forceReset()
+	local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid:ChangeState(Enum.HumanoidStateType.Dead)
+	end
+	restoreCamera()
+end
+
+-- Gọi hàm reset
+forceReset()
+end)
