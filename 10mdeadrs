@@ -1,0 +1,101 @@
+--// Dịch vụ
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local SoundService = game:GetService("SoundService")
+local CoreGui = game:GetService("CoreGui")
+
+--// Biến chính
+local player = Players.LocalPlayer
+local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+if not hrp then return end
+
+local COUNTDOWN_INITIAL = 601 -- 10 phút
+local EXTEND_DURATION = 241.25   -- 4 phút
+local RANGE = 50
+
+local timeSinceServerStart = workspace.DistributedGameTime
+local timeRemaining = math.clamp(COUNTDOWN_INITIAL - timeSinceServerStart, 0, COUNTDOWN_INITIAL)
+
+local extended = false
+local connection
+
+--// GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "CountdownGui"
+ScreenGui.Parent = CoreGui
+
+local TimerLabel = Instance.new("TextLabel")
+TimerLabel.Size = UDim2.new(0, 240, 0, 60)
+TimerLabel.Position = UDim2.new(0.5, -120, 0, 50)
+TimerLabel.BackgroundTransparency = 0.2
+TimerLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+TimerLabel.TextColor3 = Color3.new(1, 1, 1)
+TimerLabel.Font = Enum.Font.SourceSansBold
+TimerLabel.TextScaled = true
+TimerLabel.Text = ""
+TimerLabel.Parent = ScreenGui
+
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Size = UDim2.new(0, 260, 0, 40)
+StatusLabel.Position = UDim2.new(0.5, -130, 0, 120)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+StatusLabel.Font = Enum.Font.SourceSansBold
+StatusLabel.TextScaled = true
+StatusLabel.Text = ""
+StatusLabel.Parent = ScreenGui
+
+--// Âm thanh
+local sound = Instance.new("Sound")
+sound.SoundId = "rbxassetid://9118823104" -- Có thể thay đổi ID khác
+sound.Volume = 1
+sound.Parent = SoundService
+
+--// Hàm hỗ trợ
+local function formatTime(seconds)
+    local minutes = math.floor(seconds / 60)
+    local seconds = math.floor(seconds % 60)
+    return string.format("%02d:%02d", minutes, seconds)
+end
+
+local function getNearestPrompt()
+    local closest, closestDist = nil, math.huge
+
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("ProximityPrompt") and obj.Parent:IsA("BasePart") then
+            local dist = (obj.Parent.Position - hrp.Position).Magnitude
+            if dist < closestDist and dist <= RANGE then
+                closest = obj
+                closestDist = dist
+            end
+        end
+    end
+
+    return closest
+end
+
+--// Logic chính
+connection = RunService.RenderStepped:Connect(function(dt)
+    timeRemaining -= dt
+
+    if timeRemaining <= 0 then
+        if not extended then
+            local prompt = getNearestPrompt()
+            if prompt then
+                fireproximityprompt(prompt)
+                StatusLabel.Text = "Kích hoạt Prompt, cộng thêm 4 phút!"
+                timeRemaining = EXTEND_DURATION
+                extended = true
+                sound:Play()
+            else
+                StatusLabel.Text = "Hết giờ - Không có Prompt trong phạm vi!"
+                connection:Disconnect()
+            end
+        else
+            StatusLabel.Text = "Hết giờ hoàn toàn!"
+            connection:Disconnect()
+        end
+    else
+        TimerLabel.Text = "Còn lại: " .. formatTime(timeRemaining)
+    end
+end)
