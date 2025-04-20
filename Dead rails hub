@@ -208,6 +208,46 @@ CharacterTab:CreateToggle({
     end,
 })
 
+-- Khai báo các dịch vụ cần thiết
+local PromptService = game:GetService("ProximityPromptService")
+local Workspace = game:GetService("Workspace")
+
+-- Tạo Toggle để kích hoạt và tắt chức năng Instant Prompt
+local InstantPromptToggle = CharacterTab:CreateToggle({
+    Name = "Instant Proximity Prompt",
+    CurrentValue = false,  -- Mặc định tắt
+    Callback = function(enabled)
+        if enabled then
+            -- Khi toggle bật, thiết lập tất cả ProximityPrompt có HoldDuration = 0
+            for _, v in ipairs(Workspace:GetDescendants()) do
+                if v:IsA("ProximityPrompt") then
+                    v.HoldDuration = 0
+                end
+            end
+            
+            -- Tự động thiết lập HoldDuration = 0 khi có Prompt mới bắt đầu
+            PromptService.PromptButtonHoldBegan:Connect(function(prompt)
+                if prompt:IsA("ProximityPrompt") then
+                    prompt.HoldDuration = 0
+                end
+            end)
+
+            Rayfield:Notify({
+                Title = "Instant Prompt Enabled",
+                Content = "All proximity prompts now require no hold duration.",
+                Duration = 2
+            })
+        else
+            -- Khi toggle tắt, không thay đổi gì
+            Rayfield:Notify({
+                Title = "Instant Prompt Disabled",
+                Content = "Proximity prompts will use default hold duration.",
+                Duration = 2
+            })
+        end
+    end,
+})
+
 -- Anti Idle
 CharacterTab:CreateButton({
     Name = "Anti Idle",
