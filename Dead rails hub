@@ -1,0 +1,280 @@
+-- Khai báo các dịch vụ cần thiết
+local player = game.Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local camera = workspace.CurrentCamera
+
+-- Tải và khởi tạo thư viện GUI Rayfield
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Tạo cửa sổ giao diện chính
+local Window = Rayfield:CreateWindow({
+    Name = "Script By Khang",
+    LoadingTitle = "Loading Hub...",
+    LoadingSubtitle = "Please wait",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "MyHubFolder",
+        FileName = "MyHubConfig"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "",
+        RememberJoins = false
+    },
+    KeySystem = false,
+})
+
+-- Thông báo đã tải
+Rayfield:Notify({
+    Title = "Welcome!",
+    Content = "Script Loaded",
+    Duration = 2
+})
+
+-- Tạo Tab Teleport
+local TeleportTab = Window:CreateTab("Teleport", 4483345998)
+
+TeleportTab:CreateSection("Teleport Structure")
+
+TeleportTab:CreateButton({
+    Name = "Castle",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/castletpfast.github.io/refs/heads/main/FASTCASTLE.lua"))()
+    end,
+})
+
+TeleportTab:CreateButton({
+    Name = "Tesla Lab",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/tptotesla.github.io/refs/heads/main/Tptotesla.lua"))()
+    end,
+})
+
+TeleportTab:CreateButton({
+    Name = "Fort",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/Tpfort.github.io/refs/heads/main/Tpfort.lua"))()
+    end,
+})
+
+TeleportTab:CreateButton({
+    Name = "Sterling",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/sterlingnotifcation.github.io/refs/heads/main/Sterling.lua"))()
+    end,
+})
+
+TeleportTab:CreateButton({
+    Name = "Farm",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/tpfarm.github.io/refs/heads/main/tptofarm.lua"))()
+    end,
+})
+
+TeleportTab:CreateButton({
+    Name = "Pacfisct Quest (no jump)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/newpacifisct/refs/heads/main/newpacifisct.lua"))()
+    end,
+})
+
+TeleportTab:CreateSection("Train Tp")
+
+TeleportTab:CreateButton({
+    Name = "Train",
+    Callback = function()
+        local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if not root then return end
+        for _, v in ipairs(workspace:GetDescendants()) do
+            if v:IsA("VehicleSeat") and v.Name == "VehicleSeat" and v.Parent and v.Parent.Name == "ConductorSeat" then
+                local targetCFrame = v.CFrame - Vector3.new(0, 0.5, 0)
+                for i = 1, 5 do
+                    root.CFrame = targetCFrame
+                    task.wait(0.05)
+                end
+                break
+            end
+        end
+    end,
+})
+
+-- Tạo Tab Character
+local CharacterTab = Window:CreateTab("Character", 6035067836)
+
+CharacterTab:CreateSlider({
+    Name = "Nhảy cao (stud)",
+    Range = {0, 12.5},
+    Increment = 0.1,
+    Suffix = " stud",
+    CurrentValue = 7.2,
+    Callback = function(value)
+        local humanoid = player.Character and player.Character:FindFirstChildWhichIsA("Humanoid")
+        if humanoid then
+            humanoid.JumpHeight = value
+        end
+    end,
+})
+
+CharacterTab:CreateToggle({
+    Name = "Third Person Mode",
+    CurrentValue = false, -- Mặc định tắt (đang First Person)
+    Callback = function(enabled)
+        if enabled then
+            player.CameraMode = Enum.CameraMode.Classic
+            Rayfield:Notify({
+                Title = "Góc nhìn",
+                Content = "Đã chuyển sang Third Person",
+                Duration = 2,
+            })
+        else
+            player.CameraMode = Enum.CameraMode.LockFirstPerson
+            Rayfield:Notify({
+                Title = "Góc nhìn",
+                Content = "Đã chuyển sang First Person",
+                Duration = 2,
+            })
+        end
+    end,
+})
+
+-- InfJump
+local infJump
+local infJumpDebounce = false
+
+CharacterTab:CreateToggle({
+    Name = "InfJump",
+    CurrentValue = false,
+    Callback = function(enabled)
+        if enabled then
+            if infJump then infJump:Disconnect() end
+            infJumpDebounce = false
+            infJump = UserInputService.JumpRequest:Connect(function()
+                if not infJumpDebounce then
+                    infJumpDebounce = true
+                    local humanoid = player.Character and player.Character:FindFirstChildWhichIsA("Humanoid")
+                    if humanoid then
+                        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                    end
+                    task.wait()
+                    infJumpDebounce = false
+                end
+            end)
+        else
+            if infJump then infJump:Disconnect() end
+            infJumpDebounce = false
+        end
+    end,
+})
+
+-- Noclip
+local Clip = true
+local Noclipping
+local floatName = "HumanoidRootPart"
+
+CharacterTab:CreateToggle({
+    Name = "Noclip",
+    CurrentValue = false,
+    Callback = function(enabled)
+        if enabled then
+            Clip = false
+            task.wait(0.1)
+            local function NoclipLoop()
+                if not Clip and player.Character then
+                    for _, part in pairs(player.Character:GetDescendants()) do
+                        if part:IsA("BasePart") and part.CanCollide and part.Name ~= floatName then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end
+            Noclipping = RunService.Stepped:Connect(NoclipLoop)
+            Rayfield:Notify({
+                Title = "Noclip",
+                Content = "Noclip Enabled",
+                Duration = 4,
+            })
+        else
+            if Noclipping then
+                Noclipping:Disconnect()
+            end
+            Clip = true
+            Rayfield:Notify({
+                Title = "Noclip",
+                Content = "Noclip Disabled",
+                Duration = 4,
+            })
+        end
+    end,
+})
+
+-- Anti Idle
+CharacterTab:CreateButton({
+    Name = "Anti Idle",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local GC = getconnections or get_signal_cons
+        if GC then
+            for _, v in pairs(GC(Players.LocalPlayer.Idled)) do
+                if v.Disable then
+                    v:Disable()
+                elseif v.Disconnect then
+                    v:Disconnect()
+                end
+            end
+        else
+            local VirtualUser = cloneref(game:GetService("VirtualUser"))
+            Players.LocalPlayer.Idled:Connect(function()
+                VirtualUser:CaptureController()
+                VirtualUser:ClickButton2(Vector2.new())
+            end)
+        end
+        print("[Anti Idle] Anti idle is enabled")
+    end,
+})
+
+-- Tạo Tab Other
+local OtherTab = Window:CreateTab("Other", 6035235020)
+
+OtherTab:CreateSection("My Script")
+
+OtherTab:CreateButton({
+    Name = "Dead Rails 1",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/DeaRSMySCR"))()
+    end,
+})
+
+OtherTab:CreateButton({
+    Name = "10Min",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/10mdeadrs"))()
+    end,
+})
+
+OtherTab:CreateSection("Good")
+
+OtherTab:CreateButton({
+    Name = "Null Fire",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/InfernusScripts/Null-Fire/main/Loader"))()
+    end,
+})
+
+OtherTab:CreateButton({
+    Name = "Infinite Yield Edit",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()
+    end,
+})
+
+OtherTab:CreateSection("Keybind")
+
+OtherTab:CreateKeybind({
+    Name = "Keybind GUI",
+    CurrentKeybind = "LeftAlt",
+    HoldToInteract = false,
+    Callback = function()
+        Rayfield:Destroy()
+    end,
+})
