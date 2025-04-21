@@ -1,0 +1,38 @@
+task.spawn(function()
+local function createNameTag(player)
+    if player == game.Players.LocalPlayer then return end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "NameTag"
+    billboard.Size = UDim2.new(0, 200, 0, 50)
+    billboard.StudsOffset = Vector3.new(0, 2.5, 0) -- Điều chỉnh vị trí gần với tên mặc định của Roblox
+    billboard.AlwaysOnTop = true
+    billboard.Parent = player.Character:WaitForChild("Head")
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Parent = billboard
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel.TextStrokeTransparency = 0
+    textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    textLabel.Font = Enum.Font.SourceSansBold
+    textLabel.TextSize = 15 -- Tăng kích thước lên 15
+    textLabel.Text = player.Name
+end
+
+local function onCharacterAdded(character)
+    createNameTag(game.Players:GetPlayerFromCharacter(character))
+end
+
+for _, player in ipairs(game.Players:GetPlayers()) do
+    if player.Character then
+        createNameTag(player)
+    end
+    player.CharacterAdded:Connect(onCharacterAdded)
+end
+
+game.Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(onCharacterAdded)
+end)
+end)
