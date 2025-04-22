@@ -33,7 +33,7 @@ Rayfield:Notify({
 })
 
 -- Tạo Tab Teleport
-local TeleportTab = Window:CreateTab("Teleport", 4483345998)
+local TeleportTab = Window:CreateTab("Teleport", "Move")
 
 TeleportTab:CreateSection("Teleport Structure")
 
@@ -100,7 +100,7 @@ TeleportTab:CreateButton({
 })
 
 -- Tạo Tab Character
-local CharacterTab = Window:CreateTab("Character", 6035067836)
+local CharacterTab = Window:CreateTab("Character", "User")
 
 CharacterTab:CreateSlider({
     Name = "Nhảy cao (stud)",
@@ -273,8 +273,71 @@ CharacterTab:CreateButton({
     end,
 })
 
+local ESPTab = Window:CreateTab("ESP", "Eye") -- ID này là hình con mắt (icon thường dùng cho ESP)
+
+ESPTab:CreateSection("ESP Functions")
+
+ESPTab:CreateButton({
+    Name = "Player",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/PlayerEsp"))()
+    end,
+})
+
+ESPTab:CreateButton({
+    Name = "Bond",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/DeAdRaIlsScRiPt/refs/heads/main/BondEsp"))()
+    end,
+})
+
+ESPTab:CreateButton({
+    Name = "StrangeMask",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/DeAdRaIlsScRiPt/refs/heads/main/StrangeMask_Esp"))()
+    end,
+})
+
+ESPTab:CreateButton({
+    Name = "JadeTablet",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/DeAdRaIlsScRiPt/refs/heads/main/JadeTabletEsp"))()
+    end,
+})
+
+ESPTab:CreateButton({
+    Name = "Coal",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/DeAdRaIlsScRiPt/refs/heads/main/CoalEsp"))()
+    end,
+})
+
+ESPTab:CreateButton({
+    Name = "SnakeOil&Bandage",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/DeAdRaIlsScRiPt/refs/heads/main/SnakeOil%26BandageEsp"))()
+    end,
+})
+
+ESPTab:CreateButton({
+    Name = "Outlaw&Unicorn",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/DeAdRaIlsScRiPt/refs/heads/main/Outlaw%26%2CUniCornEsp"))()
+    end,
+})
+
+ESPTab:CreateSection("============================-Event-============================")
+ESPTab:CreateSection("Easter 2025")
+
+ESPTab:CreateButton({
+    Name = "EggESP",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/DeAdRaIlsScRiPt/refs/heads/main/EventEggESP"))()
+   end,
+})
+
 -- Tạo Tab Other
-local OtherTab = Window:CreateTab("Other", 6035235020)
+local OtherTab = Window:CreateTab("Other", 4483362458)
 
 OtherTab:CreateSection("My Script")
 
@@ -292,7 +355,21 @@ OtherTab:CreateButton({
     end,
 })
 
-OtherTab:CreateSection("Good")
+OtherTab:CreateButton({
+    Name = "Aimbot",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/DeAdRaIlsScRiPt/refs/heads/main/Aimbot"))()
+    end,
+})
+
+OtherTab:CreateButton({
+    Name = "DropArmor Btn",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/DeAdRaIlsScRiPt/refs/heads/main/DropArmor"))()
+    end,
+})
+
+OtherTab:CreateSection("Idk")
 
 OtherTab:CreateButton({
     Name = "Null Fire",
@@ -308,13 +385,9 @@ OtherTab:CreateButton({
     end,
 })
 
-OtherTab:CreateSection("Keybind")
-
-OtherTab:CreateKeybind({
-    Name = "Keybind GUI",
-    CurrentKeybind = "LeftAlt",
-    HoldToInteract = false,
+OtherTab:CreateButton({
+    Name = "Shiftlock",
     Callback = function()
-        Rayfield:Destroy()
-    end,
+        loadstring(game:HttpGet("https://github.com/ltseverydayyou/uuuuuuu/blob/main/shiftlock?raw=true"))()
+     end,
 })
