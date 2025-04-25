@@ -10,7 +10,7 @@ local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPa
 if not hrp then return end
 
 local COUNTDOWN_INITIAL = 601 -- 10 phút
-local EXTEND_DURATION = 241   -- 4 phút
+local EXTEND_DURATION = 241.1   -- 4 phút
 local RANGE = 50
 
 local timeSinceServerStart = workspace.DistributedGameTime
