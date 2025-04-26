@@ -306,6 +306,13 @@ ESPTab:CreateButton({
 })
 
 ESPTab:CreateButton({
+    Name = "ZombieMiner",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/DeAdRaIlsScRiPt/refs/heads/main/ZombieMinerESP"))()
+    end,
+})
+
+ESPTab:CreateButton({
     Name = "Coal",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/DeAdRaIlsScRiPt/refs/heads/main/CoalEsp"))()
