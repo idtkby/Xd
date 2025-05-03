@@ -386,7 +386,7 @@ OtherTab:CreateButton({
 })
 
 OtherTab:CreateButton({
-    Name = "NatHub"
+    Name = "NatHub",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/ArdyBotzz/NatHub/refs/heads/master/NatHub.lua"))()
     end,
