@@ -386,6 +386,13 @@ OtherTab:CreateButton({
 })
 
 OtherTab:CreateButton({
+    Name = "NatHub"
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ArdyBotzz/NatHub/refs/heads/master/NatHub.lua"))()
+    end,
+})
+
+OtherTab:CreateButton({
     Name = "Infinite Yield Edit",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()
