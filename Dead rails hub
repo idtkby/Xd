@@ -370,6 +370,13 @@ OtherTab:CreateButton({
 })
 
 OtherTab:CreateButton({
+    Name = "AimLock",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/DeAdRaIlsScRiPt/refs/heads/main/Aimlock"))()
+    end,
+})
+
+OtherTab:CreateButton({
     Name = "DropArmor Btn",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/DeAdRaIlsScRiPt/refs/heads/main/DropArmor"))()
