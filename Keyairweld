@@ -1,5 +1,5 @@
 -- Sao chép vào clipboard
-setclipboard("susjjs")
+setclipboard("ringta")
 
 -- Gửi thông báo thay cho GUI
 game:GetService("StarterGui"):SetCore("SendNotification", {
