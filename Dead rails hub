@@ -417,6 +417,7 @@ OtherTab:CreateButton({
     Name = "AirWeld",
     Callback = function()
         loadstring(game:HttpGet('https://raw.githubusercontent.com/hbjrev/airweld.github.io/refs/heads/main/RINGTA.lua'))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Keyairweld"))()
     end,
 })
 
