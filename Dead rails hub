@@ -1,3 +1,25 @@
+-- Kiểm tra ID game
+if game.PlaceId ~= 70876832253163 then
+    return warn("Script only works in the specified game (ID: 116495829188952){Dead Rails (Game)}")
+end
+
+-- Thông báo khi đúng ID game
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "✓ Game Check Passed",
+    Text = "Script is now executing...",
+    Duration = 5
+})
+
+task.wait(3) -- Đợi 3s trước khi thực thi 
+
+-- Thông báo khi Loaded
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "📃 Script",
+    Text = "Script has been loaded.",
+    Duration = 5
+})
+
+task.spawn(function()
 -- Khai báo các dịch vụ cần thiết
 local player = game.Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
@@ -400,10 +422,10 @@ OtherTab:CreateButton({
 })
 
 OtherTab:CreateButton({
-     Name = "Ringta",
-     Callback = function()
-         loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/NEWFIXEDUI.github.io/refs/heads/main/ui.lua"))()
-     end,
+    Name = "Ringta",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/NEWFIXEDUI.github.io/refs/heads/main/ui.lua"))()
+    end,
 })
 
 OtherTab:CreateButton({
@@ -434,3 +456,5 @@ OtherTab:CreateButton({
         loadstring(game:HttpGet('https://raw.githubusercontent.com/GhostPlayer352/Test4/main/Vehicle%20Fly%20Gui'))()
     end,
 })
+
+end)
