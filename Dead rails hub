@@ -430,7 +430,7 @@ OtherTab:CreateButton({
 
 OtherTab:CreateButton({
     Name = "Native [Key][Good]",
-    Callback = function(/
+    Callback = function()
         loadstring(game:HttpGet("https://getnative.cc/script/loader"))()
     end,
 })
