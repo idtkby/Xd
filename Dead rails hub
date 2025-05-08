@@ -429,6 +429,13 @@ OtherTab:CreateButton({
 })
 
 OtherTab:CreateButton({
+    Name = "Native [Key][Good]",
+    Callback = function(/
+        loadstring(game:HttpGet("https://getnative.cc/script/loader"))()
+    end,
+})
+
+OtherTab:CreateButton({
     Name = "Infinite Yield Edit",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()
