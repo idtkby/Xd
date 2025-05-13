@@ -429,9 +429,16 @@ OtherTab:CreateButton({
 })
 
 OtherTab:CreateButton({
-    Name = "Native [Key][Good]",
+    Name = "Native [Key][Good](3 Links, 12h)",
     Callback = function()
         loadstring(game:HttpGet("https://getnative.cc/script/loader"))()
+    end,
+})
+
+OtherTab:CreateButton({
+    Name = "Kiciahook [Key](1 Link, 48h){May be banned}",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/kiciahook/kiciahook/refs/heads/main/loader.luau"))()
     end,
 })
 
