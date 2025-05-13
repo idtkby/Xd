@@ -335,6 +335,13 @@ ESPTab:CreateButton({
 })
 
 ESPTab:CreateButton({
+    Name = "Unicorn",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/DeAdRaIlsScRiPt/refs/heads/main/UnicornESP"))()
+    end,
+})
+
+ESPTab:CreateButton({
     Name = "Coal",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/DeAdRaIlsScRiPt/refs/heads/main/CoalEsp"))()
