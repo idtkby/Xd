@@ -54,7 +54,7 @@ Rayfield:Notify({
     Duration = 2
 })
 
--- Tạo Tab Teleport
+-- Tạo Tab Main
 local MTab = Window:CreateTab("Main", "home")
 
 MTab:CreateSection("Main")
@@ -72,6 +72,28 @@ MTab:CreateButton({
       loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Aimbot%20npc%207%20days"))()
     end,
   })
+
+local TeleportTab = Window:CreateTab("Teleport", "map")
+
+TeleportTab:CreateSection("Main Location")
+
+local locations = {
+    Home = Vector3.new(60.99, 48.58, 417.10),
+    Balcony = Vector3.new(37.34, 52.72, 420.62),
+    River = Vector3.new(-227.99, -0.84, 341.59)
+}
+
+for name, position in pairs(locations) do
+    TeleportTab:CreateButton({
+        Name = "Go to " .. name,
+        Callback = function()
+            local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = CFrame.new(position)
+            end
+        end
+    })
+end
 
 local KTab = Window:CreateTab("Misc", "package")
   
