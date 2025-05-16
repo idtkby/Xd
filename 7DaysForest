@@ -354,6 +354,13 @@ KTab:CreateButton({
   })
 
 KTab:CreateButton({
+    Name = "Players ESP",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/PlayerEsp"))()
+    end,
+})
+
+KTab:CreateButton({
     Name = "Enable Chat",
     Callback = function()
         local StarterGui = game:GetService("StarterGui")
