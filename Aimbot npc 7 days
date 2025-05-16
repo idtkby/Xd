@@ -74,8 +74,17 @@ local function updateDrawings()
     FOVring.Radius = fov * (Cam.ViewportSize.Y / 1080)
 end
 
--- Dự đoán vị trí NPC (tạm thời không dùng velocity, có thể nâng cấp sau)
+-- Dự đoán vị trí NPC (có hỗ trợ PrimaryPart)
+local primaryNPCs = {
+    stalker = true,
+    pig_monster = true,
+}
+
 local function predictPos(npc)
+    local name = npc.Name:lower()
+    if primaryNPCs[name] and npc.PrimaryPart then
+        return npc.PrimaryPart.Position
+    end
     local head = npc:FindFirstChild("Head")
     if head then
         return head.Position
