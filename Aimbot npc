@@ -1,0 +1,216 @@
+task.spawn(function() -- Made by Khang
+local fov = 150
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Cam = workspace.CurrentCamera
+local Player = game:GetService("Players").LocalPlayer
+
+-- VĂ²ng trĂ²n FOV
+local FOVring = Drawing.new("Circle")
+FOVring.Visible = false
+FOVring.Thickness = 2
+FOVring.Color = Color3.fromRGB(128, 0, 128)
+FOVring.Filled = false
+FOVring.Radius = fov
+FOVring.Position = Cam.ViewportSize / 2
+
+local isAiming = false
+local validNPCs = {}
+local raycastParams = RaycastParams.new()
+raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+
+-- Giao din
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game:GetService("CoreGui")
+
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(0, 130, 0, 45)
+ToggleButton.Position = UDim2.new(0, 10, 0, 10)
+ToggleButton.Text = "AIMBOT: OFF"
+ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 50, 50)
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.TextSize = 14
+ToggleButton.Parent = ScreenGui
+
+-- Hin th tĂªn NPC
+local NPCNameLabel = Instance.new("TextLabel")
+NPCNameLabel.Size = UDim2.new(0, 250, 0, 30)
+NPCNameLabel.Position = UDim2.new(0, 10, 1, -40) -- GĂ³c trĂ¡i di cĂ¹ng
+NPCNameLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+NPCNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+NPCNameLabel.Text = "NPC: None"
+NPCNameLabel.TextSize = 14
+NPCNameLabel.Font = Enum.Font.GothamBold
+NPCNameLabel.Parent = ScreenGui
+
+-- Ă‚m thanh thĂ´ng bĂ¡o khi bt/tt
+local Sound = Instance.new("Sound", game.SoundService)
+Sound.SoundId = "rbxassetid://6026984224"
+
+-- Kim tra NPC hp l
+local function isNPC(obj)
+    return obj:IsA("Model") 
+    and obj:FindFirstChild("Humanoid") 
+    and obj.Humanoid.Health > 0 
+    and obj:FindFirstChild("Head") 
+    and obj:FindFirstChild("HumanoidRootPart") 
+    and not game:GetService("Players"):GetPlayerFromCharacter(obj)
+    and obj.Name ~= "Model_Unicorn"
+    and obj.Name ~= "Model_Horse"
+    and obj.Name ~= "Model_RifleSoldier"
+    and obj.Name ~= "Model_TurretSoldier"
+end
+
+-- Cp nht danh sĂ¡ch NPC
+local function updateNPCs()
+    validNPCs = {}
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if isNPC(obj) then
+            table.insert(validNPCs, obj)
+        end
+    end
+end
+
+-- Cp nht v trĂ­ FOV
+local function updateDrawings()
+    FOVring.Position = Cam.ViewportSize / 2
+    FOVring.Radius = fov * (Cam.ViewportSize.Y / 1080)
+end
+
+-- Dự đoán vị trí NPC (tạm thời không dùng velocity, có thể nâng cấp sau)
+local function predictPos(npc)
+    local head = npc:FindFirstChild("Head")
+    if head then
+        return head.Position
+    end
+    return npc:FindFirstChild("HumanoidRootPart").Position
+end
+
+-- TĂ¬m mc tiĂªu gn nht trong FOV
+local function getTarget()
+    local nearest, minDistance = nil, math.huge
+    local viewportCenter = Cam.ViewportSize / 2
+    raycastParams.FilterDescendantsInstances = {Player.Character}
+
+    for _, npc in ipairs(validNPCs) do
+        local predictedPos = predictPos(npc)
+        local screenPos, visible = Cam:WorldToViewportPoint(predictedPos)
+        if visible and screenPos.Z > 0 then
+            local ray = workspace:Raycast(
+                Cam.CFrame.Position, 
+                (predictedPos - Cam.CFrame.Position).Unit * 1000, 
+                raycastParams
+            )
+            if ray and ray.Instance:IsDescendantOf(npc) then
+                local distance = (Vector2.new(screenPos.X, screenPos.Y) - viewportCenter).Magnitude
+                if distance < minDistance and distance < fov then
+                    minDistance = distance
+                    nearest = npc
+                end
+            end
+        end
+    end
+    return nearest
+end
+
+-- iu chnh gĂ³c nhĂ¬n  aim
+local function aim(targetPosition)
+    local currentCF = Cam.CFrame
+    local targetDirection = (targetPosition - currentCF.Position).Unit
+    local smoothFactor = 0.65
+    local newLookVector = currentCF.LookVector:Lerp(targetDirection, smoothFactor)
+    Cam.CFrame = CFrame.new(currentCF.Position, currentCF.Position + newLookVector)
+end
+
+-- HĂ m iu chnh kĂ­ch thc vn bn ca tĂªn NPC
+local function adjustTextSize()
+    local maxTextWidth = NPCNameLabel.AbsoluteSize.X -- Chiu rng ti a ca label
+    local textWidth = NPCNameLabel.TextBounds.X -- Chiu rng thc t ca vn bn
+
+    -- Nu vn bn dĂ i hn chiu rng ca label, gim kĂ­ch thc font
+    if textWidth > maxTextWidth then
+        local scale = maxTextWidth / textWidth
+        NPCNameLabel.TextSize = math.max(14 * scale, 10) -- m bo kĂ­ch thc font khĂ´ng nh quĂ¡ 10
+    else
+        NPCNameLabel.TextSize = 14 -- Quay li kĂ­ch thc font ban u nu tĂªn khĂ´ng quĂ¡ dĂ i
+    end
+end
+
+-- VĂ²ng lp chĂ­nh
+local lastUpdate = 0
+local UPDATE_INTERVAL = 0.3
+
+RunService.Heartbeat:Connect(function(dt)
+    updateDrawings()
+    lastUpdate = lastUpdate + dt
+    if lastUpdate >= UPDATE_INTERVAL then
+        updateNPCs()
+        lastUpdate = 0
+    end
+
+    if isAiming then
+        local target = getTarget()
+        if target then
+            local predictedPosition = predictPos(target)
+            aim(predictedPosition)
+            local hp = math.floor(target:FindFirstChild("Humanoid").Health)
+            NPCNameLabel.Text = "NPC: " .. target.Name .. " | HP: " .. hp
+            adjustTextSize() -- Gi hĂ m iu chnh kĂ­ch thc vn bn
+        else
+            NPCNameLabel.Text = "NPC: None"
+            adjustTextSize() -- Gi hĂ m iu chnh kĂ­ch thc vn bn
+        end
+    else
+        NPCNameLabel.Text = "NPC: None"
+        adjustTextSize() -- Gi hĂ m iu chnh kĂ­ch thc vn bn
+    end
+end)
+
+-- NĂºt bat/tt
+ToggleButton.MouseButton1Click:Connect(function()
+    isAiming = not isAiming
+    FOVring.Visible = isAiming
+    ToggleButton.Text = "AIMBOT: " .. (isAiming and "ON" or "OFF")
+    ToggleButton.TextColor3 = isAiming and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
+
+    -- PhĂ¡t Ă¢m thanh khi chuyn i
+    Sound:Play()
+end)
+
+-- KĂ©o th nĂºt (gii hn trong mĂ n hĂ¬nh)
+local dragging, dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    local newX = math.clamp(startPos.X.Offset + delta.X, 0, Cam.ViewportSize.X - ToggleButton.AbsoluteSize.X)
+    local newY = math.clamp(startPos.Y.Offset + delta.Y, 0, Cam.ViewportSize.Y - ToggleButton.AbsoluteSize.Y)
+    ToggleButton.Position = UDim2.new(startPos.X.Scale, newX, startPos.Y.Scale, newY)
+end
+
+ToggleButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = ToggleButton.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+ToggleButton.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+end)
