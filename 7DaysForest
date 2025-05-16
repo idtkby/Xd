@@ -161,32 +161,30 @@ MTab:CreateToggle({
 })
 
 local TeleportTab = Window:CreateTab("Teleport", "map")
-
 TeleportTab:CreateSection("Main Location")
 
 local locations = {
-    Home = Vector3.new(60.99, 48.58, 417.10),
-    Balcony = Vector3.new(37.34, 52.72, 420.62),
-    River = Vector3.new(-227.99, -0.84, 341.59),
-    Skeleton = Vector3.new(145.43, 12.63, 234.22),
-    Turret1 = Vector3.new(-110.91, 37.91, 352.01),
-    Turret2 = Vector3.new(-5.95, 26.77, 258.23),
-    Turret3 = Vector3.new(117.83, 34.97, 336.75),
-    Turret4 = Vector3.new(95.04, 34.41, 491.53)
+    {Name = "Home", Position = Vector3.new(60.99, 48.58, 417.10)},
+    {Name = "Balcony", Position = Vector3.new(37.34, 52.72, 420.62)},
+    {Name = "River", Position = Vector3.new(-227.99, -0.84, 341.59)},
+    {Name = "Skeleton", Position = Vector3.new(145.43, 12.63, 234.22)},
+    {Name = "Turret1", Position = Vector3.new(-110.91, 37.91, 352.01)},
+    {Name = "Turret2", Position = Vector3.new(-5.95, 26.77, 258.23)},
+    {Name = "Turret3", Position = Vector3.new(117.83, 34.97, 336.75)},
+    {Name = "Turret4", Position = Vector3.new(95.04, 34.41, 491.53)},
 }
 
-for name, position in pairs(locations) do
+for _, loc in ipairs(locations) do
     TeleportTab:CreateButton({
-        Name = "Go to " .. name,
+        Name = "Go to " .. loc.Name,
         Callback = function()
             local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
             if hrp then
-                hrp.CFrame = CFrame.new(position)
+                hrp.CFrame = CFrame.new(loc.Position)
             end
         end
     })
 end
-
 local KTab = Window:CreateTab("Misc", "package")
   
 KTab:CreateButton({
