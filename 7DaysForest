@@ -66,90 +66,98 @@ MTab:CreateButton({
     end,
   })
 
+local toggleRunning = false
+local connection
+
 MTab:CreateToggle({
-    Name = "Get Berry (INF)",
-    CurrentValue = false,
-    Callback = function(state)
-        collecting = state
+	Name = "GetBerry [INF]",
+	CurrentValue = false,
+	Flag = "GetBerryINF",
+	Callback = function(state)
+		toggleRunning = state
 
-        task.spawn(function()
-            local lp = game:GetService("Players").LocalPlayer
-            local TweenService = game:GetService("TweenService")
+		local lp = game:GetService("Players").LocalPlayer
+		local RunService = game:GetService("RunService")
 
-            while collecting do
-                local char = lp.Character or lp.CharacterAdded:Wait()
-                local hrp = char:FindFirstChild("HumanoidRootPart")
-                local hum = char:FindFirstChildOfClass("Humanoid")
-                if not hrp or not hum then
-                    task.wait(1)
-                    continue
-                end
+		if connection then
+			connection:Disconnect()
+			connection = nil
+		end
 
-                -- Tìm berry gần nhất
-                local nearestBerry, shortestDist = nil, math.huge
-                for _, obj in ipairs(workspace:GetDescendants()) do
-                    if obj:IsA("Model") and obj.Name:lower() == "berry" then
-                        local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-                        if part then
-                            local d = (hrp.Position - part.Position).Magnitude
-                            if d < shortestDist then
-                                nearestBerry, shortestDist = obj, d
-                            end
-                        end
-                    end
-                end
+		local char = lp.Character or lp.CharacterAdded:Wait()
+		local hrp = char:WaitForChild("HumanoidRootPart")
+		local hum = char:FindFirstChildOfClass("Humanoid")
+		if not (hrp and hum) then return end
 
-                if not nearestBerry then
-                    task.wait(0.5)
-                    continue
-                end
+		local originalCFrame = hrp.CFrame
 
-                -- Chuẩn bị prompt & part
-                local part = nearestBerry.PrimaryPart or nearestBerry:FindFirstChildWhichIsA("BasePart")
-                if not nearestBerry.PrimaryPart then
-                    nearestBerry.PrimaryPart = part
-                end
+		if not state then
+			char:PivotTo(originalCFrame)
+			return
+		end
 
-                local prompt = nearestBerry:FindFirstChildWhichIsA("ProximityPrompt", true)
-                            or nearestBerry:FindFirstChildWhichIsA("ClickDetector", true)
-                            or nearestBerry:FindFirstChild("TouchInterest", true)
+		connection = RunService.Heartbeat:Connect(function()
+			if not toggleRunning then return end
 
-                if not (prompt and part) then
-                    task.wait(0.2)
-                    continue
-                end
+			char = lp.Character or lp.CharacterAdded:Wait()
+			hrp = char:FindFirstChild("HumanoidRootPart")
+			hum = char:FindFirstChildOfClass("Humanoid")
+			if not (hrp and hum) then return end
 
-                -- Teleport và freeze
-                local targetCF = part.CFrame + Vector3.new(0, 2, 0)
-                TweenService:Create(hrp, TweenInfo.new(0.2), {CFrame = targetCF}):Play():Wait()
+			local nearestBerry, shortestDist = nil, math.huge
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if obj:IsA("Model") and obj.Name:lower() == "berry" then
+					local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+					if part then
+						local dist = (hrp.Position - part.Position).Magnitude
+						if dist < shortestDist then
+							nearestBerry = obj
+							shortestDist = dist
+						end
+					end
+				end
+			end
 
-                hum:ChangeState(Enum.HumanoidStateType.Physics)
-                hrp.Anchored = true
+			if nearestBerry then
+				local part = nearestBerry.PrimaryPart or nearestBerry:FindFirstChildWhichIsA("BasePart")
+				if not nearestBerry.PrimaryPart and part then
+					pcall(function()
+						nearestBerry.PrimaryPart = part
+					end)
+				end
 
-                -- Click prompt liên tục cho tới khi berry biến mất
-                while collecting and nearestBerry.Parent do
-                    pcall(function()
-                        if prompt:IsA("ProximityPrompt") then
-                            fireproximityprompt(prompt)
-                        elseif prompt:IsA("ClickDetector") then
-                            fireclickdetector(prompt)
-                        elseif prompt.Name == "TouchInterest" then
-                            firetouchinterest(hrp, part, 0)
-                            task.wait()
-                            firetouchinterest(hrp, part, 1)
-                        end
-                    end)
-                    task.wait(0.05)
-                end
+				local prompt = nearestBerry:FindFirstChildWhichIsA("ProximityPrompt", true)
+					or nearestBerry:FindFirstChildWhichIsA("ClickDetector", true)
+					or nearestBerry:FindFirstChild("TouchInterest", true)
 
-                -- Unfreeze để di chuyển sang berry khác
-                hrp.Anchored = false
-                hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+				if prompt and part then
+					char:PivotTo(part.CFrame + Vector3.new(0, 3.5, 0))
+					task.wait(0.25)
 
-                task.wait(0.2) -- nghỉ nhẹ rồi lặp lại
-            end
-        end)
-    end
+					for i = 1, 50 do
+						pcall(function()
+							if prompt:IsA("ProximityPrompt") then
+								fireproximityprompt(prompt)
+							elseif prompt:IsA("ClickDetector") then
+								fireclickdetector(prompt)
+							elseif prompt.Name == "TouchInterest" then
+								firetouchinterest(hrp, part, 0)
+								task.wait()
+								firetouchinterest(hrp, part, 1)
+							end
+						end)
+						task.wait(0.05)
+					end
+
+					task.wait(0.2)
+					char:PivotTo(originalCFrame)
+					task.wait(1) -- Chờ 1 giây trước lần lặp kế tiếp
+				end
+			else
+				task.wait(1)
+			end
+		end)
+	end
 })
 
 local TeleportTab = Window:CreateTab("Teleport", "map")
@@ -160,7 +168,11 @@ local locations = {
     Home = Vector3.new(60.99, 48.58, 417.10),
     Balcony = Vector3.new(37.34, 52.72, 420.62),
     River = Vector3.new(-227.99, -0.84, 341.59),
-    Skeleton = Vector3.new(145.43, 12.63, 234.22)
+    Skeleton = Vector3.new(145.43, 12.63, 234.22),
+    Turret1 = Vector3.new(-110.91, 37.91, 352.01),
+    Turret2 = Vector3.new(-5.95, 26.77, 258.23),
+    Turret3 = Vector3.new(117.83, 34.97, 336.75),
+    Turret4 = Vector3.new(95.04, 34.41, 491.53)
 }
 
 for name, position in pairs(locations) do
