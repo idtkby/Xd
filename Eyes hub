@@ -1,0 +1,85 @@
+-- Kiểm tra ID game
+if game.PlaceId ~= 115345163333015 and game.PlaceId ~= 1985320156 then
+    return warn("Script only works in the specified game (ID: 115345163333015 or 1985320156){Eyes The horror Game or Hospital}")
+end
+
+-- Thông báo khi đúng ID game
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "✓ Game Check Passed",
+    Text = "Script is now executing...",
+    Duration = 5
+})
+
+task.wait(3) -- Đợi 3s trước khi thực thi 
+
+-- Thông báo khi Loaded
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "📃 Script",
+    Text = "Script has been loaded.",
+    Duration = 5
+})
+
+task.spawn(function()
+-- Khai báo các dịch vụ cần thiết
+local player = game.Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local camera = workspace.CurrentCamera
+
+-- Tải và khởi tạo thư viện GUI Rayfield
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Tạo cửa sổ giao diện chính
+local Window = Rayfield:CreateWindow({
+    Name = "Script By Khang",
+    LoadingTitle = "Loading Hub...",
+    LoadingSubtitle = "Please wait",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "MyHubFolder",
+        FileName = "MyHubConfig"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "",
+        RememberJoins = false
+    },
+    KeySystem = false,
+})
+
+-- Thông báo đã tải
+Rayfield:Notify({
+    Title = "Welcome!",
+    Content = "Script Loaded",
+    Duration = 2
+})
+
+-- Tạo Tab Teleport
+local MTab = Window:CreateTab("Main", "home")
+
+MTab:CreateSection("Main")
+
+MTab:CreateButton({
+    Name = "Esp Npc&Eyes&MoneyBags",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/EyesTHGScRiPT/refs/heads/main/EspAll"))()
+    end,
+})
+
+local KTab = Window:CreateTab("Misc", "package")
+  
+KTab:CreateButton({
+    Name = "Collect Aura",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/CollectAura"))()
+    end,
+})
+  
+  KTab:CreateButton({
+    Name = "Inf Yield Edit",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()
+    end,
+  })
+
+end)
