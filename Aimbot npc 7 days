@@ -25,7 +25,7 @@ ScreenGui.Parent = game:GetService("CoreGui")
 
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Size = UDim2.new(0, 130, 0, 45)
-ToggleButton.Position = UDim2.new(0, 10, 0, 10)
+ToggleButton.Position = UDim2.new(0, 1050, 0, 10)
 ToggleButton.Text = "AIMBOT: OFF"
 ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 ToggleButton.TextColor3 = Color3.fromRGB(255, 50, 50)
@@ -36,7 +36,7 @@ ToggleButton.Parent = ScreenGui
 -- Hin th tĂªn NPC
 local NPCNameLabel = Instance.new("TextLabel")
 NPCNameLabel.Size = UDim2.new(0, 250, 0, 30)
-NPCNameLabel.Position = UDim2.new(0, 10, 1, -40) -- GĂ³c trĂ¡i di cĂ¹ng
+NPCNameLabel.Position = UDim2.new(1, 250 - 10, 0, -40) -- GĂ³c trĂ¡i di cĂ¹ng
 NPCNameLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 NPCNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 NPCNameLabel.Text = "NPC: None"
@@ -56,10 +56,6 @@ local function isNPC(obj)
     and obj:FindFirstChild("Head") 
     and obj:FindFirstChild("HumanoidRootPart") 
     and not game:GetService("Players"):GetPlayerFromCharacter(obj)
-    and obj.Name ~= "Model_Unicorn"
-    and obj.Name ~= "Model_Horse"
-    and obj.Name ~= "Model_RifleSoldier"
-    and obj.Name ~= "Model_TurretSoldier"
 end
 
 -- Cp nht danh sĂ¡ch NPC
