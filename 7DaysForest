@@ -74,37 +74,49 @@ MTab:CreateButton({
 		local hrp = char:WaitForChild("HumanoidRootPart")
 		local original = hrp.CFrame
 
-		for _, model in ipairs(workspace:GetDescendants()) do
-			if model:IsA("Model") and model.Name:lower() == "berry" and model.PrimaryPart then
-				local prompt = model:FindFirstChildWhichIsA("ProximityPrompt", true)
-					or model:FindFirstChildWhichIsA("ClickDetector", true)
-					or model:FindFirstChild("TouchInterest", true)
-
-				if prompt then
-					local part = model.PrimaryPart
-					if (hrp.Position - part.Position).Magnitude <= 15 then
-						for i = 1, 25 do
-							pcall(function()
-								if prompt:IsA("ProximityPrompt") then
-									fireproximityprompt(prompt)
-								elseif prompt:IsA("ClickDetector") then
-									fireclickdetector(prompt)
-								elseif prompt.Name == "TouchInterest" then
-									firetouchinterest(hrp, part, 0)
-									task.wait()
-									firetouchinterest(hrp, part, 1)
-								end
-							end)
-							task.wait(0.05)
-						end
-						break
-					end
+		-- Tìm berry gần nhất có PrimaryPart
+		local nearestBerry, shortestDist = nil, math.huge
+		for _, obj in ipairs(workspace:GetDescendants()) do
+			if obj:IsA("Model") and obj.Name:lower() == "berry" and obj.PrimaryPart then
+				local dist = (hrp.Position - obj.PrimaryPart.Position).Magnitude
+				if dist < shortestDist then
+					nearestBerry = obj
+					shortestDist = dist
 				end
 			end
 		end
 
-		task.wait(0.15)
-		hrp.CFrame = original
+		if nearestBerry then
+			local part = nearestBerry.PrimaryPart
+			local prompt = nearestBerry:FindFirstChildWhichIsA("ProximityPrompt", true)
+				or nearestBerry:FindFirstChildWhichIsA("ClickDetector", true)
+				or nearestBerry:FindFirstChild("TouchInterest", true)
+
+			if prompt then
+				hrp.CFrame = part.CFrame + Vector3.new(0, 2, 0) -- TP lên trên 1 chút tránh kẹt
+				task.wait(0.25)
+
+				for i = 1, 25 do
+					pcall(function()
+						if prompt:IsA("ProximityPrompt") then
+							fireproximityprompt(prompt)
+						elseif prompt:IsA("ClickDetector") then
+							fireclickdetector(prompt)
+						elseif prompt.Name == "TouchInterest" then
+							firetouchinterest(hrp, part, 0)
+							task.wait()
+							firetouchinterest(hrp, part, 1)
+						end
+					end)
+					task.wait(0.05)
+				end
+
+				task.wait(0.2)
+				hrp.CFrame = original
+			end
+		else
+			warn("Không tìm thấy berry gần nào có PrimaryPart")
+		end
 	end
 })
 
