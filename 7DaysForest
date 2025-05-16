@@ -62,7 +62,7 @@ MTab:CreateSection("Main")
 MTab:CreateButton({
     Name = "Esp Npc",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Esp%20Npc "))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Esp%20Npc"))()
     end,
 })
   
