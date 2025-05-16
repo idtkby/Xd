@@ -1,0 +1,74 @@
+task.spawn(function() -- Made by Khang
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local Character, HumanoidRootPart
+
+-- Cập nhật Character và HRP khi reset
+local function updateCharacter()
+	Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+end
+
+updateCharacter()
+LocalPlayer.CharacterAdded:Connect(updateCharacter)
+
+local autoCollect = false
+
+-- GUI
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "AutoCollectGUI"
+local btn = Instance.new("TextButton", gui)
+btn.Size = UDim2.new(0, 140, 0, 45)
+btn.Position = UDim2.new(0, 10, 0, 60)
+btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+btn.Text = "Auto Collect: OFF"
+btn.Font = Enum.Font.GothamBold
+btn.TextSize = 14
+btn.Active = true
+btn.Draggable = true
+
+btn.MouseButton1Click:Connect(function()
+	autoCollect = not autoCollect
+	btn.Text = "Auto Collect: " .. (autoCollect and "ON" or "OFF")
+	btn.TextColor3 = autoCollect and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
+end)
+
+-- Kích hoạt Prompt
+local function triggerPrompt(obj)
+	if obj:IsA("ProximityPrompt") then
+		fireproximityprompt(obj, math.huge)
+	elseif obj:IsA("ClickDetector") then
+		fireclickdetector(obj)
+	elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
+		firetouchinterest(HumanoidRootPart, obj.Parent, 0)
+		task.wait()
+		firetouchinterest(HumanoidRootPart, obj.Parent, 1)
+	end
+end
+
+-- Vòng lặp collect
+task.spawn(function()
+	while true do
+		if autoCollect and HumanoidRootPart then
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest")
+					and not obj:IsDescendantOf(LocalPlayer.Character) then
+
+					local parentPart = obj:IsA("ClickDetector") and obj.Parent or obj.Parent
+					if parentPart and parentPart:IsA("BasePart") then
+						local distance = (HumanoidRootPart.Position - parentPart.Position).Magnitude
+						if distance <= 15 then
+							pcall(triggerPrompt, obj)
+							task.wait(0.2)
+						end
+					end
+				end
+			end
+		end
+		RunService.Heartbeat:Wait()
+	end
+end)
+end)
