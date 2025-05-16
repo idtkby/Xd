@@ -66,68 +66,92 @@ MTab:CreateButton({
     end,
   })
 
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local lp = Players.LocalPlayer
+
 local collecting = false
 
 MTab:CreateToggle({
 	Name = "Get Berry (INF)",
 	CurrentValue = false,
-	Flag = "AutoBerry",
 	Callback = function(state)
 		collecting = state
-	end,
-})
 
-task.spawn(function()
-	local lp = game:GetService("Players").LocalPlayer
-	local char = lp.Character or lp.CharacterAdded:Wait()
-	local hrp = char:WaitForChild("HumanoidRootPart")
+		task.spawn(function()
+			while collecting do
+				local char = lp.Character or lp.CharacterAdded:Wait()
+				local hrp = char:FindFirstChild("HumanoidRootPart")
+				local hum = char:FindFirstChildOfClass("Humanoid")
+				if not hrp or not hum then task.wait(1) continue end
 
-	while task.wait(0.1) do
-		if collecting then
-			local nearest, shortest = nil, math.huge
-
-			for _, obj in ipairs(workspace:GetDescendants()) do
-				if obj:IsA("Model") and obj.Name:lower() == "berry" then
-					local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-					if part then
-						local dist = (hrp.Position - part.Position).Magnitude
-						if dist < shortest then
-							nearest = obj
-							shortest = dist
+				local nearestBerry, shortestDist = nil, math.huge
+				for _, obj in ipairs(workspace:GetDescendants()) do
+					if obj:IsA("Model") and obj.Name:lower() == "berry" then
+						local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+						if part then
+							local dist = (hrp.Position - part.Position).Magnitude
+							if dist < shortestDist then
+								shortestDist = dist
+								nearestBerry = obj
+							end
 						end
 					end
 				end
-			end
 
-			if nearest then
-				local prompt = nearest:FindFirstChildWhichIsA("ProximityPrompt", true)
-					or nearest:FindFirstChildWhichIsA("ClickDetector", true)
+				if nearestBerry then
+					local part = nearestBerry.PrimaryPart or nearestBerry:FindFirstChildWhichIsA("BasePart")
+					if not nearestBerry.PrimaryPart then
+						nearestBerry.PrimaryPart = part
+					end
 
-				if prompt then
-					if prompt:IsA("ProximityPrompt") then
-						if (prompt.Parent.Position - hrp.Position).Magnitude <= prompt.MaxActivationDistance then
+					local prompt = nearestBerry:FindFirstChildWhichIsA("ProximityPrompt", true)
+						or nearestBerry:FindFirstChildWhichIsA("ClickDetector", true)
+						or nearestBerry:FindFirstChild("TouchInterest", true)
+
+					if part and prompt then
+						local originalCF = hrp.CFrame
+						local targetCF = part.CFrame + Vector3.new(0, 2, 0)
+
+						-- Di chuyển bằng tween
+						local tween = TweenService:Create(hrp, TweenInfo.new(0.2), {CFrame = targetCF})
+						tween:Play()
+						tween.Completed:Wait()
+
+						-- Freeze nhân vật
+						hum:ChangeState(Enum.HumanoidStateType.Physics)
+						char.HumanoidRootPart.Anchored = true
+
+						for i = 1, inf do
+							if not collecting then break end
 							pcall(function()
-								for i = 1, 3 do
+								if prompt:IsA("ProximityPrompt") then
 									fireproximityprompt(prompt)
-									task.wait(0.05)
-								end
-							end)
-						end
-					elseif prompt:IsA("ClickDetector") then
-						if (prompt.Parent.Position - hrp.Position).Magnitude <= 50 then
-							pcall(function()
-								for i = 1, 3 do
+								elseif prompt:IsA("ClickDetector") then
 									fireclickdetector(prompt)
-									task.wait(0.05)
+								elseif prompt.Name == "TouchInterest" then
+									firetouchinterest(hrp, part, 0)
+									task.wait()
+									firetouchinterest(hrp, part, 1)
 								end
 							end)
+							task.wait(0.05)
 						end
+
+						-- Gỡ freeze và quay lại
+						task.wait(0.2)
+						char.HumanoidRootPart.Anchored = false
+						hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+						hrp.CFrame = originalCF
 					end
 				end
+
+				task.wait(0.5)
 			end
-		end
+		end)
 	end
-end)
+})
 
 local TeleportTab = Window:CreateTab("Teleport", "map")
 
