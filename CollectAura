@@ -32,8 +32,8 @@ btn.Draggable = true
 
 btn.MouseButton1Click:Connect(function()
 	autoCollect = not autoCollect
-	btn.Text = "Auto Collect: " .. (autoCollect and "ON" or "OFF")
-	btn.TextColor3 = autoCollect and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
+	btn.Text = "Auto Prompts: " .. (autoPrompts and "ON" or "OFF")
+	btn.TextColor3 = autoPrompts and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
 end)
 
 -- Kích hoạt Prompt
