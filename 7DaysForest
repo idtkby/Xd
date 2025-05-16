@@ -12,13 +12,6 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
 
 task.wait(3) -- Đợi 3s trước khi thực thi 
 
--- Thông báo khi Loaded
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "📃 Script",
-    Text = "Script has been loaded.",
-    Duration = 5
-})
-
 task.spawn(function()
 -- Khai báo các dịch vụ cần thiết
 local player = game.Players.LocalPlayer
@@ -72,6 +65,48 @@ MTab:CreateButton({
       loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Aimbot%20npc%207%20days"))()
     end,
   })
+
+MTab:CreateButton({
+	Name = "Get Berry",
+	Callback = function()
+		local lp = game:GetService("Players").LocalPlayer
+		local char = lp.Character or lp.CharacterAdded:Wait()
+		local hrp = char:WaitForChild("HumanoidRootPart")
+		local original = hrp.CFrame
+
+		for _, model in ipairs(workspace:GetDescendants()) do
+			if model:IsA("Model") and model.Name:lower() == "berry" and model.PrimaryPart then
+				local prompt = model:FindFirstChildWhichIsA("ProximityPrompt", true)
+					or model:FindFirstChildWhichIsA("ClickDetector", true)
+					or model:FindFirstChild("TouchInterest", true)
+
+				if prompt then
+					local part = model.PrimaryPart
+					if (hrp.Position - part.Position).Magnitude <= 15 then
+						for i = 1, 25 do
+							pcall(function()
+								if prompt:IsA("ProximityPrompt") then
+									fireproximityprompt(prompt)
+								elseif prompt:IsA("ClickDetector") then
+									fireclickdetector(prompt)
+								elseif prompt.Name == "TouchInterest" then
+									firetouchinterest(hrp, part, 0)
+									task.wait()
+									firetouchinterest(hrp, part, 1)
+								end
+							end)
+							task.wait(0.05)
+						end
+						break
+					end
+				end
+			end
+		end
+
+		task.wait(0.15)
+		hrp.CFrame = original
+	end
+})
 
 local TeleportTab = Window:CreateTab("Teleport", "map")
 
