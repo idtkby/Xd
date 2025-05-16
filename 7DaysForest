@@ -160,7 +160,8 @@ TeleportTab:CreateSection("Main Location")
 local locations = {
     Home = Vector3.new(60.99, 48.58, 417.10),
     Balcony = Vector3.new(37.34, 52.72, 420.62),
-    River = Vector3.new(-227.99, -0.84, 341.59)
+    River = Vector3.new(-227.99, -0.84, 341.59),
+    Skeleton = Vector3.new(145.43, 12.63, 234.22)
 }
 
 for name, position in pairs(locations) do
