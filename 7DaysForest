@@ -67,7 +67,7 @@ MTab:CreateButton({
   })
 
 MTab:CreateButton({
-	Name = "GetBerry",
+	Name = "GetBerry (INF)",
 	Callback = function()
 		local lp = game:GetService("Players").LocalPlayer
 		local char = lp.Character or lp.CharacterAdded:Wait()
@@ -100,11 +100,11 @@ MTab:CreateButton({
 				or nearestBerry:FindFirstChild("TouchInterest", true)
 
 			if prompt and part then
-				-- Dịch chuyển tới berry
+				-- Dịch chuyển trước, không freeze
 				hrp.CFrame = part.CFrame + Vector3.new(0, 2, 0)
-				task.wait(0.2)
+				task.wait(0.3) -- Cho phép client đồng bộ vị trí
 
-				-- Freeze
+				-- Freeze sau khi dịch chuyển
 				if hum then
 					hum.WalkSpeed = 0
 					hum.JumpPower = 0
@@ -126,7 +126,7 @@ MTab:CreateButton({
 					task.wait(0.05)
 				end
 
-				-- Unfreeze và dịch chuyển về chỗ cũ
+				-- Unfreeze và quay về vị trí cũ
 				task.wait(0.1)
 				hrp.CFrame = originalCFrame
 				if hum then
