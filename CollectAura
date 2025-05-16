@@ -18,13 +18,13 @@ local autoCollect = false
 
 -- GUI
 local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "AutoCollectGUI"
+gui.Name = "AutoPromptsGUI"
 local btn = Instance.new("TextButton", gui)
 btn.Size = UDim2.new(0, 140, 0, 45)
 btn.Position = UDim2.new(0, 10, 0, 60)
 btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-btn.Text = "Auto Collect: OFF"
+btn.Text = "Auto Prompts: OFF"
 btn.Font = Enum.Font.GothamBold
 btn.TextSize = 14
 btn.Active = true
@@ -32,8 +32,8 @@ btn.Draggable = true
 
 btn.MouseButton1Click:Connect(function()
 	autoCollect = not autoCollect
-	btn.Text = "Auto Prompts: " .. (autoPrompts and "ON" or "OFF")
-	btn.TextColor3 = autoPrompts and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
+	btn.Text = "Auto Prompts: " .. (autoCollect and "ON" or "OFF")
+	btn.TextColor3 = autoCollect and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
 end)
 
 -- Kích hoạt Prompt
