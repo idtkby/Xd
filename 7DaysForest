@@ -66,82 +66,68 @@ MTab:CreateButton({
     end,
   })
 
-MTab:CreateButton({
-	Name = "GetBerry (INF)",
-	Callback = function()
-		local lp = game:GetService("Players").LocalPlayer
-		local char = lp.Character or lp.CharacterAdded:Wait()
-		local hrp = char:WaitForChild("HumanoidRootPart")
-		local hum = char:FindFirstChildOfClass("Humanoid")
-		local originalCFrame = hrp.CFrame
+local collecting = false
 
-		local nearestBerry, shortestDist = nil, math.huge
-		for _, obj in ipairs(workspace:GetDescendants()) do
-			if obj:IsA("Model") and obj.Name:lower() == "berry" then
-				local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-				if part then
-					local dist = (hrp.Position - part.Position).Magnitude
-					if dist < shortestDist then
-						nearestBerry = obj
-						shortestDist = dist
+MTab:CreateToggle({
+	Name = "Get Berry (INF)",
+	CurrentValue = false,
+	Flag = "AutoBerry",
+	Callback = function(state)
+		collecting = state
+	end,
+})
+
+task.spawn(function()
+	local lp = game:GetService("Players").LocalPlayer
+	local char = lp.Character or lp.CharacterAdded:Wait()
+	local hrp = char:WaitForChild("HumanoidRootPart")
+
+	while task.wait(0.1) do
+		if collecting then
+			local nearest, shortest = nil, math.huge
+
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if obj:IsA("Model") and obj.Name:lower() == "berry" then
+					local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+					if part then
+						local dist = (hrp.Position - part.Position).Magnitude
+						if dist < shortest then
+							nearest = obj
+							shortest = dist
+						end
+					end
+				end
+			end
+
+			if nearest then
+				local prompt = nearest:FindFirstChildWhichIsA("ProximityPrompt", true)
+					or nearest:FindFirstChildWhichIsA("ClickDetector", true)
+
+				if prompt then
+					if prompt:IsA("ProximityPrompt") then
+						if (prompt.Parent.Position - hrp.Position).Magnitude <= prompt.MaxActivationDistance then
+							pcall(function()
+								for i = 1, 3 do
+									fireproximityprompt(prompt)
+									task.wait(0.05)
+								end
+							end)
+						end
+					elseif prompt:IsA("ClickDetector") then
+						if (prompt.Parent.Position - hrp.Position).Magnitude <= 50 then
+							pcall(function()
+								for i = 1, 3 do
+									fireclickdetector(prompt)
+									task.wait(0.05)
+								end
+							end)
+						end
 					end
 				end
 			end
 		end
-
-		if nearestBerry then
-			local part = nearestBerry.PrimaryPart or nearestBerry:FindFirstChildWhichIsA("BasePart")
-			if not nearestBerry.PrimaryPart then
-				nearestBerry.PrimaryPart = part
-			end
-
-			local prompt = nearestBerry:FindFirstChildWhichIsA("ProximityPrompt", true)
-				or nearestBerry:FindFirstChildWhichIsA("ClickDetector", true)
-				or nearestBerry:FindFirstChild("TouchInterest", true)
-
-			if prompt and part then
-				-- Dịch chuyển trước, không freeze
-				hrp.CFrame = part.CFrame + Vector3.new(0, 2, 0)
-				task.wait(0.3) -- Cho phép client đồng bộ vị trí
-
-				-- Freeze sau khi dịch chuyển
-				if hum then
-					hum.WalkSpeed = 0
-					hum.JumpPower = 0
-					hum.PlatformStand = true
-				end
-
-				for i = 1, 50 do
-					pcall(function()
-						if prompt:IsA("ProximityPrompt") then
-							fireproximityprompt(prompt)
-						elseif prompt:IsA("ClickDetector") then
-							fireclickdetector(prompt)
-						elseif prompt.Name == "TouchInterest" then
-							firetouchinterest(hrp, part, 0)
-							task.wait()
-							firetouchinterest(hrp, part, 1)
-						end
-					end)
-					task.wait(0.05)
-				end
-
-				-- Unfreeze và quay về vị trí cũ
-				task.wait(0.1)
-				hrp.CFrame = originalCFrame
-				if hum then
-					hum.PlatformStand = false
-					hum.WalkSpeed = 16
-					hum.JumpPower = 50
-				end
-			else
-				warn("Không tìm thấy prompt hợp lệ.")
-			end
-		else
-			warn("Không tìm thấy berry.")
-		end
 	end
-})
+end)
 
 local TeleportTab = Window:CreateTab("Teleport", "map")
 
