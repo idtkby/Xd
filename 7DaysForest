@@ -67,36 +67,51 @@ MTab:CreateButton({
   })
 
 MTab:CreateButton({
-	Name = "Get Berry",
+	Name = "GetBerry",
 	Callback = function()
 		local lp = game:GetService("Players").LocalPlayer
 		local char = lp.Character or lp.CharacterAdded:Wait()
 		local hrp = char:WaitForChild("HumanoidRootPart")
-		local original = hrp.CFrame
+		local hum = char:FindFirstChildOfClass("Humanoid")
+		local originalCFrame = hrp.CFrame
 
-		-- Tìm berry gần nhất có PrimaryPart
 		local nearestBerry, shortestDist = nil, math.huge
 		for _, obj in ipairs(workspace:GetDescendants()) do
-			if obj:IsA("Model") and obj.Name:lower() == "berry" and obj.PrimaryPart then
-				local dist = (hrp.Position - obj.PrimaryPart.Position).Magnitude
-				if dist < shortestDist then
-					nearestBerry = obj
-					shortestDist = dist
+			if obj:IsA("Model") and obj.Name:lower() == "berry" then
+				local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+				if part then
+					local dist = (hrp.Position - part.Position).Magnitude
+					if dist < shortestDist then
+						nearestBerry = obj
+						shortestDist = dist
+					end
 				end
 			end
 		end
 
 		if nearestBerry then
-			local part = nearestBerry.PrimaryPart
+			local part = nearestBerry.PrimaryPart or nearestBerry:FindFirstChildWhichIsA("BasePart")
+			if not nearestBerry.PrimaryPart then
+				nearestBerry.PrimaryPart = part
+			end
+
 			local prompt = nearestBerry:FindFirstChildWhichIsA("ProximityPrompt", true)
 				or nearestBerry:FindFirstChildWhichIsA("ClickDetector", true)
 				or nearestBerry:FindFirstChild("TouchInterest", true)
 
-			if prompt then
-				hrp.CFrame = part.CFrame + Vector3.new(0, 2, 0) -- TP lên trên 1 chút tránh kẹt
-				task.wait(0.25)
+			if prompt and part then
+				-- Dịch chuyển tới berry
+				hrp.CFrame = part.CFrame + Vector3.new(0, 2, 0)
+				task.wait(0.2)
 
-				for i = 1, 25 do
+				-- Freeze
+				if hum then
+					hum.WalkSpeed = 0
+					hum.JumpPower = 0
+					hum.PlatformStand = true
+				end
+
+				for i = 1, 50 do
 					pcall(function()
 						if prompt:IsA("ProximityPrompt") then
 							fireproximityprompt(prompt)
@@ -111,11 +126,19 @@ MTab:CreateButton({
 					task.wait(0.05)
 				end
 
-				task.wait(0.2)
-				hrp.CFrame = original
+				-- Unfreeze và dịch chuyển về chỗ cũ
+				task.wait(0.1)
+				hrp.CFrame = originalCFrame
+				if hum then
+					hum.PlatformStand = false
+					hum.WalkSpeed = 16
+					hum.JumpPower = 50
+				end
+			else
+				warn("Không tìm thấy prompt hợp lệ.")
 			end
 		else
-			warn("Không tìm thấy berry gần nào có PrimaryPart")
+			warn("Không tìm thấy berry.")
 		end
 	end
 })
