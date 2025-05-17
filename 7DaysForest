@@ -414,6 +414,80 @@ task.spawn(function()
     end
 end)
 
+local CombatTab = Window:CreateTab("Combat")
+
+local attackRange = 300
+local aimPart = "Head"
+local killauraEnabled = false
+
+-- Slider chỉnh khoảng cách tấn công
+CombatTab:CreateSlider({
+    Name = "Attack Range",
+    Range = {1, 1000},
+    Increment = 1,
+    CurrentValue = attackRange,
+    Callback = function(value)
+        attackRange = value
+    end,
+})
+
+-- Dropdown chọn bộ phận ngắm
+CombatTab:CreateDropdown({
+    Name = "Aim Target",
+    Options = {"Head", "HumanoidRootPart"},
+    CurrentOption = aimPart,
+    Callback = function(option)
+        aimPart = option
+    end,
+})
+
+-- Toggle bật tắt Killaura
+CombatTab:CreateToggle({
+    Name = "Killaura",
+    CurrentValue = false,
+    Callback = function(state)
+        killauraEnabled = state
+    end,
+})
+
+-- Script KillAura (tự động)
+local shootRemote = game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("shoot")
+local camera = workspace.CurrentCamera
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+
+local function getTargetPart(npc)
+    local isSpecial = npc.Name:lower() == "stalker" or npc.Name:lower() == "pig_monster"
+    if isSpecial and npc.PrimaryPart then
+        return npc.PrimaryPart
+    end
+    return npc:FindFirstChild(aimPart)
+end
+
+local function createCFrame(targetPos)
+    local origin = camera.CFrame.Position
+    local look = CFrame.lookAt(origin, targetPos)
+    local reverse = CFrame.lookAt(targetPos, origin)
+    return {look, reverse}
+end
+
+task.spawn(function()
+    while true do
+        task.wait(0.15)
+        if not killauraEnabled then continue end
+
+        for _, npc in ipairs(workspace:GetChildren()) do
+            if npc:IsA("Model") and npc:FindFirstChild("Humanoid") and npc.Humanoid.Health > 0 and not Players:GetPlayerFromCharacter(npc) then
+                local part = getTargetPart(npc)
+                if part and (part.Position - camera.CFrame.Position).Magnitude <= attackRange then
+                    local args = createCFrame(part.Position + Vector3.new(0, 1.2, 0))
+                    shootRemote:FireServer(unpack(args))
+                end
+            end
+        end
+    end
+end)
+
 local KTab = Window:CreateTab("Misc", "package")
   
 KTab:CreateButton({
