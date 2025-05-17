@@ -1,6 +1,6 @@
 -- Kiểm tra ID game
 if game.PlaceId ~= 70876832253163 then
-    return warn("Script only works in the specified game (ID: 116495829188952){Dead Rails (Game)}")
+    return warn("Script only works in the specified game (ID: 70876832253163){Dead Rails (Game)}")
 end
 
 -- Thông báo khi đúng ID game
@@ -11,13 +11,6 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
 })
 
 task.wait(3) -- Đợi 3s trước khi thực thi 
-
--- Thông báo khi Loaded
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "📃 Script",
-    Text = "Script has been loaded.",
-    Duration = 5
-})
 
 task.spawn(function()
 -- Khai báo các dịch vụ cần thiết
@@ -468,6 +461,13 @@ OtherTab:CreateButton({
     Callback = function()
         loadstring(game:HttpGet('https://raw.githubusercontent.com/hbjrev/airweld.github.io/refs/heads/main/RINGTA.lua'))()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Keyairweld"))()
+    end,
+})
+
+OtherTab:CreateButton({
+    Name = "AutoSwing",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/HeadHarse/Dusty/refs/heads/main/OPAUTOSWING"))()
     end,
 })
 
