@@ -470,6 +470,12 @@ OtherTab:CreateButton({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/HeadHarse/Dusty/refs/heads/main/OPAUTOSWING"))()
     end,
 })
+OtherTab:CreateButton({
+    Name = "Equip All Weapon (Melee Weapons)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/DeAdRaIlsScRiPt/refs/heads/main/EquipAllWeapon"))()
+    end,
+})
 
 OtherTab:CreateButton({
     Name = "VehicleFly",
