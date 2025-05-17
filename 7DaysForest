@@ -312,6 +312,13 @@ MTab:CreateToggle({
 	end
 })
 
+MTab:CreateButton({
+    Name = "Eat Berry Button (Full Hungry)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/EatBerryButton"))()
+    end,
+})
+
 local TeleportTab = Window:CreateTab("Teleport", "map")
 TeleportTab:CreateSection("Main Location")
 
