@@ -388,6 +388,7 @@ for _, loc in ipairs(locations) do
         end
     })
 end
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
@@ -442,6 +443,129 @@ TeleportTab:CreateButton({
         if dropdown and dropdown.UpdateOptions then
             dropdown:UpdateOptions(playerDropdownItems)
             dropdown:SetOption(selectedPlayerName)  -- cập nhật giao diện luôn
+        end
+    end
+})
+
+-- Nút Teleport đến phía sau người chơi đã chọn (5 studs)
+TeleportTab:CreateButton({
+    Name = "Teleport Behind Player (5 studs)",
+    Callback = function()
+        if not selectedPlayerName or selectedPlayerName == "No players" then return end
+
+        local targetPlayer = Players:FindFirstChild(selectedPlayerName)
+        if not targetPlayer then return end
+
+        -- Lấy character của target
+        local ok, character = pcall(function()
+            return targetPlayer.Character or targetPlayer.CharacterAdded:Wait()
+        end)
+        if not ok or not character then return end
+
+        -- Chọn part: ưu tiên HumanoidRootPart rồi fallback Torso
+        local targetPart = character:FindFirstChild("HumanoidRootPart")
+            or character:FindFirstChild("Torso")
+        local myCharacter = LocalPlayer.Character
+        local myPart = myCharacter and (
+            myCharacter:FindFirstChild("HumanoidRootPart")
+            or myCharacter:FindFirstChild("Torso")
+        )
+        if not targetPart or not myPart then return end
+
+        -- Tính CFrame ở phía sau target (–Z là phía sau)
+        local behindCFrame = targetPart.CFrame * CFrame.new(0, 0, 5)
+        -- Đặt myPart sang đó, đồng thời hướng mặt vào target
+        myPart.CFrame = CFrame.new(behindCFrame.Position, targetPart.Position)
+    end
+})
+
+-- Nút Teleport đến phía sau người chơi đã chọn (50 studs)
+TeleportTab:CreateButton({
+    Name = "Teleport Behind Player (50 studs)",
+    Callback = function()
+        if not selectedPlayerName or selectedPlayerName == "No players" then return end
+
+        local targetPlayer = Players:FindFirstChild(selectedPlayerName)
+        if not targetPlayer then return end
+
+        -- Lấy character của target
+        local ok, character = pcall(function()
+            return targetPlayer.Character or targetPlayer.CharacterAdded:Wait()
+        end)
+        if not ok or not character then return end
+
+        -- Chọn part: ưu tiên HumanoidRootPart rồi fallback Torso
+        local targetPart = character:FindFirstChild("HumanoidRootPart")
+            or character:FindFirstChild("Torso")
+        local myCharacter = LocalPlayer.Character
+        local myPart = myCharacter and (
+            myCharacter:FindFirstChild("HumanoidRootPart")
+            or myCharacter:FindFirstChild("Torso")
+        )
+        if not targetPart or not myPart then return end
+
+        -- Tính CFrame ở phía sau target (–Z là phía sau)
+        local behindCFrame = targetPart.CFrame * CFrame.new(0, 0, 50)
+        -- Đặt myPart sang đó, đồng thời hướng mặt vào target
+        myPart.CFrame = CFrame.new(behindCFrame.Position, targetPart.Position)
+    end
+})
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Tạo Section cho TeleportTab
+if TeleportTab and TeleportTab.CreateSection then
+    TeleportTab:CreateSection("Players Teleport")
+end
+
+-- Danh sách player dropdown
+local selectedPlayerName = nil
+local playerDropdownItems = {}
+
+local function refreshPlayerList()
+    table.clear(playerDropdownItems)
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            table.insert(playerDropdownItems, plr.Name)
+        end
+    end
+    if #playerDropdownItems == 0 then
+        table.insert(playerDropdownItems, "No players")
+    end
+    -- Nếu selectedPlayerName cũ không còn trong list mới thì reset
+    if selectedPlayerName and not table.find(playerDropdownItems, selectedPlayerName) then
+        selectedPlayerName = nil
+    end
+    -- Khởi tạo lựa chọn mặc định nếu chưa có
+    if not selectedPlayerName then
+        selectedPlayerName = playerDropdownItems[1]
+    end
+end
+
+-- Lần đầu build list và init selectedPlayerName
+refreshPlayerList()
+
+-- Tạo Dropdown chọn player
+local dropdown = TeleportTab:CreateDropdown({
+    Name = "Select Player",
+    Options = playerDropdownItems,
+    CurrentOption = selectedPlayerName,
+    Flag = "SelectedPlayer",
+    Callback = function(option)
+        selectedPlayerName = option
+    end
+})
+
+-- Nút cập nhật danh sách player
+TeleportTab:CreateButton({
+    Name = "Refresh Players",
+    Callback = function()
+        refreshPlayerList()
+        if dropdown and dropdown.UpdateOptions then
+            dropdown:UpdateOptions(playerDropdownItems)
+            dropdown:SetOption(selectedPlayerName)
+            selectedPlayerName = dropdown.CurrentOption  -- FIX: cập nhật lại biến sau khi chọn
         end
     end
 })
