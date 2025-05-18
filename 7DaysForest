@@ -389,67 +389,6 @@ for _, loc in ipairs(locations) do
     })
 end
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
--- Biến lưu lựa chọn
-local selectedPlayer = nil
-local tpDistance = 10
-
--- Tạo Tab
-local GotoTab = Window:CreateTab("GotoPys", 4483362458)
-
--- Slider: chọn khoảng cách dịch chuyển phía sau player
-GotoTab:CreateSlider({
-	Name = "Khoảng cách phía sau",
-	Range = {0, 100},
-	Increment = 1,
-	Default = 10,
-	Callback = function(Value)
-		tpDistance = Value
-	end
-})
-
--- Dropdown: chọn player trong server
-local dropdown
-local function updatePlayers()
-	local names = {}
-	for _, p in ipairs(Players:GetPlayers()) do
-		if p ~= LocalPlayer then
-			table.insert(names, p.Name)
-		end
-	end
-	dropdown:SetOptions(names)
-end
-
-dropdown = GotoTab:CreateDropdown({
-	Name = "Chọn người chơi",
-	Options = {},
-	Callback = function(Value)
-		selectedPlayer = Players:FindFirstChild(Value)
-	end
-})
-
--- Tự động cập nhật danh sách người chơi mỗi 5s
-task.spawn(function()
-	while task.wait(5) do
-		updatePlayers()
-	end
-end)
-updatePlayers()
-
--- Nút: Dịch chuyển tới người chơi được chọn (phía sau)
-GotoTab:CreateButton({
-	Name = "Dịch chuyển đến người chơi",
-	Callback = function()
-		if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
-			local root = selectedPlayer.Character.HumanoidRootPart
-			local dir = root.CFrame.LookVector
-			LocalPlayer.Character:PivotTo(CFrame.new(root.Position - dir * tpDistance))
-		end
-	end
-})
-
 local KTab = Window:CreateTab("Misc", "package")
   
 KTab:CreateButton({
