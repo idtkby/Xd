@@ -472,7 +472,7 @@ TeleportTab:CreateButton({
         if not targetPart or not myPart then return end
 
         -- Tính CFrame ở phía sau target (–Z là phía sau)
-        local behindCFrame = targetPart.CFrame * CFrame.new(0, 0, -5)
+        local behindCFrame = targetPart.CFrame * CFrame.new(0, 0, 5)
         -- Đặt myPart sang đó, đồng thời hướng mặt vào target
         myPart.CFrame = CFrame.new(behindCFrame.Position, targetPart.Position)
     end
