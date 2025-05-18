@@ -389,27 +389,28 @@ for _, loc in ipairs(locations) do
     })
 end
 
-TeleportTab:CreateSection("Players Teleport")
-
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- Tạo dropdown chọn player và nút refresh
+-- Tạo Section cho TeleportTab
+if TeleportTab and TeleportTab.CreateSection then
+    TeleportTab:CreateSection("Players Teleport")
+end
+
+-- Danh sách player dropdown
 local selectedPlayerName = nil
 local playerDropdownItems = {}
 
 local function refreshPlayerList()
-    playerDropdownItems = {}
+    table.clear(playerDropdownItems)
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer then
             table.insert(playerDropdownItems, plr.Name)
         end
     end
-    -- Nếu không có người chơi khác, thêm dòng trống để tránh lỗi dropdown
     if #playerDropdownItems == 0 then
         table.insert(playerDropdownItems, "No players")
     end
-    -- Reset lựa chọn nếu người chơi được chọn không còn trong list
     if selectedPlayerName and not table.find(playerDropdownItems, selectedPlayerName) then
         selectedPlayerName = nil
     end
@@ -417,7 +418,7 @@ end
 
 refreshPlayerList()
 
--- Dropdown chọn player
+-- Tạo Dropdown chọn player
 local dropdown = TeleportTab:CreateDropdown({
     Name = "Select Player",
     Options = playerDropdownItems,
@@ -428,16 +429,18 @@ local dropdown = TeleportTab:CreateDropdown({
     end
 })
 
--- Nút refresh danh sách player
+-- Nút cập nhật danh sách player
 TeleportTab:CreateButton({
     Name = "Refresh Players",
     Callback = function()
         refreshPlayerList()
-        dropdown:UpdateOptions(playerDropdownItems)
+        if dropdown and dropdown.UpdateOptions then
+            dropdown:UpdateOptions(playerDropdownItems)
+        end
     end
 })
 
--- Nút dịch chuyển đến player phía sau lưng cách 5 studs
+-- Nút Teleport đến phía sau người chơi đã chọn (R6 Torso)
 TeleportTab:CreateButton({
     Name = "Teleport Behind Player (5 studs)",
     Callback = function()
@@ -448,21 +451,19 @@ TeleportTab:CreateButton({
 
         local targetPlayer = Players:FindFirstChild(selectedPlayerName)
         if not targetPlayer or not targetPlayer.Character then
-            warn("Người chơi không hợp lệ hoặc không có character")
+            warn("Người chơi không hợp lệ hoặc chưa spawn")
             return
         end
 
-        local targetHRP = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-        local localHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if not targetHRP or not localHRP then
-            warn("Không tìm thấy HumanoidRootPart")
+        local targetTorso = targetPlayer.Character:FindFirstChild("Torso")
+        local localTorso = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Torso")
+        if not targetTorso or not localTorso then
+            warn("Không tìm thấy Torso (R6)")
             return
         end
 
-        -- Tính toán vị trí phía sau lưng player cách 5 studs
-        local behindPosition = targetHRP.CFrame * CFrame.new(0, 0, 5) -- 5 studs về phía sau (theo local space)
-        -- CFrame mới cho local player, giữ nguyên góc nhìn đứng yên
-        localHRP.CFrame = CFrame.new(behindPosition.Position, targetHRP.Position)
+        local behindCFrame = targetTorso.CFrame * CFrame.new(0, 0, 5)
+        localTorso.CFrame = CFrame.new(behindCFrame.Position, targetTorso.Position)
     end
 })
 
