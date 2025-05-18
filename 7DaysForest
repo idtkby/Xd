@@ -361,33 +361,82 @@ MTab:CreateButton({
     end
 })
 
-local TeleportTab = Window:CreateTab("Teleport", "map")
-TeleportTab:CreateSection("Main Location")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
--- Vị trí chính
-local locations = {
-    {Name = "Home", Position = Vector3.new(60.99, 48.58, 417.10)},
-    {Name = "Balcony", Position = Vector3.new(37.34, 52.72, 420.62)},
-    {Name = "River", Position = Vector3.new(-227.99, -0.84, 341.59)},
-    {Name = "Skeleton", Position = Vector3.new(145.43, 12.63, 234.22)},
-    {Name = "Turret1", Position = Vector3.new(-110.91, 37.91, 352.01)},
-    {Name = "Turret2", Position = Vector3.new(-5.95, 26.77, 258.23)},
-    {Name = "Turret3", Position = Vector3.new(117.83, 34.97, 336.75)},
-    {Name = "Turret4", Position = Vector3.new(95.04, 34.41, 491.53)},
-    {Name = "Helicopter", Position = Vector3.new(-318.54, 30.69, -110.7)},
-}
+-- Tạo dropdown chọn player và nút refresh
+local selectedPlayerName = nil
+local playerDropdownItems = {}
 
-for _, loc in ipairs(locations) do
-    TeleportTab:CreateButton({
-        Name = "Go to " .. loc.Name,
-        Callback = function()
-            local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                hrp.CFrame = CFrame.new(loc.Position)
-            end
+local function refreshPlayerList()
+    playerDropdownItems = {}
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            table.insert(playerDropdownItems, plr.Name)
         end
-    })
+    end
+    -- Nếu không có người chơi khác, thêm dòng trống để tránh lỗi dropdown
+    if #playerDropdownItems == 0 then
+        table.insert(playerDropdownItems, "No players")
+    end
+    -- Reset lựa chọn nếu người chơi được chọn không còn trong list
+    if selectedPlayerName and not table.find(playerDropdownItems, selectedPlayerName) then
+        selectedPlayerName = nil
+    end
 end
+
+refreshPlayerList()
+
+TeleportTab:CreateSection("Players Teleport")
+
+-- Dropdown chọn player
+local dropdown = TeleportTab:CreateDropdown({
+    Name = "Select Player",
+    Options = playerDropdownItems,
+    CurrentOption = playerDropdownItems[1],
+    Flag = "SelectedPlayer",
+    Callback = function(option)
+        selectedPlayerName = option
+    end
+})
+
+-- Nút refresh danh sách player
+TeleportTab:CreateButton({
+    Name = "Refresh Players",
+    Callback = function()
+        refreshPlayerList()
+        dropdown:UpdateOptions(playerDropdownItems)
+    end
+})
+
+-- Nút dịch chuyển đến player phía sau lưng cách 5 studs
+TeleportTab:CreateButton({
+    Name = "Teleport Behind Player (5 studs)",
+    Callback = function()
+        if not selectedPlayerName or selectedPlayerName == "No players" then
+            warn("Vui lòng chọn một người chơi hợp lệ")
+            return
+        end
+
+        local targetPlayer = Players:FindFirstChild(selectedPlayerName)
+        if not targetPlayer or not targetPlayer.Character then
+            warn("Người chơi không hợp lệ hoặc không có character")
+            return
+        end
+
+        local targetHRP = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local localHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if not targetHRP or not localHRP then
+            warn("Không tìm thấy HumanoidRootPart")
+            return
+        end
+
+        -- Tính toán vị trí phía sau lưng player cách 5 studs
+        local behindPosition = targetHRP.CFrame * CFrame.new(0, 0, 5) -- 5 studs về phía sau (theo local space)
+        -- CFrame mới cho local player, giữ nguyên góc nhìn đứng yên
+        localHRP.CFrame = CFrame.new(behindPosition.Position, targetHRP.Position)
+    end
+})
 
 local KTab = Window:CreateTab("Misc", "package")
   
