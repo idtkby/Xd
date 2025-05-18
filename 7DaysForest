@@ -478,6 +478,38 @@ TeleportTab:CreateButton({
     end
 })
 
+-- Nút Teleport đến phía sau người chơi đã chọn (50 studs)
+TeleportTab:CreateButton({
+    Name = "Teleport Behind Player (50 studs)",
+    Callback = function()
+        if not selectedPlayerName or selectedPlayerName == "No players" then return end
+
+        local targetPlayer = Players:FindFirstChild(selectedPlayerName)
+        if not targetPlayer then return end
+
+        -- Lấy character của target
+        local ok, character = pcall(function()
+            return targetPlayer.Character or targetPlayer.CharacterAdded:Wait()
+        end)
+        if not ok or not character then return end
+
+        -- Chọn part: ưu tiên HumanoidRootPart rồi fallback Torso
+        local targetPart = character:FindFirstChild("HumanoidRootPart")
+            or character:FindFirstChild("Torso")
+        local myCharacter = LocalPlayer.Character
+        local myPart = myCharacter and (
+            myCharacter:FindFirstChild("HumanoidRootPart")
+            or myCharacter:FindFirstChild("Torso")
+        )
+        if not targetPart or not myPart then return end
+
+        -- Tính CFrame ở phía sau target (–Z là phía sau)
+        local behindCFrame = targetPart.CFrame * CFrame.new(0, 0, 50)
+        -- Đặt myPart sang đó, đồng thời hướng mặt vào target
+        myPart.CFrame = CFrame.new(behindCFrame.Position, targetPart.Position)
+    end
+})
+
 local KTab = Window:CreateTab("Misc", "package")
   
 KTab:CreateButton({
