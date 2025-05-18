@@ -393,28 +393,38 @@ end
 TeleportTab:CreateSection("Players")
 
 local selectedPlayer = nil
-local playersList = {}
-local distanceBehind = 10 -- mặc định 10 studs
+local distanceBehind = 10
+local dropdownRef -- giữ tham chiếu để destroy khi tạo lại
 
--- Dropdown chọn player
-local playerDropdown = TeleportTab:CreateDropdown({
-    Name = "Select Player",
-    Options = {},
-    Callback = function(value)
-        selectedPlayer = value
+-- Hàm tạo dropdown mới
+local function createDropdown()
+    if dropdownRef then
+        dropdownRef:Destroy() -- Xoá dropdown cũ nếu tồn tại
     end
-})
 
--- Cập nhật danh sách người chơi mỗi 30s
+    local playersList = {}
+    for _, plr in ipairs(game.Players:GetPlayers()) do
+        if plr ~= game.Players.LocalPlayer then
+            table.insert(playersList, plr.Name)
+        end
+    end
+
+    dropdownRef = TeleportTab:CreateDropdown({
+        Name = "Select Player",
+        Options = playersList,
+        Callback = function(value)
+            selectedPlayer = value
+        end
+    })
+end
+
+-- Tạo dropdown lần đầu
+createDropdown()
+
+-- Cập nhật lại mỗi 30 giây
 task.spawn(function()
     while true do
-        playersList = {}
-        for _, plr in ipairs(game.Players:GetPlayers()) do
-            if plr ~= game.Players.LocalPlayer then
-                table.insert(playersList, plr.Name)
-            end
-        end
-        playerDropdown:Refresh(playersList, true)
+        createDropdown()
         task.wait(30)
     end
 end)
@@ -440,7 +450,7 @@ TeleportTab:CreateButton({
             local targetHRP = targetPlayer.Character.HumanoidRootPart
             local backVector = -targetHRP.CFrame.LookVector * distanceBehind
             local tpPosition = targetHRP.Position + backVector
-            hrp.CFrame = CFrame.new(tpPosition, targetHRP.Position) -- Nhìn về phía player
+            hrp.CFrame = CFrame.new(tpPosition, targetHRP.Position)
         end
     end
 })
