@@ -389,49 +389,6 @@ for _, loc in ipairs(locations) do
     })
 end
 
--- === Section mới: Player Teleport ===
-TeleportTab:CreateSection("Players")
-
-local selectedPlayer = nil
-local distanceBehind = 10
-local lastPlayersList = {}
-
--- Tạo dropdown ban đầu
-local dropdown = TeleportTab:CreateDropdown({
-    Name = "Select Player",
-    Options = {},
-    Callback = function(value)
-        selectedPlayer = value
-    end
-})
-
--- Hàm cập nhật danh sách người chơi trong dropdown
-local function updateDropdown()
-    local newList = {}
-    for _, plr in ipairs(game.Players:GetPlayers()) do
-        if plr ~= game.Players.LocalPlayer then
-            table.insert(newList, plr.Name)
-        end
-    end
-
-    -- Chỉ cập nhật nếu danh sách thay đổi
-    if table.concat(newList, ",") ~= table.concat(lastPlayersList, ",") then
-        dropdown:SetOptions(newList)
-        lastPlayersList = newList
-    end
-end
-
--- Gọi lần đầu
-updateDropdown()
-
--- Tự động cập nhật mỗi 30 giây
-task.spawn(function()
-    while true do
-        updateDropdown()
-        task.wait(30)
-    end
-end)
-
 local KTab = Window:CreateTab("Misc", "package")
   
 KTab:CreateButton({
