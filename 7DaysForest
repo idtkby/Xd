@@ -361,6 +361,36 @@ MTab:CreateButton({
     end
 })
 
+local TeleportTab = Window:CreateTab("Teleport", "map")
+TeleportTab:CreateSection("Main Location")
+
+-- Vị trí chính
+local locations = {
+    {Name = "Home", Position = Vector3.new(60.99, 48.58, 417.10)},
+    {Name = "Balcony", Position = Vector3.new(37.34, 52.72, 420.62)},
+    {Name = "River", Position = Vector3.new(-227.99, -0.84, 341.59)},
+    {Name = "Skeleton", Position = Vector3.new(145.43, 12.63, 234.22)},
+    {Name = "Turret1", Position = Vector3.new(-110.91, 37.91, 352.01)},
+    {Name = "Turret2", Position = Vector3.new(-5.95, 26.77, 258.23)},
+    {Name = "Turret3", Position = Vector3.new(117.83, 34.97, 336.75)},
+    {Name = "Turret4", Position = Vector3.new(95.04, 34.41, 491.53)},
+    {Name = "Helicopter", Position = Vector3.new(-318.54, 30.69, -110.7)},
+}
+
+for _, loc in ipairs(locations) do
+    TeleportTab:CreateButton({
+        Name = "Go to " .. loc.Name,
+        Callback = function()
+            local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = CFrame.new(loc.Position)
+            end
+        end
+    })
+end
+
+TeleportTab:CreateSection("Players Teleport")
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
@@ -386,8 +416,6 @@ local function refreshPlayerList()
 end
 
 refreshPlayerList()
-
-TeleportTab:CreateSection("Players Teleport")
 
 -- Dropdown chọn player
 local dropdown = TeleportTab:CreateDropdown({
