@@ -1,0 +1,69 @@
+task.spawn(function()
+-- Khai báo các dịch vụ cần thiết
+local player = game.Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local camera = workspace.CurrentCamera
+
+-- Tải và khởi tạo thư viện GUI Rayfield
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Tạo cửa sổ giao diện chính
+local Window = Rayfield:CreateWindow({
+    Name = "Khang Hub",
+    LoadingTitle = "Loading Hub...",
+    LoadingSubtitle = "Please wait",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "MyHubFolder",
+        FileName = "MyHubConfig"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "",
+        RememberJoins = false
+    },
+    KeySystem = false,
+})
+
+-- Thông báo đã tải
+Rayfield:Notify({
+    Title = "Welcome!",
+    Content = "Script Loaded",
+    Duration = 2
+})
+
+-- Tạo Tab Teleport
+local SpTab = Window:CreateTab("Support Game", "users")
+
+SpTab:CreateSection("Dead Rails (Game)")
+SpTab:CreateSection("Eyes The Horror Game")
+    SpTab:CreateSection("7 Days To Live (Forest Only)")
+
+local HbTab = Window:CreateTab("Script", "Search")
+
+HbTab:CreateSection("Dead Rails (Game)")
+HbTab:CreateButton({
+    Name = "Dead Rails (Game)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Dead%20rails%20hub"))()
+    end,
+})
+
+HbTab:CreateSection("Villa & Hospital")
+HbTab:CreateButton({
+    Name = "Eyes The Horror Game",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Eyes%20hub"))()
+    end,
+})
+
+HbTab:CreateSection("The Forest")
+HbTab:CreateButton({
+    Name = "7 Days To Live",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/7DaysForest"))()
+    end,
+})
+
+end)
