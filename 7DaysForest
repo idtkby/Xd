@@ -364,12 +364,7 @@ MTab:CreateButton({
 local TeleportTab = Window:CreateTab("Teleport", "map")
 TeleportTab:CreateSection("Main Location")
 
-local players = game:GetService("Players")
-local lplr = players.LocalPlayer
-local selectedPlayer = nil
-local offsetDistance = 10
-
--- Danh sách vị trí chính
+-- Vị trí chính
 local locations = {
     {Name = "Home", Position = Vector3.new(60.99, 48.58, 417.10)},
     {Name = "Balcony", Position = Vector3.new(37.34, 52.72, 420.62)},
@@ -379,14 +374,14 @@ local locations = {
     {Name = "Turret2", Position = Vector3.new(-5.95, 26.77, 258.23)},
     {Name = "Turret3", Position = Vector3.new(117.83, 34.97, 336.75)},
     {Name = "Turret4", Position = Vector3.new(95.04, 34.41, 491.53)},
-    {Name = "Helicopter", Position = Vector3.new(-318.54, 30.69, 110.7)},
+    {Name = "Helicopter", Position = Vector3.new(-318.54, 30.69, -110.7)},
 }
 
 for _, loc in ipairs(locations) do
     TeleportTab:CreateButton({
         Name = "Go to " .. loc.Name,
         Callback = function()
-            local hrp = lplr.Character and lplr.Character:FindFirstChild("HumanoidRootPart")
+            local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
             if hrp then
                 hrp.CFrame = CFrame.new(loc.Position)
             end
@@ -394,11 +389,15 @@ for _, loc in ipairs(locations) do
     })
 end
 
--- Section mới: Players
+-- === Section mới: Player Teleport ===
 TeleportTab:CreateSection("Players")
 
--- Dropdown chọn người chơi
-TeleportTab:CreateDropdown({
+local selectedPlayer = nil
+local playersList = {}
+local distanceBehind = 10 -- mặc định 10 studs
+
+-- Dropdown chọn player
+local playerDropdown = TeleportTab:CreateDropdown({
     Name = "Select Player",
     Options = {},
     Callback = function(value)
@@ -406,41 +405,42 @@ TeleportTab:CreateDropdown({
     end
 })
 
--- Cập nhật danh sách người chơi động
+-- Cập nhật danh sách người chơi mỗi 30s
 task.spawn(function()
     while true do
-        local names = {}
-        for _, plr in ipairs(players:GetPlayers()) do
-            if plr ~= lplr then
-                table.insert(names, plr.Name)
+        playersList = {}
+        for _, plr in ipairs(game.Players:GetPlayers()) do
+            if plr ~= game.Players.LocalPlayer then
+                table.insert(playersList, plr.Name)
             end
         end
-        TeleportTab:UpdateDropdown("Select Player", names)
-        task.wait(3)
+        playerDropdown:Refresh(playersList, true)
+        task.wait(30)
     end
 end)
 
--- Thanh kéo chỉnh khoảng cách
+-- Slider chỉnh khoảng cách
 TeleportTab:CreateSlider({
-    Name = "Distance Behind (studs)",
-    Min = 0,
-    Max = 100,
+    Name = "Teleport Distance Behind",
+    Range = {0, 100},
+    Increment = 1,
     Default = 10,
     Callback = function(value)
-        offsetDistance = value
+        distanceBehind = value
     end
 })
 
--- Nút Go to Player
+-- Nút TP sau lưng player
 TeleportTab:CreateButton({
     Name = "Go to Player",
     Callback = function()
-        local targetPlayer = players:FindFirstChild(selectedPlayer)
-        local hrp = lplr.Character and lplr.Character:FindFirstChild("HumanoidRootPart")
-        if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") and hrp then
+        local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local targetPlayer = game.Players:FindFirstChild(selectedPlayer)
+        if hrp and targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
             local targetHRP = targetPlayer.Character.HumanoidRootPart
-            local back = -targetHRP.CFrame.LookVector * offsetDistance
-            hrp.CFrame = CFrame.new(targetHRP.Position + back)
+            local backVector = -targetHRP.CFrame.LookVector * distanceBehind
+            local tpPosition = targetHRP.Position + backVector
+            hrp.CFrame = CFrame.new(tpPosition, targetHRP.Position) -- Nhìn về phía player
         end
     end
 })
