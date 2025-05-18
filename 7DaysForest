@@ -374,6 +374,7 @@ local locations = {
     {Name = "Turret2", Position = Vector3.new(-5.95, 26.77, 258.23)},
     {Name = "Turret3", Position = Vector3.new(117.83, 34.97, 336.75)},
     {Name = "Turret4", Position = Vector3.new(95.04, 34.41, 491.53)},
+    {Name = "Helicopter", Position = Vector3.new(-318.54, 30.69, 110.7)},
 }
 
 for _, loc in ipairs(locations) do
