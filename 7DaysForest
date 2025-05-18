@@ -444,23 +444,20 @@ TeleportTab:CreateButton({
 TeleportTab:CreateButton({
     Name = "Teleport Behind Player (5 studs)",
     Callback = function()
-        if not selectedPlayerName or selectedPlayerName == "No players" then
-            warn("Vui lòng chọn một người chơi hợp lệ")
-            return
-        end
+        if not selectedPlayerName or selectedPlayerName == "No players" then return end
 
         local targetPlayer = Players:FindFirstChild(selectedPlayerName)
-        if not targetPlayer or not targetPlayer.Character then
-            warn("Người chơi không hợp lệ hoặc chưa spawn")
-            return
-        end
+        if not targetPlayer then return end
 
-        local targetTorso = targetPlayer.Character:FindFirstChild("Torso")
+        local success, character = pcall(function()
+            return targetPlayer.Character or targetPlayer.CharacterAdded:Wait()
+        end)
+
+        if not success or not character then return end
+
+        local targetTorso = character:FindFirstChild("Torso")
         local localTorso = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Torso")
-        if not targetTorso or not localTorso then
-            warn("Không tìm thấy Torso (R6)")
-            return
-        end
+        if not targetTorso or not localTorso then return end
 
         local behindCFrame = targetTorso.CFrame * CFrame.new(0, 0, 5)
         localTorso.CFrame = CFrame.new(behindCFrame.Position, targetTorso.Position)
