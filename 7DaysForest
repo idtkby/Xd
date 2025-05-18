@@ -361,10 +361,15 @@ MTab:CreateButton({
     end
 })
 
-
 local TeleportTab = Window:CreateTab("Teleport", "map")
 TeleportTab:CreateSection("Main Location")
 
+local players = game:GetService("Players")
+local lplr = players.LocalPlayer
+local selectedPlayer = nil
+local offsetDistance = 10
+
+-- Danh sách vị trí chính
 local locations = {
     {Name = "Home", Position = Vector3.new(60.99, 48.58, 417.10)},
     {Name = "Balcony", Position = Vector3.new(37.34, 52.72, 420.62)},
@@ -381,13 +386,64 @@ for _, loc in ipairs(locations) do
     TeleportTab:CreateButton({
         Name = "Go to " .. loc.Name,
         Callback = function()
-            local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            local hrp = lplr.Character and lplr.Character:FindFirstChild("HumanoidRootPart")
             if hrp then
                 hrp.CFrame = CFrame.new(loc.Position)
             end
         end
     })
 end
+
+-- Section mới: Players
+TeleportTab:CreateSection("Players")
+
+-- Dropdown chọn người chơi
+TeleportTab:CreateDropdown({
+    Name = "Select Player",
+    Options = {},
+    Callback = function(value)
+        selectedPlayer = value
+    end
+})
+
+-- Cập nhật danh sách người chơi động
+task.spawn(function()
+    while true do
+        local names = {}
+        for _, plr in ipairs(players:GetPlayers()) do
+            if plr ~= lplr then
+                table.insert(names, plr.Name)
+            end
+        end
+        TeleportTab:UpdateDropdown("Select Player", names)
+        task.wait(3)
+    end
+end)
+
+-- Thanh kéo chỉnh khoảng cách
+TeleportTab:CreateSlider({
+    Name = "Distance Behind (studs)",
+    Min = 0,
+    Max = 100,
+    Default = 10,
+    Callback = function(value)
+        offsetDistance = value
+    end
+})
+
+-- Nút Go to Player
+TeleportTab:CreateButton({
+    Name = "Go to Player",
+    Callback = function()
+        local targetPlayer = players:FindFirstChild(selectedPlayer)
+        local hrp = lplr.Character and lplr.Character:FindFirstChild("HumanoidRootPart")
+        if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") and hrp then
+            local targetHRP = targetPlayer.Character.HumanoidRootPart
+            local back = -targetHRP.CFrame.LookVector * offsetDistance
+            hrp.CFrame = CFrame.new(targetHRP.Position + back)
+        end
+    end
+})
 
 local KTab = Window:CreateTab("Misc", "package")
   
