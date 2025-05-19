@@ -53,7 +53,7 @@ local MTab = Window:CreateTab("Main", "home")
 MTab:CreateSection("Main")
 
 MTab:CreateButton({
-    Name = "Esp Npc&Eyes&MoneyBags",
+    Name = "Esp",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/EyesTHGScRiPT/refs/heads/main/EspAll"))()
     end,
