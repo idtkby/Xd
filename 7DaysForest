@@ -318,7 +318,7 @@ MTab:CreateButton({
     end,
 })
 
-MTab:CreateSection("Esp")
+MTab:CreateSection("Visual")
 -- Esp home button (Rayfield GUI - MTab)
 MTab:CreateButton({
     Name = "Esp home",
@@ -354,7 +354,7 @@ MTab:CreateButton({
         label.Text = "Home"
         label.TextColor3 = Color3.fromRGB(255, 255, 255)
         label.TextStrokeTransparency = 0
-        label.Font = Enum.Font.SourceSansBold
+        label.Font = Enum.Font.Fantasy
         label.TextScaled = true
         label.TextSize = 15 -- Giới hạn kích thước chữ
         label.Parent = billboard
