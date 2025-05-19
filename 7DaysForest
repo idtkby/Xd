@@ -304,6 +304,35 @@ MTab:CreateToggle({
 	end
 })
 
+local autoHeal = false
+
+MTab:CreateToggle({
+    Name = "Auto Heal Players",
+    CurrentValue = false,
+    Flag = "AutoHealPlayers",
+    Callback = function(Value)
+        autoHeal = Value
+        if autoHeal then
+            task.spawn(function()
+                while autoHeal do
+                    for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+                        local char = player.Character
+                        if char and char:FindFirstChild("Humanoid") and char:FindFirstChild("HumanoidRootPart") then
+                            local hp = char.Humanoid.Health
+                            local maxHp = char.Humanoid.MaxHealth
+                            if hp < maxHp then
+                                local args = { char }
+                                game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("heal"):FireServer(unpack(args))
+                            end
+                        end
+                    end
+                    task.wait(0.5)
+                end
+            end)
+        end
+    end,
+})
+
 MTab:CreateButton({
     Name = "Eat Berry Button (Full Hungry)",
     Callback = function()
