@@ -452,7 +452,7 @@ OtherTab:CreateButton({
 OtherTab:CreateButton({
     Name = "AirWeld",
     Callback = function()
-        loadstring(game:HttpGet('https://raw.githubusercontent.com/HeadHarse/Dusty/refs/heads/main/AIR%20WELD.txt'))()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/HeadHarse/Dusty/5e6423efaed5840de2018337c4a5c144405ff4c4/NewAirWeld'))()
     end,
 })
 
