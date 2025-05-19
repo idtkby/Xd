@@ -87,13 +87,6 @@ TeleportTab:CreateButton({
     end,
 })
 
-TeleportTab:CreateButton({
-    Name = "Pacfisct Quest (no jump)",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/newpacifisct/refs/heads/main/newpacifisct.lua"))()
-    end,
-})
-
 TeleportTab:CreateSection("Train Tp")
 
 TeleportTab:CreateButton({
@@ -288,9 +281,9 @@ CharacterTab:CreateButton({
     end,
 })
 
-local ESPTab = Window:CreateTab("ESP", "Eye") -- ID này là hình con mắt (icon thường dùng cho ESP)
+local ESPTab = Window:CreateTab("Visual", "Eye") -- ID này là hình con mắt (icon thường dùng cho ESP)
 
-ESPTab:CreateSection("ESP Functions")
+ESPTab:CreateSection("Visual Functions")
 
 ESPTab:CreateButton({
     Name = "Player",
@@ -405,7 +398,7 @@ OtherTab:CreateButton({
     end,
 })
 
-OtherTab:CreateSection("Idk")
+OtherTab:CreateSection("Misc")
 
 OtherTab:CreateButton({
     Name = "Null Fire",
