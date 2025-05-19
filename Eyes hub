@@ -12,13 +12,6 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
 
 task.wait(3) -- Đợi 3s trước khi thực thi 
 
--- Thông báo khi Loaded
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "📃 Script",
-    Text = "Script has been loaded.",
-    Duration = 5
-})
-
 task.spawn(function()
 -- Khai báo các dịch vụ cần thiết
 local player = game.Players.LocalPlayer
