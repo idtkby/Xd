@@ -340,9 +340,19 @@ MTab:CreateButton({
     end,
 })
 
-MTab:CreateSection("Visual")
+-- Tạo Tab Main
+local VTab = Window:CreateTab("Visual", "eye")
+VTab:CreateSection("Main Visual")
+
+VTab:CreateButton({
+    Name = "Players ESP",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/PlayerEsp"))()
+    end,
+})
+
 -- Esp home button (Rayfield GUI - MTab)
-MTab:CreateButton({
+VTab:CreateButton({
     Name = "Home",
     Callback = function()
         -- Xóa part cũ nếu đã tồn tại
@@ -383,13 +393,12 @@ MTab:CreateButton({
     end
 })
 
-MTab:CreateButton({
-    Name = "Npc",
+VTab:CreateButton({
+    Name = "Animal and Monster",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Esp%20Npc"))()
     end,
 })
-
 
 local TeleportTab = Window:CreateTab("Teleport", "map")
 TeleportTab:CreateSection("Main Location")
@@ -455,13 +464,6 @@ else
     warn("Executor not supported setclipboard")
 end
 end)
-    end,
-})
-
-KTab:CreateButton({
-    Name = "Players ESP",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/PlayerEsp"))()
     end,
 })
 
