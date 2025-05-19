@@ -44,7 +44,7 @@ local HbTab = Window:CreateTab("Script", "Search")
 
 HbTab:CreateSection("Dead Rails (Game)")
 HbTab:CreateButton({
-    Name = "Dead Rails (Game)",
+    Name = "Dead Rails (Game) [Script]",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Dead%20rails%20hub"))()
     end,
@@ -59,7 +59,7 @@ HbTab:CreateButton({
 
 HbTab:CreateSection("Mansion & Hospital")
 HbTab:CreateButton({
-    Name = "Eyes The Horror Game",
+    Name = "Eyes The Horror Game [Script]",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Eyes%20hub"))()
     end,
@@ -67,21 +67,21 @@ HbTab:CreateButton({
 HbTab:CreateButton({
    Name = "Teleport to Mansion",
    Callback = function()
-      local gameId = 182272776
+      local gameId = 1985320156
       game:GetService("TeleportService"):Teleport(gameId)
    end
 })
 HbTab:CreateButton({
    Name = "Teleport to Hospital",
    Callback = function()
-      local gameId = 123456789
+      local gameId = 115345163333015
       game:GetService("TeleportService"):Teleport(gameId)
    end
 })
 
 HbTab:CreateSection("The Forest")
 HbTab:CreateButton({
-    Name = "7 Days To Live",
+    Name = "7 Days To Live [Script]",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/7DaysForest"))()
     end,
