@@ -10,7 +10,7 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
     Duration = 5
 })
 
-task.wait(3) -- Đợi 3s trước khi thực thi 
+task.wait(1) -- Đợi 1s trước khi thực thi 
 
 task.spawn(function()
 -- Khai báo các dịch vụ cần thiết
