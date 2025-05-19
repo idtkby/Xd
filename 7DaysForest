@@ -368,7 +368,8 @@ TeleportTab:CreateSection("Main Location")
 -- Vị trí chính
 local locations = {
     {Name = "Home", Position = Vector3.new(60.99, 48.58, 417.10)},
-    {Name = "Balcony", Position = Vector3.new(37.34, 52.72, 420.62)},
+    {Name = "Home balcony", Position = Vector3.new(37.34, 52.72, 420.62)},
+    {Name = "Home roof", Position = Vector3.new(57.73, 68.46, 417.58)},
     {Name = "River", Position = Vector3.new(-227.99, -0.84, 341.59)},
     {Name = "Skeleton", Position = Vector3.new(145.43, 12.63, 234.22)},
     {Name = "Turret1", Position = Vector3.new(-110.91, 37.91, 352.01)},
