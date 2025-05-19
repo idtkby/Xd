@@ -415,6 +415,21 @@ KTab:CreateButton({
 })
 
 KTab:CreateButton({
+    Name = "Xomar Hub",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/omaromar242/7-days-Op-omarXwiet-Works/refs/heads/main/.gitignore"))()
+task.spawn(function()
+if setclipboard then
+    setclipboard("wietXomar_Hub") -- thay bằng nội dung cần copy
+    print("Copied Key: wietXomar_Hub!")
+else
+    warn("Executor not supported setclipboard")
+end
+end)
+    end,
+})
+
+KTab:CreateButton({
     Name = "Players ESP",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/PlayerEsp"))()
