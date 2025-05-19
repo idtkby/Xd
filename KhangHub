@@ -49,7 +49,7 @@ HbTab:CreateButton({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Dead%20rails%20hub"))()
     end,
 })
-MainTab:CreateButton({
+HbTab:CreateButton({
    Name = "Teleport to game",
    Callback = function()
       local gameId = 116495829188952
@@ -64,17 +64,17 @@ HbTab:CreateButton({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Eyes%20hub"))()
     end,
 })
-MainTab:CreateButton({
+HbTab:CreateButton({
    Name = "Teleport to Mansion",
    Callback = function()
       local gameId = 182272776
       game:GetService("TeleportService"):Teleport(gameId)
    end
 })
-MainTab:CreateButton({
+HbTab:CreateButton({
    Name = "Teleport to Hospital",
    Callback = function()
-      local gameId = 
+      local gameId = 123456789
       game:GetService("TeleportService"):Teleport(gameId)
    end
 })
@@ -86,8 +86,8 @@ HbTab:CreateButton({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/7DaysForest"))()
     end,
 })
-MainTab:CreateButton({
-   Name = "Teleport to HbTab",
+HbTab:CreateButton({
+   Name = "Teleport to game",
    Callback = function()
       local gameId = 17474746614
       game:GetService("TeleportService"):Teleport(gameId)
