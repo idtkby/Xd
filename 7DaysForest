@@ -233,7 +233,7 @@ MTab:CreateToggle({
 
 					if part then
 						foundScrap = true
-						char:PivotTo(part.CFrame + Vector3.new(0, 2, 0))
+						char:PivotTo(part.CFrame + Vector3.new(0, 7, 0))
 						task.wait(0.2)
 
 						if not prompt then
@@ -276,7 +276,7 @@ MTab:CreateToggle({
 							end
 						end)
 
-						task.wait(0.1)
+						task.wait(0.05)
 					end
 				end
 			end
