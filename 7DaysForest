@@ -50,13 +50,6 @@ Rayfield:Notify({
 -- Tạo Tab Main
 local MTab = Window:CreateTab("Main", "home")
 MTab:CreateSection("Main")
-
-MTab:CreateButton({
-    Name = "Esp Npc",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Esp%20Npc"))()
-    end,
-})
   
   MTab:CreateButton({
     Name = "Aimbot (Some npc may not work)",
@@ -321,7 +314,7 @@ MTab:CreateButton({
 MTab:CreateSection("Visual")
 -- Esp home button (Rayfield GUI - MTab)
 MTab:CreateButton({
-    Name = "Esp home",
+    Name = "Home",
     Callback = function()
         -- Xóa part cũ nếu đã tồn tại
         if workspace:FindFirstChild("HomeESPPart") then
@@ -360,6 +353,14 @@ MTab:CreateButton({
         label.Parent = billboard
     end
 })
+
+MTab:CreateButton({
+    Name = "Npc",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Esp%20Npc"))()
+    end,
+})
+
 
 local TeleportTab = Window:CreateTab("Teleport", "map")
 TeleportTab:CreateSection("Main Location")
