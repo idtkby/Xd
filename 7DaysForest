@@ -225,9 +225,10 @@ MTab:CreateToggle({
 					if part and prompt then
 						foundAny = true
 						alreadyVisited[obj] = true
-						char:PivotTo(part.CFrame + Vector3.new(0, 7, 0))
+						char:PivotTo(part.CFrame + Vector3.new(0, 6, 0))
 						task.wait(0.2)
 
+						local success = false
 						pcall(function()
 							if prompt:IsA("ProximityPrompt") then
 								fireproximityprompt(prompt)
@@ -240,7 +241,16 @@ MTab:CreateToggle({
 							end
 						end)
 
-						break
+						-- Đợi để xác nhận prompt không còn nữa (đã kích hoạt thành công)
+						for i = 1, 10 do
+							task.wait(0.1)
+							if not obj:IsDescendantOf(workspace) or not prompt:IsDescendantOf(obj) then
+								success = true
+								break
+							end
+						end
+
+						break -- Chờ xử lý xong mới tới scrap tiếp theo
 					end
 				end
 			end
