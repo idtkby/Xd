@@ -153,31 +153,21 @@ MTab:CreateToggle({
 })
 
 local autoScrapRunning = false
-local autoScrapConnection
 local savedCFrame = nil
-local alreadyVisited = {}
 
 MTab:CreateToggle({
 	Name = "Auto Scrap",
 	CurrentValue = false,
 	Flag = "AutoScrapToggle",
 	Callback = function(state)
-		local lp = game:GetService("Players").LocalPlayer
+		local Players = game:GetService("Players")
 		local RunService = game:GetService("RunService")
+		local lp = Players.LocalPlayer
+
+		autoScrapRunning = state
 
 		if not state then
-			autoScrapRunning = false
-			if autoScrapConnection then
-				autoScrapConnection:Disconnect()
-				autoScrapConnection = nil
-			end
-			alreadyVisited = {}
-
-			Rayfield:Notify({
-				Title = "Auto Scrap",
-				Content = "Auto Scrap disabled",
-				Duration = 3
-			})
+			Rayfield:Notify({Title = "Auto Scrap", Content = "Auto Scrap disabled", Duration = 2})
 
 			task.delay(1, function()
 				local char = lp.Character or lp.CharacterAdded:Wait()
@@ -191,120 +181,68 @@ MTab:CreateToggle({
 					})
 				end
 			end)
+
 			return
 		end
 
-		autoScrapRunning = true
-		local char = lp.Character or lp.CharacterAdded:Wait()
-		local hrp = char:WaitForChild("HumanoidRootPart")
-		savedCFrame = hrp and hrp.CFrame or nil
-
-		Rayfield:Notify({
-			Title = "Auto Scrap",
-			Content = "Scanning for scrap...",
-			Duration = 3
-		})
-
-		autoScrapConnection = RunService.Heartbeat:Connect(function()
-			if not autoScrapRunning then return end
-
-			local char = lp.Character or lp.CharacterAdded:Wait()
-			local hrp = char and char:FindFirstChild("HumanoidRootPart")
-			if not hrp then return end
-
-			local foundAny = false
-
+		local function findNextScrap()
 			for _, obj in ipairs(workspace:GetDescendants()) do
-				if not autoScrapRunning then break end
-				if obj:IsA("Model") and obj.Name:lower() == "scrap" and not alreadyVisited[obj] then
+				if obj:IsA("Model") and obj.Name:lower() == "scrap" then
 					local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
 					local prompt = obj:FindFirstChildWhichIsA("ProximityPrompt", true)
 						or obj:FindFirstChildWhichIsA("ClickDetector", true)
 						or obj:FindFirstChild("TouchInterest", true)
 
 					if part and prompt then
-						foundAny = true
-						alreadyVisited[obj] = true
-						char:PivotTo(part.CFrame + Vector3.new(0, 6, 0))
-						task.wait(0.2)
-
-						local success = false
-						pcall(function()
-							if prompt:IsA("ProximityPrompt") then
-								fireproximityprompt(prompt)
-							elseif prompt:IsA("ClickDetector") then
-								fireclickdetector(prompt)
-							elseif prompt.Name == "TouchInterest" then
-								firetouchinterest(hrp, part, 0)
-								task.wait()
-								firetouchinterest(hrp, part, 1)
-							end
-						end)
-
-						-- Đợi để xác nhận prompt không còn nữa (đã kích hoạt thành công)
-						for i = 1, 10 do
-							task.wait(0.1)
-							if not obj:IsDescendantOf(workspace) or not prompt:IsDescendantOf(obj) then
-								success = true
-								break
-							end
-						end
-
-						break -- Chờ xử lý xong mới tới scrap tiếp theo
+						return part, prompt
 					end
 				end
 			end
+			return nil
+		end
 
-			-- Dọn scrap không còn tồn tại
-			for scrap in pairs(alreadyVisited) do
-				if not scrap:IsDescendantOf(workspace) then
-					alreadyVisited[scrap] = nil
-				end
+		local function collectNext()
+			if not autoScrapRunning then return end
+
+			local char = lp.Character or lp.CharacterAdded:Wait()
+			local hrp = char:WaitForChild("HumanoidRootPart")
+			if not savedCFrame then savedCFrame = hrp.CFrame end
+
+			local part, prompt = findNextScrap()
+
+			if not part then
+				Rayfield:Notify({Title = "Auto Scrap", Content = "No Scrap found", Duration = 2})
+				task.delay(1, collectNext)
+				return
 			end
 
-			-- Nếu không còn scrap có prompt, về lại vị trí gốc
-			if not foundAny then
-				local hasPrompt = false
-				for _, obj in ipairs(workspace:GetDescendants()) do
-					if obj:IsA("Model") and obj.Name:lower() == "scrap" then
-						local prompt = obj:FindFirstChildWhichIsA("ProximityPrompt", true)
-							or obj:FindFirstChildWhichIsA("ClickDetector", true)
-							or obj:FindFirstChild("TouchInterest", true)
-						if prompt then
-							hasPrompt = true
-							break
-						end
-					end
+			-- Teleport cao hơn để không bị kẹt + chống té
+hrp.CFrame = CFrame.new(part.Position + Vector3.new(0, 6.3, 0))
+task.wait(0.2)
+local humanoid = lp.Character:FindFirstChildOfClass("Humanoid")
+if humanoid then
+	humanoid.PlatformStand = false
+	humanoid.Sit = false
+end
+			task.wait(0.25)
+
+			pcall(function()
+				if prompt:IsA("ProximityPrompt") then
+					fireproximityprompt(prompt)
+				elseif prompt:IsA("ClickDetector") then
+					fireclickdetector(prompt)
+				elseif prompt.Name == "TouchInterest" then
+					firetouchinterest(hrp, part, 0)
+					task.wait()
+					firetouchinterest(hrp, part, 1)
 				end
+			end)
 
-				if not hasPrompt then
-					autoScrapRunning = false
-					if autoScrapConnection then
-						autoScrapConnection:Disconnect()
-						autoScrapConnection = nil
-					end
+			task.delay(0.5, collectNext)
+		end
 
-					Rayfield:Notify({
-						Title = "Auto Scrap",
-						Content = "All scrap collected. Returning...",
-						Duration = 3
-					})
-
-					task.delay(1, function()
-						local char = lp.Character or lp.CharacterAdded:Wait()
-						local hrp = char:FindFirstChild("HumanoidRootPart")
-						if hrp and savedCFrame then
-							char:PivotTo(savedCFrame)
-							Rayfield:Notify({
-								Title = "Auto Scrap",
-								Content = "Returned successfully",
-								Duration = 2
-							})
-						end
-					end)
-				end
-			end
-		end)
+		Rayfield:Notify({Title = "Auto Scrap", Content = "Collecting started...", Duration = 2})
+		collectNext()
 	end
 })
 
