@@ -224,7 +224,6 @@ if humanoid then
 	humanoid.PlatformStand = false
 	humanoid.Sit = false
 end
-			task.wait(0.25)
 
 			pcall(function()
 				if prompt:IsA("ProximityPrompt") then
