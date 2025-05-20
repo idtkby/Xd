@@ -156,7 +156,7 @@ local autoScrapRunning = false
 local savedCFrame = nil
 
 MTab:CreateToggle({
-	Name = "Auto Scrap (Fast)",
+	Name = "Auto Scrap",
 	CurrentValue = false,
 	Flag = "AutoScrapToggle",
 	Callback = function(state)
@@ -249,7 +249,7 @@ local autoScrapRunning = false
 local savedCFrame = nil
 
 MTab:CreateToggle({
-	Name = "Auto Scrap",
+	Name = "Auto Scrap (Fast)",
 	CurrentValue = false,
 	Flag = "AutoScrapToggle",
 	Callback = function(state)
