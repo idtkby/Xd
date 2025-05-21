@@ -50,6 +50,20 @@ Rayfield:Notify({
 -- Tạo Tab Main
 local MTab = Window:CreateTab("Main", "home")
 MTab:CreateSection("Main")
+
+-- Áp dụng font SourceSansItalic
+task.delay(1, function() -- delay để đảm bảo GUI đã load
+	local gui = game:GetService("CoreGui"):FindFirstChild("Rayfield")
+	if gui then
+		for _, v in ipairs(gui:GetDescendants()) do
+			if v:IsA("TextLabel") or v:IsA("TextButton") or v:IsA("TextBox") then
+				pcall(function()
+					v.Font = Enum.Font.Bodoni
+				end)
+			end
+		end
+	end
+end)
   
   MTab:CreateButton({
     Name = "Aimbot (Some npc may not work)",
