@@ -58,100 +58,6 @@ MTab:CreateSection("Main")
     end,
   })
 
-local toggleRunning = false
-local connection
-
-MTab:CreateToggle({
-	Name = "GetBerry [INF]",
-	CurrentValue = false,
-	Flag = "GetBerryINF",
-	Callback = function(state)
-		toggleRunning = state
-
-		local lp = game:GetService("Players").LocalPlayer
-		local RunService = game:GetService("RunService")
-
-		if connection then
-			connection:Disconnect()
-			connection = nil
-		end
-
-		local char = lp.Character or lp.CharacterAdded:Wait()
-		local hrp = char:WaitForChild("HumanoidRootPart")
-		local hum = char:FindFirstChildOfClass("Humanoid")
-		if not (hrp and hum) then return end
-
-		local originalCFrame = hrp.CFrame
-
-		if not state then
-			char:PivotTo(originalCFrame)
-			return
-		end
-
-		connection = RunService.Heartbeat:Connect(function()
-			if not toggleRunning then return end
-
-			char = lp.Character or lp.CharacterAdded:Wait()
-			hrp = char:FindFirstChild("HumanoidRootPart")
-			hum = char:FindFirstChildOfClass("Humanoid")
-			if not (hrp and hum) then return end
-
-			local nearestBerry, shortestDist = nil, math.huge
-			for _, obj in ipairs(workspace:GetDescendants()) do
-				if obj:IsA("Model") and obj.Name:lower() == "berry" then
-					local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-					if part then
-						local dist = (hrp.Position - part.Position).Magnitude
-						if dist < shortestDist then
-							nearestBerry = obj
-							shortestDist = dist
-						end
-					end
-				end
-			end
-
-			if nearestBerry then
-				local part = nearestBerry.PrimaryPart or nearestBerry:FindFirstChildWhichIsA("BasePart")
-				if not nearestBerry.PrimaryPart and part then
-					pcall(function()
-						nearestBerry.PrimaryPart = part
-					end)
-				end
-
-				local prompt = nearestBerry:FindFirstChildWhichIsA("ProximityPrompt", true)
-					or nearestBerry:FindFirstChildWhichIsA("ClickDetector", true)
-					or nearestBerry:FindFirstChild("TouchInterest", true)
-
-				if prompt and part then
-					char:PivotTo(part.CFrame + Vector3.new(0, 7, 0))
-					task.wait(0.25)
-
-					for i = 1, 50 do
-						pcall(function()
-							if prompt:IsA("ProximityPrompt") then
-								fireproximityprompt(prompt)
-							elseif prompt:IsA("ClickDetector") then
-								fireclickdetector(prompt)
-							elseif prompt.Name == "TouchInterest" then
-								firetouchinterest(hrp, part, 0)
-								task.wait()
-								firetouchinterest(hrp, part, 1)
-							end
-						end)
-						task.wait(0.05)
-					end
-
-					task.wait(0.2)
-					char:PivotTo(originalCFrame)
-					task.wait(1) -- Chờ 1 giây trước lần lặp kế tiếp
-				end
-			else
-				task.wait(1)
-			end
-		end)
-	end
-})
-
 local autoScrapRunning = false
 local savedCFrame = nil
 
@@ -374,7 +280,182 @@ MTab:CreateButton({
     end,
 })
 
--- Tạo Tab Main
+MTab:CreateSection("Get Berry")
+
+local toggleRunning = false
+local connection
+
+MTab:CreateToggle({
+	Name = "GetBerry [INF]",
+	CurrentValue = false,
+	Flag = "GetBerryINF",
+	Callback = function(state)
+		toggleRunning = state
+
+		local lp = game:GetService("Players").LocalPlayer
+		local RunService = game:GetService("RunService")
+
+		if connection then
+			connection:Disconnect()
+			connection = nil
+		end
+
+		local char = lp.Character or lp.CharacterAdded:Wait()
+		local hrp = char:WaitForChild("HumanoidRootPart")
+		local hum = char:FindFirstChildOfClass("Humanoid")
+		if not (hrp and hum) then return end
+
+		local originalCFrame = hrp.CFrame
+
+		if not state then
+			char:PivotTo(originalCFrame)
+			return
+		end
+
+		connection = RunService.Heartbeat:Connect(function()
+			if not toggleRunning then return end
+
+			char = lp.Character or lp.CharacterAdded:Wait()
+			hrp = char:FindFirstChild("HumanoidRootPart")
+			hum = char:FindFirstChildOfClass("Humanoid")
+			if not (hrp and hum) then return end
+
+			local nearestBerry, shortestDist = nil, math.huge
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if obj:IsA("Model") and obj.Name:lower() == "berry" then
+					local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+					if part then
+						local dist = (hrp.Position - part.Position).Magnitude
+						if dist < shortestDist then
+							nearestBerry = obj
+							shortestDist = dist
+						end
+					end
+				end
+			end
+
+			if nearestBerry then
+				local part = nearestBerry.PrimaryPart or nearestBerry:FindFirstChildWhichIsA("BasePart")
+				if not nearestBerry.PrimaryPart and part then
+					pcall(function()
+						nearestBerry.PrimaryPart = part
+					end)
+				end
+
+				local prompt = nearestBerry:FindFirstChildWhichIsA("ProximityPrompt", true)
+					or nearestBerry:FindFirstChildWhichIsA("ClickDetector", true)
+					or nearestBerry:FindFirstChild("TouchInterest", true)
+
+				if prompt and part then
+					char:PivotTo(part.CFrame + Vector3.new(0, 7, 0))
+					task.wait(0.25)
+
+					for i = 1, 50 do
+						pcall(function()
+							if prompt:IsA("ProximityPrompt") then
+								fireproximityprompt(prompt)
+							elseif prompt:IsA("ClickDetector") then
+								fireclickdetector(prompt)
+							elseif prompt.Name == "TouchInterest" then
+								firetouchinterest(hrp, part, 0)
+								task.wait()
+								firetouchinterest(hrp, part, 1)
+							end
+						end)
+						task.wait(0.05)
+					end
+
+					task.wait(0.2)
+					char:PivotTo(originalCFrame)
+					task.wait(1) -- Chờ 1 giây trước lần lặp kế tiếp
+				end
+			else
+				task.wait(1)
+			end
+		end)
+	end
+})
+
+MTab:CreateButton({
+	Name = "GetBerry [Once]",
+	Callback = function()
+		local lp = game:GetService("Players").LocalPlayer
+		local char = lp.Character or lp.CharacterAdded:Wait()
+		local hrp = char:WaitForChild("HumanoidRootPart")
+		local hum = char:FindFirstChildOfClass("Humanoid")
+		if not (hrp and hum) then return end
+
+		local originalCFrame = hrp.CFrame
+
+		local nearestBerry, shortestDist = nil, math.huge
+		for _, obj in ipairs(workspace:GetDescendants()) do
+			if obj:IsA("Model") and obj.Name:lower() == "berry" then
+				local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+				if part then
+					local dist = (hrp.Position - part.Position).Magnitude
+					if dist < shortestDist then
+						nearestBerry = obj
+						shortestDist = dist
+					end
+				end
+			end
+		end
+
+		if nearestBerry then
+			local part = nearestBerry.PrimaryPart or nearestBerry:FindFirstChildWhichIsA("BasePart")
+			if not nearestBerry.PrimaryPart and part then
+				pcall(function()
+					nearestBerry.PrimaryPart = part
+				end)
+			end
+
+			local prompt = nearestBerry:FindFirstChildWhichIsA("ProximityPrompt", true)
+				or nearestBerry:FindFirstChildWhichIsA("ClickDetector", true)
+				or nearestBerry:FindFirstChild("TouchInterest", true)
+
+			if prompt and part then
+				-- TP 1 lần
+				char:PivotTo(part.CFrame + Vector3.new(0, 7, 0))
+				task.wait(0.25)
+
+				-- Nhặt đủ 50 lần tại chỗ
+				for i = 1, 50 do
+					pcall(function()
+						if prompt:IsA("ProximityPrompt") then
+							fireproximityprompt(prompt)
+						elseif prompt:IsA("ClickDetector") then
+							fireclickdetector(prompt)
+						elseif prompt.Name == "TouchInterest" then
+							firetouchinterest(hrp, part, 0)
+							task.wait()
+							firetouchinterest(hrp, part, 1)
+						end
+					end)
+					task.wait(0.05)
+				end
+
+				-- TP về chỗ cũ
+				task.wait(0.2)
+				char:PivotTo(originalCFrame)
+			end
+		end
+	end
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Tạo Tab Visual
 local VTab = Window:CreateTab("Visual", "eye")
 VTab:CreateSection("Main Visual")
 
