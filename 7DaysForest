@@ -51,20 +51,6 @@ Rayfield:Notify({
 local MTab = Window:CreateTab("Main", "home")
 MTab:CreateSection("Main")
 
--- Áp dụng font SourceSansItalic
-task.delay(1, function() -- delay để đảm bảo GUI đã load
-	local gui = game:GetService("CoreGui"):FindFirstChild("Rayfield")
-	if gui then
-		for _, v in ipairs(gui:GetDescendants()) do
-			if v:IsA("TextLabel") or v:IsA("TextButton") or v:IsA("TextBox") then
-				pcall(function()
-					v.Font = Enum.Font.Bodoni
-				end)
-			end
-		end
-	end
-end)
-  
   MTab:CreateButton({
     Name = "Aimbot (Some npc may not work)",
     Callback = function()
@@ -777,3 +763,16 @@ KTab:CreateButton({
 })
   
 end)
+
+task.wait(1) -- Đợi Rayfield load hoàn tất
+local function applyFontToRayfieldFonts()
+    for _, gui in pairs(game:GetService("CoreGui"):GetDescendants()) do
+        if gui:IsA("TextLabel") or gui:IsA("TextButton") or gui:IsA("TextBox") then
+            pcall(function()
+                gui.Font = Enum.Font.Bodoni
+            end)
+        end
+    end
+end
+
+applyFontToRayfieldFonts()
