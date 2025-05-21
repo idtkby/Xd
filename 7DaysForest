@@ -480,6 +480,13 @@ KTab:CreateButton({
   })
 
 KTab:CreateButton({
+     Name = "Herkle Hub",
+     Callback = function()
+         loadstring(game:HttpGet("https://raw.githubusercontent.com/decryp1/Herkle-Hub/refs/heads/main/game%20redirect"))()
+     end,
+})
+
+KTab:CreateButton({
     Name = "Xomar Hub",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/omaromar242/7-days-Op-omarXwiet-Works/refs/heads/main/.gitignore"))()
