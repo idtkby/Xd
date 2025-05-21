@@ -546,6 +546,13 @@ end)
     end,
 })
 
+KTab:CreateButton({
+    Name = "Anti-Void",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/AntiVoid"))()
+    end,
+})
+
 KTab:CreateSection("Save location")
 local originalPos = nil
 
