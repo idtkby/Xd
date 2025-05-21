@@ -515,6 +515,17 @@ VTab:CreateButton({
     end,
 })
 
+
+
+
+
+
+
+
+
+
+
+
 local TeleportTab = Window:CreateTab("Teleport", "map")
 TeleportTab:CreateSection("Main Location")
 
@@ -543,6 +554,14 @@ for _, loc in ipairs(locations) do
         end
     })
 end
+
+
+
+
+
+
+
+
 
 local KTab = Window:CreateTab("Misc", "package")
   
