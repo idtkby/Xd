@@ -442,14 +442,19 @@ MTab:CreateButton({
 })
 
 MTab:CreateInput({
-	Name = "Collect Berry (input berry)",
-	PlaceholderText = "Enter quantity",
+	Name = "Collect Berry (Input berry number)",
+	PlaceholderText = "Enter quantity (100000 MAX)",
 	RemoveTextAfterFocusLost = false,
 	Callback = function(text)
 		local amount = tonumber(text)
 		if not amount or amount <= 0 then
 			warn("Số không hợp lệ")
 			return
+		end
+
+		-- Giới hạn tối đa 100000 berry
+		if amount > 100000 then
+			amount = 100000
 		end
 
 		-- Làm tròn lên bội số của 5
