@@ -502,6 +502,13 @@ end)
 })
 
 KTab:CreateButton({
+    Name = "Killaura",
+    Callback = function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/zamzamzan/test/refs/heads/main/7days'))()
+    end,
+})
+
+KTab:CreateButton({
     Name = "Dot Aim",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/DotAim"))()
