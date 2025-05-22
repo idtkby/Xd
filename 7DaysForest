@@ -273,14 +273,67 @@ MTab:CreateToggle({
     end,
 })
 
+local toggleFishing = false
+local connection
+
+MTab:CreateToggle({
+	Name = "Auto Fishing",
+	CurrentValue = false,
+	Flag = "AutoFishing",
+	Callback = function(state)
+		toggleFishing = state
+		if connection then
+			connection:Disconnect()
+			connection = nil
+		end
+
+		if state then
+			connection = task.spawn(function()
+				while toggleFishing do
+					local lp = game.Players.LocalPlayer
+					local hasRod = false
+
+					for _, tool in pairs(lp.Backpack:GetChildren()) do
+						if tool:IsA("Tool") and tool.Name == "Fishing Rod" then
+							hasRod = true
+							break
+						end
+					end
+
+					if not hasRod then
+						warn("You are not eligible")
+						toggleFishing = false
+						break
+					end
+
+					local rs = game:GetService("ReplicatedStorage"):WaitForChild("remotes")
+
+					pcall(function()
+						rs:WaitForChild("cast"):FireServer()
+						wait(1)
+						for i = 1, 8 do
+							rs:WaitForChild("hit_fish"):FireServer()
+							task.wait(0.1)
+						end
+						wait(0.3)
+						rs:WaitForChild("finished_tutorial"):FireServer()
+					end)
+
+					wait(1) -- Delay giữa các lần đánh cá
+				end
+			end)
+		end
+	end
+})
+
+MTab:CreateSection("Get Berry")
+
 MTab:CreateButton({
     Name = "Eat Berry Button (Full Hungry)",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/EatBerryButton"))()
     end,
 })
-
-MTab:CreateSection("Get Berry")
 
 local toggleRunning = false
 local connection
