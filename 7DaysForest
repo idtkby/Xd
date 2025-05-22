@@ -582,41 +582,7 @@ VTab:CreateButton({
 VTab:CreateButton({
     Name = "Home",
     Callback = function()
-        -- Xóa part cũ nếu đã tồn tại
-        if workspace:FindFirstChild("HomeESPPart") then
-            workspace.HomeESPPart:Destroy()
-        end
-
-        -- Tạo part tàng hình không thể chạm
-        local part = Instance.new("Part")
-        part.Name = "HomeESPPart"
-        part.Anchored = true
-        part.CanCollide = false
-        part.CanTouch = false
-        part.Transparency = 1
-        part.Size = Vector3.new(1, 1, 1)
-        part.Position = Vector3.new(56.44, 70.12, 417.58)
-        part.Parent = workspace
-
-        -- Tạo BillboardGui hiển thị chữ "Home"
-        local billboard = Instance.new("BillboardGui")
-        billboard.Name = "ESP"
-        billboard.Size = UDim2.new(0, 100, 0, 20)
-        billboard.StudsOffset = Vector3.new(0, 2, 0)
-        billboard.AlwaysOnTop = true
-        billboard.Adornee = part
-        billboard.Parent = part
-
-        local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(1, 0, 1, 0)
-        label.BackgroundTransparency = 1
-        label.Text = "Home"
-        label.TextColor3 = Color3.fromRGB(255, 255, 255)
-        label.TextStrokeTransparency = 0
-        label.Font = Enum.Font.Bodoni
-        label.TextScaled = true
-        label.TextSize = 15 -- Giới hạn kích thước chữ
-        label.Parent = billboard
+       
     end
 })
 
