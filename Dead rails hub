@@ -222,7 +222,7 @@ local Workspace = game:GetService("Workspace")
 
 -- Tạo Toggle để kích hoạt và tắt chức năng Instant Prompt
 local InstantPromptToggle = CharacterTab:CreateToggle({
-    Name = "Instant Proximity Prompt",
+    Name = "Instant PP",
     CurrentValue = false,  -- Mặc định tắt
     Callback = function(enabled)
         if enabled then
