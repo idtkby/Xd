@@ -274,7 +274,7 @@ MTab:CreateToggle({
 })
 
 local toggleFishing = false
-local connection
+local fishingThread
 
 MTab:CreateToggle({
 	Name = "Auto Fishing",
@@ -282,17 +282,26 @@ MTab:CreateToggle({
 	Flag = "AutoFishing",
 	Callback = function(state)
 		toggleFishing = state
-		if connection then
-			connection:Disconnect()
-			connection = nil
+
+		if fishingThread then
+			task.cancel(fishingThread)
+			fishingThread = nil
 		end
 
 		if state then
-			connection = task.spawn(function()
+			fishingThread = task.spawn(function()
+				local Players = game:GetService("Players")
+				local ReplicatedStorage = game:GetService("ReplicatedStorage")
+				local lp = Players.LocalPlayer
+
+				local castRemote = ReplicatedStorage:WaitForChild("remotes"):FindFirstChild("cast")
+				local hitRemote = ReplicatedStorage:WaitForChild("remotes"):FindFirstChild("hit_fish")
+				local finishRemote = ReplicatedStorage:WaitForChild("remotes"):FindFirstChild("finished_tutorial")
+
 				while toggleFishing do
-					local lp = game.Players.LocalPlayer
 					local hasRod = false
 
+					-- Kiểm tra Fishing Rod trong Backpack
 					for _, tool in pairs(lp.Backpack:GetChildren()) do
 						if tool:IsA("Tool") and tool.Name == "Fishing Rod" then
 							hasRod = true
@@ -306,20 +315,18 @@ MTab:CreateToggle({
 						break
 					end
 
-					local rs = game:GetService("ReplicatedStorage"):WaitForChild("remotes")
-
 					pcall(function()
-						rs:WaitForChild("cast"):FireServer()
-						wait(1)
+						castRemote:FireServer()
+						task.wait(1)
 						for i = 1, 8 do
-							rs:WaitForChild("hit_fish"):FireServer()
+							hitRemote:FireServer()
 							task.wait(0.1)
 						end
-						wait(0.3)
-						rs:WaitForChild("finished_tutorial"):FireServer()
+						task.wait(0.3)
+						finishRemote:FireServer()
 					end)
 
-					wait(1) -- Delay giữa các lần đánh cá
+					task.wait(1)
 				end
 			end)
 		end
