@@ -274,7 +274,6 @@ MTab:CreateToggle({
 })
 
 local autoFishingRunning = false
-local autoFishingConnection
 
 MTab:CreateToggle({
 	Name = "Auto fishing [Fishing Rod]",
@@ -283,26 +282,21 @@ MTab:CreateToggle({
 	Callback = function(state)
 		autoFishingRunning = state
 
-		if autoFishingConnection then
-			autoFishingConnection:Disconnect()
-			autoFishingConnection = nil
-		end
-
 		if state then
-			autoFishingConnection = task.spawn(function()
+			task.spawn(function()
 				while autoFishingRunning do
 					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("cast"):FireServer()
-wait(1)
+					wait(1)
 
-for i = 1, 8 do
-game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("hit_fish"):FireServer()
-task.wait(0.05)
-end
-wait(0.5)
-game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("finished_tutorial"):FireServer()
+					for i = 1, 8 do
+						game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("hit_fish"):FireServer()
+						task.wait(0.05)
+					end
 
-					
-					task.wait(0.1) -- mỗi lần cách 0.1 giây
+					wait(0.5)
+					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("finished_tutorial"):FireServer()
+
+					task.wait(0.1)
 				end
 			end)
 		end
