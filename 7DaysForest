@@ -957,7 +957,7 @@ local PromptService = game:GetService("ProximityPromptService")
 local Workspace = game:GetService("Workspace")
 
 -- Tạo Toggle để kích hoạt và tắt chức năng Instant Prompt
-local InstantPromptToggle = MTab:CreateToggle({
+local InstantPromptToggle = KTab:CreateToggle({
     Name = "Instant PP",
     CurrentValue = false,  -- Mặc định tắt
     Callback = function(enabled)
