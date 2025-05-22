@@ -90,7 +90,7 @@ MTab:CreateToggle({
 		autoScrapRunning = state
 
 		if not state then
-			Rayfield:Notify({Title = "Auto Scrap", Content = "Auto Scrap disabled", Duration = 2})
+			Rayfield:Notify({Title = L("Auto Scrap"), Content = L("Auto Scrap disabled"), Duration = 2})
 
 			task.delay(1, function()
 				local char = lp.Character or lp.CharacterAdded:Wait()
