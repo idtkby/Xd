@@ -1,0 +1,1160 @@
+-- Kiểm tra ID game
+if game.PlaceId ~= 121308443347459 then
+    return warn("Script chỉ hoạt động trong trò chơi được chỉ định (ID: 121308443347459){7Days To Live (The Forest)}")
+end
+
+-- Thông báo khi đúng ID game
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "✓ Kiểm tra trò chơi đã vượt qua",
+    Text = "Tập lệnh hiện đang được thực thi...",
+    Duration = 5
+})
+
+task.wait(1) -- Đợi 1s trước khi thực thi 
+
+task.spawn(function()
+-- Khai báo các dịch vụ cần thiết
+local player = game.Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local camera = workspace.CurrentCamera
+
+-- Tải và khởi tạo thư viện GUI Rayfield
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Tạo cửa sổ giao diện chính
+local Window = Rayfield:CreateWindow({
+    Name = "Script By Khang [The Forest]",
+    LoadingTitle = "Đang tải Hub...",
+    LoadingSubtitle = "Vui lòng chờ",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "MyHubFolder",
+        FileName = "MyHubConfig"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "",
+        RememberJoins = false
+    },
+    KeySystem = false,
+})
+
+-- Thông báo đã tải
+Rayfield:Notify({
+    Title = "Chào mừng!",
+    Content = "Đã tải tập lệnh",
+    Duration = 2
+})
+
+-- Tạo Tab Main
+local MTab = Window:CreateTab("Main", "home")
+MTab:CreateSection("Main")
+
+  MTab:CreateButton({
+    Name = "Tự động ngắm (Một số scps ko hoạt động)",
+    Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Aimbot%20npc%207%20days"))()
+    end,
+  })
+
+local autoScrapRunning = false
+local savedCFrame = nil
+
+MTab:CreateToggle({
+	Name = "Nhặt phế liệu",
+	CurrentValue = false,
+	Flag = "AutoScrapToggle",
+	Callback = function(state)
+		local Players = game:GetService("Players")
+		local RunService = game:GetService("RunService")
+		local lp = Players.LocalPlayer
+
+		autoScrapRunning = state
+
+		if not state then
+			Rayfield:Notify({Title = "Auto Scrap", Content = "Auto Scrap disabled", Duration = 2})
+
+			task.delay(1, function()
+				local char = lp.Character or lp.CharacterAdded:Wait()
+				local hrp = char:FindFirstChild("HumanoidRootPart")
+				if hrp and savedCFrame then
+					char:PivotTo(savedCFrame)
+					Rayfield:Notify({
+						Title = "Auto Scrap",
+						Content = "Teleported back",
+						Duration = 2
+					})
+				end
+			end)
+
+			return
+		end
+
+		local function findNextScrap()
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if obj:IsA("Model") and obj.Name:lower() == "scrap" then
+					local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+					local prompt = obj:FindFirstChildWhichIsA("ProximityPrompt", true)
+						or obj:FindFirstChildWhichIsA("ClickDetector", true)
+						or obj:FindFirstChild("TouchInterest", true)
+
+					if part and prompt then
+						return part, prompt
+					end
+				end
+			end
+			return nil
+		end
+
+		local function collectNext()
+			if not autoScrapRunning then return end
+
+			local char = lp.Character or lp.CharacterAdded:Wait()
+			local hrp = char:WaitForChild("HumanoidRootPart")
+			if not savedCFrame then savedCFrame = hrp.CFrame end
+
+			local part, prompt = findNextScrap()
+
+			if not part then
+				Rayfield:Notify({Title = "Auto Scrap", Content = "No Scrap found", Duration = 2})
+				task.delay(1, collectNext)
+				return
+			end
+
+			-- Teleport cao hơn để không bị kẹt + chống té
+hrp.CFrame = CFrame.new(part.Position + Vector3.new(0, 6.3, 0))
+task.wait(0.2)
+local humanoid = lp.Character:FindFirstChildOfClass("Humanoid")
+if humanoid then
+	humanoid.PlatformStand = false
+	humanoid.Sit = false
+end
+
+			pcall(function()
+				if prompt:IsA("ProximityPrompt") then
+					fireproximityprompt(prompt)
+				elseif prompt:IsA("ClickDetector") then
+					fireclickdetector(prompt)
+				elseif prompt.Name == "TouchInterest" then
+					firetouchinterest(hrp, part, 0)
+					task.wait()
+					firetouchinterest(hrp, part, 1)
+				end
+			end)
+
+			task.delay(0.5, collectNext)
+		end
+
+		Rayfield:Notify({Title = "Auto Scrap", Content = "Collecting started...", Duration = 2})
+		collectNext()
+	end
+})
+
+local autoScrapRunning = false
+local savedCFrame = nil
+
+MTab:CreateToggle({
+	Name = "Nhặt phế liệu (nhanh)",
+	CurrentValue = false,
+	Flag = "AutoScrapToggle",
+	Callback = function(state)
+		local Players = game:GetService("Players")
+		local RunService = game:GetService("RunService")
+		local lp = Players.LocalPlayer
+
+		autoScrapRunning = state
+
+		if not state then
+			Rayfield:Notify({Title = "Auto Scrap", Content = "Auto Scrap disabled", Duration = 2})
+
+			task.delay(1, function()
+				local char = lp.Character or lp.CharacterAdded:Wait()
+				local hrp = char:FindFirstChild("HumanoidRootPart")
+				if hrp and savedCFrame then
+					char:PivotTo(savedCFrame)
+					Rayfield:Notify({
+						Title = "Auto Scrap",
+						Content = "Teleported back",
+						Duration = 2
+					})
+				end
+			end)
+
+			return
+		end
+
+		local function findNextScrap()
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if obj:IsA("Model") and obj.Name:lower() == "scrap" then
+					local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+					local prompt = obj:FindFirstChildWhichIsA("ProximityPrompt", true)
+						or obj:FindFirstChildWhichIsA("ClickDetector", true)
+						or obj:FindFirstChild("TouchInterest", true)
+
+					if part and prompt then
+						return part, prompt
+					end
+				end
+			end
+			return nil
+		end
+
+		local function collectNext()
+			if not autoScrapRunning then return end
+
+			local char = lp.Character or lp.CharacterAdded:Wait()
+			local hrp = char:WaitForChild("HumanoidRootPart")
+			if not savedCFrame then savedCFrame = hrp.CFrame end
+
+			local part, prompt = findNextScrap()
+
+			if not part then
+				Rayfield:Notify({Title = "Auto Scrap", Content = "No Scrap found", Duration = 2})
+				task.delay(1, collectNext)
+				return
+			end
+
+			-- Teleport cao hơn để không bị kẹt + chống té
+hrp.CFrame = CFrame.new(part.Position + Vector3.new(0, 6.3, 0))
+task.wait(0.2)
+local humanoid = lp.Character:FindFirstChildOfClass("Humanoid")
+if humanoid then
+	humanoid.PlatformStand = false
+	humanoid.Sit = false
+end
+
+			pcall(function()
+				if prompt:IsA("ProximityPrompt") then
+					fireproximityprompt(prompt)
+				elseif prompt:IsA("ClickDetector") then
+					fireclickdetector(prompt)
+				elseif prompt.Name == "TouchInterest" then
+					firetouchinterest(hrp, part, 0)
+					task.wait()
+					firetouchinterest(hrp, part, 1)
+				end
+			end)
+
+			task.delay(0.2, collectNext)
+		end
+
+		Rayfield:Notify({Title = "Auto Scrap", Content = "Collecting started...", Duration = 2})
+		collectNext()
+	end
+})
+
+local autoHeal = false
+
+MTab:CreateToggle({
+    Name = "Tự động hồi máu tất cả người chơi",
+    CurrentValue = false,
+    Flag = "AutoHealPlayers",
+    Callback = function(Value)
+        autoHeal = Value
+        if autoHeal then
+            task.spawn(function()
+                while autoHeal do
+                    for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+                        local char = player.Character
+                        if char and char:FindFirstChild("Humanoid") and char:FindFirstChild("HumanoidRootPart") then
+                            local hp = char.Humanoid.Health
+                            local maxHp = char.Humanoid.MaxHealth
+                            if hp < maxHp then
+                                local args = { char }
+                                game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("heal"):FireServer(unpack(args))
+                            end
+                        end
+                    end
+                    task.wait(0.5)
+                end
+            end)
+        end
+    end,
+})
+
+local autoFishingRunning = false
+
+MTab:CreateToggle({
+	Name = "Tự động câu cá [Cần câu]",
+	CurrentValue = false,
+	Flag = "AutoFishingToggle",
+	Callback = function(state)
+		autoFishingRunning = state
+
+		if state then
+			task.spawn(function()
+				while autoFishingRunning do
+					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("cast"):FireServer()
+					wait(1)
+
+					for i = 1, 8 do
+						game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("hit_fish"):FireServer()
+						task.wait(0.05)
+					end
+
+					wait(0.5)
+					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("finished_tutorial"):FireServer()
+
+					task.wait(0.1)
+				end
+			end)
+		end
+	end
+})
+
+MTab:CreateSection("Get Berry")
+
+MTab:CreateButton({
+    Name = "Nút ăn quả mọng (no)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/EatBerryButton"))()
+    end,
+})
+
+local toggleRunning = false
+local connection
+
+MTab:CreateToggle({
+	Name = "Lấy quả mọng [Liên tục]",
+	CurrentValue = false,
+	Flag = "GetBerryINF",
+	Callback = function(state)
+		toggleRunning = state
+
+		local lp = game:GetService("Players").LocalPlayer
+		local RunService = game:GetService("RunService")
+
+		if connection then
+			connection:Disconnect()
+			connection = nil
+		end
+
+		local char = lp.Character or lp.CharacterAdded:Wait()
+		local hrp = char:WaitForChild("HumanoidRootPart")
+		local hum = char:FindFirstChildOfClass("Humanoid")
+		if not (hrp and hum) then return end
+
+		local originalCFrame = hrp.CFrame
+
+		if not state then
+			char:PivotTo(originalCFrame)
+			return
+		end
+
+		connection = RunService.Heartbeat:Connect(function()
+			if not toggleRunning then return end
+
+			char = lp.Character or lp.CharacterAdded:Wait()
+			hrp = char:FindFirstChild("HumanoidRootPart")
+			hum = char:FindFirstChildOfClass("Humanoid")
+			if not (hrp and hum) then return end
+
+			local nearestBerry, shortestDist = nil, math.huge
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if obj:IsA("Model") and obj.Name:lower() == "berry" then
+					local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+					if part then
+						local dist = (hrp.Position - part.Position).Magnitude
+						if dist < shortestDist then
+							nearestBerry = obj
+							shortestDist = dist
+						end
+					end
+				end
+			end
+
+			if nearestBerry then
+				local part = nearestBerry.PrimaryPart or nearestBerry:FindFirstChildWhichIsA("BasePart")
+				if not nearestBerry.PrimaryPart and part then
+					pcall(function()
+						nearestBerry.PrimaryPart = part
+					end)
+				end
+
+				local prompt = nearestBerry:FindFirstChildWhichIsA("ProximityPrompt", true)
+					or nearestBerry:FindFirstChildWhichIsA("ClickDetector", true)
+					or nearestBerry:FindFirstChild("TouchInterest", true)
+
+				if prompt and part then
+					char:PivotTo(part.CFrame + Vector3.new(0, 7, 0))
+					task.wait(0.25)
+
+					for i = 1, 50 do
+						pcall(function()
+							if prompt:IsA("ProximityPrompt") then
+								fireproximityprompt(prompt)
+							elseif prompt:IsA("ClickDetector") then
+								fireclickdetector(prompt)
+							elseif prompt.Name == "TouchInterest" then
+								firetouchinterest(hrp, part, 0)
+								task.wait()
+								firetouchinterest(hrp, part, 1)
+							end
+						end)
+						task.wait(0.05)
+					end
+
+					task.wait(0.2)
+					char:PivotTo(originalCFrame)
+					task.wait(1) -- Chờ 1 giây trước lần lặp kế tiếp
+				end
+			else
+				task.wait(1)
+			end
+		end)
+	end
+})
+
+MTab:CreateButton({
+	Name = "Lấy quả mọng [30/04/1975]",
+	Callback = function()
+		local lp = game:GetService("Players").LocalPlayer
+		local char = lp.Character or lp.CharacterAdded:Wait()
+		local hrp = char:WaitForChild("HumanoidRootPart")
+		local hum = char:FindFirstChildOfClass("Humanoid")
+		if not (hrp and hum) then return end
+
+		local originalCFrame = hrp.CFrame
+
+		local nearestBerry, shortestDist = nil, math.huge
+		for _, obj in ipairs(workspace:GetDescendants()) do
+			if obj:IsA("Model") and obj.Name:lower() == "berry" then
+				local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+				if part then
+					local dist = (hrp.Position - part.Position).Magnitude
+					if dist < shortestDist then
+						nearestBerry = obj
+						shortestDist = dist
+					end
+				end
+			end
+		end
+
+		if nearestBerry then
+			local part = nearestBerry.PrimaryPart or nearestBerry:FindFirstChildWhichIsA("BasePart")
+			if not nearestBerry.PrimaryPart and part then
+				pcall(function()
+					nearestBerry.PrimaryPart = part
+				end)
+			end
+
+			local prompt = nearestBerry:FindFirstChildWhichIsA("ProximityPrompt", true)
+				or nearestBerry:FindFirstChildWhichIsA("ClickDetector", true)
+				or nearestBerry:FindFirstChild("TouchInterest", true)
+
+			if prompt and part then
+				-- TP 1 lần
+				char:PivotTo(part.CFrame + Vector3.new(0, 7, 0))
+				task.wait(0.25)
+
+				-- Nhặt đủ số lần tại chỗ
+				for i = 1, 6095 do
+					pcall(function()
+						if prompt:IsA("ProximityPrompt") then
+							fireproximityprompt(prompt)
+						elseif prompt:IsA("ClickDetector") then
+							fireclickdetector(prompt)
+						elseif prompt.Name == "TouchInterest" then
+							firetouchinterest(hrp, part, 0)
+							task.wait()
+							firetouchinterest(hrp, part, 1)
+						end
+					end)
+				end
+
+				-- TP về chỗ cũ
+				task.wait(0.2)
+				char:PivotTo(originalCFrame)
+			end
+		end
+	end
+})
+
+MTab:CreateInput({
+	Name = "Lấy quả mọng (Nhập số quả mọng)",
+	PlaceholderText = "Nhập số lượng (Tối đa 100000)",
+	RemoveTextAfterFocusLost = false,
+	Callback = function(text)
+		local amount = tonumber(text)
+		if not amount or amount <= 0 then
+			warn("Số không hợp lệ")
+			return
+		end
+
+		-- Giới hạn tối đa 100000 berry
+		if amount > 100000 then
+			amount = 100000
+		end
+
+		-- Làm tròn lên bội số của 5
+		local rounded = math.ceil(amount / 5) * 5
+		local repeatCount = rounded / 5
+
+		local lp = game:GetService("Players").LocalPlayer
+		local char = lp.Character or lp.CharacterAdded:Wait()
+		local hrp = char:WaitForChild("HumanoidRootPart")
+		local hum = char:FindFirstChildOfClass("Humanoid")
+		if not (hrp and hum) then return end
+
+		local originalCFrame = hrp.CFrame
+
+		local nearestBerry, shortestDist = nil, math.huge
+		for _, obj in ipairs(workspace:GetDescendants()) do
+			if obj:IsA("Model") and obj.Name:lower() == "berry" then
+				local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+				if part then
+					local dist = (hrp.Position - part.Position).Magnitude
+					if dist < shortestDist then
+						nearestBerry = obj
+						shortestDist = dist
+					end
+				end
+			end
+		end
+
+		if nearestBerry then
+			local part = nearestBerry.PrimaryPart or nearestBerry:FindFirstChildWhichIsA("BasePart")
+			if not nearestBerry.PrimaryPart and part then
+				pcall(function()
+					nearestBerry.PrimaryPart = part
+				end)
+			end
+
+			local prompt = nearestBerry:FindFirstChildWhichIsA("ProximityPrompt", true)
+				or nearestBerry:FindFirstChildWhichIsA("ClickDetector", true)
+				or nearestBerry:FindFirstChild("TouchInterest", true)
+
+			if prompt and part then
+				char:PivotTo(part.CFrame + Vector3.new(0, 7, 0))
+				task.wait(0.25)
+
+				for i = 1, repeatCount do
+					pcall(function()
+						if prompt:IsA("ProximityPrompt") then
+							fireproximityprompt(prompt)
+						elseif prompt:IsA("ClickDetector") then
+							fireclickdetector(prompt)
+						elseif prompt.Name == "TouchInterest" then
+							firetouchinterest(hrp, part, 0)
+							task.wait()
+							firetouchinterest(hrp, part, 1)
+						end
+					end)
+				end
+
+				task.wait(0.2)
+				char:PivotTo(originalCFrame)
+			end
+		end
+	end
+})
+
+
+
+MTab:CreateSection("Trăng máu")
+
+local autoBloodRunning = false
+local savedCFrame = nil
+
+MTab:CreateToggle({
+	Name = "Tự động thu thập vỏ cây máu",
+	CurrentValue = false,
+	Flag = "AutoBloodToggle",
+	Callback = function(state)
+		local Players = game:GetService("Players")
+		local RunService = game:GetService("RunService")
+		local lp = Players.LocalPlayer
+
+		autoBloodRunning = state
+
+		if not state then
+			Rayfield:Notify({Title = "Tự động thu thập", Content = "Đã tắt", Duration = 2})
+
+			task.delay(1, function()
+				local char = lp.Character or lp.CharacterAdded:Wait()
+				local hrp = char:FindFirstChild("HumanoidRootPart")
+				if hrp and savedCFrame then
+					char:PivotTo(savedCFrame)
+					Rayfield:Notify({
+						Title = "Tự động thu thập",
+						Content = "Dịch chuyển trở lại",
+						Duration = 2
+					})
+				end
+			end)
+
+			return
+		end
+
+		local function findNextTarget()
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if obj:IsA("Model") and obj.Name:lower() == "blood_bark" then
+					local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+					local prompt = obj:FindFirstChildWhichIsA("ProximityPrompt", true)
+						or obj:FindFirstChildWhichIsA("ClickDetector", true)
+						or obj:FindFirstChild("TouchInterest", true)
+
+					if part and prompt then
+						return part, prompt
+					end
+				end
+			end
+			return nil
+		end
+
+		local function collectNext()
+			if not autoBloodRunning then return end
+
+			local char = lp.Character or lp.CharacterAdded:Wait()
+			local hrp = char:WaitForChild("HumanoidRootPart")
+			if not savedCFrame then savedCFrame = hrp.CFrame end
+
+			local part, prompt = findNextTarget()
+
+			if not part then
+				Rayfield:Notify({Title = "Tự động thu thập", Content = "Không tìm thấy vỏ cây máu", Duration = 2})
+				task.delay(1, collectNext)
+				return
+			end
+
+			-- Teleport cao hơn để không bị kẹt
+			hrp.CFrame = CFrame.new(part.Position + Vector3.new(0, 6.3, 0))
+			task.wait(0.2)
+			local humanoid = lp.Character:FindFirstChildOfClass("Humanoid")
+			if humanoid then
+				humanoid.PlatformStand = false
+				humanoid.Sit = false
+			end
+
+			pcall(function()
+				if prompt:IsA("ProximityPrompt") then
+					fireproximityprompt(prompt)
+				elseif prompt:IsA("ClickDetector") then
+					fireclickdetector(prompt)
+				elseif prompt.Name == "TouchInterest" then
+					firetouchinterest(hrp, part, 0)
+					task.wait()
+					firetouchinterest(hrp, part, 1)
+				end
+			end)
+
+			task.delay(0.2, collectNext)
+		end
+
+		Rayfield:Notify({Title = "Tự động thu thập", Content = "Bắt đầu thu thập...", Duration = 2})
+		collectNext()
+	end
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Tạo Tab Visual
+local VTab = Window:CreateTab("Hiển thị", "eye")
+VTab:CreateSection("Hiển thị chính")
+
+VTab:CreateButton({
+    Name = "Người chơi",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Playeresp"))()
+    end,
+})
+
+-- Esp home button (Rayfield GUI - MTab)
+VTab:CreateButton({
+    Name = "Nhà",
+    Callback = function()
+       loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Home"))()
+    end
+})
+
+VTab:CreateButton({
+    Name = "Động vật và scps",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Esp%20Npc"))()
+    end,
+})
+
+VTab:CreateButton({
+    Name = "Trứng phục sinh (Câu cá)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Eastereggesp"))()
+    end,
+})
+
+local scrapRunning = false
+local scrapConnection
+
+VTab:CreateToggle({
+	Name = "Phế liệu",
+	CurrentValue = false,
+	Flag = "ScrapESP",
+	Callback = function(state)
+		scrapRunning = state
+
+		if scrapConnection then
+			scrapConnection:Disconnect()
+			scrapConnection = nil
+		end
+
+		local player = game:GetService("Players").LocalPlayer
+		local camera = workspace.CurrentCamera
+
+		-- Xoá ESP cũ nếu có
+		for _, v in ipairs(workspace:GetDescendants()) do
+			if v:FindFirstChild("ScrapESP") then
+				v.ScrapESP:Destroy()
+			end
+			if v:FindFirstChild("ScrapHighlight") then
+				v.ScrapHighlight:Destroy()
+			end
+		end
+
+		if not state then return end
+
+		local function createESP(item)
+			if item:FindFirstChild("ScrapESP") then return end
+
+			local billboard = Instance.new("BillboardGui")
+			billboard.Name = "ScrapESP"
+			billboard.AlwaysOnTop = true
+			billboard.Size = UDim2.new(0, 200, 0, 50)
+			billboard.StudsOffset = Vector3.new(0, 3, 0)
+			billboard.MaxDistance = math.huge
+			billboard.Parent = item
+
+			local textLabel = Instance.new("TextLabel")
+			textLabel.Parent = billboard
+			textLabel.Text = "Phế liệu"
+			textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+			textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+			textLabel.TextStrokeTransparency = 0
+			textLabel.BackgroundTransparency = 1
+			textLabel.Size = UDim2.new(1, 0, 1, 0)
+			textLabel.TextScaled = false
+			textLabel.Font = Enum.Font.Bodoni
+			textLabel.TextSize = 25 -- sẽ bị override bằng đoạn bên dưới
+
+			local highlight = Instance.new("Highlight")
+			highlight.Name = "ScrapHighlight"
+			highlight.FillColor = Color3.fromRGB(128, 128, 128)
+			highlight.FillTransparency = 0.9
+			highlight.OutlineColor = Color3.fromRGB(128, 128, 128)
+			highlight.OutlineTransparency = 0
+			highlight.Parent = item
+
+			-- Theo dõi khoảng cách và chỉnh size
+			task.spawn(function()
+				while scrapRunning and billboard and billboard.Parent do
+					local distance = (camera.CFrame.Position - item:GetPivot().Position).Magnitude
+					local size = math.clamp(25 * (1 - distance / 200), 10, 25) -- xa thì nhỏ, gần thì max 15
+					textLabel.TextSize = size
+					task.wait(0.2)
+				end
+			end)
+		end
+
+		local function checkForScraps()
+			for _, item in ipairs(workspace:GetDescendants()) do
+				if item:IsA("Model") and item.Name == "scrap" then
+					createESP(item)
+				end
+			end
+		end
+
+		-- Tự động quét mới
+		scrapConnection = workspace.DescendantAdded:Connect(function(descendant)
+			if descendant:IsA("Model") and descendant.Name == "scrap" then
+				task.wait(0.1)
+				createESP(descendant)
+			end
+		end)
+
+		checkForScraps()
+	end
+})
+
+
+
+VTab:CreateSection("Trăng máu")
+
+local bloodRunning = false
+local bloodConnection
+
+VTab:CreateToggle({
+	Name = "Vỏ cây máu (Trăng máu)",
+	CurrentValue = false,
+	Flag = "BloodESP",
+	Callback = function(state)
+		bloodRunning = state
+
+		if bloodConnection then
+			bloodConnection:Disconnect()
+			bloodConnection = nil
+		end
+
+		local player = game:GetService("Players").LocalPlayer
+		local camera = workspace.CurrentCamera
+
+		-- Xoá ESP cũ nếu có
+		for _, v in ipairs(workspace:GetDescendants()) do
+			if v:FindFirstChild("BloodESP") then
+				v.BloodESP:Destroy()
+			end
+			if v:FindFirstChild("BloodHighlight") then
+				v.BloodHighlight:Destroy()
+			end
+		end
+
+		if not state then return end
+
+		local function createESP(item)
+			if item:FindFirstChild("BloodESP") then return end
+
+			local billboard = Instance.new("BillboardGui")
+			billboard.Name = "BloodESP"
+			billboard.AlwaysOnTop = true
+			billboard.Size = UDim2.new(0, 200, 0, 50)
+			billboard.StudsOffset = Vector3.new(0, 3, 0)
+			billboard.MaxDistance = math.huge
+			billboard.Parent = item
+
+			local textLabel = Instance.new("TextLabel")
+			textLabel.Parent = billboard
+			textLabel.Text = "Vỏ cây máu"
+			textLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+			textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+			textLabel.TextStrokeTransparency = 0
+			textLabel.BackgroundTransparency = 1
+			textLabel.Size = UDim2.new(1, 0, 1, 0)
+			textLabel.TextScaled = false
+			textLabel.Font = Enum.Font.Bodoni
+			textLabel.TextSize = 25
+
+			local highlight = Instance.new("Highlight")
+			highlight.Name = "BloodHighlight"
+			highlight.FillColor = Color3.fromRGB(180, 0, 0)
+			highlight.FillTransparency = 0.9
+			highlight.OutlineColor = Color3.fromRGB(100, 0, 0)
+			highlight.OutlineTransparency = 0
+			highlight.Parent = item
+
+			task.spawn(function()
+				while bloodRunning and billboard and billboard.Parent do
+					local distance = (camera.CFrame.Position - item:GetPivot().Position).Magnitude
+					local size = math.clamp(25 * (1 - distance / 200), 10, 25)
+					textLabel.TextSize = size
+					task.wait(0.2)
+				end
+			end)
+		end
+
+		local function checkForBloodBark()
+			for _, item in ipairs(workspace:GetDescendants()) do
+				if item:IsA("Model") and item.Name == "blood_bark" then
+					createESP(item)
+				end
+			end
+		end
+
+		bloodConnection = workspace.DescendantAdded:Connect(function(descendant)
+			if descendant:IsA("Model") and descendant.Name == "blood_bark" then
+				task.wait(0.1)
+				createESP(descendant)
+			end
+		end)
+
+		checkForBloodBark()
+	end
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local TeleportTab = Window:CreateTab("Dịch chuyển", "map")
+TeleportTab:CreateSection("Main Location")
+
+-- Vị trí chính
+local locations = {
+    {Name = "Nhà", Position = Vector3.new(60.99, 48.58, 417.10)},
+    {Name = "Ban công", Position = Vector3.new(37.34, 52.72, 420.62)},
+    {Name = "Nóc nhà", Position = Vector3.new(57.73, 68.46, 417.58)},
+    {Name = "Con sông", Position = Vector3.new(-227.99, -0.84, 341.59)},
+    {Name = "Bộ xương", Position = Vector3.new(145.43, 12.63, 234.22)},
+    {Name = "Tháp pháo 1", Position = Vector3.new(-110.91, 37.91, 352.01)},
+    {Name = "Tháp pháo 2", Position = Vector3.new(-5.95, 26.77, 258.23)},
+    {Name = "Tháp pháo 3", Position = Vector3.new(117.83, 34.97, 336.75)},
+    {Name = "Tháp pháo 4", Position = Vector3.new(95.04, 34.41, 491.53)},
+    {Name = "Trực thăng (Phải chờ xuất hiện)", Position = Vector3.new(-318.54, 30.69, -110.7)},
+}
+
+for _, loc in ipairs(locations) do
+    TeleportTab:CreateButton({
+        Name = "Đi đến " .. loc.Name,
+        Callback = function()
+            local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = CFrame.new(loc.Position)
+            end
+        end
+    })
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local KTab = Window:CreateTab("Misc", "package")
+
+-- Khai báo các dịch vụ cần thiết
+local PromptService = game:GetService("ProximityPromptService")
+local Workspace = game:GetService("Workspace")
+
+-- Tạo Toggle để kích hoạt và tắt chức năng Instant Prompt
+local InstantPromptToggle = KTab:CreateToggle({
+    Name = "Instant PP",
+    CurrentValue = false,  -- Mặc định tắt
+    Callback = function(enabled)
+        if enabled then
+            -- Khi toggle bật, thiết lập tất cả ProximityPrompt có HoldDuration = 0
+            for _, v in ipairs(Workspace:GetDescendants()) do
+                if v:IsA("ProximityPrompt") then
+                    v.HoldDuration = 0
+                end
+            end
+            
+            -- Tự động thiết lập HoldDuration = 0 khi có Prompt mới bắt đầu
+            PromptService.PromptButtonHoldBegan:Connect(function(prompt)
+                if prompt:IsA("ProximityPrompt") then
+                    prompt.HoldDuration = 0
+                end
+            end)
+
+            Rayfield:Notify({
+                Title = "Instant Prompt Enabled",
+                Content = "All proximity prompts now require no hold duration.",
+                Duration = 2
+            })
+        else
+            -- Khi toggle tắt, không thay đổi gì
+            Rayfield:Notify({
+                Title = "Instant Prompt disable",
+                Content = "Proximity prompts will use default hold duration.",
+                Duration = 2
+            })
+        end
+    end,
+})
+
+KTab:CreateButton({
+    Name = "Tự động nhặt",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/CollectAura"))()
+    end,
+})
+  
+  KTab:CreateButton({
+    Name = "Inf Yield Edit",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()
+    end,
+  })
+
+KTab:CreateButton({
+     Name = "Herkle Hub",
+     Callback = function()
+         loadstring(game:HttpGet("https://raw.githubusercontent.com/decryp1/Herkle-Hub/refs/heads/main/game%20redirect"))()
+     end,
+})
+
+KTab:CreateButton({
+    Name = "Xomar Hub",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/omaromar242/7-days-Op-omarXwiet-Works/refs/heads/main/.gitignore"))()
+task.spawn(function()
+if setclipboard then
+    setclipboard("wietXomar_Hub") -- thay bằng nội dung cần copy
+    print("Copied Key: wietXomar_Hub!")
+else
+    warn("Executor của bạn quá lỏ nên not supported setclipboard")
+end
+end)
+    end,
+})
+
+KTab:CreateButton({
+    Name = "Khu vực Giết quái",
+    Callback = function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/zamzamzan/test/refs/heads/main/7days'))()
+    end,
+})
+
+KTab:CreateButton({
+    Name = "Chấm Aim",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/DotAim"))()
+    end,
+})
+
+KTab:CreateButton({
+    Name = "Bật bảng chat",
+    Callback = function()
+        local StarterGui = game:GetService("StarterGui")
+local TextChatService = game:GetService("TextChatService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+-- Bật lại Chat GUI nếu bị tắt
+pcall(function()
+    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, true)
+end)
+
+-- Bật lại ChatWindow nếu bị ẩn
+local function enableChatWindow()
+    local config = TextChatService:FindFirstChild("ChatWindowConfiguration")
+    if config then
+        config.Enabled = true
+    end
+end
+
+-- Kiểm tra định kỳ để đảm bảo không bị tắt lại
+RunService.RenderStepped:Connect(function()
+    if not StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType.Chat) then
+        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, true)
+    end
+    enableChatWindow()
+end)
+    end,
+})
+
+KTab:CreateButton({
+    Name = "Anti-Void",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/AntiVoid"))()
+    end,
+})
+
+KTab:CreateSection("Save location")
+local originalPos = nil
+
+KTab:CreateButton({
+    Name = "Lưu toạ độ hiện tại",
+    Callback = function()
+        local hrp = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            originalPos = hrp.CFrame
+            Rayfield:Notify({
+                Title = "Dịch chuyển",
+                Content = "Toạ độ của bạn đã được lưu",
+                Duration = 2
+            })
+        end
+    end,
+})
+
+KTab:CreateButton({
+    Name = "Đi đến toạ độ đã lưu",
+    Callback = function()
+        local hrp = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if originalPos and hrp then
+            hrp.CFrame = originalPos
+            Rayfield:Notify({
+                Title = "Dịch chuyển",
+                Content = "Đã dịch chuyển",
+                Duration = 2
+            })
+        end
+    end,
+})
+  
+end)
+
+task.wait(1) -- Đợi Rayfield load hoàn tất
+local function applyFontToRayfieldFonts()
+    for _, gui in pairs(game:GetService("CoreGui"):GetDescendants()) do
+        if gui:IsA("TextLabel") or gui:IsA("TextButton") or gui:IsA("TextBox") then
+            pcall(function()
+                gui.Font = Enum.Font.Bodoni
+            end)
+        end
+    end
+end
+
+applyFontToRayfieldFonts()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local LTab = Window:CreateTab("Đa ngôn ngữ", "languages")
+
+LTab:CreateButton({
+    Name = "English",
+    Callback = function()
+        loadstring(game:HttpGet(""))()
+    end,
+})
