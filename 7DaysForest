@@ -273,43 +273,25 @@ MTab:CreateToggle({
     end,
 })
 
-local toggleFishing = false
+local autoFishingRunning = false
 local autoFishingConnection
 
 MTab:CreateToggle({
-	Name = "Auto Fishing",
+	Name = "Auto fishing",
 	CurrentValue = false,
 	Flag = "AutoFishingToggle",
 	Callback = function(state)
-		toggleFishing = state
+		autoFishingRunning = state
 
 		if autoFishingConnection then
 			autoFishingConnection:Disconnect()
 			autoFishingConnection = nil
 		end
 
-		if not state then return end
-
-		local Players = game:GetService("Players")
-		local lp = Players.LocalPlayer
-
-		autoFishingConnection = task.spawn(function()
-			while toggleFishing do
-				local hasRod = false
-				for _, tool in ipairs(lp.Backpack:GetChildren()) do
-					if tool:IsA("Tool") and tool.Name == "Fishing Rod" then
-						hasRod = true
-						break
-					end
-				end
-
-				if not hasRod then
-					warn("You are not eligible")
-					toggleFishing = false
-					return
-				end
-
-game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("cast"):FireServer()
+		if state then
+			autoFishingConnection = task.spawn(function()
+				while autoFishingRunning do
+					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("cast"):FireServer()
 wait(1)
 
 for i = 1, 8 do
@@ -319,10 +301,11 @@ end
 wait(0.3)
 game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("finished_tutorial"):FireServer()
 
-
-				task.wait(1) -- đợi 1 giây mỗi lần thực hiện
-			end
-		end)
+					
+					task.wait(1) -- mỗi lần cách 1 giây
+				end
+			end)
+		end
 	end
 })
 
