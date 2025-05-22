@@ -1112,6 +1112,16 @@ KTab:CreateButton({
         end
     end,
 })
+
+
+local LTab = Window:CreateTab("Language", "languages")
+
+LTab:CreateButton({
+    Name = "Tiếng Việt",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/7DayForest_Vietmamese"))()
+    end,
+})
   
 end)
 
@@ -1131,30 +1141,3 @@ applyFontToRayfieldFonts()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-local LTab = Window:CreateTab("Language", "language s")
-
-LTab:CreateButton({
-    Name = "Tiếng Việt",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/7DayForest_Vietmamese"))()
-    end,
-})
