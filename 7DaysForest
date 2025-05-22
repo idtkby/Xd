@@ -594,6 +594,97 @@ VTab:CreateButton({
     end,
 })
 
+local scrapRunning = false
+local scrapConnection
+
+VTab:CreateToggle({
+	Name = "Scrap",
+	CurrentValue = false,
+	Flag = "ScrapESP",
+	Callback = function(state)
+		scrapRunning = state
+
+		if scrapConnection then
+			scrapConnection:Disconnect()
+			scrapConnection = nil
+		end
+
+		local player = game:GetService("Players").LocalPlayer
+		local camera = workspace.CurrentCamera
+
+		-- Xoá ESP cũ nếu có
+		for _, v in ipairs(workspace:GetDescendants()) do
+			if v:FindFirstChild("ScrapESP") then
+				v.ScrapESP:Destroy()
+			end
+			if v:FindFirstChild("ScrapHighlight") then
+				v.ScrapHighlight:Destroy()
+			end
+		end
+
+		if not state then return end
+
+		local function createESP(item)
+			if item:FindFirstChild("ScrapESP") then return end
+
+			local billboard = Instance.new("BillboardGui")
+			billboard.Name = "ScrapESP"
+			billboard.AlwaysOnTop = true
+			billboard.Size = UDim2.new(0, 200, 0, 50)
+			billboard.StudsOffset = Vector3.new(0, 3, 0)
+			billboard.MaxDistance = math.huge
+			billboard.Parent = item
+
+			local textLabel = Instance.new("TextLabel")
+			textLabel.Parent = billboard
+			textLabel.Text = "Scrap"
+			textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+			textLabel.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
+			textLabel.TextStrokeTransparency = 0
+			textLabel.BackgroundTransparency = 1
+			textLabel.Size = UDim2.new(1, 0, 1, 0)
+			textLabel.TextScaled = false
+			textLabel.Font = Enum.Font.SourceSansItalic
+			textLabel.TextSize = 15 -- sẽ bị override bằng đoạn bên dưới
+
+			local highlight = Instance.new("Highlight")
+			highlight.Name = "ScrapHighlight"
+			highlight.FillColor = Color3.fromRGB(128, 128, 128)
+			highlight.FillTransparency = 0.9
+			highlight.OutlineColor = Color3.fromRGB(128, 128, 128)
+			highlight.OutlineTransparency = 0
+			highlight.Parent = item
+
+			-- Theo dõi khoảng cách và chỉnh size
+			task.spawn(function()
+				while scrapRunning and billboard and billboard.Parent do
+					local distance = (camera.CFrame.Position - item:GetPivot().Position).Magnitude
+					local size = math.clamp(15 * (1 - distance / 200), 10, 15) -- xa thì nhỏ, gần thì max 15
+					textLabel.TextSize = size
+					task.wait(0.2)
+				end
+			end)
+		end
+
+		local function checkForScraps()
+			for _, item in ipairs(workspace:GetDescendants()) do
+				if item:IsA("Model") and item.Name == "scrap" then
+					createESP(item)
+				end
+			end
+		end
+
+		-- Tự động quét mới
+		scrapConnection = workspace.DescendantAdded:Connect(function(descendant)
+			if descendant:IsA("Model") and descendant.Name == "scrap" then
+				task.wait(0.1)
+				createESP(descendant)
+			end
+		end)
+
+		checkForScraps()
+	end
+})
 
 
 
