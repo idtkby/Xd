@@ -1029,7 +1029,7 @@ end)
 })
 
 KTab:CreateButton({
-    Name = "Khu vực Giết quái",
+    Name = "Phạm vi giết",
     Callback = function()
         loadstring(game:HttpGet('https://raw.githubusercontent.com/zamzamzan/test/refs/heads/main/7days'))()
     end,
