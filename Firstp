@@ -1,2 +1,0 @@
-local speaker = game.Players.LocalPlayer
-speaker.CameraMode = Enum.CameraMode.LockFirstPerson
