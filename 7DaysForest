@@ -1127,3 +1127,34 @@ local function applyFontToRayfieldFonts()
 end
 
 applyFontToRayfieldFonts()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local LTab = Window:CreateTab("Language", "language s")
+
+LTab:CreateButton({
+    Name = "Tiếng Việt",
+    Callback = function()
+        loadstring(game:HttpGet(""))()
+    end,
+})
