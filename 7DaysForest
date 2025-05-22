@@ -270,7 +270,7 @@ end
 			task.delay(0.2, collectNext)
 		end
 
-		Rayfield:Notify({Title = L("Auto Scrap"), Content = L("Collecting started...)", Duration = 2})
+		Rayfield:Notify({Title = L("Auto Scrap"), Content = L("Collecting started..."), Duration = 2})
 		collectNext()
 	end
 })
