@@ -582,7 +582,7 @@ VTab:CreateButton({
 VTab:CreateButton({
     Name = "Home",
     Callback = function()
-       
+       loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Home"))()
     end
 })
 
