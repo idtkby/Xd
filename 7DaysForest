@@ -48,7 +48,7 @@ Rayfield:Notify({
 })
 
 local Lang = {
-    ["Main"] = {vi = "Chức năng Chính", en = "Main"},
+    ["Main"] = {vi = "Chính", en = "Main"},
     ["Aimbot"] = {vi = "Tự động ngắm", en = "Aimbot"},
     ["Auto Scrap"] = {vi = "Nhặt Phế Liệu", en = "Auto Scrap"},
     ["Auto Scrap (Fast)"] = {vi = "Nhặt Phế Liệu (Nhanh)", en = "Auto Scrap (Fast)"},
@@ -177,7 +177,7 @@ end
 			task.delay(0.5, collectNext)
 		end
 
-		Rayfield:Notify({Title = L("Auto Scrap"), Content = L("Collecting started...)", Duration = 2})
+		Rayfield:Notify({Title = L("Auto Scrap"), Content = L("Collecting started..."), Duration = 2})
 		collectNext()
 	end
 })
