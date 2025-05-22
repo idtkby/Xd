@@ -1,6 +1,6 @@
 -- Kiểm tra ID game
 if game.PlaceId ~= 121308443347459 then
-    return warn("Script only works in the specified game (ID: 121308443347459){7Days To Live (The Forest)}")
+    return warn("Script only works in the specified game (ID: 121308443347459){7Days To Live (Forest)}")
 end
 
 -- Thông báo khi đúng ID game
@@ -20,11 +20,11 @@ local RunService = game:GetService("RunService")
 local camera = workspace.CurrentCamera
 
 -- Tải và khởi tạo thư viện GUI Rayfield
-local Rayfield = loadstring(game:HttpGet('local Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/main/source.lua"))()'))()
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- Tạo cửa sổ giao diện chính
 local Window = Rayfield:CreateWindow({
-    Name = "Script By Khang [The Forest]",
+    Name = "Script By Khang [Forest]",
     LoadingTitle = "Loading Hub...",
     LoadingSubtitle = "Please wait",
     ConfigurationSaving = {
@@ -42,58 +42,27 @@ local Window = Rayfield:CreateWindow({
 
 -- Thông báo đã tải
 Rayfield:Notify({
-    Title = L("Welcome!"),
-    Content = L("Script Loaded"),
+    Title = "Welcome!",
+    Content = "Script Loaded",
     Duration = 2
 })
 
-local Lang = {
-    ["Main"] = {vi = "Chính", en = "Main"},
-    ["Aimbot"] = {vi = "Tự động ngắm", en = "Aimbot"},
-    ["Auto Scrap"] = {vi = "Nhặt Phế Liệu", en = "Auto Scrap"},
-    ["Auto Scrap (Fast)"] = {vi = "Nhặt Phế Liệu (Nhanh)", en = "Auto Scrap (Fast)"},
-    ["Auto Scrap Toggle"] = {vi = "Bật/Tắt Nhặt Phế Liệu", en = "Auto Scrap Toggle"},
-    ["Auto Fishing"] = {vi = "Câu Cá Tự Động", en = "Auto Fishing"},
-    ["Auto Fishing [Fishing Rod]"] = {vi = "Câu Cá Tự Động [Cần Câu]", en = "Auto Fishing [Fishing Rod]"},
-    ["Auto Fishing Toggle"] = {vi = "Bật/Tắt Câu Cá Tự Động", en = "Auto Fishing Toggle"},
-    ["Language Changed"] = {vi = "Đã đổi ngôn ngữ", en = "Language Changed"},
-    ["Now using Vietnamese"] = {vi = "Đang sử dụng Tiếng Việt", en = "Now using Vietnamese"},
-    ["Now using English"] = {vi = "Đang sử dụng Tiếng Anh", en = "Now using English"},
-    ["Visual"] = {vi = "Hiển thị", en = "Visual"},
-    ["ESP"] = {vi = "Hiển Thị Vật Phẩm", en = "ESP"},
-    ["Blood Bark"] = {vi = "Cây Máu", en = "Blood Bark"},
-    ["Blood Bark (Bloodmoon)"] = {vi = "Cây Máu (Trăng Máu)", en = "Blood Bark (Bloodmoon)"},
-    ["Scrap"] = {vi = "Phế Liệu", en = "Scrap"},
-    ["Collecting started..."] = {vi = "Bắt đầu thu thập...", en = "Collecting started..."},
-    ["No Scrap found"] = {vi = "Không tìm thấy Phế Liệu", en = "No Scrap found"},
-    ["Teleported back"] = {vi = "Đã dịch chuyển lại", en = "Teleported back"},
-    ["Auto Scrap disabled"] = {vi = "Nhặt Phế Liệu đã tắt", en = "Auto Scrap disabled"},
-}
+-- Tạo Tab Main
+local MTab = Window:CreateTab("Main", "home")
+MTab:CreateSection("Main")
 
-local function L(key)    
-	return Lang[key] and (Lang[key][currentLanguage] or key) or key    
-end    
-
-
-
-
-
--- Dùng đúng cách
-local MTab = Window:CreateTab(L("Main"), "home")
-MTab:CreateSection(L("Main"))
-
-MTab:CreateButton({
-	Name = L("Aimbot"),
-	Callback = function()
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Aimbot%20npc%207%20days"))()
-	end,
-})
+  MTab:CreateButton({
+    Name = "Aimbot (Some npc may not work)",
+    Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Aimbot%20npc%207%20days"))()
+    end,
+  })
 
 local autoScrapRunning = false
 local savedCFrame = nil
 
 MTab:CreateToggle({
-	Name = L("Auto Scrap"),
+	Name = "Auto Scrap",
 	CurrentValue = false,
 	Flag = "AutoScrapToggle",
 	Callback = function(state)
@@ -104,7 +73,7 @@ MTab:CreateToggle({
 		autoScrapRunning = state
 
 		if not state then
-			Rayfield:Notify({Title = L("Auto Scrap"), Content = L("Auto Scrap disabled"), Duration = 2})
+			Rayfield:Notify({Title = "Auto Scrap", Content = "Auto Scrap disabled", Duration = 2})
 
 			task.delay(1, function()
 				local char = lp.Character or lp.CharacterAdded:Wait()
@@ -148,7 +117,7 @@ MTab:CreateToggle({
 			local part, prompt = findNextScrap()
 
 			if not part then
-				Rayfield:Notify({Title = L("Auto Scrap"), Content = L("No Scrap found"), Duration = 2})
+				Rayfield:Notify({Title = "Auto Scrap", Content = "No Scrap found", Duration = 2})
 				task.delay(1, collectNext)
 				return
 			end
@@ -177,7 +146,7 @@ end
 			task.delay(0.5, collectNext)
 		end
 
-		Rayfield:Notify({Title = L("Auto Scrap"), Content = L("Collecting started..."), Duration = 2})
+		Rayfield:Notify({Title = "Auto Scrap", Content = "Collecting started...", Duration = 2})
 		collectNext()
 	end
 })
@@ -186,7 +155,7 @@ local autoScrapRunning = false
 local savedCFrame = nil
 
 MTab:CreateToggle({
-	Name = L("Auto Scrap (Fast)"),
+	Name = "Auto Scrap (Fast)",
 	CurrentValue = false,
 	Flag = "AutoScrapToggle",
 	Callback = function(state)
@@ -197,7 +166,7 @@ MTab:CreateToggle({
 		autoScrapRunning = state
 
 		if not state then
-			Rayfield:Notify({Title = L("Auto Scrap"), Content = L("Auto Scrap disabled"), Duration = 2})
+			Rayfield:Notify({Title = "Auto Scrap", Content = "Auto Scrap disabled", Duration = 2})
 
 			task.delay(1, function()
 				local char = lp.Character or lp.CharacterAdded:Wait()
@@ -205,8 +174,8 @@ MTab:CreateToggle({
 				if hrp and savedCFrame then
 					char:PivotTo(savedCFrame)
 					Rayfield:Notify({
-						Title = L("Auto Scrap"),
-						Content = L("Teleported back"),
+						Title = "Auto Scrap",
+						Content = "Teleported back",
 						Duration = 2
 					})
 				end
@@ -241,7 +210,7 @@ MTab:CreateToggle({
 			local part, prompt = findNextScrap()
 
 			if not part then
-				Rayfield:Notify({Title = L("Auto Scrap"), Content = L("No Scrap found"), Duration = 2})
+				Rayfield:Notify({Title = "Auto Scrap", Content = "No Scrap found", Duration = 2})
 				task.delay(1, collectNext)
 				return
 			end
@@ -270,7 +239,7 @@ end
 			task.delay(0.2, collectNext)
 		end
 
-		Rayfield:Notify({Title = L("Auto Scrap"), Content = L("Collecting started..."), Duration = 2})
+		Rayfield:Notify({Title = "Auto Scrap", Content = "Collecting started...", Duration = 2})
 		collectNext()
 	end
 })
@@ -278,7 +247,7 @@ end
 local autoHeal = false
 
 MTab:CreateToggle({
-    Name = L("Auto Heal Players"),
+    Name = "Auto Heal Players",
     CurrentValue = false,
     Flag = "AutoHealPlayers",
     Callback = function(Value)
@@ -307,7 +276,7 @@ MTab:CreateToggle({
 local autoFishingRunning = false
 
 MTab:CreateToggle({
-	Name = L("Auto fishing [Fishing Rod]"),
+	Name = "Auto fishing [Fishing Rod]",
 	CurrentValue = false,
 	Flag = "AutoFishingToggle",
 	Callback = function(state)
@@ -337,7 +306,7 @@ MTab:CreateToggle({
 MTab:CreateSection("Get Berry")
 
 MTab:CreateButton({
-    Name = L("Eat Berry Button (Full Hungry)"),
+    Name = "Eat Berry Button (Full Hungry)",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/EatBerryButton"))()
     end,
@@ -347,7 +316,7 @@ local toggleRunning = false
 local connection
 
 MTab:CreateToggle({
-	Name = L("GetBerry [INF]"),
+	Name = "GetBerry [INF]",
 	CurrentValue = false,
 	Flag = "GetBerryINF",
 	Callback = function(state)
@@ -438,7 +407,7 @@ MTab:CreateToggle({
 })
 
 MTab:CreateButton({
-	Name = L("GetBerry [30/04/1975]"),
+	Name = "GetBerry [30/04/1975]",
 	Callback = function()
 		local lp = game:GetService("Players").LocalPlayer
 		local char = lp.Character or lp.CharacterAdded:Wait()
@@ -503,8 +472,8 @@ MTab:CreateButton({
 })
 
 MTab:CreateInput({
-	Name = L("Collect Berry (Input berry number)"),
-	PlaceholderText = L("Enter quantity (100000 MAX)"),
+	Name = "Collect Berry (Input berry number)",
+	PlaceholderText = "Enter quantity (100000 MAX)",
 	RemoveTextAfterFocusLost = false,
 	Callback = function(text)
 		local amount = tonumber(text)
@@ -583,13 +552,13 @@ MTab:CreateInput({
 
 
 
-MTab:CreateSection(L("Blood moon"))
+MTab:CreateSection("Blood moon")
 
 local autoBloodRunning = false
 local savedCFrame = nil
 
 MTab:CreateToggle({
-	Name = L("Auto Blood Bark (Fast)"),
+	Name = "Auto Blood Bark (Fast)",
 	CurrentValue = false,
 	Flag = "AutoBloodToggle",
 	Callback = function(state)
@@ -600,7 +569,7 @@ MTab:CreateToggle({
 		autoBloodRunning = state
 
 		if not state then
-			Rayfield:Notify({Title = L("Auto Blood Bark"), Content = L("Auto Collect disabled"), Duration = 2})
+			Rayfield:Notify({Title = "Auto Blood Bark", Content = "Auto Collect disabled", Duration = 2})
 
 			task.delay(1, function()
 				local char = lp.Character or lp.CharacterAdded:Wait()
@@ -608,8 +577,8 @@ MTab:CreateToggle({
 				if hrp and savedCFrame then
 					char:PivotTo(savedCFrame)
 					Rayfield:Notify({
-						Title = L("Auto Blood Bark"),
-						Content = L("Teleported back"),
+						Title = "Auto Blood Bark",
+						Content = "Teleported back",
 						Duration = 2
 					})
 				end
@@ -644,7 +613,7 @@ MTab:CreateToggle({
 			local part, prompt = findNextTarget()
 
 			if not part then
-				Rayfield:Notify({Title = L("Auto Blood Bark"), Content = L("No Blood Bark found"), Duration = 2})
+				Rayfield:Notify({Title = "Auto Blood Bark", Content = "No Blood Bark found", Duration = 2})
 				task.delay(1, collectNext)
 				return
 			end
@@ -673,7 +642,7 @@ MTab:CreateToggle({
 			task.delay(0.2, collectNext)
 		end
 
-		Rayfield:Notify({Title = L("Auto Blood Bark"), Content = L("Collecting started..."), Duration = 2})
+		Rayfield:Notify({Title = "Auto Blood Bark", Content = "Collecting started...", Duration = 2})
 		collectNext()
 	end
 })
@@ -700,33 +669,33 @@ MTab:CreateToggle({
 
 
 -- Tạo Tab Visual
-local VTab = Window:CreateTab(L("Visual"), "eye")
-VTab:CreateSection(L("Main Visual"))
+local VTab = Window:CreateTab("Visual", "eye")
+VTab:CreateSection("Main Visual")
 
 VTab:CreateButton({
-    Name = L("Players ESP"),
+    Name = "Players ESP",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Playeresp"))()
     end,
 })
 
--- Esp home button (Rayfield GUI - VTab)
+-- Esp home button (Rayfield GUI - MTab)
 VTab:CreateButton({
-    Name = L("Home"),
+    Name = "Home",
     Callback = function()
        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Home"))()
     end
 })
 
 VTab:CreateButton({
-    Name = L("Animal and Monster"),
+    Name = "Animal and Monster",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Esp%20Npc"))()
     end,
 })
 
 VTab:CreateButton({
-    Name = L("Easter egg (Fishing)"),
+    Name = "Easter egg (Fishing)",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Eastereggesp"))()
     end,
@@ -736,7 +705,7 @@ local scrapRunning = false
 local scrapConnection
 
 VTab:CreateToggle({
-	Name = L("Scrap"),
+	Name = "Scrap",
 	CurrentValue = false,
 	Flag = "ScrapESP",
 	Callback = function(state)
@@ -826,13 +795,13 @@ VTab:CreateToggle({
 
 
 
-VTab:CreateSection(L("Blood moon"))
+VTab:CreateSection("Blood moon")
 
 local bloodRunning = false
 local bloodConnection
 
 VTab:CreateToggle({
-	Name = L("Blood bark (Bloodmoon)"),
+	Name = "Blood bark (Bloodmoon)",
 	CurrentValue = false,
 	Flag = "BloodESP",
 	Callback = function(state)
@@ -936,26 +905,26 @@ VTab:CreateToggle({
 
 
 
-local TeleportTab = Window:CreateTab(L("Teleport"), "map")
-TeleportTab:CreateSection(L("Main Location"))
+local TeleportTab = Window:CreateTab("Teleport", "map")
+TeleportTab:CreateSection("Main Location")
 
 -- Vị trí chính
 local locations = {
-    {Name = L("Home"), Position = Vector3.new(60.99, 48.58, 417.10)},
-    {Name = L("Home balcony"), Position = Vector3.new(37.34, 52.72, 420.62)},
-    {Name = L("Home roof"), Position = Vector3.new(57.73, 68.46, 417.58)},
-    {Name = L("River"), Position = Vector3.new(-227.99, -0.84, 341.59)},
-    {Name = L("Skeleton"), Position = Vector3.new(145.43, 12.63, 234.22)},
-    {Name = L("Turret1"), Position = Vector3.new(-110.91, 37.91, 352.01)},
-    {Name = L("Turret2"), Position = Vector3.new(-5.95, 26.77, 258.23)},
-    {Name = L("Turret3"), Position = Vector3.new(117.83, 34.97, 336.75)},
-    {Name = L("Turret4"), Position = Vector3.new(95.04, 34.41, 491.53)},
-    {Name = L("Helicopter (Waiting to appear)"), Position = Vector3.new(-318.54, 30.69, -110.7)},
+    {Name = "Home", Position = Vector3.new(60.99, 48.58, 417.10)},
+    {Name = "Home balcony", Position = Vector3.new(37.34, 52.72, 420.62)},
+    {Name = "Home roof", Position = Vector3.new(57.73, 68.46, 417.58)},
+    {Name = "River", Position = Vector3.new(-227.99, -0.84, 341.59)},
+    {Name = "Skeleton", Position = Vector3.new(145.43, 12.63, 234.22)},
+    {Name = "Turret1", Position = Vector3.new(-110.91, 37.91, 352.01)},
+    {Name = "Turret2", Position = Vector3.new(-5.95, 26.77, 258.23)},
+    {Name = "Turret3", Position = Vector3.new(117.83, 34.97, 336.75)},
+    {Name = "Turret4", Position = Vector3.new(95.04, 34.41, 491.53)},
+    {Name = "Helicopter (Waiting to appear)", Position = Vector3.new(-318.54, 30.69, -110.7)},
 }
 
 for _, loc in ipairs(locations) do
     TeleportTab:CreateButton({
-        Name = L("Go to ") .. loc.Name,
+        Name = "Go to " .. loc.Name,
         Callback = function()
             local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
             if hrp then
@@ -981,14 +950,14 @@ end
 
 
 
-local KTab = Window:CreateTab(L("Misc"), "package")
+local KTab = Window:CreateTab("Misc", "package")
 
 -- Khai báo các dịch vụ cần thiết
 local PromptService = game:GetService("ProximityPromptService")
 local Workspace = game:GetService("Workspace")
 
 -- Tạo Toggle để kích hoạt và tắt chức năng Instant Prompt
-local InstantPromptToggle = CharacterTab:CreateToggle({
+local InstantPromptToggle = MTab:CreateToggle({
     Name = "Instant PP",
     CurrentValue = false,  -- Mặc định tắt
     Callback = function(enabled)
@@ -1024,7 +993,7 @@ local InstantPromptToggle = CharacterTab:CreateToggle({
 })
 
 KTab:CreateButton({
-    Name = L("Collect Aura"),
+    Name = "Collect Aura",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/CollectAura"))()
     end,
@@ -1060,21 +1029,21 @@ end)
 })
 
 KTab:CreateButton({
-    Name = L("Killaura"),
+    Name = "Killaura",
     Callback = function()
         loadstring(game:HttpGet('https://raw.githubusercontent.com/zamzamzan/test/refs/heads/main/7days'))()
     end,
 })
 
 KTab:CreateButton({
-    Name = L("Dot Aim"),
+    Name = "Dot Aim",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/DotAim"))()
     end,
 })
 
 KTab:CreateButton({
-    Name = L("Enable Chat"),
+    Name = "Enable Chat",
     Callback = function()
         local StarterGui = game:GetService("StarterGui")
 local TextChatService = game:GetService("TextChatService")
@@ -1105,24 +1074,24 @@ end)
 })
 
 KTab:CreateButton({
-    Name = L("Anti-Void"),
+    Name = "Anti-Void",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/AntiVoid"))()
     end,
 })
 
-KTab:CreateSection(L("Save location"))
+KTab:CreateSection("Save location")
 local originalPos = nil
 
 KTab:CreateButton({
-    Name = L("Save current location"),
+    Name = "Save current location",
     Callback = function()
         local hrp = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         if hrp then
             originalPos = hrp.CFrame
             Rayfield:Notify({
-                Title = L("Original location"),
-                Content = L("Current location saved"),
+                Title = "Original location",
+                Content = "Current location saved",
                 Duration = 2
             })
         end
@@ -1130,14 +1099,14 @@ KTab:CreateButton({
 })
 
 KTab:CreateButton({
-    Name = L("Return to original position"),
+    Name = "Return to original position",
     Callback = function()
         local hrp = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         if originalPos and hrp then
             hrp.CFrame = originalPos
             Rayfield:Notify({
-                Title = L("Teleport"),
-                Content = L("Teleported to saved location"),
+                Title = "Teleport",
+                Content = "Teleported to saved location",
                 Duration = 2
             })
         end
@@ -1158,38 +1127,3 @@ local function applyFontToRayfieldFonts()
 end
 
 applyFontToRayfieldFonts()
-
-
-
-
-
-
-
-
-
-
-
-
-local LTab = Window:CreateTab("Language", "setting")
-
-LTab:CreateDropdown({
-	Name = "Ngôn ngữ / Language",
-	Options = {"Tiếng Việt", "English"},
-	CurrentOption = {"English"},
-	MultipleOptions = false,
-	Flag = "LanguageOption",
-	Callback = function(option)
-		if option[1] == "Tiếng Việt" then
-			currentLanguage = "vi"
-		else
-			currentLanguage = "en"
-		end
-
-		Rayfield:Notify({
-			Title = L("Main"),
-			Content = currentLanguage == "vi" and "Đã đổi sang Tiếng Việt" or "Switched to English",
-			Duration = 3
-		})
-rebuildMainTab() -- Gọi lại tab sau khi đổi ngôn ngữ
-	end
-})
