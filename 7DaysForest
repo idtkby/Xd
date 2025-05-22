@@ -274,62 +274,55 @@ MTab:CreateToggle({
 })
 
 local toggleFishing = false
-local fishingThread
+local autoFishingConnection
 
 MTab:CreateToggle({
 	Name = "Auto Fishing",
 	CurrentValue = false,
-	Flag = "AutoFishing",
+	Flag = "AutoFishingToggle",
 	Callback = function(state)
 		toggleFishing = state
 
-		if fishingThread then
-			task.cancel(fishingThread)
-			fishingThread = nil
+		if autoFishingConnection then
+			autoFishingConnection:Disconnect()
+			autoFishingConnection = nil
 		end
 
-		if state then
-			fishingThread = task.spawn(function()
-				local Players = game:GetService("Players")
-				local ReplicatedStorage = game:GetService("ReplicatedStorage")
-				local lp = Players.LocalPlayer
+		if not state then return end
 
-				local castRemote = ReplicatedStorage:WaitForChild("remotes"):FindFirstChild("cast")
-				local hitRemote = ReplicatedStorage:WaitForChild("remotes"):FindFirstChild("hit_fish")
-				local finishRemote = ReplicatedStorage:WaitForChild("remotes"):FindFirstChild("finished_tutorial")
+		local Players = game:GetService("Players")
+		local lp = Players.LocalPlayer
 
-				while toggleFishing do
-					local hasRod = false
-
-					-- Kiểm tra Fishing Rod trong Backpack
-					for _, tool in pairs(lp.Backpack:GetChildren()) do
-						if tool:IsA("Tool") and tool.Name == "Fishing Rod" then
-							hasRod = true
-							break
-						end
-					end
-
-					if not hasRod then
-						warn("You are not eligible")
-						toggleFishing = false
+		autoFishingConnection = task.spawn(function()
+			while toggleFishing do
+				local hasRod = false
+				for _, tool in ipairs(lp.Backpack:GetChildren()) do
+					if tool:IsA("Tool") and tool.Name == "Fishing Rod" then
+						hasRod = true
 						break
 					end
-
-					pcall(function()
-						castRemote:FireServer()
-						task.wait(1)
-						for i = 1, 8 do
-							hitRemote:FireServer()
-							task.wait(0.1)
-						end
-						task.wait(0.3)
-						finishRemote:FireServer()
-					end)
-
-					task.wait(1)
 				end
-			end)
-		end
+
+				if not hasRod then
+					warn("You are not eligible")
+					toggleFishing = false
+					return
+				end
+
+game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("cast"):FireServer()
+wait(1)
+
+for i = 1, 8 do
+game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("hit_fish"):FireServer()
+task.wait(0.1)
+end
+wait(0.3)
+game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("finished_tutorial"):FireServer()
+
+
+				task.wait(1) -- đợi 1 giây mỗi lần thực hiện
+			end
+		end)
 	end
 })
 
