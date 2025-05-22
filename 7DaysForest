@@ -280,7 +280,7 @@ MTab:CreateToggle({
 	Name = "Auto fishing [Fishing Rod]",
 	CurrentValue = false,
 	Flag = "AutoFishingToggle",
-	Calllback = function(state)
+	Callback = function(state)
 		autoFishingRunning = state
 
 		if autoFishingConnection then
