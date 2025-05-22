@@ -627,6 +627,13 @@ VTab:CreateButton({
     end,
 })
 
+VTab:CreateButton({
+    Name = "Easter egg (Fishing)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Eastereggesp"))()
+    end,
+})
+
 
 
 
