@@ -277,7 +277,7 @@ local autoFishingRunning = false
 local autoFishingConnection
 
 MTab:CreateToggle({
-	Name = "Auto fishing (anywhere)[Fishing Rod]",
+	Name = "Auto fishing [Fishing Rod]",
 	CurrentValue = false,
 	Flag = "AutoFishingToggle",
 	Calllback = function(state)
