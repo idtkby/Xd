@@ -292,17 +292,17 @@ MTab:CreateToggle({
 			autoFishingConnection = task.spawn(function()
 				while autoFishingRunning do
 					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("cast"):FireServer()
-wait(1.5)
+wait(1)
 
 for i = 1, 8 do
 game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("hit_fish"):FireServer()
-task.wait(0.1)
+task.wait(0.05)
 end
-wait(0.3)
+wait(0.1)
 game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("finished_tutorial"):FireServer()
 
 					
-					task.wait(0.5) -- mỗi lần cách 0.5 giây
+					task.wait(0.2) -- mỗi lần cách 0.2 giây
 				end
 			end)
 		end
