@@ -561,6 +561,11 @@ MTab:CreateInput({
 
 
 
+
+
+
+
+
 -- Tạo Tab Visual
 local VTab = Window:CreateTab("Visual", "eye")
 VTab:CreateSection("Main Visual")
@@ -644,7 +649,7 @@ VTab:CreateToggle({
 			textLabel.BackgroundTransparency = 1
 			textLabel.Size = UDim2.new(1, 0, 1, 0)
 			textLabel.TextScaled = false
-			textLabel.Font = Enum.Font.SourceSansItalic
+			textLabel.Font = Enum.Font.Bodoni
 			textLabel.TextSize = 15 -- sẽ bị override bằng đoạn bên dưới
 
 			local highlight = Instance.new("Highlight")
@@ -696,6 +701,15 @@ VTab:CreateToggle({
 
 
 
+
+
+
+
+
+
+
+
+
 local TeleportTab = Window:CreateTab("Teleport", "map")
 TeleportTab:CreateSection("Main Location")
 
@@ -724,6 +738,14 @@ for _, loc in ipairs(locations) do
         end
     })
 end
+
+
+
+
+
+
+
+
 
 
 
