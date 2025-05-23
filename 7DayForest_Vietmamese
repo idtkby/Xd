@@ -48,8 +48,8 @@ Rayfield:Notify({
 })
 
 -- Tạo Tab Main
-local MTab = Window:CreateTab("Main", "home")
-MTab:CreateSection("Main")
+local MTab = Window:CreateTab("Trang chủ", "home")
+MTab:CreateSection("Chức năng chính")
 
   MTab:CreateButton({
     Name = "Tự động ngắm (Một số scps ko hoạt động)",
@@ -295,6 +295,8 @@ MTab:CreateToggle({
 
 					wait(0.5)
 					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("finished_tutorial"):FireServer()
+wait(0.5)
+					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("finished_tutorial"):FireServer()
 
 					task.wait(0.1)
 				end
@@ -303,7 +305,7 @@ MTab:CreateToggle({
 	end
 })
 
-MTab:CreateSection("Get Berry")
+MTab:CreateSection("Lấy quả mọng")
 
 MTab:CreateButton({
     Name = "Nút ăn quả mọng (no)",
@@ -906,7 +908,7 @@ VTab:CreateToggle({
 
 
 local TeleportTab = Window:CreateTab("Dịch chuyển", "map")
-TeleportTab:CreateSection("Main Location")
+TeleportTab:CreateSection("Địa điểm chính")
 
 -- Vị trí chính
 local locations = {
@@ -950,7 +952,7 @@ end
 
 
 
-local KTab = Window:CreateTab("Misc", "package")
+local KTab = Window:CreateTab("Lặt vặt", "package")
 
 -- Khai báo các dịch vụ cần thiết
 local PromptService = game:GetService("ProximityPromptService")
@@ -1080,7 +1082,7 @@ KTab:CreateButton({
     end,
 })
 
-KTab:CreateSection("Save location")
+KTab:CreateSection("Lưu vị trí")
 local originalPos = nil
 
 KTab:CreateButton({
