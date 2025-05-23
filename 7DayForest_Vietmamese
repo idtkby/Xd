@@ -295,7 +295,6 @@ MTab:CreateToggle({
 
 					wait(0.5)
 					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("finished_tutorial"):FireServer()
-wait(1)
 					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("finished_tutorial"):FireServer()
 
 					task.wait(0.1)
