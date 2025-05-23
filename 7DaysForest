@@ -301,6 +301,30 @@ MTab:CreateToggle({
 	end
 })
 
+local autoFishingRunning = false
+
+MTab:CreateToggle({
+	Name = "Auto chop trees",
+	CurrentValue = false,
+	Flag = "AutoFishingToggle",
+	Callback = function(state)
+		autoFishingRunning = state
+
+		if state then
+			task.spawn(function()
+				while autoFishingRunning do
+					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("swing_axe"):FireServer()
+
+
+
+					task.wait(0.5)
+				end
+			end)
+		end
+	end
+})
+
+
 MTab:CreateSection("Get Berry")
 
 MTab:CreateButton({
