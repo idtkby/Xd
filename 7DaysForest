@@ -349,12 +349,14 @@ MTab:CreateToggle({
 				local hrp = char:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 
-				for _, obj in ipairs(workspace:GetDescendants()) do
-					if obj:IsA("ProximityPrompt") and obj.Parent and obj.Parent:IsA("BasePart") then
-						local part = obj.Parent
-						if (hrp.Position - part.Position).Magnitude <= 10 then
+				for _, model in ipairs(workspace:GetDescendants()) do
+					if model:IsA("Model") and model.Name:lower() == "log" then
+						local part = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+						local prompt = model:FindFirstChildWhichIsA("ProximityPrompt", true)
+
+						if part and prompt and (hrp.Position - part.Position).Magnitude <= 10 then
 							pcall(function()
-								fireproximityprompt(obj)
+								fireproximityprompt(prompt)
 							end)
 						end
 					end
