@@ -286,15 +286,15 @@ MTab:CreateToggle({
 			task.spawn(function()
 				while autoFishingRunning do
 					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("cast"):FireServer()
-					wait(1)
+					wait(0.2)
 
 					for i = 1, 8 do
 						game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("hit_fish"):FireServer()
-						task.wait(0.05)
+						task.wait(0.03)
 					end
 
 			
-					task.wait(0.5)
+					task.wait(1)
 				end
 			end)
 		end
