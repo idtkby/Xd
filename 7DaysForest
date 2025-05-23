@@ -291,12 +291,10 @@ MTab:CreateToggle({
 					for i = 1, 8 do
 						game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("hit_fish"):FireServer()
 						task.wait(0.05)
-					end
+			end
 
-					wait(0.5)
-					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("finished_tutorial"):FireServer()
 
-					task.wait(0.1)
+					task.wait(0.5)
 				end
 			end)
 		end
