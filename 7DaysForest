@@ -324,6 +324,45 @@ MTab:CreateToggle({
 	end
 })
 
+local autoCollectLog = false
+local heartbeatConnection
+
+MTab:CreateToggle({
+	Name = "Auto collect log",
+	CurrentValue = false,
+	Flag = "AutoCollectLog",
+	Callback = function(state)
+		autoCollectLog = state
+
+		if heartbeatConnection then
+			heartbeatConnection:Disconnect()
+			heartbeatConnection = nil
+		end
+
+		if state then
+			local Players = game:GetService("Players")
+			local RunService = game:GetService("RunService")
+			local LocalPlayer = Players.LocalPlayer
+
+			heartbeatConnection = RunService.Heartbeat:Connect(function()
+				local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+				local hrp = char:FindFirstChild("HumanoidRootPart")
+				if not hrp then return end
+
+				for _, obj in ipairs(workspace:GetDescendants()) do
+					if obj:IsA("ProximityPrompt") and obj.Parent and obj.Parent:IsA("BasePart") then
+						local part = obj.Parent
+						if (hrp.Position - part.Position).Magnitude <= 10 then
+							pcall(function()
+								fireproximityprompt(obj)
+							end)
+						end
+					end
+				end
+			end)
+		end
+	end
+})
 
 MTab:CreateSection("Get Berry")
 
