@@ -236,7 +236,7 @@ end
 				end
 			end)
 
-			task.delay(0.2, collectNext)
+			task.delay(0.1, collectNext)
 		end
 
 		Rayfield:Notify({Title = "Auto Scrap", Content = "Collecting started...", Duration = 2})
@@ -328,7 +328,7 @@ local autoCollectLog = false
 local heartbeatConnection
 
 MTab:CreateToggle({
-	Name = "Auto collect log",
+	Name = "Auto collect wood",
 	CurrentValue = false,
 	Flag = "AutoCollectLog",
 	Callback = function(state)
