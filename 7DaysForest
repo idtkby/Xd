@@ -1043,7 +1043,7 @@ end)
 -- Section: Builds
 CTab:CreateSection("Builds")
 local builds = {
-	{Name = "Cabbage", Requires = "🥦15 WOOD / Engineer: 8 WOOD"},
+	{Name = "Cabbage Farm", Requires = "🥦15 WOOD / Engineer: 8 WOOD"},
 	{Name = "Bed", Requires = "🛌7 WOOD / Engineer: 4 WOOD"},
 	{Name = "Campfire", Requires = "🔥10 WOOD / Engineer: 5 WOOD"},
 	{Name = "Chair", Requires = "🪑2 WOOD / Engineer: 1 WOOD"},
