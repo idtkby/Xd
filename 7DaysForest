@@ -368,13 +368,6 @@ MTab:CreateToggle({
 
 MTab:CreateSection("Get Berry")
 
-MTab:CreateButton({
-    Name = "Eat Berry Button (Full Hungry)",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/EatBerryButton"))()
-    end,
-})
-
 local toggleRunning = false
 local connection
 
@@ -1099,6 +1092,13 @@ KTab:CreateButton({
 
 
 KTab:CreateSection("Other")
+
+KTab:CreateButton({
+    Name = "Eat Button (Full Hungry)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/EatBerryButton"))()
+    end,
+})
 
 KTab:CreateButton({
     Name = "Collect Aura",
