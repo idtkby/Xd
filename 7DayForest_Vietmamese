@@ -368,13 +368,6 @@ MTab:CreateToggle({
 
 MTab:CreateSection("Lấy quả mọng")
 
-MTab:CreateButton({
-    Name = "Nút ăn quả mọng (no)",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/EatBerryButton"))()
-    end,
-})
-
 local toggleRunning = false
 local connection
 
@@ -1097,6 +1090,13 @@ KTab:CreateButton({
 })
 
 KTab:CreateSection("Khác")
+
+KTab:CreateButton({
+    Name = "Nút ăn đồ ăn (no)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/EatBerryButton"))()
+    end,
+})
 
 KTab:CreateButton({
     Name = "Tự động nhặt",
