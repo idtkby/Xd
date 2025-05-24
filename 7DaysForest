@@ -52,7 +52,7 @@ local MTab = Window:CreateTab("Main", "home")
 MTab:CreateSection("Main")
 
   MTab:CreateButton({
-    Name = "Aimbot (Some npc may not work)",
+    Name = "Aimbot  (Some npc may not work)",
     Callback = function()
       loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Aimbot%20npc%207%20days"))()
     end,
@@ -729,7 +729,7 @@ local VTab = Window:CreateTab("Visual", "eye")
 VTab:CreateSection("Main Visual")
 
 VTab:CreateButton({
-    Name = "Players",
+    Name = "Players 👥",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Playeresp"))()
     end,
@@ -737,7 +737,7 @@ VTab:CreateButton({
 
 -- Esp house button (Rayfield GUI - VTab)
 VTab:CreateButton({
-    Name = "House",
+    Name = "House 🏠",
     Callback = function()
        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Home"))()
     end
@@ -751,7 +751,7 @@ VTab:CreateButton({
 })
 
 VTab:CreateButton({
-    Name = "Easter egg (Fishing)",
+    Name = "Easter egg 🥚 (Fishing)",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Eastereggesp"))()
     end,
@@ -857,7 +857,7 @@ local bloodRunning = false
 local bloodConnection
 
 VTab:CreateToggle({
-	Name = "Blood bark (Bloodmoon)",
+	Name = "Blood bark 🩸 (Bloodmoon)",
 	CurrentValue = false,
 	Flag = "BloodESP",
 	Callback = function(state)
@@ -966,16 +966,16 @@ TeleportTab:CreateSection("Main Location")
 
 -- Vị trí chính
 local locations = {
-    {Name = "House", Position = Vector3.new(60.99, 48.58, 417.10)},
-    {Name = "House balcony", Position = Vector3.new(37.34, 52.72, 420.62)},
-    {Name = "House roof", Position = Vector3.new(57.73, 68.46, 417.58)},
-    {Name = "River", Position = Vector3.new(-227.99, -0.84, 341.59)},
-    {Name = "Skeleton", Position = Vector3.new(145.43, 12.63, 234.22)},
+    {Name = "House 🏠", Position = Vector3.new(60.99, 48.58, 417.10)},
+    {Name = "House balcony 🏠", Position = Vector3.new(37.34, 52.72, 420.62)},
+    {Name = "House roof 🏠", Position = Vector3.new(57.73, 68.46, 417.58)},
+    {Name = "River 🏞️", Position = Vector3.new(-227.99, -0.84, 341.59)},
+    {Name = "Skeleton 💀", Position = Vector3.new(145.43, 12.63, 234.22)},
     {Name = "Turret1", Position = Vector3.new(-110.91, 37.91, 352.01)},
     {Name = "Turret2", Position = Vector3.new(-5.95, 26.77, 258.23)},
     {Name = "Turret3", Position = Vector3.new(117.83, 34.97, 336.75)},
     {Name = "Turret4", Position = Vector3.new(95.04, 34.41, 491.53)},
-    {Name = "Helicopter (Waiting to appear)", Position = Vector3.new(-318.54, 30.69, -110.7)},
+    {Name = "Helicopter 🚁 (Waiting to appear)", Position = Vector3.new(-318.54, 30.69, -110.7)},
 }
 
 for _, loc in ipairs(locations) do
@@ -1023,35 +1023,35 @@ local woodLabel = CTab:CreateLabel("WOOD: ...")
 task.spawn(function()
 	local stats = lp:WaitForChild("stats", 10)
 	if not stats then
-		woodLabel:Set("Wood: [stats not found]")
+		woodLabel:Set("Wood🪵: [stats not found]")
 		return
 	end
 
 	local wood = stats:WaitForChild("wood", 10)
 	if not wood then
-		woodLabel:Set("Wood: [wood not found]")
+		woodLabel:Set("Wood🪵: [wood not found]")
 		return
 	end
 
-	woodLabel:Set("Wood: " .. tostring(wood.Value))
+	woodLabel:Set("Wood🪵: " .. tostring(wood.Value))
 
 	wood:GetPropertyChangedSignal("Value"):Connect(function()
-		woodLabel:Set("Wood: " .. tostring(wood.Value))
+		woodLabel:Set("Wood🪵: " .. tostring(wood.Value))
 	end)
 end)
 
 -- Section: Builds
 CTab:CreateSection("Builds")
 local builds = {
-	{Name = "Cabbage", Requires = "15 WOOD / Engineer: 8 WOOD"},
-	{Name = "Bed", Requires = "7 WOOD / Engineer: 4 WOOD"},
-	{Name = "Campfire", Requires = "10 WOOD / Engineer: 5 WOOD"},
-	{Name = "Chair", Requires = "2 WOOD / Engineer: 1 WOOD"},
-	{Name = "Ladder", Requires = "3 WOOD / Engineer: 2 WOOD"},
-	{Name = "Table", Requires = "4 WOOD / Engineer: 2 WOOD"},
-	{Name = "Torch", Requires = "1 WOOD / Engineer: 1 WOOD"},
-	{Name = "Wall", Requires = "3 WOOD / Engineer: 2 WOOD"},
-	{Name = "Wide Wall", Requires = "5 WOOD / Engineer: 3 WOOD"},
+	{Name = "Cabbage", Requires = "🥦15 WOOD / Engineer: 8 WOOD"},
+	{Name = "Bed", Requires = "🛌7 WOOD / Engineer: 4 WOOD"},
+	{Name = "Campfire", Requires = "🔥10 WOOD / Engineer: 5 WOOD"},
+	{Name = "Chair", Requires = "🪑2 WOOD / Engineer: 1 WOOD"},
+	{Name = "Ladder", Requires = "🪜3 WOOD / Engineer: 2 WOOD"},
+	{Name = "Table", Requires = "🟫4 WOOD / Engineer: 2 WOOD"},
+	{Name = "Torch", Requires = "🕯️1 WOOD / Engineer: 1 WOOD"},
+	{Name = "Wall", Requires = "🧱3 WOOD / Engineer: 2 WOOD"},
+	{Name = "Wide Wall", Requires = "🧱5 WOOD / Engineer: 3 WOOD"},
 }
 
 for _, b in ipairs(builds) do
