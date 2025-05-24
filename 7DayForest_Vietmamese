@@ -1082,6 +1082,20 @@ local InstantPromptToggle = KTab:CreateToggle({
     end,
 })
 
+KTab:CreateButton({
+    Name = "Bật bảng chat",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/enable%20chat"))()
+    end,
+})
+
+KTab:CreateButton({
+    Name = "Anti-Void",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/AntiVoid"))()
+    end,
+})
+
 KTab:CreateSection("Khác")
 
 KTab:CreateButton({
@@ -1134,43 +1148,6 @@ KTab:CreateButton({
     end,
 })
 
-KTab:CreateButton({
-    Name = "Bật bảng chat",
-    Callback = function()
-        local StarterGui = game:GetService("StarterGui")
-local TextChatService = game:GetService("TextChatService")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
--- Bật lại Chat GUI nếu bị tắt
-pcall(function()
-    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, true)
-end)
-
--- Bật lại ChatWindow nếu bị ẩn
-local function enableChatWindow()
-    local config = TextChatService:FindFirstChild("ChatWindowConfiguration")
-    if config then
-        config.Enabled = true
-    end
-end
-
--- Kiểm tra định kỳ để đảm bảo không bị tắt lại
-RunService.RenderStepped:Connect(function()
-    if not StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType.Chat) then
-        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, true)
-    end
-    enableChatWindow()
-end)
-    end,
-})
-
-KTab:CreateButton({
-    Name = "Anti-Void",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/AntiVoid"))()
-    end,
-})
 
 KTab:CreateSection("Lưu toạ độ")
 local originalPos = nil
@@ -1228,6 +1205,20 @@ LTab:CreateButton({
 
   
 end)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 task.wait(1) -- Đợi Rayfield load hoàn tất
 local function applyFontToRayfieldFonts()
