@@ -1,11 +1,11 @@
 -- Kiểm tra ID game
 if game.PlaceId ~= 121308443347459 then
-    return warn("Script chỉ hoạt động trong trò chơi được chỉ định (ID: 121308443347459){7Days To Live (The Forest)}")
+    return warn("Script chỉ hoạt động trong trò chơi được chỉ định (ID: 121308443347459){7 Days To Live (The Forest)}")
 end
 
 -- Thông báo khi đúng ID game
 game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "✓ Kiểm tra trò chơi đã vượt qua",
+    Title = "✓ Kiểm tra trò chơi",
     Text = "Tập lệnh hiện đang được thực thi...",
     Duration = 5
 })
@@ -236,7 +236,7 @@ end
 				end
 			end)
 
-			task.delay(0.2, collectNext)
+			task.delay(0.1, collectNext)
 		end
 
 		Rayfield:Notify({Title = "Auto Scrap", Content = "Collecting started...", Duration = 2})
@@ -621,7 +621,7 @@ local autoBloodRunning = false
 local savedCFrame = nil
 
 MTab:CreateToggle({
-	Name = "Tự động thu thập vỏ cây máu",
+	Name = "Tự động thu thập vỏ cây máu (Trăng máu)",
 	CurrentValue = false,
 	Flag = "AutoBloodToggle",
 	Callback = function(state)
@@ -733,7 +733,7 @@ MTab:CreateToggle({
 
 -- Tạo Tab Visual
 local VTab = Window:CreateTab("Hiển thị", "eye")
-VTab:CreateSection("Hiển thị chính")
+VTab:CreateSection("Hiển thị")
 
 VTab:CreateButton({
     Name = "Người chơi",
@@ -744,7 +744,7 @@ VTab:CreateButton({
 
 -- Esp home button (Rayfield GUI - MTab)
 VTab:CreateButton({
-    Name = "Nhà",
+    Name = "Căn nhà",
     Callback = function()
        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Home"))()
     end
@@ -975,7 +975,7 @@ TeleportTab:CreateSection("Địa điểm chính")
 local locations = {
     {Name = "Nhà", Position = Vector3.new(60.99, 48.58, 417.10)},
     {Name = "Ban công", Position = Vector3.new(37.34, 52.72, 420.62)},
-    {Name = "Nóc nhà", Position = Vector3.new(57.73, 68.46, 417.58)},
+    {Name = "Mái nhà", Position = Vector3.new(57.73, 68.46, 417.58)},
     {Name = "Con sông", Position = Vector3.new(-227.99, -0.84, 341.59)},
     {Name = "Bộ xương", Position = Vector3.new(145.43, 12.63, 234.22)},
     {Name = "Tháp pháo 1", Position = Vector3.new(-110.91, 37.91, 352.01)},
@@ -1021,7 +1021,7 @@ local Workspace = game:GetService("Workspace")
 
 -- Tạo Toggle để kích hoạt và tắt chức năng Instant Prompt
 local InstantPromptToggle = KTab:CreateToggle({
-    Name = "Instant PP",
+    Name = "Tương tác tức thời",
     CurrentValue = false,  -- Mặc định tắt
     Callback = function(enabled)
         if enabled then
@@ -1143,7 +1143,7 @@ KTab:CreateButton({
     end,
 })
 
-KTab:CreateSection("Lưu vị trí")
+KTab:CreateSection("Lưu toạ độ")
 local originalPos = nil
 
 KTab:CreateButton({
