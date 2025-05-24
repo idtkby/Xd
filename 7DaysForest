@@ -1085,7 +1085,7 @@ local InstantPromptToggle = KTab:CreateToggle({
 KTab:CreateButton({
     Name = "Enable Chat",
     Callback = function()
-        loadstring(game:HttpGet(""))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/enable%20chat"))()
     end,
 })
 
