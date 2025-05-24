@@ -1005,6 +1005,84 @@ end
 
 
 
+local CTab = Window:CreateTab("Chế tạo", "wrench")
+
+-- Builds
+CTab:CreateSection("Xây dựng")
+
+local builds = {
+    {Name = "Cabbage", Requires = "15 gỗ / Kỹ sư: 8 gỗ"},
+    {Name = "Bed", Requires = "7 gỗ / Kỹ sư: 4 gỗ"},
+    {Name = "Campfire", Requires = "10 gỗ / Kỹ sư: 5 gỗ"},
+    {Name = "Chair", Requires = 2 gỗ / Kỹ sư: 1 gỗ"},
+    {Name = "Ladder", Requires = "3 gỗ / Kỹ sư: 2 gỗ"},
+    {Name = "Table", Requires = "4 gỗ / Kỹ sư: 2 gỗ"},
+    {Name = "Torch", Requires = "1 gỗ / Kỹ sư: 1 gỗ"},
+    {Name = "Wall", Requires = "3 gỗ / Kỹ sư: 2 gỗ"},
+    {Name = "Wide Wall", Requires = "5 gỗ / Kỹ sư: 3 gỗ"},
+}
+
+for _, b in ipairs(builds) do
+    CTab:CreateButton({
+        Name = "Craft " .. b.Name .. " [" .. b.Requires .. "]",
+        Callback = function()
+            game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(b.Name)
+        end
+    })
+end
+
+-- Items
+CTab:CreateSection("Items")
+
+local items = {
+    {Name = "Left Leather Pad", Requires = "7 da"},
+    {Name = "Right Leather Pad", Requires = "7 da"},
+    {Name = "Leather Jacket", Requires = "15 da"},
+    {Name = "Fishing Rod", Requires = "20 gỗ"},
+}
+
+for _, i in ipairs(items) do
+    CTab:CreateButton({
+        Name = "Craft " .. i.Name .. " [" .. i.Requires .. "]",
+        Callback = function()
+            game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(i.Name)
+        end
+    })
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 local KTab = Window:CreateTab("Lặt vặt", "package")
 KTab:CreateSection("Người chơi")
