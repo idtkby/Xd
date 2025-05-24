@@ -1014,6 +1014,33 @@ end
 
 
 local KTab = Window:CreateTab("Misc", "package")
+KTab:CreateSection("Player")
+
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local speaker = Players.LocalPlayer
+local flyjump
+
+KTab:CreateToggle({
+	Name = "Inf Jump",
+	CurrentValue = false,
+	Flag = "InfJumpToggle",
+	Callback = function(state)
+		if flyjump then
+			flyjump:Disconnect()
+			flyjump = nil
+		end
+
+		if state then
+			flyjump = UserInputService.JumpRequest:Connect(function()
+				local humanoid = speaker.Character and speaker.Character:FindFirstChildWhichIsA("Humanoid")
+				if humanoid then
+					humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+				end
+			end)
+		end
+	end
+})
 
 -- Khai báo các dịch vụ cần thiết
 local PromptService = game:GetService("ProximityPromptService")
@@ -1054,6 +1081,24 @@ local InstantPromptToggle = KTab:CreateToggle({
         end
     end,
 })
+
+KTab:CreateButton({
+    Name = "Enable Chat",
+    Callback = function()
+        loadstring(game:HttpGet(""))()
+    end,
+})
+
+KTab:CreateButton({
+    Name = "Anti-Void",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/AntiVoid"))()
+    end,
+})
+
+
+
+KTab:CreateSection("Other")
 
 KTab:CreateButton({
     Name = "Collect Aura",
@@ -1105,43 +1150,6 @@ KTab:CreateButton({
     end,
 })
 
-KTab:CreateButton({
-    Name = "Enable Chat",
-    Callback = function()
-        local StarterGui = game:GetService("StarterGui")
-local TextChatService = game:GetService("TextChatService")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
--- Bật lại Chat GUI nếu bị tắt
-pcall(function()
-    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, true)
-end)
-
--- Bật lại ChatWindow nếu bị ẩn
-local function enableChatWindow()
-    local config = TextChatService:FindFirstChild("ChatWindowConfiguration")
-    if config then
-        config.Enabled = true
-    end
-end
-
--- Kiểm tra định kỳ để đảm bảo không bị tắt lại
-RunService.RenderStepped:Connect(function()
-    if not StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType.Chat) then
-        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, true)
-    end
-    enableChatWindow()
-end)
-    end,
-})
-
-KTab:CreateButton({
-    Name = "Anti-Void",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/AntiVoid"))()
-    end,
-})
 
 KTab:CreateSection("Save location")
 local originalPos = nil
