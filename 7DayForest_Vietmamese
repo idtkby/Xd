@@ -1006,50 +1006,85 @@ end
 
 
 local CTab = Window:CreateTab("Chế tạo", "wrench")
+local lp = game.Players.LocalPlayer
 
--- Builds
+CTab:CreateSection("Nguyên liệu")
+local woodLabel = CTab:CreateLabel("gỗ: ...")
+
+task.spawn(function()
+	local stats = lp:WaitForChild("stats", 10)
+	if not stats then
+		woodLabel:Set("gỗ: [không tìm thấy stats]")
+		return
+	end
+
+	local wood = stats:WaitForChild("wood", 10)
+	if not wood then
+		woodLabel:Set("gỗ: [không tìm thấy wood]")
+		return
+	end
+
+	woodLabel:Set("gỗ: " .. tostring(wood.Value))
+
+	wood:GetPropertyChangedSignal("Value"):Connect(function()
+		woodLabel:Set("gỗ: " .. tostring(wood.Value))
+	end)
+end)
+
+-- Section: Xây dựng
 CTab:CreateSection("Xây dựng")
-
 local builds = {
-    {Name = "Cabbage", Requires = "15 gỗ / Kỹ sư: 8 gỗ"},
-    {Name = "Bed", Requires = "7 gỗ / Kỹ sư: 4 gỗ"},
-    {Name = "Campfire", Requires = "10 gỗ / Kỹ sư: 5 gỗ"},
-    {Name = "Chair", Requires = 2 gỗ / Kỹ sư: 1 gỗ"},
-    {Name = "Ladder", Requires = "3 gỗ / Kỹ sư: 2 gỗ"},
-    {Name = "Table", Requires = "4 gỗ / Kỹ sư: 2 gỗ"},
-    {Name = "Torch", Requires = "1 gỗ / Kỹ sư: 1 gỗ"},
-    {Name = "Wall", Requires = "3 gỗ / Kỹ sư: 2 gỗ"},
-    {Name = "Wide Wall", Requires = "5 gỗ / Kỹ sư: 3 gỗ"},
+	{Name = "Cabbage", Requires = "15 gỗ / Kỹ sư: 8 gỗ", Needed = 15},
+	{Name = "Bed", Requires = "7 gỗ / Kỹ sư: 4 gỗ", Needed = 7},
+	{Name = "Campfire", Requires = "10 gỗ / Kỹ sư: 5 gỗ", Needed = 10},
+	{Name = "Chair", Requires = "2 gỗ / Kỹ sư: 1 gỗ", Needed = 2},
+	{Name = "Ladder", Requires = "3 gỗ / Kỹ sư: 2 gỗ", Needed = 3},
+	{Name = "Table", Requires = "4 gỗ / Kỹ sư: 2 gỗ", Needed = 4},
+	{Name = "Torch", Requires = "1 gỗ / Kỹ sư: 1 gỗ", Needed = 1},
+	{Name = "Wall", Requires = "3 gỗ / Kỹ sư: 2 gỗ", Needed = 3},
+	{Name = "Wide Wall", Requires = "5 gỗ / Kỹ sư: 3 gỗ", Needed = 5},
 }
 
 for _, b in ipairs(builds) do
-    CTab:CreateButton({
-        Name = "Craft " .. b.Name .. " [" .. b.Requires .. "]",
-        Callback = function()
-            game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(b.Name)
-        end
-    })
+	CTab:CreateButton({
+		Name = "Chế tạo " .. b.Name .. " [" .. b.Requires .. "]",
+		Callback = function()
+			local wood = lp:FindFirstChild("Stats") and lp.Stats:FindFirstChild("wood")
+			if wood and wood.Value >= b.Needed then
+				game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(b.Name)
+			else
+				warn("Không đủ gỗ!")
+			end
+		end
+	})
 end
 
--- Items
-CTab:CreateSection("Items")
-
+-- Section: Vật phẩm
+CTab:CreateSection("Vật phẩm")
 local items = {
-    {Name = "Left Leather Pad", Requires = "7 da"},
-    {Name = "Right Leather Pad", Requires = "7 da"},
-    {Name = "Leather Jacket", Requires = "15 da"},
-    {Name = "Fishing Rod", Requires = "20 gỗ"},
+	{Name = "Left Leather Pad", Requires = "7 Da"},
+	{Name = "Right Leather Pad", Requires = "7 Da"},
+	{Name = "Leather Jacket", Requires = "15 Da"},
+	{Name = "Fishing Rod", Requires = "20 gỗ", Needed = 20, UseWood = true},
 }
 
 for _, i in ipairs(items) do
-    CTab:CreateButton({
-        Name = "Craft " .. i.Name .. " [" .. i.Requires .. "]",
-        Callback = function()
-            game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(i.Name)
-        end
-    })
+	CTab:CreateButton({
+		Name = "Chế tạo " .. i.Name .. " [" .. i.Requires .. "]",
+		Callback = function()
+			local wood = lp:FindFirstChild("Stats") and lp.Stats:FindFirstChild("wood")
+			if i.UseWood then
+				if wood and wood.Value >= i.Needed then
+					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(i.Name)
+				else
+					warn("Không đủ gỗ!")
+				end
+			else
+				game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(i.Name)
+			end
+		end
+	})
 end
-
 
 
 
