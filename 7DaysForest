@@ -1029,14 +1029,14 @@ task.spawn(function()
 
 	local wood = stats:WaitForChild("wood", 10)
 	if not wood then
-		woodLabel:Set("Wood🪵: [wood not found]")
+		woodLabel:Set("Wood: [wood not found]")
 		return
 	end
 
-	woodLabel:Set("Wood🪵: " .. tostring(wood.Value))
+	woodLabel:Set("Wood: " .. tostring(wood.Value))
 
 	wood:GetPropertyChangedSignal("Value"):Connect(function()
-		woodLabel:Set("Wood🪵: " .. tostring(wood.Value))
+		woodLabel:Set("Wood: " .. tostring(wood.Value))
 	end)
 end)
 
@@ -1047,7 +1047,7 @@ local builds = {
 	{Name = "Bed", Requires = "🛌7 WOOD / Engineer: 4 WOOD"},
 	{Name = "Campfire", Requires = "🔥10 WOOD / Engineer: 5 WOOD"},
 	{Name = "Chair", Requires = "🪑2 WOOD / Engineer: 1 WOOD"},
-	{Name = "Ladder", Requires = "🪜3 WOOD / Engineer: 2 WOOD"},
+	{Name = "Ladder", Requires = "3 WOOD / Engineer: 2 WOOD"},
 	{Name = "Table", Requires = "🟫4 WOOD / Engineer: 2 WOOD"},
 	{Name = "Torch", Requires = "🕯️1 WOOD / Engineer: 1 WOOD"},
 	{Name = "Wall", Requires = "🧱3 WOOD / Engineer: 2 WOOD"},
