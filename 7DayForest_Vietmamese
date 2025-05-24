@@ -1034,27 +1034,22 @@ end)
 -- Section: Xây dựng
 CTab:CreateSection("Xây dựng")
 local builds = {
-	{Name = "Cabbage", Requires = "15 gỗ / Kỹ sư: 8 gỗ", Needed = 15},
-	{Name = "Bed", Requires = "7 gỗ / Kỹ sư: 4 gỗ", Needed = 7},
-	{Name = "Campfire", Requires = "10 gỗ / Kỹ sư: 5 gỗ", Needed = 10},
-	{Name = "Chair", Requires = "2 gỗ / Kỹ sư: 1 gỗ", Needed = 2},
-	{Name = "Ladder", Requires = "3 gỗ / Kỹ sư: 2 gỗ", Needed = 3},
-	{Name = "Table", Requires = "4 gỗ / Kỹ sư: 2 gỗ", Needed = 4},
-	{Name = "Torch", Requires = "1 gỗ / Kỹ sư: 1 gỗ", Needed = 1},
-	{Name = "Wall", Requires = "3 gỗ / Kỹ sư: 2 gỗ", Needed = 3},
-	{Name = "Wide Wall", Requires = "5 gỗ / Kỹ sư: 3 gỗ", Needed = 5},
+	{Name = "Cabbage", Requires = "15 gỗ / Kỹ sư: 8 gỗ"},
+	{Name = "Bed", Requires = "7 gỗ / Kỹ sư: 4 gỗ"},
+	{Name = "Campfire", Requires = "10 gỗ / Kỹ sư: 5 gỗ"},
+	{Name = "Chair", Requires = "2 gỗ / Kỹ sư: 1 gỗ"},
+	{Name = "Ladder", Requires = "3 gỗ / Kỹ sư: 2 gỗ"},
+	{Name = "Table", Requires = "4 gỗ / Kỹ sư: 2 gỗ"},
+	{Name = "Torch", Requires = "1 gỗ / Kỹ sư: 1 gỗ"},
+	{Name = "Wall", Requires = "3 gỗ / Kỹ sư: 2 gỗ"},
+	{Name = "Wide Wall", Requires = "5 gỗ / Kỹ sư: 3 gỗ"},
 }
 
 for _, b in ipairs(builds) do
 	CTab:CreateButton({
 		Name = "Chế tạo " .. b.Name .. " [" .. b.Requires .. "]",
 		Callback = function()
-			local wood = lp:FindFirstChild("Stats") and lp.Stats:FindFirstChild("wood")
-			if wood and wood.Value >= b.Needed then
-				game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(b.Name)
-			else
-				warn("Không đủ gỗ!")
-			end
+			game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(b.Name)
 		end
 	})
 end
@@ -1065,23 +1060,14 @@ local items = {
 	{Name = "Left Leather Pad", Requires = "7 Da"},
 	{Name = "Right Leather Pad", Requires = "7 Da"},
 	{Name = "Leather Jacket", Requires = "15 Da"},
-	{Name = "Fishing Rod", Requires = "20 gỗ", Needed = 20, UseWood = true},
+	{Name = "Fishing Rod", Requires = "20 gỗ"},
 }
 
 for _, i in ipairs(items) do
 	CTab:CreateButton({
 		Name = "Chế tạo " .. i.Name .. " [" .. i.Requires .. "]",
 		Callback = function()
-			local wood = lp:FindFirstChild("Stats") and lp.Stats:FindFirstChild("wood")
-			if i.UseWood then
-				if wood and wood.Value >= i.Needed then
-					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(i.Name)
-				else
-					warn("Không đủ gỗ!")
-				end
-			else
-				game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(i.Name)
-			end
+			game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(i.Name)
 		end
 	})
 end
