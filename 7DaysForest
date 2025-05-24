@@ -621,7 +621,7 @@ local autoBloodRunning = false
 local savedCFrame = nil
 
 MTab:CreateToggle({
-	Name = "Auto Blood Bark (Fast)",
+	Name = "Auto Blood Bark (Blood moon)",
 	CurrentValue = false,
 	Flag = "AutoBloodToggle",
 	Callback = function(state)
@@ -702,7 +702,7 @@ MTab:CreateToggle({
 				end
 			end)
 
-			task.delay(0.2, collectNext)
+			task.delay(0.1, collectNext)
 		end
 
 		Rayfield:Notify({Title = "Auto Blood Bark", Content = "Collecting started...", Duration = 2})
@@ -736,22 +736,22 @@ local VTab = Window:CreateTab("Visual", "eye")
 VTab:CreateSection("Main Visual")
 
 VTab:CreateButton({
-    Name = "Players ESP",
+    Name = "Players",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Playeresp"))()
     end,
 })
 
--- Esp home button (Rayfield GUI - MTab)
+-- Esp house button (Rayfield GUI - VTab)
 VTab:CreateButton({
-    Name = "Home",
+    Name = "House",
     Callback = function()
        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Home"))()
     end
 })
 
 VTab:CreateButton({
-    Name = "Animal and Monster",
+    Name = "Animal and spcs",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Esp%20Npc"))()
     end,
@@ -858,7 +858,7 @@ VTab:CreateToggle({
 
 
 
-VTab:CreateSection("Blood moon")
+VTab:CreateSection("Bloodmoon")
 
 local bloodRunning = false
 local bloodConnection
@@ -973,9 +973,9 @@ TeleportTab:CreateSection("Main Location")
 
 -- Vị trí chính
 local locations = {
-    {Name = "Home", Position = Vector3.new(60.99, 48.58, 417.10)},
-    {Name = "Home balcony", Position = Vector3.new(37.34, 52.72, 420.62)},
-    {Name = "Home roof", Position = Vector3.new(57.73, 68.46, 417.58)},
+    {Name = "House", Position = Vector3.new(60.99, 48.58, 417.10)},
+    {Name = "House balcony", Position = Vector3.new(37.34, 52.72, 420.62)},
+    {Name = "House roof", Position = Vector3.new(57.73, 68.46, 417.58)},
     {Name = "River", Position = Vector3.new(-227.99, -0.84, 341.59)},
     {Name = "Skeleton", Position = Vector3.new(145.43, 12.63, 234.22)},
     {Name = "Turret1", Position = Vector3.new(-110.91, 37.91, 352.01)},
@@ -1021,7 +1021,7 @@ local Workspace = game:GetService("Workspace")
 
 -- Tạo Toggle để kích hoạt và tắt chức năng Instant Prompt
 local InstantPromptToggle = KTab:CreateToggle({
-    Name = "Instant PP",
+    Name = "Instant interact",
     CurrentValue = false,  -- Mặc định tắt
     Callback = function(enabled)
         if enabled then
@@ -1187,6 +1187,21 @@ LTab:CreateButton({
 })
   
 end)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 task.wait(1) -- Đợi Rayfield load hoàn tất
 local function applyFontToRayfieldFonts()
