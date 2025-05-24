@@ -1015,52 +1015,90 @@ end
 
 
 local CTab = Window:CreateTab("Craft", "wrench")
+local lp = game.Players.LocalPlayer
 
--- Builds
+CTab:CreateSection("Ingredient")
+local woodLabel = CTab:CreateLabel("wood: ...")
+
+task.spawn(function()
+	local Players = game:GetService("Players")
+	local lp = Players.LocalPlayer
+
+	local stats = lp:WaitForChild("stats", 10) -- Đúng chữ thường
+	if not stats then
+		woodLabel:Set("Wood: [stats not found]")
+		return
+	end
+
+	local wood = stats:WaitForChild("wood", 10)
+	if not wood then
+		woodLabel:Set("Wood: [wood not found]")
+		return
+	end
+
+	-- Gán lần đầu
+	woodLabel:Set("Wood: " .. tostring(wood.Value))
+
+	-- Theo dõi khi thay đổi
+	wood:GetPropertyChangedSignal("Value"):Connect(function()
+		woodLabel:Set("Wood: " .. tostring(wood.Value))
+	end)
+end)
+
+-- Section: Builds
 CTab:CreateSection("Builds")
-
 local builds = {
-    {Name = "Cabbage", Requires = "15 WOOD / Engineer: 8 WOOD"},
-    {Name = "Bed", Requires = "7 WOOD / Engineer: 4 WOOD"},
-    {Name = "Campfire", Requires = "10 WOOD / Engineer: 5 WOOD"},
-    {Name = "Chair", Requires = "2 WOOD / Engineer: 1 WOOD"},
-    {Name = "Ladder", Requires = "3 WOOD / Engineer: 2 WOOD"},
-    {Name = "Table", Requires = "4 WOOD / Engineer: 2 WOOD"},
-    {Name = "Torch", Requires = "1 WOOD / Engineer: 1 WOOD"},
-    {Name = "Wall", Requires = "3 WOOD / Engineer: 2 WOOD"},
-    {Name = "Wide Wall", Requires = "5 WOOD / Engineer: 3 WOOD"},
+	{Name = "Cabbage", Requires = "15 WOOD / Engineer: 8 WOOD", Needed = 15},
+	{Name = "Bed", Requires = "7 WOOD / Engineer: 4 WOOD", Needed = 7},
+	{Name = "Campfire", Requires = "10 WOOD / Engineer: 5 WOOD", Needed = 10},
+	{Name = "Chair", Requires = "2 WOOD / Engineer: 1 WOOD", Needed = 2},
+	{Name = "Ladder", Requires = "3 WOOD / Engineer: 2 WOOD", Needed = 3},
+	{Name = "Table", Requires = "4 WOOD / Engineer: 2 WOOD", Needed = 4},
+	{Name = "Torch", Requires = "1 WOOD / Engineer: 1 WOOD", Needed = 1},
+	{Name = "Wall", Requires = "3 WOOD / Engineer: 2 WOOD", Needed = 3},
+	{Name = "Wide Wall", Requires = "5 WOOD / Engineer: 3 WOOD", Needed = 5},
 }
 
 for _, b in ipairs(builds) do
-    CTab:CreateButton({
-        Name = "Craft " .. b.Name .. " [" .. b.Requires .. "]",
-        Callback = function()
-            game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(b.Name)
-        end
-    })
+	CTab:CreateButton({
+		Name = "Craft " .. b.Name .. " [" .. b.Requires .. "]",
+		Callback = function()
+			local wood = lp:FindFirstChild("Stats") and lp.Stats:FindFirstChild("wood")
+			if wood and wood.Value >= b.Needed then
+				game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(b.Name)
+			else
+				warn("Not enough WOOD!")
+			end
+		end
+	})
 end
 
--- Items
+-- Section: Items
 CTab:CreateSection("Items")
-
 local items = {
-    {Name = "Left Leather Pad", Requires = "7 Leather"},
-    {Name = "Right Leather Pad", Requires = "7 Leather"},
-    {Name = "Leather Jacket", Requires = "15 Leather"},
-    {Name = "Fishing Rod", Requires = "20 WOOD"},
+	{Name = "Left Leather Pad", Requires = "7 Leather"},
+	{Name = "Right Leather Pad", Requires = "7 Leather"},
+	{Name = "Leather Jacket", Requires = "15 Leather"},
+	{Name = "Fishing Rod", Requires = "20 WOOD", Needed = 20, UseWood = true},
 }
 
 for _, i in ipairs(items) do
-    CTab:CreateButton({
-        Name = "Craft " .. i.Name .. " [" .. i.Requires .. "]",
-        Callback = function()
-            game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(i.Name)
-        end
-    })
+	CTab:CreateButton({
+		Name = "Craft " .. i.Name .. " [" .. i.Requires .. "]",
+		Callback = function()
+			local wood = lp:FindFirstChild("Stats") and lp.Stats:FindFirstChild("wood")
+			if i.UseWood then
+				if wood and wood.Value >= i.Needed then
+					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(i.Name)
+				else
+					warn("Not enough WOOD!")
+				end
+			else
+				game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(i.Name)
+			end
+		end
+	})
 end
-
-
-
 
 
 
