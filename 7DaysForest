@@ -1006,6 +1006,63 @@ end
 
 
 
+
+
+
+
+
+
+
+
+local CTab = Window:CreateTab("Craft", "wrench")
+
+CTab:CreateSection("Builds")
+
+local builds = {
+    "Cabbage", "Bed", "Campfire", "Chair", "Ladder",
+    "Table", "Torch", "Wall", "Wide Wall"
+}
+
+for _, item in ipairs(builds) do
+    CTab:CreateButton({
+        Name = "Craft " .. item,
+        Callback = function()
+            local args = { item }
+            game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(unpack(args))
+        end
+    })
+end
+
+CTab:CreateSection("Items")
+
+local items = {
+    "Left Leather Pad", "Right Leather Pad", "Leather Jacket", "Fishing Rod"
+}
+
+for _, item in ipairs(items) do
+    CTab:CreateButton({
+        Name = "Craft " .. item,
+        Callback = function()
+            local args = { item }
+            game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(unpack(args))
+        end
+    })
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 local KTab = Window:CreateTab("Misc", "package")
 KTab:CreateSection("Player")
 
