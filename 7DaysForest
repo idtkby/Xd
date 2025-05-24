@@ -1016,39 +1016,48 @@ end
 
 local CTab = Window:CreateTab("Craft", "wrench")
 
+-- Builds
 CTab:CreateSection("Builds")
 
 local builds = {
-    "Cabbage", "Bed", "Campfire", "Chair", "Ladder",
-    "Table", "Torch", "Wall", "Wide Wall"
+    {Name = "Cabbage", Requires = "15 WOOD / Engineer: 8 WOOD"},
+    {Name = "Bed", Requires = "7 WOOD / Engineer: 4 WOOD"},
+    {Name = "Campfire", Requires = "10 WOOD / Engineer: 5 WOOD"},
+    {Name = "Chair", Requires = 2 WOOD / Engineer: 1 WOOD"},
+    {Name = "Ladder", Requires = "3 WOOD / Engineer: 2 WOOD"},
+    {Name = "Table", Requires = "4 WOOD / Engineer: 2 WOOD"},
+    {Name = "Torch", Requires = "1 WOOD / Engineer: 1 WOOD"},
+    {Name = "Wall", Requires = "3 WOOD / Engineer: 2 WOOD"},
+    {Name = "Wide Wall", Requires = "5 WOOD / Engineer 3 WOOD"},
 }
 
-for _, item in ipairs(builds) do
+for _, b in ipairs(builds) do
     CTab:CreateButton({
-        Name = "Craft " .. item,
+        Name = "Craft " .. b.Name .. " [" .. b.Requires .. "]",
         Callback = function()
-            local args = { item }
-            game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(unpack(args))
+            game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(b.Name)
         end
     })
 end
 
+-- Items
 CTab:CreateSection("Items")
 
 local items = {
-    "Left Leather Pad", "Right Leather Pad", "Leather Jacket", "Fishing Rod"
+    {Name = "Left Leather Pad", Requires = "7 Leather"},
+    {Name = "Right Leather Pad", Requires = "7 Leather"},
+    {Name = "Leather Jacket", Requires = "15 Leather"},
+    {Name = "Fishing Rod", Requires = "20 WOOD"},
 }
 
-for _, item in ipairs(items) do
+for _, i in ipairs(items) do
     CTab:CreateButton({
-        Name = "Craft " .. item,
+        Name = "Craft " .. i.Name .. " [" .. i.Requires .. "]",
         Callback = function()
-            local args = { item }
-            game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(unpack(args))
+            game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(i.Name)
         end
     })
 end
-
 
 
 
