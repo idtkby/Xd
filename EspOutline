@@ -1,0 +1,250 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local COREGUI = game:GetService("CoreGui")
+local speaker = Players.LocalPlayer
+local ESPenabled = false
+local teamESPEnabled = false
+local currentTeamESP = nil
+local espTransparency = 1
+
+function getRoot(char)
+	return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso")
+end
+
+function round(num, numDecimalPlaces)
+	local mult = 10^(numDecimalPlaces or 0)
+	return math.floor(num * mult + 0.5) / mult
+end
+
+function removeESP(plr)
+	local folder = COREGUI:FindFirstChild(plr.Name.."_ESP")
+	if folder then
+		folder:Destroy()
+	end
+end
+
+function createESP(plr)
+	if teamESPEnabled and currentTeamESP then
+		if not plr.Team or plr.Team.Name:lower() ~= currentTeamESP:lower() then
+			return
+		end
+	elseif not ESPenabled then
+		return
+	end
+
+	if plr == speaker then return end
+
+	task.spawn(function()
+		local folder = Instance.new("Folder", COREGUI)
+		folder.Name = plr.Name.."_ESP"
+
+		local function refreshESP()
+			if not ESPenabled and not teamESPEnabled or not plr.Character then return end
+			local root = getRoot(plr.Character)
+			local hum = plr.Character:FindFirstChildOfClass("Humanoid")
+			if not root or not hum then return end
+
+			for _, v in ipairs(folder:GetChildren()) do v:Destroy() end
+
+			local highlight = Instance.new("Highlight", folder)
+highlight.Adornee = plr.Character
+highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+highlight.FillTransparency = 1
+highlight.OutlineTransparency = 0
+highlight.OutlineColor = plr.TeamColor.Color
+
+			if plr.Character:FindFirstChild("Head") then
+				local bill = Instance.new("BillboardGui", folder)
+				bill.Adornee = plr.Character.Head
+				bill.Size = UDim2.new(0, 100, 0, 150)
+				bill.StudsOffset = Vector3.new(0, 1, 0)
+				bill.AlwaysOnTop = true
+				bill.Name = "Label"
+
+				local text = Instance.new("TextLabel", bill)
+				text.BackgroundTransparency = 1
+				text.Position = UDim2.new(0, 0, 0, -50)
+				text.Size = UDim2.new(0, 100, 0, 100)
+				text.Font = Enum.Font.SourceSansSemibold
+				text.TextSize = 20
+				text.TextColor3 = plr.TeamColor.Color
+				text.TextStrokeTransparency = 0
+				text.TextYAlignment = Enum.TextYAlignment.Bottom
+				text.Text = ""
+			end
+		end
+
+		local function updateText()
+			local label = folder:FindFirstChild("Label")
+			if label and plr.Character and getRoot(plr.Character) and plr.Character:FindFirstChildOfClass("Humanoid") then
+				local myRoot = getRoot(speaker.Character)
+				local targetRoot = getRoot(plr.Character)
+				if myRoot and targetRoot then
+					local dist = math.floor((myRoot.Position - targetRoot.Position).Magnitude)
+					local hp = round(plr.Character:FindFirstChildOfClass("Humanoid").Health, 1)
+					label.TextLabel.Text = "Name: "..plr.Name.." | Health: "..hp.." | Studs: "..dist
+				end
+			end
+		end
+
+		refreshESP()
+
+		local stepConn, diedConn
+
+		stepConn = RunService.RenderStepped:Connect(function()
+			if not folder.Parent or (not ESPenabled and not teamESPEnabled) then
+				stepConn:Disconnect()
+				return
+			end
+			updateText()
+		end)
+
+		local function monitorDeath()
+			local hum = plr.Character and plr.Character:FindFirstChildOfClass("Humanoid")
+			if hum then
+				diedConn = hum.Died:Connect(function()
+					removeESP(plr)
+					if diedConn then diedConn:Disconnect() end
+					if stepConn then stepConn:Disconnect() end
+				end)
+			end
+		end
+
+		monitorDeath()
+
+		plr.CharacterAdded:Connect(function()
+			task.wait(1)
+			removeESP(plr)
+			createESP(plr)
+		end)
+	end)
+end
+
+function clearAllESP()
+	for _, v in ipairs(COREGUI:GetChildren()) do
+		if v.Name:sub(-4) == "_ESP" then
+			v:Destroy()
+		end
+	end
+end
+
+function enableESP()
+	ESPenabled = true
+	teamESPEnabled = false
+	currentTeamESP = nil
+	clearAllESP()
+	for _, plr in ipairs(Players:GetPlayers()) do
+		if plr ~= speaker then
+			createESP(plr)
+		end
+	end
+end
+
+function disableESP()
+	ESPenabled = false
+	teamESPEnabled = false
+	currentTeamESP = nil
+	clearAllESP()
+end
+
+function enableTeamESP(teamName)
+	teamESPEnabled = true
+	ESPenabled = false
+	currentTeamESP = teamName
+	clearAllESP()
+	for _, plr in ipairs(Players:GetPlayers()) do
+		if plr.Team and plr.Team.Name == teamName and plr ~= speaker then
+			createESP(plr)
+		end
+	end
+end
+
+function disableTeamESP()
+	teamESPEnabled = false
+	currentTeamESP = nil
+	clearAllESP()
+end
+
+Players.PlayerAdded:Connect(function(plr)
+	if ESPenabled then
+		task.wait(1)
+		createESP(plr)
+	elseif teamESPEnabled and plr.Team and plr.Team.Name == currentTeamESP then
+		task.wait(1)
+		createESP(plr)
+	end
+end)
+
+Players.PlayerRemoving:Connect(removeESP)
+
+local function getPlayerList(query)
+	local results = {}
+	query = query:lower()
+	for _, plr in ipairs(Players:GetPlayers()) do
+		if plr.Name:lower():sub(1, #query) == query or plr.DisplayName:lower():sub(1, #query) == query then
+			table.insert(results, plr)
+		end
+	end
+	return results
+end
+
+speaker.Chatted:Connect(function(msg)
+	msg = msg:lower()
+	if msg == "/e esp" then
+		enableESP()
+	elseif msg == "/e unesp" then
+		disableESP()
+	elseif msg:match("^/e lct ") then
+		local arg = msg:match("^/e lct (.+)")
+		local targets = getPlayerList(arg)
+		for _, plr in ipairs(targets) do
+			Locate(plr)
+		end
+	elseif msg:match("^/e unlct ") then
+		local arg = msg:match("^/e unlct (.+)")
+		local targets = getPlayerList(arg)
+		for _, plr in ipairs(targets) do
+			for _, gui in ipairs(COREGUI:GetChildren()) do
+				if gui.Name == plr.Name.."_LC" then
+					gui:Destroy()
+				end
+			end
+		end
+	elseif msg == "/e unlct" then
+		for _, gui in ipairs(COREGUI:GetChildren()) do
+			if gui.Name:sub(-3) == "_LC" then
+				gui:Destroy()
+			end
+		end
+	elseif msg:match("^/e teame (.+)") then
+		local teamInput = msg:match("^/e teame (.+)")
+		if teamInput then
+			teamInput = teamInput:gsub("^%s*(.-)%s*$", "%1"):lower()
+			local foundTeamName = nil
+			for _, t in ipairs(game:GetService("Teams"):GetChildren()) do
+				if t.Name:lower():sub(1, #teamInput) == teamInput then
+					foundTeamName = t.Name
+					break
+				end
+			end
+			if foundTeamName then
+				enableTeamESP(foundTeamName)
+				print("[ESP Team Enabled]: " .. foundTeamName)
+			else
+				print("[ESP Team]: Không tìm thấy team nào bắt đầu bằng '"..teamInput.."'")
+			end
+		end
+	elseif msg == "/e unteame" then
+		disableTeamESP()
+		print("[ESP Team Disabled]")
+	end
+end)
+
+task.spawn(function()
+	print("--------------------[CMDS]--------------------")
+	print(" /e esp/unesp ")
+	print(" /e teame <TeamName> | /e unteame ")
+	print(" /e lct/unlct <Player> | /e unlct (all player)")
+    task.wait(5)
+    print("---------------Script by Khang---------------")
+end)
