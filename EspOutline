@@ -246,6 +246,6 @@ warn("----------------------------------------------")	print("------------------
 	print(" /e teame <TeamName> | /e unteame ")
 	print(" /e lct/unlct <Player> | /e unlct (all player)")
     task.wait(5)
-    print("---------------Script by Khang---------------")
+    print("----------------Script by Khang---------------")
 warn("----------------------------------------------")
 end)
