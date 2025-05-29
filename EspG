@@ -1,0 +1,101 @@
+-- Esp GUI by Khang
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+
+if CoreGui:FindFirstChild("OpAutoSwingGUI") then
+	CoreGui:FindFirstChild("OpAutoSwingGUI"):Destroy()
+end
+
+local gui = Instance.new("ScreenGui", CoreGui)
+gui.Name = "OpAutoSwingGUI"
+gui.IgnoreGuiInset = true
+gui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0.975, 0, 0.975, 0)
+frame.Position = UDim2.new(0.5, 0, -0.5, 0) -- bắt đầu ẩn trên màn hình
+frame.AnchorPoint = Vector2.new(0.5, 0.5)
+frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+frame.BorderSizePixel = 0
+
+local uicorner = Instance.new("UICorner", frame)
+uicorner.CornerRadius = UDim.new(0.025, 0)
+
+local stroke = Instance.new("UIStroke", frame)
+stroke.Color = Color3.fromRGB(60, 120, 255)
+stroke.Thickness = 2
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0.1, 0)
+title.Position = UDim2.new(0, 0, 0.02, 0)
+title.Text = "Esp Players"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextStrokeTransparency = 0
+title.TextStrokeColor3 = Color3.fromRGB(60, 150, 255)
+title.BackgroundTransparency = 1
+title.TextScaled = true
+title.Font = Enum.Font.GothamBold
+
+-- Tăng độ rõ viền bằng cách làm thêm một bản sao chữ phía sau
+local titleShadow = title:Clone()
+titleShadow.Name = "TitleShadow"
+titleShadow.Parent = frame
+titleShadow.TextColor3 = Color3.fromRGB(0, 0, 0)
+titleShadow.TextStrokeTransparency = 0
+titleShadow.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+titleShadow.Position = UDim2.new(0, 2, 0.02, 2) -- Dịch nhẹ để tạo cảm giác đổ bóng
+
+title.TextStrokeTransparency = 0.2
+title.TextStrokeColor3 = Color3.fromRGB(60, 150, 255)
+
+TweenService:Create(frame, TweenInfo.new(0.5), {
+	Position = UDim2.new(0.5, 0, 0.5, 0)
+}):Play()
+
+local function createButton(name, relativeX, url)
+	local btn = Instance.new("TextButton", frame)
+	btn.Size = UDim2.new(0.22, 0, 0.1, 0)
+	btn.Position = UDim2.new(relativeX, 0, 0.4, 0)
+	btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Giữ màu nền rõ ràng
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.TextStrokeTransparency = 0
+	btn.Text = name
+	btn.TextScaled = true
+	btn.Font = Enum.Font.GothamBold
+	btn.AutoButtonColor = false
+
+	local corner = Instance.new("UICorner", btn)
+	corner.CornerRadius = UDim.new(0.025, 0)
+
+	local border = Instance.new("UIStroke", btn)
+	border.Color = Color3.fromRGB(60, 120, 255)
+	border.Thickness = 2
+	border.ApplyStrokeMode = Enum.ApplyStrokeMode.Border -- Bắt buộc hiện đúng phần viền nút
+
+	local border = Instance.new("UIStroke", btn)
+	border.Color = Color3.fromRGB(60, 120, 245) 
+	border.Thickness = 2
+
+btn.MouseButton1Click:Connect(function()
+	local originalColor = btn.BackgroundColor3
+	btn.BackgroundColor3 = Color3.fromRGB(0, 255, 127)
+	task.wait(0.02)
+	btn.BackgroundColor3 = originalColor
+
+	-- Tween frame lên trên màn hình để ẩn GUI
+	local tweenUp = TweenService:Create(frame, TweenInfo.new(0.5), {
+		Position = UDim2.new(0.5, 0, -0.5, 0)
+	})
+	tweenUp:Play()
+	tweenUp.Completed:Wait() -- đợi tween kết thúc
+
+	gui:Destroy()
+
+	-- Tải và chạy script
+	loadstring(game:HttpGet(url))()
+end)
+end
+
+createButton("EspBox", 0.14, "https://raw.githubusercontent.com/idtkby/Xd/main/EspBox(iy)")
+createButton("EspOutline", 0.39, "https://raw.githubusercontent.com/idtkby/Xd/main/EspOutline")
+createButton("Soon...", 0.64, "")
