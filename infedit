@@ -13056,12 +13056,12 @@ task.spawn(function()
     local LocalPlayer = Players.LocalPlayer
     local CoreGui = game:GetService("CoreGui")
 
-    --  To GUI chính
+    --  To GUI chÃ­nh
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Parent = CoreGui
     ScreenGui.ResetOnSpawn = false
 
-    --  To nút Toggle (44.5x44.5)
+    --  To nÃºt Toggle (44.5x44.5)
     local ToggleButton = Instance.new("TextButton")
     ToggleButton.Parent = ScreenGui
     ToggleButton.Size = UDim2.new(0, 44.5, 0, 44.5)
@@ -13074,7 +13074,7 @@ task.spawn(function()
     ToggleButton.Font = Enum.Font.SourceSansBold
     ToggleButton.AutoButtonColor = false
 
-    --  Bo tròn góc
+    --  Bo trÃ²n gÃ³c
     local UICorner = Instance.new("UICorner")
     UICorner.CornerRadius = UDim.new(1, 0)
     UICorner.Parent = ToggleButton
@@ -13120,7 +13120,7 @@ task.spawn(function()
         end
     end)
 
-    --  Trng thái bt/tt
+    --  Trng thÃ¡i bt/tt
     local isHidden = false
     local wasStayOpen = false
     local cooldown = false
