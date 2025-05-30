@@ -1105,7 +1105,7 @@ KTab:CreateButton({
   KTab:CreateButton({
     Name = "Inf Yield Edit",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/infedit"))()
     end,
   })
 
