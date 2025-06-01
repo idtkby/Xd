@@ -1,0 +1,44 @@
+task.spawn(function()
+-- Khai báo các dịch vụ cần thiết
+local player = game.Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local camera = workspace.CurrentCamera
+
+-- Tải và khởi tạo thư viện GUI Rayfield
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Tạo cửa sổ giao diện chính
+local Window = Rayfield:CreateWindow({
+    Name = "Khang Hub",
+    LoadingTitle = "Loading Hub...",
+    LoadingSubtitle = "Please wait",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "MyHubFolder",
+        FileName = "MyHubConfig"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "",
+        RememberJoins = false
+    },
+    KeySystem = false,
+})
+
+-- Thông báo đã tải
+Rayfield:Notify({
+    Title = "Welcome!",
+    Content = "Script Loaded",
+    Duration = 2
+})
+local HbTab = Window:CreateTab("Game", "map")
+
+HbTab:CreateSection("Grow a Garden")
+HbTab:CreateButton({
+   Name = "Staging Game",
+   Callback = function()
+      local gameId = 91867617264223
+      game:GetService("TeleportService"):Teleport(gameId)
+   end
+})
