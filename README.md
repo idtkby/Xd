@@ -1,2 +1,2 @@
-local a = "Hello"
-print(a)
+'''local a = "Hello"
+print(a)'''
