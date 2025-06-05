@@ -1,6 +1,6 @@
 -- Kiểm tra ID game
-if game.PlaceId ~=  then
-    return warn("Script only works in the specified game (ID: ){PETAPETA| Level 6 ()}")
+if game.PlaceId ~= 14476003462 then
+    return warn("Script only works in the specified game (ID: 14476003462){PETAPETA| Level 6 (無限旅館)}")
 end
 
 -- Thông báo khi đúng ID game
@@ -24,7 +24,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- Tạo cửa sổ giao diện chính
 local Window = Rayfield:CreateWindow({
-    Name = "Script By Khang [PETAPETA {}]",
+    Name = "Script By Khang [PETAPETA {無限旅館}]",
     LoadingTitle = "Loading Hub...",
     LoadingSubtitle = "Please wait",
     ConfigurationSaving = {
@@ -145,8 +145,75 @@ mainTab:CreateButton({
 
 
 local KTab = Window:CreateTab("Misc", "package")
+KTab:CreateSection("Player")
 
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local speaker = Players.LocalPlayer
+local flyjump
 
+KTab:CreateToggle({
+        Name = "Inf Jump",
+        CurrentValue = false,
+        Flag = "InfJumpToggle",
+        Callback = function(state)
+                if flyjump then
+                        flyjump:Disconnect()
+                        flyjump = nil
+                end
+
+                if state then
+                        flyjump = UserInputService.JumpRequest:Connect(function()
+                                local humanoid = speaker.Character and speaker.Character:FindFirstChildWhichIsA("Humanoid")
+                                if humanoid then
+                                        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                                end
+                        end)
+                end
+        end
+})
+
+-- Khai báo các dịch vụ cần thiết
+local PromptService = game:GetService("ProximityPromptService")
+local Workspace = game:GetService("Workspace")
+
+-- Tạo Toggle để kích hoạt và tắt chức năng Instant Prompt
+local InstantPromptToggle = KTab:CreateToggle({
+    Name = "Instant interact",
+    CurrentValue = false,  -- Mặc định tắt
+    Callback = function(enabled)
+        if enabled then
+            -- Khi toggle bật, thiết lập tất cả ProximityPrompt có HoldDuration = 0
+            for _, v in ipairs(Workspace:GetDescendants()) do
+                if v:IsA("ProximityPrompt") then
+                    v.HoldDuration = 0
+                end
+            end
+
+            -- Tự động thiết lập HoldDuration = 0 khi có Prompt mới bắt đầu
+            PromptService.PromptButtonHoldBegan:Connect(function(prompt)
+                if prompt:IsA("ProximityPrompt") then
+                    prompt.HoldDuration = 0
+                end
+            end)
+
+            Rayfield:Notify({
+                Title = "Instant Prompt Enabled",
+                Content = "All proximity prompts now require no hold duration.",
+                Duration = 2
+            })
+        else
+            -- Khi toggle tắt, không thay đổi gì
+            Rayfield:Notify({
+                Title = "Instant Prompt Disabled",
+                Content = "Proximity prompts will use default hold duration.",
+                Duration = 2
+            })
+        end
+    end,
+})
+
+KTab:CreateSection("Other")
   
 KTab:CreateButton({
     Name = "interact aura",
