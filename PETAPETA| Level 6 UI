@@ -153,6 +153,7 @@ local LocalPlayer = Players.LocalPlayer
 
 local AutoZeniRunning = false
 local ZeniConnection
+local ZeniList = {}
 
 KTab:CreateToggle({
 	Name = "Auto Collect Zeni",
@@ -164,16 +165,41 @@ KTab:CreateToggle({
 			local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 			local lastTriggerTime = {}
 
-			local function triggerPrompt(obj)
-				if obj:IsA("ProximityPrompt") then
-					fireproximityprompt(obj, math.huge)
-				elseif obj:IsA("ClickDetector") then
-					fireclickdetector(obj)
-				elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
-					firetouchinterest(HumanoidRootPart, obj.Parent, 0)
-					task.wait()
-					firetouchinterest(HumanoidRootPart, obj.Parent, 1)
+			-- Cập nhật danh sách Zeni khi có object mới vào Workspace
+			local function scanZeni()
+				ZeniList = {}
+				for _, obj in ipairs(workspace:GetDescendants()) do
+					if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(LocalPlayer.Character) then
+						local model = obj:FindFirstAncestorWhichIsA("Model")
+						if model and model.Name:match("^Zeni_[1-3]$") then
+							table.insert(ZeniList, {model = model, obj = obj})
+						end
+					end
 				end
+			end
+
+			scanZeni()
+			workspace.DescendantAdded:Connect(function(desc)
+				if AutoZeniRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") then
+					local model = desc:FindFirstAncestorWhichIsA("Model")
+					if model and model.Name:match("^Zeni_[1-3]$") then
+						table.insert(ZeniList, {model = model, obj = desc})
+					end
+				end
+			end)
+
+			local function triggerPrompt(obj)
+				pcall(function()
+					if obj:IsA("ProximityPrompt") then
+						fireproximityprompt(obj, math.huge)
+					elseif obj:IsA("ClickDetector") then
+						fireclickdetector(obj)
+					elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
+						firetouchinterest(HumanoidRootPart, obj.Parent, 0)
+						task.wait()
+						firetouchinterest(HumanoidRootPart, obj.Parent, 1)
+					end
+				end)
 			end
 
 			local function getClosestPart(model, refPos)
@@ -195,21 +221,24 @@ KTab:CreateToggle({
 				local HRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 				if not HRP then return end
 
-				for _, obj in ipairs(workspace:GetDescendants()) do
-					if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(LocalPlayer.Character) then
-						local parentModel = obj.Parent
-						local model = (parentModel:IsA("Model") and parentModel) or (parentModel:IsA("BasePart") and parentModel.Parent)
-						if model and model:IsA("Model") and model.Name:match("^Zeni_[1-3]$") then
-							local now = tick()
-							if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
-								continue
-							end
-							local _, dist = getClosestPart(model, HRP.Position)
-							if dist and dist <= 5 then
-								lastTriggerTime[model] = now
-								pcall(triggerPrompt, obj)
-							end
-						end
+				local now = tick()
+				for i = #ZeniList, 1, -1 do
+					local data = ZeniList[i]
+					local model = data.model
+					local obj = data.obj
+					if not model or not model:IsDescendantOf(workspace) then
+						table.remove(ZeniList, i)
+						continue
+					end
+
+					if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
+						continue
+					end
+
+					local _, dist = getClosestPart(model, HRP.Position)
+					if dist and dist <= 5 then
+						lastTriggerTime[model] = now
+						triggerPrompt(obj)
 					end
 				end
 			end)
@@ -218,80 +247,10 @@ KTab:CreateToggle({
 				ZeniConnection:Disconnect()
 				ZeniConnection = nil
 			end
+			ZeniList = {}
 		end
 	end
 })
-
-KTab:CreateToggle({
-	Name = "Auto interact Search",
-	CurrentValue = false,
-	Flag = "AutoSearch",
-	Callback = function(Value)
-		getgenv().AutoSearch = Value
-	end,
-})
-
-task.spawn(function()
-	local Players = game:GetService("Players")
-	local RunService = game:GetService("RunService")
-	local LocalPlayer = Players.LocalPlayer
-	local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-	local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-
-	LocalPlayer.CharacterAdded:Connect(function(char)
-		Character = char
-		HumanoidRootPart = char:WaitForChild("HumanoidRootPart")
-	end)
-
-	local lastTriggerTime = {}
-
-	local function triggerPrompt(obj)
-		pcall(function()
-			if obj:IsA("ProximityPrompt") then
-				fireproximityprompt(obj, math.huge)
-			elseif obj:IsA("ClickDetector") then
-				fireclickdetector(obj)
-			elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
-				firetouchinterest(HumanoidRootPart, obj.Parent, 0)
-				task.wait()
-				firetouchinterest(HumanoidRootPart, obj.Parent, 1)
-			end
-		end)
-	end
-
-	local function getClosestPart(model, pos)
-		local closest, dist = nil, math.huge
-		for _, v in ipairs(model:GetDescendants()) do
-			if v:IsA("BasePart") then
-				local d = (v.Position - pos).Magnitude
-				if d < dist then
-					closest, dist = v, d
-				end
-			end
-		end
-		return closest, dist
-	end
-
-	while true do
-		if getgenv().AutoSearch and HumanoidRootPart then
-			for _, obj in ipairs(workspace:GetDescendants()) do
-				if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") then
-					local model = obj:FindFirstAncestorOfClass("Model")
-					if model and model.Name:lower():find("search") then
-						local now = tick()
-						if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then continue end
-						local closest, distance = getClosestPart(model, HumanoidRootPart.Position)
-						if distance and distance <= 6 then
-							lastTriggerTime[model] = now
-							triggerPrompt(obj)
-						end
-					end
-				end
-			end
-		end
-		RunService.Heartbeat:Wait()
-	end
-end)
 
 
 KTab:CreateSection("Player")
@@ -360,6 +319,55 @@ local InstantPromptToggle = KTab:CreateToggle({
             })
         end
     end,
+})
+
+local HumanModCons = {}
+
+KTab:CreateToggle({
+	Name = "Fast Speed",
+	CurrentValue = false,
+	Flag = "SpeedToggle",
+	Callback = function(state)
+		local speaker = game.Players.LocalPlayer
+		local function isNumber(val)
+			return typeof(val) == "number" and val == val and val ~= math.huge and val ~= -math.huge
+		end
+
+		if state then
+			local args = { true, 22 }
+			local speed = args[1] or 16
+			if args[2] then
+				speed = args[2]
+			end
+
+			if isNumber(speed) then
+				local Char = speaker.Character or workspace:FindFirstChild(speaker.Name)
+				local Human = Char and Char:FindFirstChildWhichIsA("Humanoid")
+
+				local function WalkSpeedChange()
+					if Char and Human then
+						Human.WalkSpeed = speed
+					end
+				end
+
+				WalkSpeedChange()
+
+				HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)
+					or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)
+
+				HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false)
+					or speaker.CharacterAdded:Connect(function(nChar)
+						Char, Human = nChar, nChar:WaitForChild("Humanoid")
+						WalkSpeedChange()
+						HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)
+							or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)
+					end)
+			end
+		else
+			HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false) or nil
+			HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false) or nil
+		end
+	end
 })
 
 KTab:CreateSection("Other")
