@@ -131,7 +131,7 @@ mainTab:CreateButton({
 	end,
 })
 
-mainTab:CreateBut inton({
+mainTab:CreateButton({
 	Name = "Esp Lighter",
 	Callback = function()
 		autoESP(function(p)
