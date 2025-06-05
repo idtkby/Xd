@@ -145,6 +145,165 @@ mainTab:CreateButton({
 
 
 local KTab = Window:CreateTab("Misc", "package")
+KTab:CreateSection("Game")
+
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local AutoZeniRunning = false
+local ZeniConnection
+
+KTab:CreateToggle({
+	Name = "Auto Collect Zeni",
+	CurrentValue = false,
+	Callback = function(state)
+		AutoZeniRunning = state
+		if state then
+			local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+			local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+			local lastTriggerTime = {}
+
+			local function triggerPrompt(obj)
+				if obj:IsA("ProximityPrompt") then
+					fireproximityprompt(obj, math.huge)
+				elseif obj:IsA("ClickDetector") then
+					fireclickdetector(obj)
+				elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
+					firetouchinterest(HumanoidRootPart, obj.Parent, 0)
+					task.wait()
+					firetouchinterest(HumanoidRootPart, obj.Parent, 1)
+				end
+			end
+
+			local function getClosestPart(model, refPos)
+				local closest, minDist = nil, math.huge
+				for _, part in ipairs(model:GetChildren()) do
+					if part:IsA("BasePart") then
+						local dist = (part.Position - refPos).Magnitude
+						if dist < minDist then
+							minDist = dist
+							closest = part
+						end
+					end
+				end
+				return closest, minDist
+			end
+
+			ZeniConnection = RunService.Heartbeat:Connect(function()
+				if not AutoZeniRunning or not LocalPlayer.Character then return end
+				local HRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+				if not HRP then return end
+
+				for _, obj in ipairs(workspace:GetDescendants()) do
+					if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(LocalPlayer.Character) then
+						local parentModel = obj.Parent
+						local model = (parentModel:IsA("Model") and parentModel) or (parentModel:IsA("BasePart") and parentModel.Parent)
+						if model and model:IsA("Model") and model.Name:match("^Zeni_[1-3]$") then
+							local now = tick()
+							if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
+								continue
+							end
+							local _, dist = getClosestPart(model, HRP.Position)
+							if dist and dist <= 5 then
+								lastTriggerTime[model] = now
+								pcall(triggerPrompt, obj)
+							end
+						end
+					end
+				end
+			end)
+		else
+			if ZeniConnection then
+				ZeniConnection:Disconnect()
+				ZeniConnection = nil
+			end
+		end
+	end
+})
+
+KTab:CreateToggle({
+	Name = "Auto interact Search",
+	CurrentValue = false,
+	Flag = "AutoSearch",
+	Callback = function(Value)
+		getgenv().AutoSearch = Value
+	end,
+})
+
+task.spawn(function()
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	local LocalPlayer = Players.LocalPlayer
+	local Character, HumanoidRootPart
+
+	local lastTriggerTime = {}
+
+	local function updateCharacter()
+		Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+		HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+	end
+
+	updateCharacter()
+	LocalPlayer.CharacterAdded:Connect(updateCharacter)
+
+	local function triggerPrompt(obj)
+		if obj:IsA("ProximityPrompt") then
+			fireproximityprompt(obj, math.huge)
+		elseif obj:IsA("ClickDetector") then
+			fireclickdetector(obj)
+		elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
+			firetouchinterest(HumanoidRootPart, obj.Parent, 0)
+			task.wait()
+			firetouchinterest(HumanoidRootPart, obj.Parent, 1)
+		end
+	end
+
+	local function getClosestPart(model, referencePosition)
+		local closestPart, minDistance = nil, math.huge
+		for _, part in ipairs(model:GetChildren()) do
+			if part:IsA("BasePart") then
+				local dist = (part.Position - referencePosition).Magnitude
+				if dist < minDistance then
+					minDistance = dist
+					closestPart = part
+				end
+			end
+		end
+		return closestPart, minDistance
+	end
+
+	while true do
+		if getgenv().AutoSearch and HumanoidRootPart then
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				local isPrompt = obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest"
+				if isPrompt and not obj:IsDescendantOf(Character) then
+					local promptName = obj.Name:lower()
+					local promptNote = obj.Note and obj.Note:lower() or ""
+
+					if promptName:find("search") or promptNote:find("search") then
+						local model = obj:FindFirstAncestorOfClass("Model")
+						if model then
+							local now = tick()
+							if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
+								continue
+							end
+
+							local closestPart, distance = getClosestPart(model, HumanoidRootPart.Position)
+							if distance and distance <= 5 then
+								lastTriggerTime[model] = now
+								pcall(triggerPrompt, obj)
+							end
+						end
+					end
+				end
+			end
+		end
+		RunService.Heartbeat:Wait()
+	end
+end)
+
+
 KTab:CreateSection("Player")
 
 local UserInputService = game:GetService("UserInputService")
