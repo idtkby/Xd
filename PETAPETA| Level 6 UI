@@ -1,0 +1,165 @@
+-- Kiểm tra ID game
+if game.PlaceId ~=  then
+    return warn("Script only works in the specified game (ID: ){PETAPETA| Level 6 ()}")
+end
+
+-- Thông báo khi đúng ID game
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "✓ Game Check Passed",
+    Text = "Script is now executing...",
+    Duration = 5
+})
+
+task.wait(1) -- Đợi 1s trước khi thực thi 
+
+task.spawn(function()
+-- Khai báo các dịch vụ cần thiết
+local player = game.Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local camera = workspace.CurrentCamera
+
+-- Tải và khởi tạo thư viện GUI Rayfield
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Tạo cửa sổ giao diện chính
+local Window = Rayfield:CreateWindow({
+    Name = "Script By Khang [PETAPETA {}]",
+    LoadingTitle = "Loading Hub...",
+    LoadingSubtitle = "Please wait",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "MyHubFolder",
+        FileName = "MyHubConfig"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "",
+        RememberJoins = false
+    },
+    KeySystem = false,
+})
+
+-- Thông báo đã tải
+Rayfield:Notify({
+    Title = "Welcome!",
+    Content = "Script Loaded",
+    Duration = 2
+})
+
+
+-- Tạo hàm ESP chung
+local function autoESP(filterFn, color, labelText)
+	task.spawn(function()
+		while true do
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if filterFn(obj) then
+					if not obj:FindFirstChild("AutoESP") then
+						local hl = Instance.new("Highlight")
+						hl.Name = "AutoESP"
+						hl.OutlineColor = color
+						hl.OutlineTransparency = 0
+						hl.FillTransparency = 1
+						hl.Parent = obj
+					end
+					if not obj:FindFirstChild("ESPLabel") and obj:IsA("BasePart") then
+						local bill = Instance.new("BillboardGui", obj)
+						bill.Name = "ESPLabel"
+						bill.Size = UDim2.new(0, 100, 0, 40)
+						bill.StudsOffset = Vector3.new(0, 2, 0)
+						bill.AlwaysOnTop = true
+						local txt = Instance.new("TextLabel", bill)
+						txt.Size = UDim2.new(1, 0, 1, 0)
+						txt.BackgroundTransparency = 1
+						txt.TextColor3 = color
+						txt.TextStrokeTransparency = 0.5
+						txt.Text = labelText or obj.Name
+						txt.Font = Enum.Font.SourceSansSemibold
+						txt.TextScaled = true
+					end
+				end
+			end
+			task.wait(2)
+		end
+	end)
+end
+
+-- Tab chính
+local mainTab = Window:CreateTab("Visual", eye)
+
+-- ESP Buttons
+mainTab:CreateButton({
+	Name = "Esp PetaPeta",
+	Callback = function()
+		loadstring(game:HttpGet("https://protected-roblox-scripts.onrender.com/4ff8c4ca4bd5179cd082f640899fc8f3"))()
+	end,
+})
+
+mainTab:CreateButton({
+	Name = "Esp Box",
+	Callback = function()
+		autoESP(function(p)
+			return p:IsA("BasePart") and p.Name == "BoxBottom"
+		end, Color3.fromRGB(0, 255, 0), "Box")
+	end,
+})
+
+mainTab:CreateButton({
+	Name = "Esp Safe",
+	Callback = function()
+		autoESP(function(p)
+			return p:IsA("BasePart") and p.Name == "Meshes/safe_Safe"
+		end, Color3.fromRGB(255, 255, 0), "Safe")
+	end,
+})
+
+mainTab:CreateButton({
+	Name = "Esp Doll",
+	Callback = function()
+		autoESP(function(p)
+			return p:IsA("BasePart") and p.Name == "DollHead"
+		end, Color3.fromRGB(255, 255, 255), "Doll")
+	end,
+})
+
+mainTab:CreateButton({
+	Name = "Esp Key",
+	Callback = function()
+		autoESP(function(p)
+			return p:IsA("BasePart") and p.Name == "Key"
+		end, Color3.fromRGB(150, 150, 150), "Key")
+	end,
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local KTab = Window:CreateTab("Misc", "package")
+
+
+  
+KTab:CreateButton({
+    Name = "interact aura",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/CollectAura"))()
+    end,
+})
+  
+  KTab:CreateButton({
+    Name = "Inf Yield Edit",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()
+    end,
+  })
+
+end)
