@@ -235,65 +235,55 @@ task.spawn(function()
 	local Players = game:GetService("Players")
 	local RunService = game:GetService("RunService")
 	local LocalPlayer = Players.LocalPlayer
-	local Character, HumanoidRootPart
+	local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+
+	LocalPlayer.CharacterAdded:Connect(function(char)
+		Character = char
+		HumanoidRootPart = char:WaitForChild("HumanoidRootPart")
+	end)
 
 	local lastTriggerTime = {}
 
-	local function updateCharacter()
-		Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-		HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-	end
-
-	updateCharacter()
-	LocalPlayer.CharacterAdded:Connect(updateCharacter)
-
 	local function triggerPrompt(obj)
-		if obj:IsA("ProximityPrompt") then
-			fireproximityprompt(obj, math.huge)
-		elseif obj:IsA("ClickDetector") then
-			fireclickdetector(obj)
-		elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
-			firetouchinterest(HumanoidRootPart, obj.Parent, 0)
-			task.wait()
-			firetouchinterest(HumanoidRootPart, obj.Parent, 1)
-		end
+		pcall(function()
+			if obj:IsA("ProximityPrompt") then
+				fireproximityprompt(obj, math.huge)
+			elseif obj:IsA("ClickDetector") then
+				fireclickdetector(obj)
+			elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
+				firetouchinterest(HumanoidRootPart, obj.Parent, 0)
+				task.wait()
+				firetouchinterest(HumanoidRootPart, obj.Parent, 1)
+			end
+		end)
 	end
 
-	local function getClosestPart(model, referencePosition)
-		local closestPart, minDistance = nil, math.huge
-		for _, part in ipairs(model:GetChildren()) do
-			if part:IsA("BasePart") then
-				local dist = (part.Position - referencePosition).Magnitude
-				if dist < minDistance then
-					minDistance = dist
-					closestPart = part
+	local function getClosestPart(model, pos)
+		local closest, dist = nil, math.huge
+		for _, v in ipairs(model:GetDescendants()) do
+			if v:IsA("BasePart") then
+				local d = (v.Position - pos).Magnitude
+				if d < dist then
+					closest, dist = v, d
 				end
 			end
 		end
-		return closestPart, minDistance
+		return closest, dist
 	end
 
 	while true do
 		if getgenv().AutoSearch and HumanoidRootPart then
 			for _, obj in ipairs(workspace:GetDescendants()) do
-				local isPrompt = obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest"
-				if isPrompt and not obj:IsDescendantOf(Character) then
-					local promptName = obj.Name:lower()
-					local promptNote = obj.Note and obj.Note:lower() or ""
-
-					if promptName:find("search") or promptNote:find("search") then
-						local model = obj:FindFirstAncestorOfClass("Model")
-						if model then
-							local now = tick()
-							if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
-								continue
-							end
-
-							local closestPart, distance = getClosestPart(model, HumanoidRootPart.Position)
-							if distance and distance <= 5 then
-								lastTriggerTime[model] = now
-								pcall(triggerPrompt, obj)
-							end
+				if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") then
+					local model = obj:FindFirstAncestorOfClass("Model")
+					if model and model.Name:lower():find("search") then
+						local now = tick()
+						if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then continue end
+						local closest, distance = getClosestPart(model, HumanoidRootPart.Position)
+						if distance and distance <= 6 then
+							lastTriggerTime[model] = now
+							triggerPrompt(obj)
 						end
 					end
 				end
