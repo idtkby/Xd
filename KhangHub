@@ -39,7 +39,7 @@ local SpTab = Window:CreateTab("Support Game", "users")
 SpTab:CreateSection("Dead Rails (Game)")
 SpTab:CreateSection("Eyes The Horror Game")
     SpTab:CreateSection("7 Days To Live (Forest Only)")
-SpTab:CreateSection("PETAPETA| level 6(無限旅館)")
+SpTab:CreateSection("PETAPETA | level6 (無限旅館)")
 
 local HbTab = Window:CreateTab("Script", "Search")
 
@@ -98,7 +98,7 @@ HbTab:CreateButton({
 
 HbTab:CreateSection("無限旅館")
 HbTab:CreateButton({
-    Name = "PETAPETA| Level 6",
+    Name = "PETAPETA | Level6",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/PETAPETA%7C%20Level%206%20UI"))()
     end,
