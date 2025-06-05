@@ -117,7 +117,7 @@ mainTab:CreateButton({
 	Name = "Esp Doll",
 	Callback = function()
 		autoESP(function(p)
-			return p:IsA("BasePart") and p.Name == "DollHead"
+			return p:IsA("BasePart") and (p.Name == "DollHead" or p.Name == "DollBlackHead")
 		end, Color3.fromRGB(255, 255, 255), "Doll")
 	end,
 })
