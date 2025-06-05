@@ -39,6 +39,7 @@ local SpTab = Window:CreateTab("Support Game", "users")
 SpTab:CreateSection("Dead Rails (Game)")
 SpTab:CreateSection("Eyes The Horror Game")
     SpTab:CreateSection("7 Days To Live (Forest Only)")
+SpTab:CreateSection("PETAPETA| level 6(無限旅館)")
 
 local HbTab = Window:CreateTab("Script", "Search")
 
@@ -93,5 +94,22 @@ HbTab:CreateButton({
       game:GetService("TeleportService"):Teleport(gameId)
    end
 })
+
+
+HbTab:CreateSection("無限旅館")
+HbTab:CreateButton({
+    Name = "PETAPETA| Level 6",
+    Callback = function()
+        loadstring(game:HttpGet(""))()
+    end,
+})
+HbTab:CreateButton({
+   Name = "Teleport to game",
+   Callback = function()
+      local gameId = 14476003462
+      game:GetService("TeleportService"):Teleport(gameId)
+   end
+})
+
 
 end)
