@@ -100,7 +100,7 @@ HbTab:CreateSection("無限旅館")
 HbTab:CreateButton({
     Name = "PETAPETA| Level 6",
     Callback = function()
-        loadstring(game:HttpGet(""))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/PETAPETA%7C%20Level%206%20UI"))()
     end,
 })
 HbTab:CreateButton({
