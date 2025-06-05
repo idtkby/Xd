@@ -1,6 +1,6 @@
 -- Kiểm tra ID game
 if game.PlaceId ~= 14476003462 then
-    return warn("Script only works in the specified game (ID: 14476003462){PETAPETA| Level 6 (無限旅館)}")
+    return warn("Script only works in the specified game (ID: 14476003462){PETAPETA | Level6 (無限旅館)}")
 end
 
 -- Thông báo khi đúng ID game
@@ -134,9 +134,54 @@ mainTab:CreateButton({
 mainTab:CreateButton({
 	Name = "Esp Lighter",
 	Callback = function()
-		autoESP(function(p)
-			return p:IsA("BasePart") and p.Name == "Lighter"
-		end, Color3.fromRGB(84, 220, 0), "Lighter")
+		task.spawn(function()
+	local espColor = Color3.fromRGB(84, 220, 0)
+	local outlineColor = Color3.fromRGB(84, 220, 0)
+
+	-- Tạo ESP
+	local function createESP(item)
+		local billboard = Instance.new("BillboardGui")
+		billboard.Name = "LighterESP"
+		billboard.AlwaysOnTop = true
+		billboard.Size = UDim2.new(0, 200, 0, 50)
+		billboard.StudsOffset = Vector3.new(0, 3, 0)
+		billboard.MaxDistance = math.huge
+		billboard.Parent = item
+
+		local textLabel = Instance.new("TextLabel")
+		textLabel.Parent = billboard
+		textLabel.Text = "Lighter"
+		textLabel.TextColor3 = espColor
+		textLabel.TextStrokeColor3 = outlineColor
+		textLabel.TextStrokeTransparency = 0
+		textLabel.BackgroundTransparency = 1
+		textLabel.Size = UDim2.new(1, 0, 1, 0)
+
+		-- Tạo Outline
+		local highlight = Instance.new("Highlight")
+		highlight.Name = "LighterOutline"
+		highlight.FillTransparency = 1 -- Ẩn màu nền
+		highlight.OutlineColor = outlineColor
+		highlight.OutlineTransparency = 0
+		highlight.Parent = item
+	end
+
+	local function checkForLighters()
+		for _, item in ipairs(workspace:GetDescendants()) do
+			if item:IsA("Model") and item.Name == "Lighter" and not item:FindFirstChild("LighterESP") then
+				createESP(item)
+			end
+		end
+	end
+
+	workspace.DescendantAdded:Connect(function(descendant)
+		if descendant:IsA("Model") and descendant.Name == "Lighter" then
+			createESP(descendant)
+		end
+	end)
+
+	checkForLighters()
+end)
 	end,
 })
 
