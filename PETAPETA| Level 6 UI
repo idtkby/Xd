@@ -131,8 +131,24 @@ mainTab:CreateButton({
 	end,
 })
 
+mainTab:CreateBut inton({
+	Name = "Esp Lighter",
+	Callback = function()
+		autoESP(function(p)
+			return p:IsA("BasePart") and p.Name == "Lighter"
+		end, Color3.fromRGB(84, 220, 0), "Lighter")
+	end,
+})
 
-
+mainTab:CreateButton({
+	Name = "Esp Plate",
+	Callback = function()
+		autoESP(function(p)
+			return p:IsA("BasePart") and p.Name == "Dish"
+		end, Color3.fromRGB(255, 223, 178), "Plate")
+	end,
+})
+d 
 
 
 
