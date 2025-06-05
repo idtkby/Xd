@@ -1,2 +1,4 @@
-'''local a = "Hello"
-print(a)'''
+```lua
+local a = "Hello"
+print(a)
+```
