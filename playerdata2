@@ -1,0 +1,388 @@
+  
+task.spawn(function()  
+	local Players = game:GetService("Players")  
+	local LocalPlayer = Players.LocalPlayer  
+	local UserInputService = game:GetService("UserInputService")  
+  
+	-- Tạo GUI  
+	local screenGui = Instance.new("ScreenGui")  
+	screenGui.Name = "MaxZoomDisplay"  
+	screenGui.ResetOnSpawn = false  
+	screenGui.IgnoreGuiInset = true  
+	screenGui.Parent = game:GetService("CoreGui")  
+  
+	local textLabel = Instance.new("TextLabel")  
+	textLabel.Size = UDim2.new(0, 200, 0, 50)  
+	textLabel.Position = UDim2.new(0, 50, 0, 50)  
+	textLabel.BackgroundTransparency = 0.5  
+	textLabel.BackgroundColor3 = Color3.new(0, 0, 0)  
+	textLabel.TextColor3 = Color3.new(1, 1, 1)  
+	textLabel.TextStrokeTransparency = 0  
+	textLabel.Font = Enum.Font.GothamBold  
+	textLabel.TextSize = 20  
+	textLabel.Text = "MaxZoom: Loading..."  
+	textLabel.Parent = screenGui  
+  
+	local corner = Instance.new("UICorner")  
+	corner.CornerRadius = UDim.new(0, 10)  
+	corner.Parent = textLabel  
+  
+	-- Drag support  
+	local dragging, dragInput, dragStart, startPos  
+  
+	local function update(input)  
+		local delta = input.Position - dragStart  
+		textLabel.Position = UDim2.new(  
+			startPos.X.Scale,  
+			startPos.X.Offset + delta.X,  
+			startPos.Y.Scale,  
+			startPos.Y.Offset + delta.Y  
+		)  
+	end  
+  
+	textLabel.InputBegan:Connect(function(input)  
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then  
+			dragging = true  
+			dragStart = input.Position  
+			startPos = textLabel.Position  
+  
+			input.Changed:Connect(function()  
+				if input.UserInputState == Enum.UserInputState.End then  
+					dragging = false  
+				end  
+			end)  
+		end  
+	end)  
+  
+	textLabel.InputChanged:Connect(function(input)  
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then  
+			dragInput = input  
+		end  
+	end)  
+  
+	UserInputService.InputChanged:Connect(function(input)  
+		if input == dragInput and dragging then  
+			update(input)  
+		end  
+	end)  
+  
+	-- Cập nhật MaxZoom  
+	while true do  
+		local maxZoom = LocalPlayer.CameraMaxZoomDistance  
+		textLabel.Text = "MaxZoom: " .. math.floor(maxZoom)  
+		task.wait(0.1)  
+	end  
+end)  
+  
+task.spawn(function()      
+	local Players = game:GetService("Players")      
+	local LocalPlayer = Players.LocalPlayer      
+	local UserInputService = game:GetService("UserInputService")      
+      
+	-- Tạo GUI      
+	local screenGui = Instance.new("ScreenGui")      
+	screenGui.Name = "MinZoomDisplay"      
+	screenGui.ResetOnSpawn = false      
+	screenGui.IgnoreGuiInset = true      
+	screenGui.Parent = game:GetService("CoreGui")      
+      
+	local textLabel = Instance.new("TextLabel")      
+	textLabel.Size = UDim2.new(0, 200, 0, 50)      
+	textLabel.Position = UDim2.new(0, 350, 0, 50)      
+	textLabel.BackgroundTransparency = 0.5  
+	textLabel.BackgroundColor3 = Color3.new(0, 0, 0)      
+	textLabel.TextColor3 = Color3.new(1, 1, 1)      
+	textLabel.TextStrokeTransparency = 0      
+	textLabel.Font = Enum.Font.GothamBold      
+	textLabel.TextSize = 20      
+	textLabel.Text = "MinZoom: Loading..."      
+	textLabel.Parent = screenGui      
+      
+	local corner = Instance.new("UICorner")      
+	corner.CornerRadius = UDim.new(0, 10)      
+	corner.Parent = textLabel      
+      
+	-- Drag support      
+	local dragging, dragInput, dragStart, startPos      
+      
+	local function update(input)      
+		local delta = input.Position - dragStart      
+		textLabel.Position = UDim2.new(      
+			startPos.X.Scale,      
+			startPos.X.Offset + delta.X,      
+			startPos.Y.Scale,      
+			startPos.Y.Offset + delta.Y      
+		)      
+	end      
+      
+	textLabel.InputBegan:Connect(function(input)      
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then      
+			dragging = true      
+			dragStart = input.Position      
+			startPos = textLabel.Position      
+      
+			input.Changed:Connect(function()      
+				if input.UserInputState == Enum.UserInputState.End then      
+					dragging = false      
+				end      
+			end)      
+		end      
+	end)      
+      
+	textLabel.InputChanged:Connect(function(input)      
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then      
+			dragInput = input      
+		end      
+	end)      
+      
+	UserInputService.InputChanged:Connect(function(input)      
+		if input == dragInput and dragging then      
+			update(input)      
+		end      
+	end)      
+      
+	-- Cập nhật MinZoom dạng thập phân      
+	while true do      
+		local minZoom = LocalPlayer.CameraMinZoomDistance      
+		textLabel.Text = string.format("MinZoom: %.2f", minZoom)      
+		task.wait(0.1)      
+	end      
+end)  
+  
+task.spawn(function()  
+	local Players = game:GetService("Players")  
+	local LocalPlayer = Players.LocalPlayer  
+	local UserInputService = game:GetService("UserInputService")  
+  
+	-- Tạo GUI  
+	local screenGui = Instance.new("ScreenGui")  
+	screenGui.Name = "CameraModeDisplay"  
+	screenGui.ResetOnSpawn = false  
+	screenGui.IgnoreGuiInset = true  
+	screenGui.Parent = game:GetService("CoreGui")  
+  
+	local textLabel = Instance.new("TextLabel")  
+	textLabel.Size = UDim2.new(0, 200, 0, 50)  
+	textLabel.Position = UDim2.new(0, 350, 0, 108)  
+	textLabel.BackgroundTransparency = 0.5  
+	textLabel.BackgroundColor3 = Color3.new(0, 0, 0)  
+	textLabel.TextColor3 = Color3.new(1, 1, 1)  
+	textLabel.TextStrokeTransparency = 0  
+	textLabel.Font = Enum.Font.GothamBold  
+	textLabel.TextSize = 20  
+	textLabel.Text = "Camera: Loading..."  
+	textLabel.Parent = screenGui  
+  
+	local corner = Instance.new("UICorner")  
+	corner.CornerRadius = UDim.new(0, 10)  
+	corner.Parent = textLabel  
+  
+	-- Kéo GUI  
+	local dragging, dragInput, dragStart, startPos  
+  
+	local function update(input)  
+		local delta = input.Position - dragStart  
+		textLabel.Position = UDim2.new(  
+			startPos.X.Scale,  
+			startPos.X.Offset + delta.X,  
+			startPos.Y.Scale,  
+			startPos.Y.Offset + delta.Y  
+		)  
+	end  
+  
+	textLabel.InputBegan:Connect(function(input)  
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then  
+			dragging = true  
+			dragStart = input.Position  
+			startPos = textLabel.Position  
+  
+			input.Changed:Connect(function()  
+				if input.UserInputState == Enum.UserInputState.End then  
+					dragging = false  
+				end  
+			end)  
+		end  
+	end)  
+  
+	textLabel.InputChanged:Connect(function(input)  
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then  
+			dragInput = input  
+		end  
+	end)  
+  
+	UserInputService.InputChanged:Connect(function(input)  
+		if input == dragInput and dragging then  
+			update(input)  
+		end  
+	end)  
+  
+	-- Cập nhật CameraMode dạng ngắn  
+	while true do  
+		local mode = LocalPlayer.CameraMode  
+		local short = "Khác"  
+  
+		if mode == Enum.CameraMode.Classic then  
+			short = "ThirdPerson"  
+		elseif mode == Enum.CameraMode.LockFirstPerson or mode == Enum.CameraMode.FirstPerson then  
+			short = "FirstPerson"  
+		end  
+  
+		textLabel.Text = "Camera: " .. short  
+		task.wait(0.2)  
+	end  
+end)  
+  
+task.spawn(function()  
+	local Players = game:GetService("Players")  
+	local LocalPlayer = Players.LocalPlayer  
+	local UserInputService = game:GetService("UserInputService")  
+  
+	-- Tạo GUI  
+	local screenGui = Instance.new("ScreenGui")  
+	screenGui.Name = "HealthDisplay"  
+	screenGui.ResetOnSpawn = false  
+	screenGui.IgnoreGuiInset = true  
+	screenGui.Parent = game:GetService("CoreGui")  
+  
+	local textLabel = Instance.new("TextLabel")  
+	textLabel.Size = UDim2.new(0, 200, 0, 50)  
+	textLabel.Position = UDim2.new(0, 50, 0, 300)  
+	textLabel.BackgroundTransparency = 0.5  
+	textLabel.BackgroundColor3 = Color3.new(0, 0, 0)  
+	textLabel.TextColor3 = Color3.new(1, 1, 1)  
+	textLabel.TextStrokeTransparency = 0  
+	textLabel.Font = Enum.Font.GothamBold  
+	textLabel.TextSize = 20  
+	textLabel.Text = "Health: Loading..."  
+	textLabel.Parent = screenGui  
+  
+	local corner = Instance.new("UICorner")  
+	corner.CornerRadius = UDim.new(0, 10)  
+	corner.Parent = textLabel  
+  
+	-- Kéo GUI  
+	local dragging, dragInput, dragStart, startPos  
+  
+	local function update(input)  
+		local delta = input.Position - dragStart  
+		textLabel.Position = UDim2.new(  
+			startPos.X.Scale,  
+			startPos.X.Offset + delta.X,  
+			startPos.Y.Scale,  
+			startPos.Y.Offset + delta.Y  
+		)  
+	end  
+  
+	textLabel.InputBegan:Connect(function(input)  
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then  
+			dragging = true  
+			dragStart = input.Position  
+			startPos = textLabel.Position  
+  
+			input.Changed:Connect(function()  
+				if input.UserInputState == Enum.UserInputState.End then  
+					dragging = false  
+				end  
+			end)  
+		end  
+	end)  
+  
+	textLabel.InputChanged:Connect(function(input)  
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then  
+			dragInput = input  
+		end  
+	end)  
+  
+	UserInputService.InputChanged:Connect(function(input)  
+		if input == dragInput and dragging then  
+			update(input)  
+		end  
+	end)  
+  
+	-- Cập nhật Health liên tục  
+	while true do  
+		local char = LocalPlayer.Character  
+		local humanoid = char and char:FindFirstChildOfClass("Humanoid")  
+  
+		if humanoid then  
+			local health = humanoid.Health  
+			local maxHealth = humanoid.MaxHealth  
+			textLabel.Text = string.format("Health: %.1f / %.1f", health, maxHealth)  
+		else  
+			textLabel.Text = "Health: N/A"  
+		end  
+  
+		task.wait(0.2)  
+	end  
+end)  
+  
+task.spawn(function()  
+	local Players = game:GetService("Players")  
+	local LocalPlayer = Players.LocalPlayer  
+	local UserInputService = game:GetService("UserInputService")  
+  
+	-- Tạo GUI  
+	local screenGui = Instance.new("ScreenGui")  
+	screenGui.Name = "UserIdDisplay"  
+	screenGui.ResetOnSpawn = false  
+	screenGui.IgnoreGuiInset = true  
+	screenGui.Parent = game:GetService("CoreGui")  
+  
+	local textLabel = Instance.new("TextLabel")  
+	textLabel.Size = UDim2.new(0, 200, 0, 50)  
+	textLabel.Position = UDim2.new(0, 350, 0, 300)  
+	textLabel.BackgroundTransparency = 0.5  
+	textLabel.BackgroundColor3 = Color3.new(0, 0, 0)  
+	textLabel.TextColor3 = Color3.new(1, 1, 1)  
+	textLabel.TextStrokeTransparency = 0  
+	textLabel.Font = Enum.Font.GothamBold  
+	textLabel.TextSize = 20  
+	textLabel.Text = "User ID: Loading..."  
+	textLabel.Parent = screenGui  
+  
+	local corner = Instance.new("UICorner")  
+	corner.CornerRadius = UDim.new(0, 10)  
+	corner.Parent = textLabel  
+  
+	-- Kéo GUI  
+	local dragging, dragInput, dragStart, startPos  
+  
+	local function update(input)  
+		local delta = input.Position - dragStart  
+		textLabel.Position = UDim2.new(  
+			startPos.X.Scale,  
+			startPos.X.Offset + delta.X,  
+			startPos.Y.Scale,  
+			startPos.Y.Offset + delta.Y  
+		)  
+	end  
+  
+	textLabel.InputBegan:Connect(function(input)  
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then  
+			dragging = true  
+			dragStart = input.Position  
+			startPos = textLabel.Position  
+  
+			input.Changed:Connect(function()  
+				if input.UserInputState == Enum.UserInputState.End then  
+					dragging = false  
+				end  
+			end)  
+		end  
+	end)  
+  
+	textLabel.InputChanged:Connect(function(input)  
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then  
+			dragInput = input  
+		end  
+	end)  
+  
+	UserInputService.InputChanged:Connect(function(input)  
+		if input == dragInput and dragging then  
+			update(input)  
+		end  
+	end)  
+  
+	-- Hiển thị UserId (không cần update liên tục vì ID không đổi)  
+	textLabel.Text = "User ID: " .. tostring(LocalPlayer.UserId)  
+end)
