@@ -79,7 +79,7 @@ local function autoESP(filterFn, color, labelText)
 					end
 				end
 			end
-			task.wait(2)
+			task.wait(5)
 		end
 	end)
 end
@@ -136,51 +136,53 @@ mainTab:CreateButton({
 	Callback = function()
 		task.spawn(function()
 	local espColor = Color3.fromRGB(84, 220, 0)
-	local outlineColor = Color3.fromRGB(84, 220, 0)
+local outlineColor = Color3.fromRGB(0, 0, 0) -- Viền chữ màu đen
 
-	-- Tạo ESP
-	local function createESP(item)
-		local billboard = Instance.new("BillboardGui")
-		billboard.Name = "LighterESP"
-		billboard.AlwaysOnTop = true
-		billboard.Size = UDim2.new(0, 200, 0, 50)
-		billboard.StudsOffset = Vector3.new(0, 3, 0)
-		billboard.MaxDistance = math.huge
-		billboard.Parent = item
+-- Tạo ESP
+local function createESP(item)
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name = "LighterESP"
+	billboard.AlwaysOnTop = true
+	billboard.Size = UDim2.new(0, 100, 0, 40)
+	billboard.StudsOffset = Vector3.new(0, 2, 0)
+	billboard.MaxDistance = math.huge
+	billboard.Parent = item
 
-		local textLabel = Instance.new("TextLabel")
-		textLabel.Parent = billboard
-		textLabel.Text = "Lighter"
-		textLabel.TextColor3 = espColor
-		textLabel.TextStrokeColor3 = outlineColor
-		textLabel.TextStrokeTransparency = 0
-		textLabel.BackgroundTransparency = 1
-		textLabel.Size = UDim2.new(1, 0, 1, 0)
+	local textLabel = Instance.new("TextLabel")
+	textLabel.Parent = billboard
+	textLabel.Text = "Lighter"
+	textLabel.TextColor3 = espColor
+	textLabel.TextStrokeColor3 = outlineColor -- Viền đen
+	textLabel.TextStrokeTransparency = 0      -- Hiện viền rõ
+	textLabel.BackgroundTransparency = 1
+	textLabel.Size = UDim2.new(1, 0, 1, 0)
+	textLabel.Font = Enum.Font.SourceSansBold
+	textLabel.TextScaled = true
 
-		-- Tạo Outline
-		local highlight = Instance.new("Highlight")
-		highlight.Name = "LighterOutline"
-		highlight.FillTransparency = 1 -- Ẩn màu nền
-		highlight.OutlineColor = outlineColor
-		highlight.OutlineTransparency = 0
-		highlight.Parent = item
-	end
+	-- Tạo Outline mô hình
+	local highlight = Instance.new("Highlight")
+	highlight.Name = "LighterOutline"
+	highlight.FillTransparency = 1
+	highlight.OutlineColor = espColor
+	highlight.OutlineTransparency = 0
+	highlight.Parent = item
+end
 
-	local function checkForLighters()
-		for _, item in ipairs(workspace:GetDescendants()) do
-			if item:IsA("Model") and item.Name == "Lighter" and not item:FindFirstChild("LighterESP") then
-				createESP(item)
-			end
+local function checkForLighters()
+	for _, item in ipairs(workspace:GetDescendants()) do
+		if item:IsA("Model") and item.Name == "Lighter" and not item:FindFirstChild("LighterESP") then
+			createESP(item)
 		end
 	end
+end
 
-	workspace.DescendantAdded:Connect(function(descendant)
-		if descendant:IsA("Model") and descendant.Name == "Lighter" then
-			createESP(descendant)
-		end
-	end)
+workspace.DescendantAdded:Connect(function(descendant)
+	if descendant:IsA("Model") and descendant.Name == "Lighter" then
+		createESP(descendant)
+	end
+end)
 
-	checkForLighters()
+checkForLighters()
 end)
 	end,
 })
