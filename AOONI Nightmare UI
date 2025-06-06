@@ -1,0 +1,266 @@
+-- Kiểm tra ID game
+if game.PlaceId ~= 14476003462 then
+    return warn("Script only works in the specified game (ID: 104592421039274){AOONI Nightmare}")
+end
+
+-- Thông báo khi đúng ID game
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "✓ Game Check Passed",
+    Text = "Script is now executing...",
+    Duration = 5
+})
+
+task.wait(1) -- Đợi 1s trước khi thực thi 
+
+task.spawn(function()
+-- Khai báo các dịch vụ cần thiết
+local player = game.Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local camera = workspace.CurrentCamera
+
+-- Tải và khởi tạo thư viện GUI Rayfield
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Tạo cửa sổ giao diện chính
+local Window = Rayfield:CreateWindow({
+    Name = "Script By Khang [AOONI Nightmare]",
+    LoadingTitle = "Loading Hub...",
+    LoadingSubtitle = "Please wait",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "MyHubFolder",
+        FileName = "MyHubConfig"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "",
+        RememberJoins = false
+    },
+    KeySystem = false,
+})
+
+-- Thông báo đã tải
+Rayfield:Notify({
+    Title = "Welcome!",
+    Content = "Script Loaded",
+    Duration = 2
+})
+
+
+-- Tạo hàm ESP chung
+local function autoESP(filterFn, color, labelText)
+	task.spawn(function()
+		while true do
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if filterFn(obj) then
+					if not obj:FindFirstChild("AutoESP") then
+						local hl = Instance.new("Highlight")
+						hl.Name = "AutoESP"
+						hl.OutlineColor = color
+						hl.OutlineTransparency = 0
+						hl.FillTransparency = 1
+						hl.Parent = obj
+					end
+					if not obj:FindFirstChild("ESPLabel") and obj:IsA("BasePart") then
+						local bill = Instance.new("BillboardGui", obj)
+						bill.Name = "ESPLabel"
+						bill.Size = UDim2.new(0, 100, 0, 40)
+						bill.StudsOffset = Vector3.new(0, 2, 0)
+						bill.AlwaysOnTop = true
+						local txt = Instance.new("TextLabel", bill)
+						txt.Size = UDim2.new(1, 0, 1, 0)
+						txt.BackgroundTransparency = 1
+						txt.TextColor3 = color
+						txt.TextStrokeTransparency = 0.5
+						txt.Text = labelText or obj.Name
+						txt.Font = Enum.Font.SourceSansSemibold
+						txt.TextScaled = true
+					end
+				end
+			end
+			task.wait(5)
+		end
+	end)
+end
+
+-- Tab chính
+local mainTab = Window:CreateTab("Visual", eye)
+
+-- ESP Buttons
+
+mainTab:CreateButton({
+	Name = "Esp Aooni",
+	Callback = function()
+		autoESP(function(p)
+			return p:IsA("BasePart") and p.Name == "aooni"
+		end, Color3.fromRGB(144, 0, 255), "Aooni")
+	end,
+})
+
+mainTab:CreateButton({
+	Name = "Esp Doll",
+	Callback = function()
+		autoESP(function(p)
+			return p:IsA("BasePart") and p.Name == "Doll"
+		end, Color3.fromRGB(255, 223, 178), "Doll")
+	end,
+})
+
+mainTab:CreateButton({
+	Name = "Esp Book",
+	Callback = function()
+		autoESP(function(p)
+			return p:IsA("BasePart") and p.Name == "Book"
+		end, Color3.fromRGB(255, 255, 255), "Book")
+	end,
+})
+
+
+
+
+
+
+
+
+
+
+
+
+local KTab = Window:CreateTab("Misc", "package")
+
+
+KTab:CreateSection("Player")
+
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local speaker = Players.LocalPlayer
+local flyjump
+
+KTab:CreateToggle({
+        Name = "Inf Jump",
+        CurrentValue = false,
+        Flag = "InfJumpToggle",
+        Callback = function(state)
+                if flyjump then
+                        flyjump:Disconnect()
+                        flyjump = nil
+                end
+
+                if state then
+                        flyjump = UserInputService.JumpRequest:Connect(function()
+                                local humanoid = speaker.Character and speaker.Character:FindFirstChildWhichIsA("Humanoid")
+                                if humanoid then
+                                        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                                end
+                        end)
+                end
+        end
+})
+
+-- Khai báo các dịch vụ cần thiết
+local PromptService = game:GetService("ProximityPromptService")
+local Workspace = game:GetService("Workspace")
+
+-- Tạo Toggle để kích hoạt và tắt chức năng Instant Prompt
+local InstantPromptToggle = KTab:CreateToggle({
+    Name = "Instant interact",
+    CurrentValue = false,  -- Mặc định tắt
+    Callback = function(enabled)
+        if enabled then
+            -- Khi toggle bật, thiết lập tất cả ProximityPrompt có HoldDuration = 0
+            for _, v in ipairs(Workspace:GetDescendants()) do
+                if v:IsA("ProximityPrompt") then
+                    v.HoldDuration = 0
+                end
+            end
+
+            -- Tự động thiết lập HoldDuration = 0 khi có Prompt mới bắt đầu
+            PromptService.PromptButtonHoldBegan:Connect(function(prompt)
+                if prompt:IsA("ProximityPrompt") then
+                    prompt.HoldDuration = 0
+                end
+            end)
+
+            Rayfield:Notify({
+                Title = "Instant Prompt Enabled",
+                Content = "All proximity prompts now require no hold duration.",
+                Duration = 2
+            })
+        else
+            -- Khi toggle tắt, không thay đổi gì
+            Rayfield:Notify({
+                Title = "Instant Prompt Disabled",
+                Content = "Proximity prompts will use default hold duration.",
+                Duration = 2
+            })
+        end
+    end,
+})
+
+local HumanModCons = {}
+
+KTab:CreateToggle({
+	Name = "Fast Speed",
+	CurrentValue = false,
+	Flag = "SpeedToggle",
+	Callback = function(state)
+		local speaker = game.Players.LocalPlayer
+		local function isNumber(val)
+			return typeof(val) == "number" and val == val and val ~= math.huge and val ~= -math.huge
+		end
+
+		if state then
+			local args = { true, 22 }
+			local speed = args[1] or 16
+			if args[2] then
+				speed = args[2]
+			end
+
+			if isNumber(speed) then
+				local Char = speaker.Character or workspace:FindFirstChild(speaker.Name)
+				local Human = Char and Char:FindFirstChildWhichIsA("Humanoid")
+
+				local function WalkSpeedChange()
+					if Char and Human then
+						Human.WalkSpeed = speed
+					end
+				end
+
+				WalkSpeedChange()
+
+				HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)
+					or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)
+
+				HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false)
+					or speaker.CharacterAdded:Connect(function(nChar)
+						Char, Human = nChar, nChar:WaitForChild("Humanoid")
+						WalkSpeedChange()
+						HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)
+							or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)
+					end)
+			end
+		else
+			HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false) or nil
+			HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false) or nil
+		end
+	end
+})
+
+KTab:CreateSection("Other")
+  
+KTab:CreateButton({
+    Name = "interact aura",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/CollectAura"))()
+    end,
+})
+  
+  KTab:CreateButton({
+    Name = "Inf Yield Edit",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()
+    end,
+  })
+
+end)
