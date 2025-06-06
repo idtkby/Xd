@@ -3011,7 +3011,7 @@ function saves()
                     if vtype(json.StayOpen, "boolean") then StayOpen = json.StayOpen else StayOpen = false end
                     if vtype(json.guiScale, "number") then guiScale = json.guiScale else guiScale = defaultGuiScale end
                     if vtype(json.keepIY, "boolean") then KeepInfYield = json.keepIY else KeepInfYield = true end
-                    if vtype(json.espTransparency, "number") then espTransparency = json.espTransparency else espTransparency = 0.3 end
+                    if vtype(json.espTransparency, "number") then espTransparency = json.espTransparency else espTransparency = 0.8 end
                     if vtype(json.logsEnabled, "boolean") then logsEnabled = json.logsEnabled else logsEnabled = false end
                     if vtype(json.jLogsEnabled, "boolean") then jLogsEnabled = json.jLogsEnabled else jLogsEnabled = false end
                     if vtype(json.logsWebhook, "string") then logsWebhook = json.logsWebhook else logsWebhook = nil end
@@ -7939,7 +7939,7 @@ addcmd('noesp',{'unesp','unespteam'},function(args, speaker)
 end)
 
 addcmd('esptransparency',{},function(args, speaker)
-	espTransparency = (args[1] and isNumber(args[1]) and args[1]) or 0.3
+	espTransparency = (args[1] and isNumber(args[1]) and args[1]) or 0.8
 	updatesaves()
 end)
 
@@ -13056,12 +13056,12 @@ task.spawn(function()
     local LocalPlayer = Players.LocalPlayer
     local CoreGui = game:GetService("CoreGui")
 
-    --  To GUI chính
+    --  To GUI ch�nh
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Parent = CoreGui
     ScreenGui.ResetOnSpawn = false
 
-    --  To nút Toggle (44.5x44.5)
+    --  To n�t Toggle (44.5x44.5)
     local ToggleButton = Instance.new("TextButton")
     ToggleButton.Parent = ScreenGui
     ToggleButton.Size = UDim2.new(0, 44.5, 0, 44.5)
@@ -13074,7 +13074,7 @@ task.spawn(function()
     ToggleButton.Font = Enum.Font.SourceSansBold
     ToggleButton.AutoButtonColor = false
 
-    --  Bo tròn góc
+    --  Bo tr�n g�c
     local UICorner = Instance.new("UICorner")
     UICorner.CornerRadius = UDim.new(1, 0)
     UICorner.Parent = ToggleButton
@@ -13120,7 +13120,7 @@ task.spawn(function()
         end
     end)
 
-    --  Trng thái bt/tt
+    --  Trng th�i bt/tt
     local isHidden = false
     local wasStayOpen = false
     local cooldown = false
