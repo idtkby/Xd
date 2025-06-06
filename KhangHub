@@ -48,7 +48,7 @@ SpTab:CreateSection("----------------------------------------------------")
 SpTab:CreateSection("Eyes The Horror Game")
 SpTab:CreateSection("----------------------------------------------------")
 SpTab:CreateSection("7 Days To Live (Forest Only)")
-SpTab:CreateSection("----------------------------------------------------")
+SpTab:CreateSection("AOONI Nightmare")
 SpTab:CreateSection("PETAPETA | level6 (無限旅館)")
 SpTab:CreateSection("----------------------------------------------------")
 
@@ -115,6 +115,20 @@ HbTab:CreateButton({
    end
 })
 
+HbTab:CreateSection("Nightmare")
+HbTab:CreateButton({
+    Name = "AOONI Nightmare",
+    Callback = function()
+        loadstring(game:HttpGet(""))()
+    end,
+})
+HbTab:CreateButton({
+   Name = "Teleport to game",
+   Callback = function()
+      local gameId = 95436277090085
+      game:GetService("TeleportService"):Teleport(gameId)
+   end
+})
 
 HbTab:CreateSection("無限旅館")
 HbTab:CreateButton({
