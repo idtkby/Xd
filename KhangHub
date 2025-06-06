@@ -36,10 +36,30 @@ Rayfield:Notify({
 -- Tạo Tab Teleport
 local SpTab = Window:CreateTab("Support Game", "users")
 
+
+
+
+
+
+
+SpTab:CreateSection("----------------------------------------------------")
 SpTab:CreateSection("Dead Rails (Game)")
+SpTab:CreateSection("----------------------------------------------------")
 SpTab:CreateSection("Eyes The Horror Game")
-    SpTab:CreateSection("7 Days To Live (Forest Only)")
+SpTab:CreateSection("----------------------------------------------------")
+SpTab:CreateSection("7 Days To Live (Forest Only)")
+SpTab:CreateSection("----------------------------------------------------")
 SpTab:CreateSection("PETAPETA | level6 (無限旅館)")
+SpTab:CreateSection("----------------------------------------------------")
+
+
+
+
+
+
+
+
+
 
 local HbTab = Window:CreateTab("Script", "Search")
 
