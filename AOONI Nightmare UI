@@ -105,7 +105,7 @@ mainTab:CreateButton({
 		billboard.Name = "AooniESP"
 		billboard.AlwaysOnTop = true
 		billboard.Size = UDim2.new(0, 100, 0, 40)
-		billboard.StudsOffset = Vector3.new(0, 3, 0)
+		billboard.StudsOffset = Vector3.new(0, 2, 0)
 		billboard.MaxDistance = math.huge
 		billboard.Parent = npc.PrimaryPart
 
@@ -144,7 +144,7 @@ mainTab:CreateButton({
 		end
 	end)
 
-	checkForAooni()
+	checkForaooni()
 end)
 	end,
 })
