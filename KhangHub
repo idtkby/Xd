@@ -44,11 +44,13 @@ local SpTab = Window:CreateTab("Support Game", "users")
 
 SpTab:CreateSection("----------------------------------------------------")
 SpTab:CreateSection("Dead Rails (Game)")
-SpTab:CreateSection("----------------------------------------------------")
+
 SpTab:CreateSection("Eyes The Horror Game")
-SpTab:CreateSection("----------------------------------------------------")
+
 SpTab:CreateSection("7 Days To Live (Forest Only)")
+
 SpTab:CreateSection("AOONI Nightmare")
+SpTab:CreateSection("PETAPETA: School of Nightmares")
 SpTab:CreateSection("PETAPETA | level6 (無限旅館)")
 SpTab:CreateSection("----------------------------------------------------")
 
@@ -130,7 +132,7 @@ HbTab:CreateButton({
    end
 })
 
-HbTab:CreateSection("無限旅館")
+HbTab:CreateSection("PETAPETA")
 HbTab:CreateButton({
     Name = "PETAPETA | Level6",
     Callback = function()
@@ -138,12 +140,24 @@ HbTab:CreateButton({
     end,
 })
 HbTab:CreateButton({
-   Name = "Teleport to game",
+    Name = "PETAPETA: School of Nightmares",
+    Callback = function()
+        loadstring(game:HttpGet(""))()
+    end,
+})
+HbTab:CreateButton({
+   Name = "Teleport to Hotel",
    Callback = function()
       local gameId = 14476003462
       game:GetService("TeleportService"):Teleport(gameId)
    end
 })
-
+HbTab:CreateButton({
+   Name = "Teleport to School",
+   Callback = function()
+      local gameId = 110280222997707
+      game:GetService("TeleportService"):Teleport(gameId)
+   end
+})
 
 end)
