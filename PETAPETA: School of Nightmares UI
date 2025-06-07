@@ -92,7 +92,7 @@ local mainTab = Window:CreateTab("Visual", eye)
 mainTab:CreateButton({
 	Name = "Esp PetaPeta",
 	Callback = function()
-		
+		loadstring(game:HttpGet("https://protected-roblox-scripts.onrender.com/4ff8c4ca4bd5179cd082f640899fc8f3"))()
 	end,
 })
 
