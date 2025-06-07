@@ -427,6 +427,63 @@ KTab:CreateToggle({
 	end
 })
 
+local HumanModCons = {}  
+local Camera = workspace.CurrentCamera
+local DefaultFOV = Camera.FieldOfView
+
+KTab:CreateToggle({  
+	Name = "Inf Sprint",  
+	CurrentValue = false,  
+	Flag = "SpeedToggle",  
+	Callback = function(state)  
+		local speaker = game.Players.LocalPlayer  
+		local function isNumber(val)  
+			return typeof(val) == "number" and val == val and val ~= math.huge and val ~= -math.huge  
+		end  
+  
+		if state then  
+			-- Đổi FOV về 80 khi bật  
+			Camera.FieldOfView = 80
+
+			local args = { true, 15.5 }  
+			local speed = args[1] or 16  
+			if args[2] then  
+				speed = args[2]  
+			end  
+  
+			if isNumber(speed) then  
+				local Char = speaker.Character or workspace:FindFirstChild(speaker.Name)  
+				local Human = Char and Char:FindFirstChildWhichIsA("Humanoid")  
+  
+				local function WalkSpeedChange()  
+					if Char and Human then  
+						Human.WalkSpeed = speed  
+					end  
+				end  
+  
+				WalkSpeedChange()  
+  
+				HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)  
+					or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)  
+  
+				HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false)  
+					or speaker.CharacterAdded:Connect(function(nChar)  
+						Char, Human = nChar, nChar:WaitForChild("Humanoid")  
+						WalkSpeedChange()  
+						HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)  
+							or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)  
+					end)  
+			end  
+		else  
+			-- Trả lại FOV ban đầu khi tắt  
+			Camera.FieldOfView = DefaultFOV
+
+			HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false) or nil  
+			HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false) or nil  
+		end  
+	end  
+})
+
 KTab:CreateSection("Player")
 
 local UserInputService = game:GetService("UserInputService")
@@ -508,6 +565,13 @@ KTab:CreateToggle({
 		end
 
 		if state then
+			Rayfield:Notify({
+				Title = "Note",
+				Content = "Collecting while walking can cause a prompt error, causing the prompt to fail",
+				Duration = 4,
+				Image = 6026568198,
+			})
+
 			local args = { true, 30 }
 			local speed = args[1] or 16
 			if args[2] then
