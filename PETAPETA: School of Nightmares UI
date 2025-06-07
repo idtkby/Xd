@@ -127,6 +127,110 @@ mainTab:CreateButton({
 
 local KTab = Window:CreateTab("Misc", "package")
 KTab:CreateSection("Game")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local AutoZeniRunning = false
+local ZeniConnection
+local ZeniList = {}
+
+KTab:CreateToggle({
+	Name = "Auto Collect Soul (Soon...)",
+	CurrentValue = false,
+	Callback = function(state)
+		AutoZeniRunning = state
+		if state then
+			local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+			local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+			local lastTriggerTime = {}
+
+			-- Cập nhật danh sách Zeni khi có object mới vào Workspace
+			local function scanZeni()
+				ZeniList = {}
+				for _, obj in ipairs(workspace:GetDescendants()) do
+					if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(LocalPlayer.Character) then
+						local model = obj:FindFirstAncestorWhichIsA("Model")
+						if model and model.Name:match("^Zeni_[1-3]$") then
+							table.insert(ZeniList, {model = model, obj = obj})
+						end
+					end
+				end
+			end
+
+			scanZeni()
+			workspace.DescendantAdded:Connect(function(desc)
+				if AutoZeniRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") then
+					local model = desc:FindFirstAncestorWhichIsA("Model")
+					if model and model.Name:match("^Zeni_[1-3]$") then
+						table.insert(ZeniList, {model = model, obj = desc})
+					end
+				end
+			end)
+
+			local function triggerPrompt(obj)
+				pcall(function()
+					if obj:IsA("ProximityPrompt") then
+						fireproximityprompt(obj, math.huge)
+					elseif obj:IsA("ClickDetector") then
+						fireclickdetector(obj)
+					elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
+						firetouchinterest(HumanoidRootPart, obj.Parent, 0)
+						task.wait()
+						firetouchinterest(HumanoidRootPart, obj.Parent, 1)
+					end
+				end)
+			end
+
+			local function getClosestPart(model, refPos)
+				local closest, minDist = nil, math.huge
+				for _, part in ipairs(model:GetChildren()) do
+					if part:IsA("BasePart") then
+						local dist = (part.Position - refPos).Magnitude
+						if dist < minDist then
+							minDist = dist
+							closest = part
+						end
+					end
+				end
+				return closest, minDist
+			end
+
+			ZeniConnection = RunService.Heartbeat:Connect(function()
+				if not AutoZeniRunning or not LocalPlayer.Character then return end
+				local HRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+				if not HRP then return end
+
+				local now = tick()
+				for i = #ZeniList, 1, -1 do
+					local data = ZeniList[i]
+					local model = data.model
+					local obj = data.obj
+					if not model or not model:IsDescendantOf(workspace) then
+						table.remove(ZeniList, i)
+						continue
+					end
+
+					if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
+						continue
+					end
+
+					local _, dist = getClosestPart(model, HRP.Position)
+					if dist and dist <= 7 then
+						lastTriggerTime[model] = now
+						triggerPrompt(obj)
+					end
+				end
+			end)
+		else
+			if ZeniConnection then
+				ZeniConnection:Disconnect()
+				ZeniConnection = nil
+			end
+			ZeniList = {}
+		end
+	end
+})
 
 KTab:CreateSection("Player")
 
