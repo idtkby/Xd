@@ -401,7 +401,7 @@ KTab:CreateToggle({
 					end
 
 					local _, dist = getClosestPart(model, HRP.Position)
-					if dist and dist <= 5 then
+					if dist and dist <= 3 then
 						local success = triggerPrompt(obj)
 						if success then
 							lastTriggerTime[model] = now
