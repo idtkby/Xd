@@ -120,7 +120,7 @@ mainTab:CreateButton({
 
 		local textLabel = Instance.new("TextLabel")
 		textLabel.Parent = billboard
-		textLabel.Text = "--Key--"
+		textLabel.Text = "Key"
 		textLabel.TextColor3 = espColor
 		textLabel.TextStrokeColor3 = outlineColor
 		textLabel.TextStrokeTransparency = 0
@@ -512,27 +512,34 @@ KTab:CreateToggle({
 	end
 })
 
+-- Hàm lấy RootPart an toàn
+local function getRoot(char)
+	return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
+end
+
 KTab:CreateToggle({
 	Name = "Ambient Light",
 	Default = false,
 	Callback = function(state)
-		local char = speaker.Character
+		local char = speaker.Character or speaker.CharacterAdded:Wait()
 		if not char then return end
 
-		if state then
-			local root = getRoot(char)
-			if not root then return end
+		local root = getRoot(char)
+		if not root then return end
 
-			local light = Instance.new("PointLight")
-			light.Name = "AmbientLight"
-			light.Parent = root
-			light.Range = 100
-			light.Brightness = 0.3
+		if state then
+			if not root:FindFirstChild("AmbientLight") then
+				local light = Instance.new("PointLight")
+				light.Name = "AmbientLight"
+				light.Parent = root
+				light.Range = 100
+				light.Brightness = 0.3
+				light.Color = Color3.fromRGB(255, 255, 255) -- Có thể chỉnh màu
+			end
 		else
-			for _, v in ipairs(char:GetDescendants()) do
-				if v:IsA("PointLight") and v.Name == "AmbientLight" then
-					v:Destroy()
-				end
+			local existing = root:FindFirstChild("AmbientLight")
+			if existing then
+				existing:Destroy()
 			end
 		end
 	end
