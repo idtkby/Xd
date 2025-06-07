@@ -196,7 +196,12 @@ mainTab:CreateButton({
 	end,
 })
 
-
+mainTab:CreateButton({
+    Name = "Esp Player",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/PlayerEsp"))()
+    end,
+})
 
 
 
