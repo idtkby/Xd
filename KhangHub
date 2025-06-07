@@ -142,7 +142,7 @@ HbTab:CreateButton({
 HbTab:CreateButton({
     Name = "PETAPETA: School of Nightmares",
     Callback = function()
-        loadstring(game:HttpGet(""))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/PETAPETA%3A%20School%20of%20Nightmares%20UI"))()
     end,
 })
 HbTab:CreateButton({
