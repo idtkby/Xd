@@ -512,6 +512,32 @@ KTab:CreateToggle({
 	end
 })
 
+KTab:CreateToggle({
+	Name = "Ambient Light",
+	Default = false,
+	Callback = function(state)
+		local char = speaker.Character
+		if not char then return end
+
+		if state then
+			local root = getRoot(char)
+			if not root then return end
+
+			local light = Instance.new("PointLight")
+			light.Name = "AmbientLight"
+			light.Parent = root
+			light.Range = 100
+			light.Brightness = 0.3
+		else
+			for _, v in ipairs(char:GetDescendants()) do
+				if v:IsA("PointLight") and v.Name == "AmbientLight" then
+					v:Destroy()
+				end
+			end
+		end
+	end
+})
+
 KTab:CreateSection("Other")
   
 KTab:CreateButton({
