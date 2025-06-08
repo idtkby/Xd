@@ -641,6 +641,109 @@ KTab:CreateToggle({
 	end
 })
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+local jumpGui
+
+KTab:CreateToggle({
+    Name = "Show Jump Button",
+    CurrentValue = false,
+    Callback = function(state)
+        if state then
+            -- Nếu GUI đã tồn tại thì không tạo nữa
+            if jumpGui and jumpGui.Parent then
+                jumpGui.Enabled = true
+                return
+            end
+
+            -- Tạo GUI mới
+            jumpGui = Instance.new("ScreenGui")
+            jumpGui.Name = "JumpButtonGui"
+            jumpGui.ResetOnSpawn = false
+            jumpGui.IgnoreGuiInset = true
+            jumpGui.Parent = game:GetService("CoreGui")
+
+            local outer = Instance.new("Frame")
+            outer.Size = UDim2.new(0, 117 * 1.3, 0, 117 * 1.29)
+            outer.Position = UDim2.new(0, 1034 - ((117 * 1.29 - 117)/2), 0, 388 - ((117 * 1.29 - 117)/2))
+            outer.BackgroundColor3 = Color3.new(0, 0, 0)
+            outer.BackgroundTransparency = 1
+            outer.Parent = jumpGui
+
+            local outerCorner = Instance.new("UICorner")
+            outerCorner.CornerRadius = UDim.new(1, 0)
+            outerCorner.Parent = outer
+
+            local inner = Instance.new("Frame")
+            inner.Size = UDim2.new(0, 99 * 1.3, 0, 99 * 1.29)
+            inner.Position = UDim2.new(0, 9 * 1.3, 0, 9 * 1.29)
+            inner.BackgroundColor3 = Color3.new(0, 0, 0)
+            inner.BackgroundTransparency = 1
+            inner.Parent = outer
+
+            local innerCorner = Instance.new("UICorner")
+            innerCorner.CornerRadius = UDim.new(1, 0)
+            innerCorner.Parent = inner
+
+            local stroke = Instance.new("UIStroke")
+            stroke.Thickness = 4
+            stroke.Color = Color3.new(1, 1, 1)
+            stroke.Transparency = 1
+            stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+            stroke.Parent = inner
+
+            local btn = Instance.new("ImageButton")
+            btn.Size = UDim2.new(1, 0, 1, 0)
+            btn.BackgroundTransparency = 1
+            btn.Image = "rbxasset://textures/ui/Input/TouchControlsSheetV2.png"
+            btn.ImageRectOffset = Vector2.new(1, 146)
+            btn.ImageRectSize = Vector2.new(144, 144)
+            btn.Parent = inner
+
+            local flag = Instance.new("StringValue")
+            flag.Name = "ButtonType"
+            flag.Value = "Jump"
+            flag.Parent = btn
+
+            local holding = false
+
+            local function jumpLoop()
+                while holding do
+                    local char = LocalPlayer.Character
+                    local hum = char and char:FindFirstChildWhichIsA("Humanoid")
+                    if hum and hum:GetState() ~= Enum.HumanoidStateType.Jumping and hum:GetState() ~= Enum.HumanoidStateType.Freefall then
+                        hum:ChangeState(Enum.HumanoidStateType.Jumping)
+                    end
+                    task.wait(0.2)
+                end
+            end
+
+            btn.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    if not holding then
+                        holding = true
+                        task.spawn(jumpLoop)
+                    end
+                end
+            end)
+
+            btn.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    holding = false
+                end
+            end)
+
+        else
+            if jumpGui then
+                jumpGui:Destroy()
+                jumpGui = nil
+            end
+        end
+    end
+})
+
 KTab:CreateSection("Other")
   
 KTab:CreateButton({
