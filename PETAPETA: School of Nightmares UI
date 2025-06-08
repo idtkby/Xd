@@ -430,6 +430,7 @@ KTab:CreateToggle({
 local HumanModCons = {}  
 local Camera = workspace.CurrentCamera
 local DefaultFOV = Camera.FieldOfView
+local TargetFOV = 104
 
 KTab:CreateToggle({  
 	Name = "Inf Sprint",  
@@ -442,8 +443,15 @@ KTab:CreateToggle({
 		end  
   
 		if state then  
-			-- Đổi FOV về 104 khi bật  
-			Camera.FieldOfView = 104
+			-- Đặt FOV mục tiêu  
+			Camera.FieldOfView = TargetFOV
+
+			-- Giữ FOV cố định nếu bị thay đổi  
+			HumanModCons.fovChanged = Camera:GetPropertyChangedSignal("FieldOfView"):Connect(function()  
+				if Camera.FieldOfView ~= TargetFOV then  
+					Camera.FieldOfView = TargetFOV  
+				end  
+			end)
 
 			local args = { true, 15.5 }  
 			local speed = args[1] or 16  
@@ -477,6 +485,12 @@ KTab:CreateToggle({
 		else  
 			-- Trả lại FOV ban đầu khi tắt  
 			Camera.FieldOfView = DefaultFOV
+
+			-- Ngắt kết nối giữ FOV  
+			if HumanModCons.fovChanged then  
+				HumanModCons.fovChanged:Disconnect()  
+				HumanModCons.fovChanged = nil  
+			end
 
 			HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false) or nil  
 			HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false) or nil  
