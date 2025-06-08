@@ -681,6 +681,12 @@ KTab:CreateToggle({
     CurrentValue = false,
     Callback = function(state)
         if state then
+			Rayfield:Notify({
+				Title = "Note",
+				Content = "You can get tripped if you don't turn on anti trip",
+				Duration = 4, 
+				Image = 6026568198,
+			})
             -- Nếu GUI đã tồn tại thì không tạo nữa
             if jumpGui and jumpGui.Parent then
                 jumpGui.Enabled = true
@@ -792,6 +798,32 @@ LocalPlayer.CharacterAdded:Connect(function()
 end)
 end)
     end
+})
+
+KTab:CreateButton({
+    Name = "Anti Trip",
+    Callback = function()
+        local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local function disableTrip()
+	while true do
+		local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+		local human = char:WaitForChild("Humanoid", 5)
+		if human then
+			human.PlatformStand = false
+			human:GetPropertyChangedSignal("PlatformStand"):Connect(function()
+				if human.PlatformStand then
+					human.PlatformStand = false
+				end
+			end)
+		end
+		char:WaitForChild("Humanoid").Died:Wait()
+	end
+end
+
+task.spawn(disableTrip)
+    end,
 })
 
 KTab:CreateSection("Other")
