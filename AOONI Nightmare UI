@@ -92,13 +92,12 @@ local mainTab = Window:CreateTab("Visual", eye)
 mainTab:CreateButton({
 	Name = "Esp AoOni",
 	Callback = function()
-		task.spawn(function()
+task.spawn(function()
 	local espColor = Color3.fromRGB(144, 0, 255)
 	local outlineColor = Color3.fromRGB(0, 0, 0) -- Viền chữ màu đen
 
 	local function createESP(npc)
-		if npc:FindFirstChild("AooniESP") then return end
-		if not npc.PrimaryPart then return end
+		if npc:FindFirstChild("AooniESP") or not npc.PrimaryPart then return end
 
 		-- Billboard
 		local billboard = Instance.new("BillboardGui")
@@ -129,22 +128,20 @@ mainTab:CreateButton({
 		highlight.Parent = npc
 	end
 
-	local function checkForAooni()
-		for _, npc in ipairs(workspace:GetDescendants()) do
-			if npc:IsA("Model") and npc.Name == "Aooni" and not npc:FindFirstChild("AooniESP") and npc:FindFirstChild("Humanoid") then
-				createESP(npc)
-			end
+	local function onNewNPC(model)
+		if model:IsA("Model") and model.Name == "Aooni" and model:FindFirstChildOfClass("Humanoid") then
+			model:GetPropertyChangedSignal("Parent"):Wait()
+			if model:FindFirstChild("AooniESP") then return end
+			repeat task.wait() until model:FindFirstChild("HumanoidRootPart") or model.PrimaryPart
+			createESP(model)
 		end
 	end
 
-	workspace.DescendantAdded:Connect(function(descendant)
-		if descendant:IsA("Model") and descendant.Name == "aooni" and descendant:FindFirstChild("Humanoid") then
-			task.wait(0.1)
-			createESP(descendant)
-		end
-	end)
+	for _, npc in ipairs(workspace:GetDescendants()) do
+		onNewNPC(npc)
+	end
 
-	checkForAooni()
+	workspace.DescendantAdded:Connect(onNewNPC)
 end)
 	end,
 })
