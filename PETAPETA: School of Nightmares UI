@@ -627,30 +627,45 @@ local function getRoot(char)
 	return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
 end
 
+local AmbientRunning = false
+
 KTab:CreateToggle({
 	Name = "Ambient Light",
 	Default = false,
 	Callback = function(state)
+		AmbientRunning = state
+		local speaker = game.Players.LocalPlayer
+
+		local function applyAmbient(char)
+			local root = char:WaitForChild("HumanoidRootPart", 3)
+			if not root then return end
+
+			if AmbientRunning then
+				if not root:FindFirstChild("AmbientLight") then
+					local light = Instance.new("PointLight")
+					light.Name = "AmbientLight"
+					light.Parent = root
+					light.Range = 100
+					light.Brightness = 0.1
+					light.Color = Color3.fromRGB(255, 255, 255)
+				end
+			else
+				local existing = root:FindFirstChild("AmbientLight")
+				if existing then existing:Destroy() end
+			end
+		end
+
 		local char = speaker.Character or speaker.CharacterAdded:Wait()
-		if not char then return end
+		applyAmbient(char)
 
-		local root = getRoot(char)
-		if not root then return end
-
-		if state then
-			if not root:FindFirstChild("AmbientLight") then
-				local light = Instance.new("PointLight")
-				light.Name = "AmbientLight"
-				light.Parent = root
-				light.Range = 100
-				light.Brightness = 0.3
-				light.Color = Color3.fromRGB(255, 255, 255) -- Có thể chỉnh màu
-			end
-		else
-			local existing = root:FindFirstChild("AmbientLight")
-			if existing then
-				existing:Destroy()
-			end
+		-- Theo dõi khi respawn
+		if not AmbientConnection then
+			AmbientConnection = speaker.CharacterAdded:Connect(function(newChar)
+				if AmbientRunning then
+					task.wait(1)
+					applyAmbient(newChar)
+				end
+			end)
 		end
 	end
 })
@@ -755,6 +770,27 @@ KTab:CreateToggle({
                 jumpGui = nil
             end
         end
+task.spawn(function()
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local function setJumpHeight()
+	local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	local hum = char:WaitForChild("Humanoid")
+
+	-- Đặt độ cao nhảy thành 3 stud
+	hum.UseJumpPower = false
+	hum.JumpHeight = 3
+end
+
+-- Áp dụng ngay lập tức
+setJumpHeight()
+
+-- Đảm bảo khi respawn vẫn giữ JumpHeight
+LocalPlayer.CharacterAdded:Connect(function()
+	setJumpHeight()
+end)
+end)
     end
 })
 
