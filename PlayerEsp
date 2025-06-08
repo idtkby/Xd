@@ -1,38 +1,58 @@
 task.spawn(function()
-local function createNameTag(player)
-    if player == game.Players.LocalPlayer then return end
+    local function createESP(player)
+        if player == game.Players.LocalPlayer then return end
+        local char = player.Character or player.CharacterAdded:Wait()
 
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "NameTag"
-    billboard.Size = UDim2.new(0, 200, 0, 50)
-    billboard.StudsOffset = Vector3.new(0, 2.5, 0) -- Điều chỉnh vị trí gần với tên mặc định của Roblox
-    billboard.AlwaysOnTop = true
-    billboard.Parent = player.Character:WaitForChild("Head")
+        -- Gắn NameTag
+        if not char:FindFirstChild("Head") then char:WaitForChild("Head") end
+        if char.Head:FindFirstChild("NameTag") then
+            char.Head:FindFirstChild("NameTag"):Destroy()
+        end
 
-    local textLabel = Instance.new("TextLabel")
-    textLabel.Parent = billboard
-    textLabel.Size = UDim2.new(1, 0, 1, 0)
-    textLabel.BackgroundTransparency = 1
-    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    textLabel.TextStrokeTransparency = 0
-    textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-    textLabel.Font = Enum.Font.SourceSansBold
-    textLabel.TextSize = 15 -- Tăng kích thước lên 15
-    textLabel.Text = player.Name
-end
+        local billboard = Instance.new("BillboardGui")
+        billboard.Name = "NameTag"
+        billboard.Size = UDim2.new(0, 200, 0, 50)
+        billboard.StudsOffset = Vector3.new(0, 2.5, 0)
+        billboard.AlwaysOnTop = true
+        billboard.Parent = char.Head
 
-local function onCharacterAdded(character)
-    createNameTag(game.Players:GetPlayerFromCharacter(character))
-end
+        local textLabel = Instance.new("TextLabel")
+        textLabel.Parent = billboard
+        textLabel.Size = UDim2.new(1, 0, 1, 0)
+        textLabel.BackgroundTransparency = 1
+        textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        textLabel.TextStrokeTransparency = 0
+        textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+        textLabel.Font = Enum.Font.Bodoni
+        textLabel.TextSize = 15
+        textLabel.Text = player.Name
 
-for _, player in ipairs(game.Players:GetPlayers()) do
-    if player.Character then
-        createNameTag(player)
+        -- Gắn Highlight trắng
+        if char:FindFirstChild("ESP_Highlight") then
+            char:FindFirstChild("ESP_Highlight"):Destroy()
+        end
+        local highlight = Instance.new("Highlight")
+        highlight.Name = "ESP_Highlight"
+        highlight.FillTransparency = 1 -- Chỉ hiện outline
+        highlight.OutlineTransparency = 0
+        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+        highlight.Adornee = char
+        highlight.Parent = char
     end
-    player.CharacterAdded:Connect(onCharacterAdded)
-end
 
-game.Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(onCharacterAdded)
-end)
+    local function onCharacterAdded(character)
+        local player = game.Players:GetPlayerFromCharacter(character)
+        if player then createESP(player) end
+    end
+
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        if player.Character then
+            createESP(player)
+        end
+        player.CharacterAdded:Connect(onCharacterAdded)
+    end
+
+    game.Players.PlayerAdded:Connect(function(player)
+        player.CharacterAdded:Connect(onCharacterAdded)
+    end)
 end)
