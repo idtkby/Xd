@@ -442,8 +442,8 @@ KTab:CreateToggle({
 		end  
   
 		if state then  
-			-- Đổi FOV về 80 khi bật  
-			Camera.FieldOfView = 80
+			-- Đổi FOV về 104 khi bật  
+			Camera.FieldOfView = 104
 
 			local args = { true, 15.5 }  
 			local speed = args[1] or 16  
