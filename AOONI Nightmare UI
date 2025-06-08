@@ -74,7 +74,7 @@ local function autoESP(filterFn, color, labelText)
 						txt.TextColor3 = color
 						txt.TextStrokeTransparency = 0.5
 						txt.Text = labelText or obj.Name
-						txt.Font = Enum.Font.SourceSansSemibold
+						txt.Font = Enum.Font.Bodoni
 						txt.TextScaled = true
 					end
 				end
@@ -92,61 +92,74 @@ local mainTab = Window:CreateTab("Visual", eye)
 mainTab:CreateButton({
 	Name = "Esp AoOni",
 	Callback = function()
-task.spawn(function()      
-local espColor = Color3.fromRGB(144, 0, 255)      
-local outlineColor = Color3.fromRGB(0, 0, 0) -- Viền chữ màu đen      
-    
-local function createESP(npc)      
-	if npc:FindFirstChild("AooniESP") then return end      
-	if not npc.PrimaryPart then return end      
-    
-	-- Billboard      
-	local billboard = Instance.new("BillboardGui")      
-	billboard.Name = "AooniESP"      
-	billboard.AlwaysOnTop = true      
-	billboard.Size = UDim2.new(0, 100, 0, 40)      
-	billboard.StudsOffset = Vector3.new(0, 2, 0)      
-	billboard.MaxDistance = math.huge      
-	billboard.Parent = npc.PrimaryPart      
-    
-	local textLabel = Instance.new("TextLabel")      
-	textLabel.Parent = billboard      
-	textLabel.Text = "Ao Oni"      
-	textLabel.TextColor3 = espColor      
-	textLabel.TextStrokeColor3 = outlineColor      
-	textLabel.TextStrokeTransparency = 0      
-	textLabel.BackgroundTransparency = 1      
-	textLabel.Size = UDim2.new(1, 0, 1, 0)      
-	textLabel.Font = Enum.Font.SourceSansBold      
-	textLabel.TextScaled = true      
-    
-	-- Highlight      
-	local highlight = Instance.new("Highlight")      
-	highlight.Name = "AooniESP"      
-	highlight.FillTransparency = 1      
-	highlight.OutlineTransparency = 0      
-	highlight.OutlineColor = espColor      
-	highlight.Parent = npc      
-end      
-    
-local function checkForAooni()      
-	for _, npc in ipairs(workspace:GetDescendants()) do      
-		if npc:IsA("Model") and npc.Name == "Aooni" and not npc:FindFirstChild("AooniESP") and npc:FindFirstChild("Humanoid") then      
-			createESP(npc)      
-		end      
-	end      
-end      
-    
-workspace.DescendantAdded:Connect(function(descendant)      
-	if descendant:IsA("Model") and descendant.Name == "aooni" and descendant:FindFirstChild("Humanoid") then      
-		task.wait(0.1)      
-		createESP(descendant)      
-	end      
-end)      
-    
-checkForAooni()    
-    
-end)    
+task.spawn(function()
+	local espColor = Color3.fromRGB(144, 0, 255)
+	local outlineColor = Color3.fromRGB(0, 0, 0)
+
+	local function createESP(npc)
+		if npc:FindFirstChild("AooniESP") then return end
+		if not npc.PrimaryPart then return end
+
+		local billboard = Instance.new("BillboardGui")
+		billboard.Name = "AooniESP"
+		billboard.AlwaysOnTop = true
+		billboard.Size = UDim2.new(0, 100, 0, 40)
+		billboard.StudsOffset = Vector3.new(0, 2, 0)
+		billboard.MaxDistance = math.huge
+		billboard.Parent = npc.PrimaryPart
+
+		local textLabel = Instance.new("TextLabel")
+		textLabel.Parent = billboard
+		textLabel.Text = "Ao Oni"
+		textLabel.TextColor3 = espColor
+		textLabel.TextStrokeColor3 = outlineColor
+		textLabel.TextStrokeTransparency = 0
+		textLabel.BackgroundTransparency = 1
+		textLabel.Size = UDim2.new(1, 0, 1, 0)
+		textLabel.Font = Enum.Font.Bodoni
+		textLabel.TextScaled = true
+
+		local highlight = Instance.new("Highlight")
+		highlight.Name = "AooniESP"
+		highlight.FillTransparency = 1
+		highlight.OutlineTransparency = 0
+		highlight.OutlineColor = espColor
+		highlight.Parent = npc
+	end
+
+	local function checkForAooni()
+		for _, npc in ipairs(workspace:GetDescendants()) do
+			if npc:IsA("Model") and npc.Name:lower() == "aooni" and not npc:FindFirstChild("AooniESP") and npc:FindFirstChild("Humanoid") then
+				createESP(npc)
+			end
+		end
+	end
+
+	workspace.DescendantAdded:Connect(function(descendant)
+		if descendant:IsA("Model") and descendant.Name:lower() == "aooni" then
+			task.wait(0.1)
+			if descendant:FindFirstChild("Humanoid") then
+				createESP(descendant)
+			end
+		end
+	end)
+
+	checkForAooni()
+
+	-- Tự động reset ESP mỗi 10s
+	while true do
+		task.wait(10)
+		for _, npc in ipairs(workspace:GetDescendants()) do
+			if npc:IsA("Model") and npc.Name:lower() == "aooni" and npc:FindFirstChild("AooniESP") then
+				npc.AooniESP:Destroy()
+				if npc:FindFirstChildWhichIsA("BasePart"):FindFirstChild("AooniESP") then
+					npc:FindFirstChildWhichIsA("BasePart").AooniESP:Destroy()
+				end
+			end
+		end
+		checkForAooni()
+	end
+end)
 	end,
 })
 
@@ -168,7 +181,14 @@ mainTab:CreateButton({
 	end,
 })
 
-
+mainTab:CreateButton({
+	Name = "Esp Bottle",
+	Callback = function()
+		autoESP(function(p)
+			return p:IsA("BasePart") and p.Name == "Meshes/liquidsoap_bottle"
+		end, Color3.fromRGB(255, 255, 255), "Bottle")
+	end,
+})
 
 
 
