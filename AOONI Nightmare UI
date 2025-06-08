@@ -111,7 +111,7 @@ mainTab:CreateButton({
 
 		local textLabel = Instance.new("TextLabel")
 		textLabel.Parent = billboard
-		textLabel.Text = "AoOni"
+		textLabel.Text = "Ao Oni"
 		textLabel.TextColor3 = espColor
 		textLabel.TextStrokeColor3 = outlineColor
 		textLabel.TextStrokeTransparency = 0
@@ -131,7 +131,7 @@ mainTab:CreateButton({
 
 	local function checkForAooni()
 		for _, npc in ipairs(workspace:GetDescendants()) do
-			if npc:IsA("Model") and npc.Name == "aooni" and not npc:FindFirstChild("AooniESP") and npc:FindFirstChild("Humanoid") then
+			if npc:IsA("Model") and npc.Name == "Aooni" and not npc:FindFirstChild("AooniESP") and npc:FindFirstChild("Humanoid") then
 				createESP(npc)
 			end
 		end
@@ -144,7 +144,7 @@ mainTab:CreateButton({
 		end
 	end)
 
-	checkForaooni()
+	checkForAooni()
 end)
 	end,
 })
