@@ -67,7 +67,7 @@ InfoTab:CreateParagraph({
 
 InfoTab:CreateParagraph({
 	Title = "AOONI Nightmare",
-	Content = "+ Fixed some bug\n + Added Esp",
+	Content = "+ Fixed some bug\n + Added Esp\n-- Version 1.0 --",
 })
 
 InfoTab:CreateParagraph({
