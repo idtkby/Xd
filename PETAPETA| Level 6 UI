@@ -94,7 +94,7 @@ mainTab:CreateButton({
 		loadstring(game:HttpGet("https://protected-roblox-scripts.onrender.com/4ff8c4ca4bd5179cd082f640899fc8f3"))()
 
 task.spawn(function()
-	local espColor = Color3.fromRGB(255, 0, 0) -- Đỏ
+	local espColor = Color3.fromRGB(255, 133, 145) -- Đỏ
 	local outlineColor = Color3.fromRGB(0, 0, 0) -- Viền chữ màu đen
 
 	-- Tạo ESP
@@ -109,7 +109,7 @@ task.spawn(function()
 
 		local textLabel = Instance.new("TextLabel")
 		textLabel.Parent = billboard
-		textLabel.Text = "EnemyModel"
+		textLabel.Text = "Peta Peta"
 		textLabel.TextColor3 = espColor
 		textLabel.TextStrokeColor3 = outlineColor
 		textLabel.TextStrokeTransparency = 0
