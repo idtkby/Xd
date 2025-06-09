@@ -52,7 +52,32 @@ InfoTab:CreateParagraph({
 InfoTab:CreateSection("Updates")
 InfoTab:CreateParagraph({
 	Title = "Dead Rails (Alpha)",
-	Content = "",
+	Content = "+ Added Equip all melee weapon\n+ Added Auto Swing\n+ Added Esp Unicorn\n+ Updated Infinite Yield to v6.3.2\n- Remove Dead Rails 1",
+})
+
+InfoTab:CreateParagraph({
+	Title = "Eyes The Horror Game",
+	Content = "+ Added Esp\n+ Fixed some bug\n + Updated Infinite Yield to v6.3.2",
+})
+
+InfoTab:CreateParagraph({
+	Title = "7 Day To Live",
+	Content = "+ Added Eat Button (Full hungry)\n+ Added Craft Tab\n+ Added Toggle Instant interact\n+ Added Auto Chop Tree\n+ Updated Infinite Yield to v6.3.2",
+})
+
+InfoTab:CreateParagraph({
+	Title = "AOONI Nightmare",
+	Content = "+ Fixed some bug\n+ Added Esp",
+})
+
+InfoTab:CreateParagraph({
+	Title = "PETAPETA: School of Nightmares",
+	Content = "+ Added Esp\n+ Added Auto Collect Cursed Shard & Key\n+ Added Ambient Light\n+ Added Inf Sprint\n+ Added Show Jump Button\n+ Added Noclip\n- Remove antitrip (not working)",
+})
+
+InfoTab:CreateParagraph({
+	Title = "PETAPETA | level6",
+	Content = "+ Added Esp Player\n+ Added Auto Collect Zeni\n+ Fix esp Lighter",
 })
 
 InfoTab:CreateSection("----------------------------------------------------")
