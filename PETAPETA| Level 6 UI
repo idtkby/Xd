@@ -74,7 +74,7 @@ local function autoESP(filterFn, color, labelText)
 						txt.TextColor3 = color
 						txt.TextStrokeTransparency = 0.5
 						txt.Text = labelText or obj.Name
-						txt.Font = Enum.Font.SourceSansSemibold
+						txt.Font = Enum.Font.Bodoni
 						txt.TextScaled = true
 					end
 				end
@@ -108,7 +108,7 @@ mainTab:CreateButton({
 	Name = "Esp Safe",
 	Callback = function()
 		autoESP(function(p)
-			return p:IsA("BasePart") and p.Name == "Meshes/safe_Safe"
+			return p:IsA("BasePart") and (p.Name == "Meshes/safe_Safe" or p.Name == "keymetal02")
 		end, Color3.fromRGB(255, 255, 0), "Safe")
 	end,
 })
@@ -193,6 +193,24 @@ mainTab:CreateButton({
 		autoESP(function(p)
 			return p:IsA("BasePart") and p.Name == "Dish"
 		end, Color3.fromRGB(255, 223, 178), "Plate")
+	end,
+})
+
+mainTab:CreateButton({
+	Name = "Esp SafeCode",
+	Callback = function()
+		autoESP(function(p)
+			return p:IsA("BasePart") and (p.Name == "HintPaper" or p.Name == "NoisePart")
+		end, Color3.fromRGB(0, 255, 255), "SafeCode")
+	end,
+})
+
+mainTab:CreateButton({
+	Name = "Esp Room (Stage 5)",
+	Callback = function()
+		autoESP(function(p)
+			return p:IsA("BasePart") and p.Name == "dirty sheet"
+		end, Color3.fromRGB(255, 105, 0), "Room")
 	end,
 })
 
