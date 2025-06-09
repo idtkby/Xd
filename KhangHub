@@ -34,7 +34,7 @@ Rayfield:Notify({
 })
 
 -- Tạo Tab Teleport
-local SpTab = Window:CreateTab("Support Game", "users")
+local InfoTab = Window:CreateTab("Main", "users")
 
 
 
@@ -42,17 +42,20 @@ local SpTab = Window:CreateTab("Support Game", "users")
 
 
 
-SpTab:CreateSection("----------------------------------------------------")
-SpTab:CreateSection("Dead Rails (Game)")
+InfoTab:CreateSection("----------------------------------------------------")
 
-SpTab:CreateSection("Eyes The Horror Game")
+InfoTab:CreateParagraph({
+	Title = "Game Supports",
+	Content = "•Dead Rails (Game)\n•Eyes The Horror Game\n•7 Days To Live (Forest Only)\n•AOONI Nightmare\n•PETAPETA: School of Nightmares\n•PETAPETA | level6 (無限旅館)",
+})
 
-SpTab:CreateSection("7 Days To Live (Forest Only)")
+InfoTab:CreateSection("Updates")
+InfoTab:CreateParagraph({
+	Title = "Dead Rails (Alpha)",
+	Content = "",
+})
 
-SpTab:CreateSection("AOONI Nightmare")
-SpTab:CreateSection("PETAPETA: School of Nightmares")
-SpTab:CreateSection("PETAPETA | level6 (無限旅館)")
-SpTab:CreateSection("----------------------------------------------------")
+InfoTab:CreateSection("----------------------------------------------------")
 
 
 
