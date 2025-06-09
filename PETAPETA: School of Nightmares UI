@@ -106,8 +106,17 @@ mainTab:CreateButton({
 	Name = "Esp Key",
 	Callback = function()
 		task.spawn(function()
+	local Players = game:GetService("Players")
+	local LocalPlayer = Players.LocalPlayer
 	local espColor = Color3.fromRGB(255, 255, 255)
 	local outlineColor = Color3.fromRGB(0, 0, 0)
+
+	local function getDistance(pos)
+		local char = LocalPlayer.Character
+		local hrp = char and char:FindFirstChild("HumanoidRootPart")
+		if not hrp then return 0 end
+		return math.floor((hrp.Position - pos).Magnitude)
+	end
 
 	local function createESP(obj)
 		if obj:FindFirstChild("ExitKeyESP") then return end
@@ -126,7 +135,6 @@ mainTab:CreateButton({
 
 		local textLabel = Instance.new("TextLabel")
 		textLabel.Parent = billboard
-		textLabel.Text = "Key"
 		textLabel.TextColor3 = espColor
 		textLabel.TextStrokeColor3 = outlineColor
 		textLabel.TextStrokeTransparency = 0
@@ -134,6 +142,15 @@ mainTab:CreateButton({
 		textLabel.Size = UDim2.new(1, 0, 1, 0)
 		textLabel.Font = Enum.Font.Bodoni
 		textLabel.TextScaled = true
+
+		-- Cập nhật khoảng cách
+		task.spawn(function()
+			while billboard and billboard.Parent and textLabel and textLabel.Parent do
+				local dist = getDistance(part.Position)
+				textLabel.Text = "Key | Dist: " .. dist
+				task.wait(0.3)
+			end
+		end)
 
 		-- Highlight
 		local highlight = Instance.new("Highlight")
