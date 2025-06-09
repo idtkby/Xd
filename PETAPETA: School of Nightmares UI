@@ -236,7 +236,7 @@ for _, pos in ipairs(positions) do
 		local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 		if hrp and part and part.Parent then
 			local dist = (part.Position - hrp.Position).Magnitude
-			label.Text = string.format("Shoe shelf | Dis: %1f", dist)
+			label.Text = string.format("Shoe shelf | Dis: %.1f", dist)
 		end
 	end)
 end
