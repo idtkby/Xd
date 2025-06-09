@@ -364,13 +364,6 @@ local OtherTab = Window:CreateTab("Other", 4483362458)
 OtherTab:CreateSection("My Script")
 
 OtherTab:CreateButton({
-    Name = "Dead Rails 1",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/DeaRSMySCR"))()
-    end,
-})
-
-OtherTab:CreateButton({
     Name = "10Min",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/10mdeadrs"))()
