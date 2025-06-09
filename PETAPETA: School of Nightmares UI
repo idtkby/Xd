@@ -507,7 +507,7 @@ local DefaultFOV = Camera.FieldOfView
 local TargetFOV = 104
 
 KTab:CreateToggle({  
-	Name = "Inf Sprint",  
+	Name = "Inf Sprint (max upgrade)",  
 	CurrentValue = false,  
 	Flag = "SpeedToggle",  
 	Callback = function(state)  
@@ -527,7 +527,7 @@ KTab:CreateToggle({
 				end  
 			end)
 
-			local args = { true, 18 }  
+			local args = { true, 22 }  
 			local speed = args[1] or 16  
 			if args[2] then  
 				speed = args[2]  
