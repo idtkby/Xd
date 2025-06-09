@@ -1015,7 +1015,7 @@ local function safeTeleport(targetCFrame)
 
 	task.wait() -- chờ vật lý ổn định
 	hrp.Anchored = true
-	hrp.CFrame = targetCFrame * CFrame.new(6, 4, 0)
+	hrp.CFrame = targetCFrame * CFrame.new(6, 6, 0)
 	task.wait(0.1)
 	hrp.Anchored = false
 end
