@@ -472,7 +472,7 @@ KTab:CreateToggle({
 				end  
 			end)
 
-			local args = { true, 15.5 }  
+			local args = { true, 18 }  
 			local speed = args[1] or 16  
 			if args[2] then  
 				speed = args[2]  
@@ -518,6 +518,60 @@ KTab:CreateToggle({
 })
 
 KTab:CreateSection("Player")
+
+local RunService = game:GetService("RunService")
+local speaker = game.Players.LocalPlayer
+local noclipConnection
+local diedConnection
+
+KTab:CreateToggle({
+	Name = "Noclip",
+	Default = false,
+	Flag = "NoclipToggle",
+	Callback = function(state)
+		if state then
+			local char = speaker.Character or speaker.CharacterAdded:Wait()
+			local humanoid = char:FindFirstChildOfClass("Humanoid")
+
+			-- Kích hoạt Noclip
+			noclipConnection = RunService.Stepped:Connect(function()
+				local c = speaker.Character
+				if not c then return end
+				for _, part in ipairs(c:GetDescendants()) do
+					if part:IsA("BasePart") then
+						part.CanCollide = false
+					end
+				end
+			end)
+
+			-- Nếu chết thì tắt
+			if humanoid then
+				diedConnection = humanoid.Died:Connect(function()
+					if noclipConnection then
+						noclipConnection:Disconnect()
+						noclipConnection = nil
+					end
+					if diedConnection then
+						diedConnection:Disconnect()
+						diedConnection = nil
+					end
+					-- Tắt nút
+					KTab.Flags["NoclipToggle"] = false
+				end)
+			end
+		else
+			-- Hủy kết nối nếu đang bật
+			if noclipConnection then
+				noclipConnection:Disconnect()
+				noclipConnection = nil
+			end
+			if diedConnection then
+				diedConnection:Disconnect()
+				diedConnection = nil
+			end
+		end
+	end
+})
 
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
@@ -702,7 +756,7 @@ KTab:CreateToggle({
         if state then
 			Rayfield:Notify({
 				Title = "Note",
-				Content = "You can get tripped if you don't turn on anti trip",
+				Content = " You can get a permanent trip if you jump in the closet",
 				Duration = 4, 
 				Image = 6026568198,
 			})
@@ -819,38 +873,19 @@ end)
     end
 })
 
-KTab:CreateButton({
-    Name = "Anti Trip",
-    Callback = function()
-        local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-local function disableTrip()
-	while true do
-		local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-		local human = char:WaitForChild("Humanoid", 5)
-		if human then
-			human.PlatformStand = false
-			human:GetPropertyChangedSignal("PlatformStand"):Connect(function()
-				if human.PlatformStand then
-					human.PlatformStand = false
-				end
-			end)
-		end
-		char:WaitForChild("Humanoid").Died:Wait()
-	end
-end
-
-task.spawn(disableTrip)
-    end,
-})
-
 KTab:CreateSection("Other")
   
 KTab:CreateButton({
     Name = "interact aura",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/CollectAura"))()
+    end,
+})
+
+KTab:CreateButton({
+    Name = "maxtnt05",
+    Callback = function()
+        loadstring(game:HttpGet("https://pastebin.com/raw/RLzFFC9z"))()
     end,
 })
   
