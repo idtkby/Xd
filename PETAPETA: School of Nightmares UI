@@ -930,39 +930,39 @@ end)
 
 KTab:CreateSection("Other")
 
-KTab:CreateSection({
-    Name = "Anti-Void",
+KTab:CreateButton({
+    Name = "Enable Anti-Void",
     Callback = function()
         task.spawn(function()
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
-    local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local Players = game:GetService("Players")
+            local LocalPlayer = Players.LocalPlayer
+            local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 
-    -- Tạo Anti-Void Part
-    local antiVoid = Instance.new("Part")
-    antiVoid.Anchored = true
-    antiVoid.CanCollide = false
-    antiVoid.Transparency = 1
-    antiVoid.Size = Vector3.new(5000, 1, 5000)
-    antiVoid.Position = Vector3.new(94.80, -133.40, 409.71)
-    antiVoid.Name = "AntiVoidPlatform"
-    antiVoid.Parent = workspace
+            -- Tạo Anti-Void Part
+            local antiVoid = Instance.new("Part")
+            antiVoid.Anchored = true
+            antiVoid.CanCollide = false
+            antiVoid.Transparency = 1
+            antiVoid.Size = Vector3.new(5000, 1, 5000)
+            antiVoid.Position = Vector3.new(94.80, -133.40, 409.71)
+            antiVoid.Name = "AntiVoidPlatform"
+            antiVoid.Parent = workspace
 
-    -- Kết nối sự kiện chạm
-    antiVoid.Touched:Connect(function(hit)
-        if hit and hit:IsDescendantOf(LocalPlayer.Character) then
-            local hrp = Character:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                hrp.CFrame = CFrame.new(-44.42, 6.22, 96.75)
-            end
-        end
-    end)
-end)
+            -- Kết nối sự kiện chạm
+            antiVoid.Touched:Connect(function(hit)
+                if hit and hit:IsDescendantOf(LocalPlayer.Character) then
+                    local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    if hrp then
+                        hrp.CFrame = CFrame.new(-44.42, 6.22, 96.75)
+                    end
+                end
+            end)
+        end)
     end,
 })
 
 KTab:CreateButton({
-	Name = "TP to ExitKey gần nhất",
+	Name = "TP to nearest key",
 	Callback = function()
 		local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -1034,6 +1034,8 @@ teleportToExitKey()
 	end,
 })
   
+
+
 KTab:CreateButton({
     Name = "interact aura",
     Callback = function()
