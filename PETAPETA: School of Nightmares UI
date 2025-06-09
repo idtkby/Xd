@@ -697,7 +697,7 @@ local InstantPromptToggle = KTab:CreateToggle({
 local HumanModCons = {}
 
 KTab:CreateToggle({
-	Name = "Fast Speed",
+	Name = "Fast Speed (hard or Shard)",
 	CurrentValue = false,
 	Flag = "SpeedToggle",
 	Callback = function(state)
@@ -714,7 +714,7 @@ KTab:CreateToggle({
 				Image = 6026568198,
 			})
 
-			local args = { true, 30 }
+			local args = { true, 50 }
 			local speed = args[1] or 16
 			if args[2] then
 				speed = args[2]
