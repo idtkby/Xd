@@ -218,16 +218,16 @@ for _, pos in ipairs(positions) do
 	gui.Name = "ShoeShelfTag"
 	gui.Adornee = part
 	gui.AlwaysOnTop = true
-	gui.Size = UDim2.new(0, 150, 0, 25)
-	gui.StudsOffset = Vector3.new(0, 2.5, 0)
+	gui.Size = UDim2.new(0, 100, 0, 40)
+	gui.StudsOffset = Vector3.new(0, 2, 0)
 	gui.Parent = part
 
 	local label = Instance.new("TextLabel", gui)
 	label.Size = UDim2.new(1, 0, 1, 0)
 	label.BackgroundTransparency = 1
-	label.TextColor3 = Color3.fromRGB(132, 161, 255)
+	label.TextColor3 = Color3.fromRGB(185, 209, 255)
 	label.TextStrokeTransparency = 0
-	label.Font = Enum.Font.SourceSansBold
+	label.Font = Enum.Font.Bodoni
 	label.TextScaled = true
 	label.Text = "Shoe shelf | Dis: ..."
 
@@ -236,7 +236,7 @@ for _, pos in ipairs(positions) do
 		local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 		if hrp and part and part.Parent then
 			local dist = (part.Position - hrp.Position).Magnitude
-			label.Text = string.format("Shoe shelf | Dis: %.1f", dist)
+			label.Text = string.format("Shoe shelf | Dis: %1f", dist)
 		end
 	end)
 end
