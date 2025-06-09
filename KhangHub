@@ -34,7 +34,7 @@ Rayfield:Notify({
 })
 
 -- Tạo Tab Teleport
-local InfoTab = Window:CreateTab("Main", "users")
+local InfoTab = Window:CreateTab("Info", 4483362458)
 
 
 
