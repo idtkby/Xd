@@ -112,10 +112,12 @@ mainTab:CreateButton({
 	local outlineColor = Color3.fromRGB(0, 0, 0)
 
 	local function getDistance(pos)
-		local char = LocalPlayer.Character
-		local hrp = char and char:FindFirstChild("HumanoidRootPart")
-		if not hrp then return 0 end
-		return math.floor((hrp.Position - pos).Magnitude)
+		local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+		local hrp = char:WaitForChild("HumanoidRootPart", 3)
+		if hrp then
+			return math.floor((hrp.Position - pos).Magnitude)
+		end
+		return 0
 	end
 
 	local function createESP(obj)
@@ -135,6 +137,7 @@ mainTab:CreateButton({
 
 		local textLabel = Instance.new("TextLabel")
 		textLabel.Parent = billboard
+		textLabel.Text = "Key | Dis: ..."
 		textLabel.TextColor3 = espColor
 		textLabel.TextStrokeColor3 = outlineColor
 		textLabel.TextStrokeTransparency = 0
@@ -143,11 +146,15 @@ mainTab:CreateButton({
 		textLabel.Font = Enum.Font.Bodoni
 		textLabel.TextScaled = true
 
-		-- Cập nhật khoảng cách
+		-- Cập nhật khoảng cách liên tục
 		task.spawn(function()
-			while billboard and billboard.Parent and textLabel and textLabel.Parent do
-				local dist = getDistance(part.Position)
-				textLabel.Text = "Key | Dist: " .. dist
+			while billboard.Parent and textLabel.Parent do
+				local success, dist = pcall(function()
+					return getDistance(part.Position)
+				end)
+				if success then
+					textLabel.Text = "Key | Dis: " .. dist
+				end
 				task.wait(0.3)
 			end
 		end)
@@ -163,20 +170,15 @@ mainTab:CreateButton({
 
 	local function checkAll()
 		for _, obj in ipairs(workspace:GetDescendants()) do
-			if obj:IsA("Model") and obj.Name == "ExitKey" then
-				createESP(obj)
-			elseif obj:IsA("BasePart") and obj.Name == "ExitKey" then
+			if (obj:IsA("Model") or obj:IsA("BasePart")) and obj.Name == "ExitKey" then
 				createESP(obj)
 			end
 		end
 	end
 
 	workspace.DescendantAdded:Connect(function(descendant)
-		if descendant:IsA("Model") and descendant.Name == "ExitKey" then
-			task.wait(0.1)
-			createESP(descendant)
-		elseif descendant:IsA("BasePart") and descendant.Name == "ExitKey" then
-			task.wait(0.1)
+		task.wait(0.1)
+		if (descendant:IsA("Model") or descendant:IsA("BasePart")) and descendant.Name == "ExitKey" then
 			createESP(descendant)
 		end
 	end)
