@@ -918,7 +918,7 @@ local function setJumpHeight()
 end
 
 -- Áp dụng ngay lập tức
-setJumpHeight()
+setJumpHeight() 
 
 -- Đảm bảo khi respawn vẫn giữ JumpHeight
 LocalPlayer.CharacterAdded:Connect(function()
@@ -929,6 +929,37 @@ end)
 })
 
 KTab:CreateSection("Other")
+
+KTab:CreateSection({
+    Name = "Anti-Void",
+    Callback = function()
+        task.spawn(function()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+
+    -- Tạo Anti-Void Part
+    local antiVoid = Instance.new("Part")
+    antiVoid.Anchored = true
+    antiVoid.CanCollide = false
+    antiVoid.Transparency = 1
+    antiVoid.Size = Vector3.new(2500, 1, 2500)
+    antiVoid.Position = Vector3.new(94.80, -133.40, 409.71)
+    antiVoid.Name = "AntiVoidPlatform"
+    antiVoid.Parent = workspace
+
+    -- Kết nối sự kiện chạm
+    antiVoid.Touched:Connect(function(hit)
+        if hit and hit:IsDescendantOf(LocalPlayer.Character) then
+            local hrp = Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = CFrame.new(-44.42, 6.22, 96.75)
+            end
+        end
+    end)
+end)
+    end,
+})
   
 KTab:CreateButton({
     Name = "interact aura",
