@@ -943,7 +943,7 @@ KTab:CreateSection({
     antiVoid.Anchored = true
     antiVoid.CanCollide = false
     antiVoid.Transparency = 1
-    antiVoid.Size = Vector3.new(2500, 1, 2500)
+    antiVoid.Size = Vector3.new(5000, 1, 5000)
     antiVoid.Position = Vector3.new(94.80, -133.40, 409.71)
     antiVoid.Name = "AntiVoidPlatform"
     antiVoid.Parent = workspace
@@ -959,6 +959,33 @@ KTab:CreateSection({
     end)
 end)
     end,
+})
+
+KTab:CreateButton({
+	Name = "TP to Nearest Key",
+	Callback = function()
+		local player = game:GetService("Players").LocalPlayer
+		local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+		if not hrp then return end
+
+		local nearest, shortest = nil, math.huge
+
+		for _, v in ipairs(workspace:GetDescendants()) do
+			if v:IsA("BasePart") and v.Name == "ExitKey" then
+				local dist = (v.Position - hrp.Position).Magnitude
+				if dist < shortest then
+					shortest = dist
+					nearest = v
+				end
+			end
+		end
+
+		if nearest then
+			hrp.CFrame = nearest.CFrame + Vector3.new(0, 3, 0)
+		else
+			warn("Key not found")
+		end
+	end
 })
   
 KTab:CreateButton({
