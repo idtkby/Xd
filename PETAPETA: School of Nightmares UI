@@ -95,6 +95,7 @@ mainTab:CreateButton({
     end,
 })
 
+mainTab:CreateSection("—————————————————————————————————————————")
 mainTab:CreateButton({
 	Name = "Esp PetaPeta",
 	Callback = function()
@@ -104,6 +105,63 @@ autoESP(function(p)
 		loadstring(game:HttpGet("https://protected-roblox-scripts.onrender.com/4ff8c4ca4bd5179cd082f640899fc8f3"))()
 	end,
 })
+
+mainTab:CreateButton({
+    Name = "Hard Mode",
+    Callback = function()
+        task.spawn(function()
+	local espColor = Color3.fromRGB(255, 0, 0)
+	local outlineColor = Color3.fromRGB(0, 0, 0)
+
+	-- Tạo ESP
+	local function createESP(item)
+		local billboard = Instance.new("BillboardGui")
+		billboard.Name = "EnemyESP"
+		billboard.AlwaysOnTop = true
+		billboard.Size = UDim2.new(0, 100, 0, 40)
+		billboard.StudsOffset = Vector3.new(0, 2, 0)
+		billboard.MaxDistance = math.huge
+		billboard.Parent = item
+
+		local textLabel = Instance.new("TextLabel")
+		textLabel.Parent = billboard
+		textLabel.Text = "Enemy"
+		textLabel.TextColor3 = espColor
+		textLabel.TextStrokeColor3 = outlineColor
+		textLabel.TextStrokeTransparency = 0
+		textLabel.BackgroundTransparency = 1
+		textLabel.Size = UDim2.new(1, 0, 1, 0)
+		textLabel.Font = Enum.Font.Bodoni
+		textLabel.TextScaled = true
+
+		local highlight = Instance.new("Highlight")
+		highlight.Name = "EnemyOutline"
+		highlight.FillTransparency = 1
+		highlight.OutlineColor = espColor
+		highlight.OutlineTransparency = 0
+		highlight.Parent = item
+	end
+
+	local function checkForEnemies()
+		for _, item in ipairs(workspace:GetDescendants()) do
+			if item:IsA("Model") and item.Name == "EnemyModel" and not item:FindFirstChild("EnemyESP") then
+				createESP(item)
+			end
+		end
+	end
+
+	workspace.DescendantAdded:Connect(function(descendant)
+		if descendant:IsA("Model") and descendant.Name == "EnemyModel" then
+			createESP(descendant)
+		end
+	end)
+
+	checkForEnemies()
+end)
+    end,
+})
+
+mainTab:CreateSection("—————————————————————————————————————————")
 
 mainTab:CreateButton({
 	Name = "Esp Key",
