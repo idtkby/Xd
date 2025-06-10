@@ -98,6 +98,9 @@ mainTab:CreateButton({
 mainTab:CreateButton({
 	Name = "Esp PetaPeta",
 	Callback = function()
+autoESP(function(p)
+			return p:IsA("BasePart") and p.Name == "EnemyModel"
+		end, Color3.fromRGB(255, 52, 52), "Peta Peta")
 		loadstring(game:HttpGet("https://protected-roblox-scripts.onrender.com/4ff8c4ca4bd5179cd082f640899fc8f3"))()
 	end,
 })
