@@ -273,7 +273,12 @@ TeleportTab:CreateSection("Main Location")
 
 -- Vị trí chính
 local locations = {
+    {Name = "Door", Position = Vector3.new(10.35, 4.51, 116.89)},
+    {Name = "Safe Room", Position = Vector3.new(-62.83, 4.95, 114.93)},
+    {Name = "Music Room", Position = Vector3.new(117.54, 19.80, -125.32)},
+    {Name = "Teacher's Room", Position = Vector3.new(7.24, 19.80, 108.62)},
     {Name = "Secret", Position = Vector3.new(-46.67, 19.8, -94.98)},
+    {Name = "Secret Room", Position = Vector3.new(62.95, 19.80, 118.94)},
 }
 for _, loc in ipairs(locations) do
     TeleportTab:CreateButton({
@@ -359,7 +364,6 @@ end
 teleportToExitKey()
 	end,
 })
-
 
 
 
