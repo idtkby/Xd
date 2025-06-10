@@ -268,6 +268,111 @@ mainTab:CreateButton({
 
 
 
+local TeleportTab = Window:CreateTab("Teleport", "map")
+TeleportTab:CreateSection("Main Location")
+
+-- Vị trí chính
+local locations = {
+    {Name = "Secret", Position = Vector3.new(-46.67, 19.8, -94.98)},
+
+for _, loc in ipairs(locations) do
+    TeleportTab:CreateButton({
+        Name = "Go to " .. loc.Name,
+        Callback = function()
+            local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = CFrame.new(loc.Position)
+            end
+        end
+    })
+end
+
+TeleportTab:CreateButton({
+	Name = "Go to nearest key",
+	Callback = function()
+		local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local function getHRP()
+	local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	return char:WaitForChild("HumanoidRootPart", 5)
+end
+
+local function getExitKeyNearest()
+	local nearest, minDist = nil, math.huge
+	local hrp = getHRP()
+	if not hrp then return end
+
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("Model") and obj.Name == "ExitKey" then
+			local part = obj:FindFirstChildWhichIsA("BasePart")
+			if part then
+				local dist = (hrp.Position - part.Position).Magnitude
+				if dist < minDist then
+					minDist = dist
+					nearest = part
+				end
+			end
+		elseif obj:IsA("BasePart") and obj.Name == "ExitKey" then
+			local dist = (hrp.Position - obj.Position).Magnitude
+			if dist < minDist then
+				minDist = dist
+				nearest = obj
+			end
+		end
+	end
+
+	return nearest, minDist
+end
+
+local function safeTeleport(targetCFrame)
+	local hrp = getHRP()
+	if not hrp then return end
+
+	-- Gỡ vật lý có thể gây trip
+	for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
+		if v:IsA("BasePart") then
+			v.CanCollide = false
+			v.Velocity = Vector3.zero
+			v.RotVelocity = Vector3.zero
+		end
+	end
+
+	task.wait() -- chờ vật lý ổn định
+	hrp.Anchored = true
+	hrp.CFrame = targetCFrame * CFrame.new(6, 6, 0)
+	task.wait(0.1)
+	hrp.Anchored = false
+end
+
+local function teleportToExitKey()
+	local target, dist = getExitKeyNearest()
+	if target then
+		safeTeleport(target.CFrame)
+		print("Đã dịch chuyển đến ExitKey | Dist:", math.floor(dist))
+	else
+		warn("Không tìm thấy ExitKey.")
+	end
+end
+
+teleportToExitKey()
+	end,
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -969,81 +1074,6 @@ KTab:CreateButton({
         end)
     end,
 })
-
-KTab:CreateButton({
-	Name = "TP to nearest key",
-	Callback = function()
-		local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-
-local function getHRP()
-	local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-	return char:WaitForChild("HumanoidRootPart", 5)
-end
-
-local function getExitKeyNearest()
-	local nearest, minDist = nil, math.huge
-	local hrp = getHRP()
-	if not hrp then return end
-
-	for _, obj in ipairs(workspace:GetDescendants()) do
-		if obj:IsA("Model") and obj.Name == "ExitKey" then
-			local part = obj:FindFirstChildWhichIsA("BasePart")
-			if part then
-				local dist = (hrp.Position - part.Position).Magnitude
-				if dist < minDist then
-					minDist = dist
-					nearest = part
-				end
-			end
-		elseif obj:IsA("BasePart") and obj.Name == "ExitKey" then
-			local dist = (hrp.Position - obj.Position).Magnitude
-			if dist < minDist then
-				minDist = dist
-				nearest = obj
-			end
-		end
-	end
-
-	return nearest, minDist
-end
-
-local function safeTeleport(targetCFrame)
-	local hrp = getHRP()
-	if not hrp then return end
-
-	-- Gỡ vật lý có thể gây trip
-	for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
-		if v:IsA("BasePart") then
-			v.CanCollide = false
-			v.Velocity = Vector3.zero
-			v.RotVelocity = Vector3.zero
-		end
-	end
-
-	task.wait() -- chờ vật lý ổn định
-	hrp.Anchored = true
-	hrp.CFrame = targetCFrame * CFrame.new(6, 6, 0)
-	task.wait(0.1)
-	hrp.Anchored = false
-end
-
-local function teleportToExitKey()
-	local target, dist = getExitKeyNearest()
-	if target then
-		safeTeleport(target.CFrame)
-		print("Đã dịch chuyển đến ExitKey | Dist:", math.floor(dist))
-	else
-		warn("Không tìm thấy ExitKey.")
-	end
-end
-
-teleportToExitKey()
-	end,
-})
-  
-
 
 KTab:CreateButton({
     Name = "interact aura",
