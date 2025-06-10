@@ -1147,19 +1147,24 @@ KTab:CreateButton({
 KTab:CreateButton({
     Name = "Safe Button(hard or shard",
     Callback = function()
-        -- Tạo GUI và nút SafeZ có thể kéo
-local Players = game:GetService("Players")
+        local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Xóa GUI cũ nếu có
+if PlayerGui:FindFirstChild("SafeZGui") then
+	PlayerGui.SafeZGui:Destroy()
+end
 
 -- Tạo ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "SafeZGui"
+screenGui.ResetOnSpawn = false
 screenGui.Parent = PlayerGui
 
--- Tạo Frame (nền của GUI)
+-- Tạo Frame (nền của GUI), tăng kích thước 1.3 lần
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 50)
+frame.Size = UDim2.new(0, 260, 0, 65) -- 200x50 * 1.3
 frame.Position = UDim2.new(0, 100, 0, 100)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BorderSizePixel = 0
@@ -1167,22 +1172,53 @@ frame.Active = true
 frame.Draggable = true
 frame.Parent = screenGui
 
--- Tạo TextButton (nút SafeZ)
+-- Bo góc cho Frame
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 3)
+frameCorner.Parent = frame
+
+-- Tạo TextButton
 local button = Instance.new("TextButton")
-button.Size = UDim2.new(1, 0, 1, 0)
+button.Size = UDim2.new(0.7, 0, 0.9, 0) -- Nhỏ hơn Frame một chút để không che
+button.Position = UDim2.new(0.025, 0, 0.05, 0)
 button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 button.TextColor3 = Color3.fromRGB(255, 255, 255)
 button.Font = Enum.Font.SourceSans
 button.TextScaled = true
-button.Text = "SafeZ"
+button.Text = "SafeZone"
 button.Parent = frame
 
--- Hàm di chuyển đến vị trí khi nhấn nút
+-- Bo góc cho nút
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(0, 3)
+buttonCorner.Parent = button
+
+-- Tạo biến lưu vị trí gốc
+local savedPosition = nil
+local teleported = false
+
 button.MouseButton1Click:Connect(function()
-    local character = LocalPlayer.Character
-    if character and character:FindFirstChild("HumanoidRootPart") then
-        character.HumanoidRootPart.CFrame = CFrame.new(1.65, 4.95, 34.88)
-    end
+	local char = LocalPlayer.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+
+	if not teleported then
+		-- Lưu lại vị trí ban đầu
+		savedPosition = hrp.CFrame
+		-- TP đến SafeZ
+		hrp.Velocity = Vector3.zero -- Ngăn trip
+		hrp.CFrame = CFrame.new(1.65, 4.95, 34.88)
+		teleported = true
+		button.Text = "Back"
+	else
+		-- TP về vị trí cũ
+		if savedPosition then
+			hrp.Velocity = Vector3.zero -- Ngăn trip khi trở lại
+			hrp.CFrame = savedPosition
+		end
+		teleported = false
+		button.Text = "SafeZone"
+	end
 end)
 end,
 })
