@@ -10905,12 +10905,12 @@ end)
 addcmd('light',{},function(args, speaker)
 	local light = Instance.new("PointLight")
 	light.Parent = getRoot(speaker.Character)
-	light.Range = 30
+	light.Range = 100
 	if args[1] then
 		light.Brightness = args[2]
 		light.Range = args[1]
 	else
-		light.Brightness = 5
+		light.Brightness = 0.3
 	end
 end)
 
@@ -13076,7 +13076,7 @@ task.spawn(function()
 
     --  Bo tr�n g�c
     local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(1, 0)
+    UICorner.CornerRadius = UDim.new(0, 3)
     UICorner.Parent = ToggleButton
 
     --  Drag mobile
@@ -13160,5 +13160,95 @@ task.spawn(function()
 
     warn("-----------------------------------------------------------")
     print("The toggle for infinite yield is active.")
+    print("The toggle Fly for infinite yield is active.")
     warn("-----------------------------------------------------------")
+end)
+
+task.spawn(function()
+-- 📌 Fly Toggle Button (Tự động bật/tắt, hỗ trợ Mobile & PC)
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local IsOnMobile = UserInputService.TouchEnabled
+local flyEnabled = false
+
+-- ⚠️ Kiểm tra trùng GUI
+if CoreGui:FindFirstChild("FlyToggleBtn") then
+	CoreGui:FindFirstChild("FlyToggleBtn"):Destroy()
+end
+
+-- 📦 Tạo nút GUI
+local btn = Instance.new("TextButton")
+btn.Name = "FlyToggleBtn"
+btn.Text = "Fly: Off"
+btn.Size = UDim2.new(0, 44.5, 0, 44.5)
+btn.Position = UDim2.new(0, 10, 0, 200)
+btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+btn.BackgroundTransparency = 0.3
+btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+btn.TextScaled = true
+btn.Font = Enum.Font.GothamBold
+btn.AnchorPoint = Vector2.new(0, 0)
+btn.ZIndex = 9999
+btn.AutoButtonColor = true
+btn.ClipsDescendants = true
+btn.Parent = CoreGui
+
+-- Bo góc
+local corner = Instance.new("UICorner", btn)
+corner.CornerRadius = UDim.new(0, 3)
+
+-- 🟦 Drag hỗ trợ mobile
+local dragging, dragInput, dragStart, startPos
+btn.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = btn.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then dragging = false end
+		end)
+	end
+end)
+btn.InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		local delta = input.Position - dragStart
+		btn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+
+-- 🛫 Các hàm liên quan đến Fly
+local function isNumber(val)
+	return typeof(val) == "number" and val == val
+end
+
+local function FlyToggle()
+	local speaker = LocalPlayer
+	local args = {} -- bạn có thể custom tốc độ ở đây
+
+	flyEnabled = not flyEnabled
+	btn.Text = "Fly: " .. (flyEnabled and "On" or "Off")
+
+	if flyEnabled then
+		if not IsOnMobile then
+			NOFLY()
+			task.wait()
+			sFLY()
+		else
+			mobilefly(speaker)
+		end
+		if args[1] and isNumber(args[1]) then
+			iyflyspeed = args[1]
+		end
+	else
+		if not IsOnMobile then
+			NOFLY()
+		else
+			unmobilefly(speaker)
+		end
+	end
+end
+
+-- 📌 Bắt sự kiện click
+btn.MouseButton1Click:Connect(FlyToggle)
 end)
