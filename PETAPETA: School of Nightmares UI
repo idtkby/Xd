@@ -1127,7 +1127,7 @@ KTab:CreateButton({
             antiVoid.CanCollide = false
             antiVoid.Transparency = 1
             antiVoid.Size = Vector3.new(5000, 1, 5000)
-            antiVoid.Position = Vector3.new(94.80, -133.40, 409.71)
+            antiVoid.Position = Vector3.new(94.80, -113.40, 409.71)
             antiVoid.Name = "AntiVoidPlatform"
             antiVoid.Parent = workspace
 
