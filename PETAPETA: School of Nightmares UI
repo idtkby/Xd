@@ -274,7 +274,7 @@ TeleportTab:CreateSection("Main Location")
 -- Vị trí chính
 local locations = {
     {Name = "Secret", Position = Vector3.new(-46.67, 19.8, -94.98)},
-
+}
 for _, loc in ipairs(locations) do
     TeleportTab:CreateButton({
         Name = "Go to " .. loc.Name,
