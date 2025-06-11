@@ -74,7 +74,7 @@ local function autoESP(filterFn, color, labelText)
 						txt.TextColor3 = color
 						txt.TextStrokeTransparency = 0.5
 						txt.Text = labelText or obj.Name
-						txt.Font = Enum.Font.SourceSansSemibold
+						txt.Font = Enum.Font.Bodoni
 						txt.TextScaled = true
 					end
 				end
