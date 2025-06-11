@@ -57,7 +57,7 @@ InfoTab:CreateParagraph({
 
 InfoTab:CreateParagraph({
 	Title = "Eyes The Horror Game",
-	Content = "+ Added Esp\n + Fixed some bug\n  + Updated Infinite Yield to v6.3.2\n-- Version 1.2",
+	Content = "[+] Added Esp\n [+] Fixed some bug\n  [+] Updated Infinite Yield to v6.3.2\n-- Version 1.2",
 })
 
 InfoTab:CreateParagraph({
