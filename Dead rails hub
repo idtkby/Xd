@@ -87,6 +87,20 @@ TeleportTab:CreateButton({
     end,
 })
 
+TeleportTab:CreateButton({
+    Name = "StillWater",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Sentaidusty/dustyrails/refs/heads/main/Stillwater"))()
+    end,
+})
+
+TeleportTab:CreateButton({
+    Name = "Find Unicorn",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/hbjrev/erhjf.github.io/refs/heads/main/hew.lua"))()
+    end,
+})
+
 TeleportTab:CreateSection("Train Tp")
 
 TeleportTab:CreateButton({
@@ -403,14 +417,14 @@ OtherTab:CreateButton({
 OtherTab:CreateButton({
     Name = "NatHub",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ArdyBotzz/NatHub/refs/heads/master/NatHub.lua"))()
+        loadstring(game:HttpGet("https://get.nathub.xyz/loader"))();
     end,
 })
 
 OtherTab:CreateButton({
     Name = "Ringta",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/NEWFIXEDUI.github.io/refs/heads/main/ui.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/NEWHITUIDEAD.github.io/refs/heads/main/HITUIDEADRAILS.LUA"))()
     end,
 })
 
