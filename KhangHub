@@ -52,7 +52,7 @@ InfoTab:CreateParagraph({
 InfoTab:CreateSection("Updates")
 InfoTab:CreateParagraph({
 	Title = "Dead Rails (Alpha)",
-	Content = "[+] Update Auto Swing\n-- Version 3.0.1 --",
+	Content = "[+] Add StillWater\n [+] Add Find Unicorn\n  [+] Update Ringta UI and Nathub\n-- Version 3.1 --",
 })
 
 InfoTab:CreateParagraph({
