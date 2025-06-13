@@ -90,7 +90,7 @@ TeleportTab:CreateButton({
 TeleportTab:CreateButton({
     Name = "StillWater",
     Callback = function()
-        loadstring(game:HttpGet('https://raw.githubusercontent.com/m00ndiety/Stillwater/refs/heads/main/obf_Prisonteleport.lua.txt'))()
+       setclipboard = function(...) return nil end loadstring(game:HttpGet('https://raw.githubusercontent.com/m00ndiety/Stillwater/refs/heads/main/obf_Prisonteleport.lua.txt'))()
     end,
 })
 
