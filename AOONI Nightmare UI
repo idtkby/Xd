@@ -173,20 +173,20 @@ mainTab:CreateButton({
 })
 
 mainTab:CreateButton({
-	Name = "Esp Book (Lag)",
+	Name = "Esp Book",
 	Callback = function()
 		autoESP(function(p)
-			return p:IsA("BasePart") and p.Name == "Book"
+			return p:IsA("BasePart") and p.Name == "BookStand"
 		end, Color3.fromRGB(255, 255, 255), "Book")
 	end,
 })
 
 mainTab:CreateButton({
-	Name = "Esp Bottle",
+	Name = "Esp Flast",
 	Callback = function()
 		autoESP(function(p)
-			return p:IsA("BasePart") and p.Name == "Meshes/liquidsoap_bottle"
-		end, Color3.fromRGB(255, 255, 255), "Bottle")
+			return p:IsA("BasePart") and p.Name == "Flast"
+		end, Color3.fromRGB(255, 255, 255), "Flast")
 	end,
 })
 
