@@ -182,11 +182,11 @@ mainTab:CreateButton({
 })
 
 mainTab:CreateButton({
-	Name = "Esp Flast",
+	Name = "Esp Flask",
 	Callback = function()
 		autoESP(function(p)
-			return p:IsA("BasePart") and p.Name == "Flast"
-		end, Color3.fromRGB(255, 255, 255), "Flast")
+			return p:IsA("BasePart") and p.Name == "Meshes/flask"
+		end, Color3.fromRGB(255, 255, 255), "Flask")
 	end,
 })
 
