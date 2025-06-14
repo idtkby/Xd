@@ -4814,6 +4814,7 @@ CMDs[#CMDs + 1] = {NAME = 'listento [player]', DESC = 'Listens to the area aroun
 CMDs[#CMDs + 1] = {NAME = 'unlistento', DESC = 'Disables listento'}
 CMDs[#CMDs + 1] = {NAME = 'jerk', DESC = 'Makes you jork it'}
 CMDs[#CMDs + 1] = {NAME = 'unsuspendvc', DESC = 'Unsuspends you from voice chat'}
+CMDs[#CMDs + 1] = {NAME = 'NorotationCamera / nrcam', DESC = 'Prevents your screen from rotating when moving horizontally'}
 wait()
 
 for i = 1, #CMDs do
@@ -12748,6 +12749,32 @@ addcmd('removecmd',{'deletecmd'},function(args, speaker)
 	removecmd(args[1])
 end)
 
+addcmd('No rotation Camera',{'nrcam'},function(args, speaker)
+	local player = game:GetService("Players").LocalPlayer
+
+-- Giá»¯ DevTouchCameraMode luĂ´n lĂ  Classic
+local function setTouchCamera()
+    if player then
+        player.DevTouchCameraMode = Enum.DevTouchCameraMovementMode.Classic
+    end
+end
+
+setTouchCamera()
+player:GetPropertyChangedSignal("DevTouchCameraMode"):Connect(setTouchCamera)
+
+-- Giá»¯ DevComputerCameraMode luĂ´n lĂ  Classic
+task.spawn(function()
+    local function setComputerCamera()
+        if player then
+            player.DevComputerCameraMode = Enum.DevComputerCameraMovementMode.Classic
+        end
+    end
+
+    setComputerCamera()
+    player:GetPropertyChangedSignal("DevComputerCameraMode"):Connect(setComputerCamera)
+end)
+end)
+
 if IsOnMobile then
 	local QuickCapture = Instance.new("TextButton")
 	local UICorner = Instance.new("UICorner")
@@ -13165,71 +13192,86 @@ task.spawn(function()
 end)
 
 task.spawn(function()
--- 📌 Fly Toggle Button (Tự động bật/tắt, hỗ trợ Mobile & PC)
-local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local IsOnMobile = UserInputService.TouchEnabled
-local flyEnabled = false
+local speaker = Players.LocalPlayer
+local CoreGui = game:GetService("CoreGui")
 
--- ⚠️ Kiểm tra trùng GUI
-if CoreGui:FindFirstChild("FlyToggleBtn") then
-	CoreGui:FindFirstChild("FlyToggleBtn"):Destroy()
-end
+-- Tạo GUI nếu chưa có
+local FlyGui = CoreGui:FindFirstChild("SafeZGui") or Instance.new("ScreenGui")
+FlyGui.Name = "SafeZGui"
+FlyGui.ResetOnSpawn = false
+FlyGui.Parent = CoreGui
 
--- 📦 Tạo nút GUI
-local btn = Instance.new("TextButton")
-btn.Name = "FlyToggleBtn"
-btn.Text = "Fly: Off"
-btn.Size = UDim2.new(0, 44.5, 0, 44.5)
-btn.Position = UDim2.new(0, 10, 0, 200)
-btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-btn.BackgroundTransparency = 0.3
-btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-btn.TextScaled = true
-btn.Font = Enum.Font.GothamBold
-btn.AnchorPoint = Vector2.new(0, 0)
-btn.ZIndex = 9999
-btn.AutoButtonColor = true
-btn.ClipsDescendants = true
-btn.Parent = CoreGui
+-- Nút FLY mới
+local FlyBtn = Instance.new("TextButton")
+FlyBtn.Size = UDim2.new(0, 44.5, 0, 44.5)
+FlyBtn.Position = UDim2.new(0, 55, 0, 0) -- Kế bên trái nút cũ (tọa độ x = 105 - 50)
+FlyBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+FlyBtn.BackgroundTransparency = 0.3
+FlyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+FlyBtn.Text = "Fly"
+FlyBtn.TextSize = 14
+FlyBtn.Font = Enum.Font.SourceSansBold
+FlyBtn.AutoButtonColor = false
+FlyBtn.Parent = FlyGui
 
 -- Bo góc
-local corner = Instance.new("UICorner", btn)
-corner.CornerRadius = UDim.new(0, 3)
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 3)
+UICorner.Parent = FlyBtn
 
--- 🟦 Drag hỗ trợ mobile
+-- Drag mobile
 local dragging, dragInput, dragStart, startPos
-btn.InputBegan:Connect(function(input)
+
+local function update(input)
+	local delta = input.Position - dragStart
+	FlyBtn.Position = UDim2.new(
+		startPos.X.Scale,
+		startPos.X.Offset + delta.X,
+		startPos.Y.Scale,
+		startPos.Y.Offset + delta.Y
+	)
+end
+
+FlyBtn.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 		dragging = true
 		dragStart = input.Position
-		startPos = btn.Position
+		startPos = FlyBtn.Position
+
 		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then dragging = false end
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
 		end)
 	end
 end)
-btn.InputChanged:Connect(function(input)
-	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-		local delta = input.Position - dragStart
-		btn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+
+FlyBtn.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
 	end
 end)
 
--- 🛫 Các hàm liên quan đến Fly
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		update(input)
+	end
+end)
+
+-- Bật/Tắt Fly
+local isFlying = false
 local function isNumber(val)
-	return typeof(val) == "number" and val == val
+	return typeof(val) == "number" and val == val and val ~= math.huge and val ~= -math.huge
 end
 
-local function FlyToggle()
-	local speaker = LocalPlayer
-	local args = {} -- bạn có thể custom tốc độ ở đây
+FlyBtn.MouseButton1Click:Connect(function()
+	isFlying = not isFlying
+	if isFlying then
+		FlyBtn.Text = "Unfly"
+		FlyBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 150)
 
-	flyEnabled = not flyEnabled
-	btn.Text = "Fly: " .. (flyEnabled and "On" or "Off")
-
-	if flyEnabled then
 		if not IsOnMobile then
 			NOFLY()
 			task.wait()
@@ -13237,18 +13279,20 @@ local function FlyToggle()
 		else
 			mobilefly(speaker)
 		end
+
+		local args = { 1.5 } -- chỉnh tốc độ nếu cần
 		if args[1] and isNumber(args[1]) then
 			iyflyspeed = args[1]
 		end
 	else
+		FlyBtn.Text = "Fly"
+		FlyBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+
 		if not IsOnMobile then
 			NOFLY()
 		else
 			unmobilefly(speaker)
 		end
 	end
-end
-
--- 📌 Bắt sự kiện click
-btn.MouseButton1Click:Connect(FlyToggle)
+end)
 end)
