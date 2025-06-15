@@ -384,32 +384,6 @@ KTab:CreateToggle({
 
 KTab:CreateSection("Player")
 
-local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
-local speaker = Players.LocalPlayer
-local flyjump
-
-KTab:CreateToggle({
-        Name = "Inf Jump",
-        CurrentValue = false,
-        Flag = "InfJumpToggle",
-        Callback = function(state)
-                if flyjump then
-                        flyjump:Disconnect()
-                        flyjump = nil
-                end
-
-                if state then
-                        flyjump = UserInputService.JumpRequest:Connect(function()
-                                local humanoid = speaker.Character and speaker.Character:FindFirstChildWhichIsA("Humanoid")
-                                if humanoid then
-                                        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                                end
-                        end)
-                end
-        end
-})
-
 -- Khai báo các dịch vụ cần thiết
 local PromptService = game:GetService("ProximityPromptService")
 local Workspace = game:GetService("Workspace")
