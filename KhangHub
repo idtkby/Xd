@@ -77,7 +77,7 @@ InfoTab:CreateParagraph({
 
 InfoTab:CreateParagraph({
 	Title = "PETAPETA | level6",
-	Content = "[+] Add Textlabel for esp Peta\n [+] Fix Esp Safe (stage 5)\n-- Version 2.2.5 --",
+	Content = "[+] Add esp Candle\n [+] Add Auto pick up items\n  [+] Fix lag esp Doll\n-- Version 2.3 --",
 })
 
 InfoTab:CreateSection("----------------------------------------------------")
