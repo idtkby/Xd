@@ -160,8 +160,15 @@ mainTab:CreateButton({
 	Name = "Esp Doll",
 	Callback = function()
 		autoESP(function(p)
-			return p:IsA("BasePart") and (p.Name == "DollHead" or p.Name == "DollBlackHead")
-		end, Color3.fromRGB(255, 255, 255), "Doll")
+	return p:IsA("BasePart")
+		and (p.Name == "DollHead" or p.Name == "DollBlackHead")
+		and not (
+			string.find(p:GetFullName(), "outside_left")
+			or string.find(p:GetFullName(), "outside_right")
+			or string.find(p:GetFullName(), "Props")
+			or string.find(p:GetFullName(), "floor")
+		)
+end, Color3.fromRGB(255, 255, 255), "Doll")
 	end,
 })
 
@@ -258,6 +265,20 @@ mainTab:CreateButton({
 })
 
 mainTab:CreateButton({
+	Name = "Candle",
+	Callback = function()
+		autoESP(function(p)
+			return p:IsA("BasePart") and (
+			 p.Name == "KeyCandle1"
+				or p.Name == "KeyCandle2"
+				or p.Name == "KeyCandle3"
+				or p.Name == "KeyCandle4"
+			)
+		end, Color3.fromRGB(179, 0, 56), "Candle")
+	end,
+})
+
+mainTab:CreateButton({
     Name = "Esp Player",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/PlayerEsp"))()
@@ -275,6 +296,134 @@ mainTab:CreateButton({
 
 local KTab = Window:CreateTab("Misc", "package")
 KTab:CreateSection("Game")
+
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local AutoPickupRunning = false
+local PickupConnection
+local ItemList = {}
+
+local targetNames = {
+	["KeyCandle1"] = true,
+	["KeyCandle2"] = true,
+	["KeyCandle3"] = true,
+	["KeyCandle4"] = true,
+	["Dish"] = true,
+	["Lighter"] = true,
+	["Key"] = true,
+	["DollHead"] = true,
+	["DollBlackHead"] = true
+}
+
+KTab:CreateToggle({
+	Name = "Auto pick up items",
+	CurrentValue = false,
+	Callback = function(state)
+		AutoPickupRunning = state
+		if state then
+			local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+			local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+			local lastTriggerTime = {}
+
+			local function scanItems()
+				ItemList = {}
+				for _, obj in ipairs(workspace:GetDescendants()) do
+					if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") then
+						local model = obj:FindFirstAncestorWhichIsA("Model")
+						if model then
+							for _, part in ipairs(model:GetDescendants()) do
+								if part:IsA("BasePart") and targetNames[part.Name] then
+									table.insert(ItemList, {model = model, obj = obj})
+									break
+								end
+							end
+						end
+					end
+				end
+			end
+
+			scanItems()
+
+			workspace.DescendantAdded:Connect(function(desc)
+				if not AutoPickupRunning then return end
+				if (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") then
+					local model = desc:FindFirstAncestorWhichIsA("Model")
+					if model then
+						for _, part in ipairs(model:GetDescendants()) do
+							if part:IsA("BasePart") and targetNames[part.Name] then
+								table.insert(ItemList, {model = model, obj = desc})
+								break
+							end
+						end
+					end
+				end
+			end)
+
+			local function triggerPrompt(obj)
+				pcall(function()
+					if obj:IsA("ProximityPrompt") then
+						fireproximityprompt(obj, math.huge)
+					elseif obj:IsA("ClickDetector") then
+						fireclickdetector(obj)
+					elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
+						firetouchinterest(HumanoidRootPart, obj.Parent, 0)
+						task.wait()
+						firetouchinterest(HumanoidRootPart, obj.Parent, 1)
+					end
+				end)
+			end
+
+			local function getClosestPart(model, refPos)
+				local closest, minDist = nil, math.huge
+				for _, part in ipairs(model:GetDescendants()) do
+					if part:IsA("BasePart") then
+						local dist = (part.Position - refPos).Magnitude
+						if dist < minDist then
+							minDist = dist
+							closest = part
+						end
+					end
+				end
+				return closest, minDist
+			end
+
+			PickupConnection = RunService.Heartbeat:Connect(function()
+				if not AutoPickupRunning or not LocalPlayer.Character then return end
+				local HRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+				if not HRP then return end
+
+				local now = tick()
+				for i = #ItemList, 1, -1 do
+					local data = ItemList[i]
+					local model = data.model
+					local obj = data.obj
+					if not model or not model:IsDescendantOf(workspace) then
+						table.remove(ItemList, i)
+						continue
+					end
+
+					if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
+						continue
+					end
+
+					local _, dist = getClosestPart(model, HRP.Position)
+					if dist and dist <= 7 then
+						lastTriggerTime[model] = now
+						triggerPrompt(obj)
+					end
+				end
+			end)
+		else
+			if PickupConnection then
+				PickupConnection:Disconnect()
+				PickupConnection = nil
+			end
+			ItemList = {}
+		end
+	end
+})
 
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
