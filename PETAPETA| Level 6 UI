@@ -169,6 +169,23 @@ mainTab:CreateButton({
 			or string.find(p:GetFullName(), "floor")
 		)
 end, Color3.fromRGB(255, 255, 255), "Doll")
+task.spawn(function()
+local foldersToClear = {
+	"outside_left",
+	"outside_right",
+	"Props",
+	"floor"
+}
+
+for _, folderName in ipairs(foldersToClear) do
+	local folder = workspace:FindFirstChild(folderName)
+	if folder and folder:IsA("Folder") then
+		for _, child in ipairs(folder:GetChildren()) do
+			child:Destroy()
+		end
+	end
+end
+end)
 	end,
 })
 
@@ -268,12 +285,7 @@ mainTab:CreateButton({
 	Name = "Candle",
 	Callback = function()
 		autoESP(function(p)
-			return p:IsA("BasePart") and (
-			 p.Name == "KeyCandle1"
-				or p.Name == "KeyCandle2"
-				or p.Name == "KeyCandle3"
-				or p.Name == "KeyCandle4"
-			)
+			return p:IsA("BasePart") and (p.Name == "KeyCandle1" or p.Name == "KeyCandle2" or p.Name == "KeyCandle3" or p.Name == "KeyCandle4")
 		end, Color3.fromRGB(179, 0, 56), "Candle")
 	end,
 })
@@ -312,9 +324,10 @@ local targetNames = {
 	["KeyCandle4"] = true,
 	["Dish"] = true,
 	["Lighter"] = true,
-	["Key"] = true,
+	["Key"] = false,
 	["DollHead"] = true,
-	["DollBlackHead"] = true
+	["DollBlackHead"] = true,
+ ["FireExtinguisher"] = true
 }
 
 KTab:CreateToggle({
@@ -409,7 +422,7 @@ KTab:CreateToggle({
 					end
 
 					local _, dist = getClosestPart(model, HRP.Position)
-					if dist and dist <= 7 then
+					if dist and dist <= 5 then
 						lastTriggerTime[model] = now
 						triggerPrompt(obj)
 					end
