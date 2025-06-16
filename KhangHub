@@ -147,7 +147,7 @@ HbTab:CreateButton({
 
 HbTab:CreateSection("Nightmare")
 HbTab:CreateButton({
-    Name = "AOONI Nightmare",
+    Name = "AOONI Nightmare [Script]",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/AOONI%20Nightmare%20UI"))()
     end,
@@ -162,13 +162,14 @@ HbTab:CreateButton({
 
 HbTab:CreateSection("PETAPETA")
 HbTab:CreateButton({
-    Name = "PETAPETA | Level6",
+    Name = "PETAPETA | Level6 [Script]",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/PETAPETA%7C%20Level%206%20UI"))()
     end,
 })
+HbTab:CreateSection("School")
 HbTab:CreateButton({
-    Name = "PETAPETA: School of Nightmares",
+    Name = "PETAPETA: School of Nightmares [Script]",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/PETAPETA%3A%20School%20of%20Nightmares%20UI"))()
     end,
