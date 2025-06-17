@@ -4814,7 +4814,8 @@ CMDs[#CMDs + 1] = {NAME = 'listento [player]', DESC = 'Listens to the area aroun
 CMDs[#CMDs + 1] = {NAME = 'unlistento', DESC = 'Disables listento'}
 CMDs[#CMDs + 1] = {NAME = 'jerk', DESC = 'Makes you jork it'}
 CMDs[#CMDs + 1] = {NAME = 'unsuspendvc', DESC = 'Unsuspends you from voice chat'}
-CMDs[#CMDs + 1] = {NAME = 'NorotationCamera / nrcam', DESC = 'Prevents your screen from rotating when moving horizontally'}
+CMDs[#CMDs + 1] = {NAME = 'norotationcamera / nrcam', DESC = 'Prevents your screen from rotating when moving horizontally'}
+CMDs[#CMDs + 1] = {NAME = 'vflyandflybutton / vandflyb', DESC = 'Gives you 2 buttons, Fly and VFly suitable for mobile'}
 wait()
 
 for i = 1, #CMDs do
@@ -12749,7 +12750,7 @@ addcmd('removecmd',{'deletecmd'},function(args, speaker)
 	removecmd(args[1])
 end)
 
-addcmd('No rotation Camera',{'nrcam'},function(args, speaker)
+addcmd('norotationcamera',{'nrcam'},function(args, speaker)
 	local player = game:GetService("Players").LocalPlayer
 
 -- Giá»¯ DevTouchCameraMode luĂ´n lĂ  Classic
@@ -12773,6 +12774,160 @@ task.spawn(function()
     setComputerCamera()
     player:GetPropertyChangedSignal("DevComputerCameraMode"):Connect(setComputerCamera)
 end)
+end)
+
+addcmd('vflyandflybutton',{'vandflyb'},function(args, speaker)
+    local Players = game:GetService("Players")
+    local UserInputService = game:GetService("UserInputService")
+    local CoreGui = game:GetService("CoreGui")
+    local speaker = Players.LocalPlayer
+
+    local isFlying = false
+    local flyMode = nil -- "normal" hoặc "vehicle"
+
+    -- GUI
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "FlyControlGui"
+    gui.ResetOnSpawn = false
+    gui.Parent = CoreGui
+
+    -- Tạo nút có kéo thả
+    local function createButton(name, pos, color, text)
+        local btn = Instance.new("TextButton")
+        btn.Name = name
+        btn.Size = UDim2.new(0, 44.5, 0, 44.5)
+        btn.Position = pos
+        btn.BackgroundColor3 = color
+        btn.BackgroundTransparency = 0.3
+        btn.TextColor3 = Color3.new(1,1,1)
+        btn.Text = text
+        btn.TextSize = 14
+        btn.Font = Enum.Font.SourceSansBold
+        btn.AutoButtonColor = false
+        btn.Parent = gui
+
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 3)
+        corner.Parent = btn
+
+        -- Drag mobile
+        local dragging, dragInput, dragStart, startPos
+        local function update(input)
+            local delta = input.Position - dragStart
+            btn.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+        btn.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                dragging = true
+                dragStart = input.Position
+                startPos = btn.Position
+                input.Changed:Connect(function()
+                    if input.UserInputState == Enum.UserInputState.End then
+                        dragging = false
+                    end
+                end)
+            end
+        end)
+        btn.InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                dragInput = input
+            end
+        end)
+        UserInputService.InputChanged:Connect(function(input)
+            if input == dragInput and dragging then
+                update(input)
+            end
+        end)
+
+        return btn
+    end
+
+    local flyBtn = createButton("FlyBtn", UDim2.new(0, 55, 0, 0), Color3.fromRGB(0, 0, 0), "Fly")
+    local vflyBtn = createButton("VFlyBtn", UDim2.new(0, 55, 0, 50), Color3.fromRGB(0, 0, 0), "VFly")
+
+    local function stopAllFly()
+        isFlying = false
+        flyMode = nil
+        flyBtn.Text = "Fly"
+        flyBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        vflyBtn.Text = "VFly"
+        vflyBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        if not IsOnMobile then
+            NOFLY()
+        else
+            unmobilefly(speaker)
+        end
+    end
+
+    -- Hàm bật fly
+    local function startFly(mode)
+        stopAllFly()
+        flyMode = mode
+        isFlying = true
+        if mode == "normal" then
+            flyBtn.Text = "Unfly"
+            flyBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 150)
+            if not IsOnMobile then
+                NOFLY()
+                task.wait()
+                sFLY()
+            else
+                mobilefly(speaker)
+            end
+            iyflyspeed = 1.5
+        elseif mode == "vehicle" then
+            vflyBtn.Text = "Unfly"
+            vflyBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+            if not IsOnMobile then
+                NOFLY()
+                task.wait()
+                sFLY(true)
+            else
+                mobilefly(speaker, true)
+            end
+            vehicleflyspeed = 1.5
+        end
+    end
+
+    flyBtn.MouseButton1Click:Connect(function()
+        if isFlying and flyMode == "normal" then
+            stopAllFly()
+        else
+            startFly("normal")
+        end
+    end)
+
+    vflyBtn.MouseButton1Click:Connect(function()
+        if isFlying and flyMode == "vehicle" then
+            stopAllFly()
+        else
+            startFly("vehicle")
+        end
+    end)
+
+    -- Tắt tự động khi chết
+    local function autoDisable()
+        if speaker.Character then
+            speaker.Character:WaitForChild("Humanoid").Died:Connect(stopAllFly)
+        end
+        speaker.CharacterAdded:Connect(function()
+            task.wait(1)
+            stopAllFly()
+            if speaker.Character:FindFirstChild("Humanoid") then
+                speaker.Character.Humanoid.Died:Connect(stopAllFly)
+            end
+        end)
+    end
+    autoDisable()
+    task.spawn(function()
+    print("The toggle Fly and VehicleFly for infinite yield is active.")
+    warn("-----------------------------------------------------------")
+    end)
 end)
 
 if IsOnMobile then
@@ -13187,112 +13342,4 @@ task.spawn(function()
 
     warn("-----------------------------------------------------------")
     print("The toggle for infinite yield is active.")
-    print("The toggle Fly for infinite yield is active.")
-    warn("-----------------------------------------------------------")
-end)
-
-task.spawn(function()
-local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
-local speaker = Players.LocalPlayer
-local CoreGui = game:GetService("CoreGui")
-
--- Tạo GUI nếu chưa có
-local FlyGui = CoreGui:FindFirstChild("SafeZGui") or Instance.new("ScreenGui")
-FlyGui.Name = "SafeZGui"
-FlyGui.ResetOnSpawn = false
-FlyGui.Parent = CoreGui
-
--- Nút FLY mới
-local FlyBtn = Instance.new("TextButton")
-FlyBtn.Size = UDim2.new(0, 44.5, 0, 44.5)
-FlyBtn.Position = UDim2.new(0, 55, 0, 0) -- Kế bên trái nút cũ (tọa độ x = 105 - 50)
-FlyBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-FlyBtn.BackgroundTransparency = 0.3
-FlyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-FlyBtn.Text = "Fly"
-FlyBtn.TextSize = 14
-FlyBtn.Font = Enum.Font.SourceSansBold
-FlyBtn.AutoButtonColor = false
-FlyBtn.Parent = FlyGui
-
--- Bo góc
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 3)
-UICorner.Parent = FlyBtn
-
--- Drag mobile
-local dragging, dragInput, dragStart, startPos
-
-local function update(input)
-	local delta = input.Position - dragStart
-	FlyBtn.Position = UDim2.new(
-		startPos.X.Scale,
-		startPos.X.Offset + delta.X,
-		startPos.Y.Scale,
-		startPos.Y.Offset + delta.Y
-	)
-end
-
-FlyBtn.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragging = true
-		dragStart = input.Position
-		startPos = FlyBtn.Position
-
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
-	end
-end)
-
-FlyBtn.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-		dragInput = input
-	end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-	if input == dragInput and dragging then
-		update(input)
-	end
-end)
-
--- Bật/Tắt Fly
-local isFlying = false
-local function isNumber(val)
-	return typeof(val) == "number" and val == val and val ~= math.huge and val ~= -math.huge
-end
-
-FlyBtn.MouseButton1Click:Connect(function()
-	isFlying = not isFlying
-	if isFlying then
-		FlyBtn.Text = "Unfly"
-		FlyBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 150)
-
-		if not IsOnMobile then
-			NOFLY()
-			task.wait()
-			sFLY()
-		else
-			mobilefly(speaker)
-		end
-
-		local args = { 1.5 } -- chỉnh tốc độ nếu cần
-		if args[1] and isNumber(args[1]) then
-			iyflyspeed = args[1]
-		end
-	else
-		FlyBtn.Text = "Fly"
-		FlyBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-
-		if not IsOnMobile then
-			NOFLY()
-		else
-			unmobilefly(speaker)
-		end
-	end
-end)
 end)
