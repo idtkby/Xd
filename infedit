@@ -12785,13 +12785,11 @@ addcmd('vflyandflybutton',{'vandflyb'},function(args, speaker)
     local isFlying = false
     local flyMode = nil -- "normal" hoặc "vehicle"
 
-    -- GUI
     local gui = Instance.new("ScreenGui")
     gui.Name = "FlyControlGui"
     gui.ResetOnSpawn = false
     gui.Parent = CoreGui
 
-    -- Tạo nút có kéo thả
     local function createButton(name, pos, color, text)
         local btn = Instance.new("TextButton")
         btn.Name = name
@@ -12864,7 +12862,6 @@ addcmd('vflyandflybutton',{'vandflyb'},function(args, speaker)
         end
     end
 
-    -- Hàm bật fly
     local function startFly(mode)
         stopAllFly()
         flyMode = mode
@@ -12879,7 +12876,6 @@ addcmd('vflyandflybutton',{'vandflyb'},function(args, speaker)
             else
                 mobilefly(speaker)
             end
-            iyflyspeed = 1.5
         elseif mode == "vehicle" then
             vflyBtn.Text = "Unfly"
             vflyBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
@@ -12890,7 +12886,6 @@ addcmd('vflyandflybutton',{'vandflyb'},function(args, speaker)
             else
                 mobilefly(speaker, true)
             end
-            vehicleflyspeed = 1.5
         end
     end
 
@@ -12910,7 +12905,6 @@ addcmd('vflyandflybutton',{'vandflyb'},function(args, speaker)
         end
     end)
 
-    -- Tắt tự động khi chết
     local function autoDisable()
         if speaker.Character then
             speaker.Character:WaitForChild("Humanoid").Died:Connect(stopAllFly)
@@ -12924,6 +12918,7 @@ addcmd('vflyandflybutton',{'vandflyb'},function(args, speaker)
         end)
     end
     autoDisable()
+
     task.spawn(function()
     print("The toggle Fly and VehicleFly for infinite yield is active.")
     warn("-----------------------------------------------------------")
