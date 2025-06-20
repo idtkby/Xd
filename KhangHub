@@ -197,6 +197,14 @@ tp:CreateButton({
    end
 })
 
+tp:CreateSection("Hey!!!")
+
+tp:CreateParagraph({
+	Title = "Note",
+	Content = "•Some games will not be able to teleport.\n•Có một số game không sử dụng tp đc",
+})
+
+
 end)
 
 
