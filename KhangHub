@@ -198,3 +198,19 @@ tp:CreateButton({
 })
 
 end)
+
+
+-- Điều kiện: bạn phải đang sử dụng Executor hỗ trợ `queueteleport`
+-- Ví dụ: KRNL, Synapse X đều hỗ trợ
+
+local Players = game:GetService("Players")
+local TeleportCheck = false
+local KeepInfYield = true -- ← Gán biến này là true để bật tính năng
+local queueteleport = queue_on_teleport or queue_on_teleport or syn and syn.queue_on_teleport -- Phổ biến nhất
+
+Players.LocalPlayer.OnTeleport:Connect(function(State)
+	if KeepInfYield and not TeleportCheck and queueteleport then
+		TeleportCheck = true
+		queueteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/idtkby/Xd/main/infedit'))()")
+	end
+end)
