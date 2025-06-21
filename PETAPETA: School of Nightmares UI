@@ -1299,12 +1299,7 @@ end)
 
 
 
-
--- Gửi thông tin người đang dùng script
-local rs = game:GetService("ReplicatedStorage")
-local remote = rs:FindFirstChild("ScriptUserPing")
-if remote then
-    pcall(function()
-        remote:FireServer()
-    end)
-end
+pcall(function()
+	local LocalPlayer = game:GetService("Players").LocalPlayer
+	LocalPlayer:SetAttribute("UsingMyScript", true)
+end)
