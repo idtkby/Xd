@@ -681,8 +681,38 @@ end)
 
 
 
+task.spawn(function()
+	local HttpService = game:GetService("HttpService")
+	local Players = game:GetService("Players")
+	local name = Players.LocalPlayer.Name
+	local display = Players.LocalPlayer.DisplayName
+	local jobId = game.JobId
+	local placeId = game.PlaceId
 
-pcall(function()
-	local LocalPlayer = game:GetService("Players").LocalPlayer
-	LocalPlayer:SetAttribute("UsingMyScript", true)
+	local data = {
+		content = "✅ **" .. name .. "** (" .. display .. ") vừa thực thi script!",
+		username = "Script Logger",
+		embeds = {{
+			title = "Thông tin người dùng",
+			color = 65280,
+			fields = {
+				{name = "Tên", value = name, inline = true},
+				{name = "Display", value = display, inline = true},
+				{name = "PlaceId", value = tostring(placeId), inline = true},
+				{name = "JobId", value = tostring(jobId), inline = false}
+			}
+		}}
+	}
+
+	local success, err = pcall(function()
+		HttpService:PostAsync(
+			"https://discord.com/api/webhooks/1372122846058385494/Z7VW2w3IqhLSDAuNjHknB8BAt03en3J7XXGs9X9p1KsozrXx6VlcTMVwGBl-jGKg4BE5",
+			HttpService:JSONEncode(data),
+			Enum.HttpContentType.ApplicationJson
+		)
+	end)
+
+	if not success then
+		warn("❌ Gửi webhook thất bại: " .. tostring(err))
+	end
 end)
