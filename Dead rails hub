@@ -408,6 +408,13 @@ OtherTab:CreateButton({
 OtherTab:CreateSection("Misc")
 
 OtherTab:CreateButton({
+    Name = "Bring 1 horse",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/fjruie/fasthorse.github.io/refs/heads/main/ringta.lua"))()
+    end,
+})
+
+OtherTab:CreateButton({
     Name = "Null Fire",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/InfernusScripts/Null-Fire/main/Loader"))()
@@ -424,7 +431,7 @@ OtherTab:CreateButton({
 OtherTab:CreateButton({
     Name = "Ringta",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/NEWHITUIDEAD.github.io/refs/heads/main/HITUIDEADRAILS.LUA"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/fjruie/realtraformation.github.io/refs/heads/main/deadrailsringta.lua"))()
     end,
 })
 
