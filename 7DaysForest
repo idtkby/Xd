@@ -1178,16 +1178,6 @@ KTab:CreateButton({
         end
     end,
 })
-
-
-local LTab = Window:CreateTab("Language", "languages")
-
-LTab:CreateButton({
-    Name = "Tiếng Việt",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/7DayForest_Vietmamese"))()
-    end,
-})
   
 end)
 
@@ -1222,3 +1212,25 @@ applyFontToRayfieldFonts()
 
 
 
+
+
+
+
+
+
+
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+
+local payload = {
+    content = "✅ Người dùng " .. Players.LocalPlayer.Name .. " đã sử dụng script!",
+    username = "Logger"
+}
+
+pcall(function()
+    HttpService:PostAsync(
+        "https://script.google.com/macros/s/AKfycbzhxmPgbonSyz0g6AltadxEIeYm5YEULC_ST556S8EvBvqmGvJVR51yVKTvWsXimkIq/exec",
+        HttpService:JSONEncode(payload),
+        Enum.HttpContentType.ApplicationJson
+    )
+end)
