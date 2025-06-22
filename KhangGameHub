@@ -332,6 +332,21 @@ mSgl[#mSgl+1] = Tab3:CreateInput({
     end
 })
 
+mSgl[#mSgl+1] = Tab3:CreateButton({
+    Name = "Get 3 OP tool",
+    SectionParent = T3T,
+    Interact = "Run",
+    Callback = function()
+        for i = 1, 10 do
+local Players = game:GetService("Players")
+local args = {
+    Players.LocalPlayer
+}
+game:GetService("ReplicatedStorage"):WaitForChild("FreeGearEvent"):FireServer(unpack(args))
+end
+    end
+})
+
 -- Nút fix tiền (xoá sạch)
 mSgl[#mSgl+1] = Tab3:CreateButton({
     Name = "Fix Money",
