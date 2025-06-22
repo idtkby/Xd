@@ -88,7 +88,8 @@ end
 local Default = Window:CreateTab("Default")
 local Tab = Window:CreateTab("Trench War", 6034985497)
 local Tab2 = Window:CreateTab("Vacation ✈️ (Story)", 6034985497)
-local Mtab = Window:CreateTab("Misc", 6031265988)
+local Tab3 = Window:CreateTab("1m", 6034985497)
+local Mtab = Window:CreateTab("Misc")
 
 
 
@@ -263,6 +264,95 @@ end
 
 
 
+
+
+
+
+
+
+
+
+local Section3 = Tab3:CreateSection("Main", false)
+
+-- Glass wall highlight
+1m$gl[#1m$gl+1] = Tab3:CreateButton({
+    Name = "Glass wall",
+    SectionParent = Section3,
+    Interact = "Run",
+    Callback = function()
+        task.spawn(function()
+            while true do
+                if workspace:FindFirstChild("Glasses") then
+                    local glasses = workspace.Glasses
+                    if glasses:FindFirstChild("Wrong") and glasses:FindFirstChild("Correct") then
+                        local wrongChildren = glasses.Wrong:GetChildren()
+                        local correctChildren = glasses.Correct:GetChildren()
+
+                        for i = 1, 1000 do
+                            if wrongChildren[i] and wrongChildren[i]:IsA("BasePart") then
+                                wrongChildren[i].Color = Color3.new(1, 0, 0) -- đỏ
+                            end
+                            if correctChildren[i] and correctChildren[i]:IsA("BasePart") then
+                                correctChildren[i].Color = Color3.new(0, 1, 0) -- xanh
+                            end
+                        end
+                    end
+                end
+                task.wait(0.1)
+            end
+        end)
+    end
+})
+
+-- Toggle Auto Wins
+local isAutoEzActive = false
+1m$gl[#1m$gl+1] = Tab3:CreateToggle({
+    Name = "Auto Wins",
+    SectionParent = Section3,
+    CurrentValue = false,
+    Callback = function(value)
+        isAutoEzActive = value
+        task.spawn(function()
+            while isAutoEzActive do
+                local args = {
+                    [1] = game:GetService("Players").LocalPlayer
+                }
+                game:GetService("ReplicatedStorage").GiveClaimMoney:FireServer(unpack(args))
+                task.wait(1)
+            end
+        end)
+    end
+})
+
+-- Textbox để nhập số tiền cần xoá
+1m$gl[#1m$gl+1] = Tab3:CreateInput({
+    Name = "Enter amount money",
+    SectionParent = Section3,
+    PlaceholderText = "Số tiền (VD: 1000)",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num then
+            num = -num
+            local args = {
+                [1] = tostring(num)
+            }
+            game:GetService("ReplicatedStorage").CratesUtilities.Remotes.RemoveMoney:FireServer(unpack(args))
+        end
+    end
+})
+
+-- Nút fix tiền (xoá sạch)
+1m$gl[#1m$gl+1] = Tab3:CreateButton({
+    Name = "Fix Money",
+    SectionParent = Section3,
+    Interact = "Run",
+    Callback = function()
+        local args = {
+            [1] = -9223372036854776000
+        }
+        game:GetService("ReplicatedStorage").CratesUtilities.Remotes.RemoveMoney:FireServer(unpack(args))
+    end
+})
 
 
 
