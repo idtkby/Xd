@@ -95,6 +95,7 @@ local Default = Window:CreateTab("Default")
 local Tab = Window:CreateTab("Trench War", 6034985497)
 local Tab2 = Window:CreateTab("Vacation ✈️ (Story)", 6034985497)
 local Tab3 = Window:CreateTab("The $1M Glass Bridge", 6034985497)
+local Tab4 = Window:CreateTab("Floppa: Tower Defense", 6034985497)
 local Mtab = Window:CreateTab("Misc")
 
 
@@ -378,6 +379,80 @@ end
 
 
 
+
+
+
+
+
+
+
+
+-- Tab4 - Floppa: Tower Defense
+local FloTdf = {}
+
+-- Danh sách tower kèm giá
+local towers = {
+    {name = "AgentDog", cost = 25},
+    {name = "Floppa", cost = 50},
+    {name = "Pablo", cost = 175},
+    {name = "Sogga", cost = 150},
+    {name = "Vipee", cost = 100},
+    {name = "JinxCat", cost = 250},
+    {name = "Guppy", cost = 250},
+    {name = "Salado", cost = 250},
+    {name = "MsFloppa", cost = 400},
+    {name = "Nyanko", cost = 375},
+    {name = "CatNip", cost = 300},
+    {name = "ElGato", cost = 400},
+    {name = "Cow", cost = 275},
+    {name = "PartyGato", cost = 600},
+    {name = "PlaceHolderCube", cost = 550},
+    {name = "Doge", cost = 480},
+    {name = "Gyakko", cost = 525},
+    {name = "Chomik", cost = 650},
+    {name = "Critter", cost = 700},
+    {name = "Chop", cost = 750},
+    {name = "RocketCat", cost = 800},
+    {name = "Golly", cost = 900},
+    {name = "Ember", cost = 1250},
+    {name = "Capybara", cost = 1500},
+    {name = "Gatito", cost = 1450},
+    {name = "CatBase", cost = 1750},
+    {name = "Kotek", cost = 2500},
+    {name = "FloppaGunner", cost = 7150},
+}
+
+-- Sắp xếp theo cost tăng dần
+table.sort(towers, function(a, b)
+    return a.cost < b.cost
+end)
+
+local T4T = Tab4:CreateSection("Towers", false)
+
+-- Tạo nút cho từng tower
+for _, tower in ipairs(towers) do
+    FloTdf[#FloTdf + 1] = Tab4:CreateButton({
+        Name = tower.name .. " [cost $" .. tower.cost .. "]",
+        SectionParent = T4T,
+        Callback = function()
+            local player = game.Players.LocalPlayer
+            local args = {
+                [1] = tower.name,
+                [2] = CFrame.new(player.Character.HumanoidRootPart.Position) * CFrame.Angles(0, 0, 0)
+            }
+            game:GetService("ReplicatedStorage").Functions.SpawnTower:InvokeServer(unpack(args))
+        end
+    })
+end
+
+-- Khóa toàn bộ khi không ở đúng Place
+if game.PlaceId ~= 5961054350 then
+    task.defer(function()
+        for _, element in pairs(FloTdf) do
+            element:Lock("In Game only")
+        end
+    end)
+end
 
 
 
