@@ -533,6 +533,15 @@ end)
 
 
 Mtab:CreateButton({
+    Name = "Esp near part",
+    SectionParent = Mtab1,
+    Interact = "esp part",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/espnearpart"))()
+    end
+})
+
+Mtab:CreateButton({
     Name = "inf edit",
     SectionParent = Mtab1,
     Interact = "Run",
