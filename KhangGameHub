@@ -46,14 +46,15 @@ Tab:CreateButton({
         g = hookfunction(wait, function(seconds)
             return g(0)
         end)
-        print("HI")
+        
     end
 })
 
 Tab:CreateButton({
     Name = "Hitbox Gui",
+    SectionParent = Section,
     Interact = "Run",
     Callback = function()
-        
+        loadstring(game:HttpGet("https://scriptblox.com/raw/Universal-Script-hitbox-expander-real-good-7163"))()
     end
 })
