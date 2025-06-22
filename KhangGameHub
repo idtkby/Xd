@@ -241,7 +241,7 @@ Mtab:CreateButton({
     SectionParent = Mtab1,
     Interact = "Run",
     Callback = function()
-        
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/infedit"))()
     end
 })
 
