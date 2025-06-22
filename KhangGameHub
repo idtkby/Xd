@@ -37,7 +37,7 @@ local Window = ArrayField:CreateWindow({
 })
 
 local Default = Window:CreateTab("Default")
-local Tab = Window:CreateTab("Trench War", 4483362458)
+local Tab = Window:CreateTab("Trench War", 6034985497)
 local Mtab = Window:CreateTab("Misc", 6031265988)
 
 
@@ -91,6 +91,18 @@ TW[#TW+1] = Tab:CreateButton({
         loadstring(game:HttpGet("https://scriptblox.com/raw/Universal-Script-hitbox-expander-real-good-7163"))()
     end
 })
+
+local T2 = Tab:CreateSection("Misc", false)
+
+TW[#TW+1] = Tab:CreateButton({
+    Name = "TrenchWar Gui",
+    SectionParent = T2,
+    Interact = "Run",
+    Callback = function()
+        loadstring(game:HttpGet(""))()
+    end
+})
+
 
 -- Khóa các nút nếu không đúng game.PlaceId
 if game.PlaceId ~= 6654918151 then
