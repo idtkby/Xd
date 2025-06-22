@@ -1,0 +1,58 @@
+local Players = game:GetService("Players")
+
+-- Kiá»ƒm tra model cĂ³ pháº£i nhĂ¢n váº­t ngÆ°á»i chÆ¡i khĂ´ng
+local function isPlayerCharacter(model)
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player.Character == model then
+			return true
+		end
+	end
+	return false
+end
+
+-- ThĂªm ESP + Highlight Ä‘á»
+local function espRedItalic(npc)
+	if npc:IsA("Model") 
+		and not isPlayerCharacter(npc)
+		and npc:FindFirstChild("HumanoidRootPart") 
+		and npc:FindFirstChildOfClass("Humanoid")
+		and not npc:FindFirstChild("ESP_RedItalic") then
+
+		-- BillboardGui (ESP chá»¯)
+		local billboard = Instance.new("BillboardGui")
+		billboard.Name = "ESP_RedItalic"
+		billboard.Size = UDim2.new(0, 100, 0, 40)
+		billboard.Adornee = npc.HumanoidRootPart
+		billboard.AlwaysOnTop = true
+		billboard.Parent = npc
+
+		local label = Instance.new("TextLabel", billboard)
+		label.Size = UDim2.new(1, 0, 1, 0)
+		label.BackgroundTransparency = 1
+		label.Text = npc.Name
+		label.TextColor3 = Color3.fromRGB(255, 0, 0) -- MĂ u Ä‘á»
+		label.TextStrokeTransparency = 0.4
+		label.Font = Enum.Font.Bodoni
+		label.TextScaled = true
+
+		-- Highlight viá»n Ä‘á»
+		local highlight = Instance.new("Highlight")
+		highlight.Name = "ESP_RedOutline"
+		highlight.FillColor = Color3.fromRGB(255, 0, 0)
+		highlight.FillTransparency = 1
+		highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+		highlight.OutlineTransparency = 0.1
+		highlight.Parent = npc
+	end
+end
+
+-- QuĂ©t ban Ä‘áº§u
+for _, npc in pairs(workspace:GetDescendants()) do
+	espRedItalic(npc)
+end
+
+-- Tá»± Ä‘á»™ng thĂªm ESP khi NPC má»›i xuáº¥t hiá»‡n
+workspace.DescendantAdded:Connect(function(obj)
+	task.wait()
+	espRedItalic(obj)
+end)
