@@ -7,8 +7,8 @@ local Window = ArrayField:CreateWindow({
     LoadingSubtitle = "Script by khang",
     ConfigurationSaving = {
         Enabled = true,
-        FolderName = nil,
-        FileName = "ArrayField"
+        FolderName = "KhangHGGui",
+        FileName = "KhangHubKK"
     },
     Discord = {
         Enabled = false,
@@ -37,11 +37,11 @@ local Window = ArrayField:CreateWindow({
 })
 
 local Tab = Window:CreateTab("Trench War", 4483362458)
-local Tab = Tab:CreateSection("Main", false)
+local T1 = Tab:CreateSection("Main", false)
 
 Tab:CreateButton({
     Name = "No cooldown",
-    SectionParent = Tab,
+    SectionParent = T1,
     Interact = "Run",
     Callback = function()
         g = hookfunction(wait, function(seconds)
@@ -53,7 +53,7 @@ Tab:CreateButton({
 
 Tab:CreateButton({
     Name = "Hitbox Gui",
-    SectionParent = Tab,
+    SectionParent = T1,
     Interact = "Run",
     Callback = function()
         loadstring(game:HttpGet("https://scriptblox.com/raw/Universal-Script-hitbox-expander-real-good-7163"))()
