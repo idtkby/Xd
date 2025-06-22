@@ -107,8 +107,8 @@ Default:CreateParagraph({
 }, Defaultinfo) -- Section này là section thật (false), KHÔNG phải Label
 
 Default:CreateParagraph({
-    Title = "Update",
-    Content = "[+] Add Trench War\n-- Version 1.0 --"
+    Title = "Version",
+    Content = "-- Version 1.0 --"
 }, Defaultinfo) -- Section này là section thật (false), KHÔNG phải Label
 
 
@@ -236,15 +236,6 @@ VacationST[#VacationST+1] = Tab2:CreateButton({
         autoESP(function(p)
 			return p:IsA("BasePart") and p.Name == "Log"
 		end, Color3.fromRGB(140, 75, 0), "Log")
-    end
-})
-
-VacationST[#VacationST+1] = Tab2:CreateButton({
-    Name = "Esp NPC",
-    SectionParent = T2T,
-    Interact = "Run",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/espnpc"))()
     end
 })
 
@@ -388,6 +379,15 @@ Mtab:CreateButton({
     Interact = "Run",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/infedit"))()
+    end
+})
+
+Mtab:CreateButton({
+    Name = "Esp NPC",
+    SectionParent = Mtab1,
+    Interact = "Run",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/espnpc"))()
     end
 })
 
