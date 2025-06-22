@@ -204,6 +204,17 @@ VacationST[#VacationST+1] = Tab2:CreateButton({
     SectionParent = 2T,
     Interact = "Run",
     Callback = function()
+        autoESP(function(p)
+			return p:IsA("BasePart") and p.Name == "Log"
+		end, Color3.fromRGB(140, 75, 0), "Log")
+    end
+})
+
+VacationST[#VacationST+1] = Tab2:CreateButton({
+    Name = "Esp NPC",
+    SectionParent = 2T,
+    Interact = "Run",
+    Callback = function()
         
     end
 })
