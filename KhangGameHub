@@ -447,24 +447,32 @@ for _, tower in ipairs(towers) do
     })
 end
 
-local T4T2 = Tab4:CreateSection("Towers (Special)", false)
-local specialTowers = {
-    "Bunny",
-    "Catto",
-    "ChromeDino",
-    "CorruptedFloppa",
-    "FloppaGolem",
-    "HallowsJinx"
+-- Danh sách tower kèm giá
+local towers = {
+    {name = "Bunny", cost = 168},
+    {name = "Catto", cost = 168},
+    {name = "ChromeDino", cost = 100},
+    {name = "CorruptedFloppa", cost = 100},
+    {name = "FloppaGolem", cost = 600},
+    {name = "HallowsJinx", cost = 168},
 }
 
-for _, name in ipairs(specialTowers) do
+-- Sắp xếp theo cost tăng dần
+table.sort(towers, function(a, b)
+    return a.cost < b.cost
+end)
+
+local T4T2 = Tab4:CreateSection("Towers Special", false)
+
+-- Tạo nút cho từng tower
+for _, tower in ipairs(towers) do
     FloTdf[#FloTdf + 1] = Tab4:CreateButton({
-        Name = name,
+        Name = tower.name .. " [cost $" .. tower.cost .. "]",
         SectionParent = T4T2,
         Callback = function()
             local player = game.Players.LocalPlayer
             local args = {
-                [1] = name,
+                [1] = tower.name,
                 [2] = CFrame.new(player.Character.HumanoidRootPart.Position) * CFrame.Angles(0, 0, 0)
             }
             game:GetService("ReplicatedStorage").Functions.SpawnTower:InvokeServer(unpack(args))
@@ -507,9 +515,9 @@ local TowerStats = {
     {Name = "Special ---------------", DMG = "nil", CD = "nil"}, 
     {Name = "Bunny", DMG = "idk", CD = "idk"}, 
     {Name = "Catto", DMG = "idk", CD = "idk"}, 
-    {Name = "ChromeDino", DMG = "idk", CD = "idk"}, 
-    {Name = "CorruptedFloppa", DMG = "idk", CD = "idk"}, 
-    {Name = "HallowsJinx", DMG = "idk", CD = "idk"}, 
+    {Name = "ChromeDino", DMG = "5", CD = "1"}, 
+    {Name = "CorruptedFloppa", DMG = "7", CD = "1"}, 
+    {Name = "FloppaGolem", DMG = "20", CD = "1"}, 
     {Name = "HallowsJinx", DMG = "idk", CD = "idk"},
 }
 for _, tower in ipairs(TowerStats) do
