@@ -40,7 +40,7 @@ local Tab = Window:CreateTab("Trench War", 4483362458)
 local Tab = Tab:CreateSection("Main", false)
 
 Tab:CreateButton({
-    Name = "no cooldown",
+    Name = "No cooldown",
     SectionParent = Tab,
     Interact = "Run",
     Callback = function()
