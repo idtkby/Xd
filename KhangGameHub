@@ -38,6 +38,7 @@ local Window = ArrayField:CreateWindow({
 
 local Default = Window:CreateTab("Default")
 local Tab = Window:CreateTab("Trench War", 6034985497)
+local Tab2 = Window:CreateTab("Vacation ✈️ (Story)", 6034985497)
 local Mtab = Window:CreateTab("Misc", 6031265988)
 
 
@@ -119,14 +120,59 @@ end
 
 
 
+-- Tạo bảng chứa tất cả element cần khóa
+local VacationST = {} -- Vacation ✈️ (Story) Elements
+
+-- Tab2
+local 2T = Tab2:CreateSection("Main", false)
+
+VacationST[#VacationST+1] = Tab2:CreateToggle({
+    Name = "Enable Respawn [OP]",
+    CurrentValue = false,
+    Callback = function(state)
+        if state then
+            local Players = game:GetService("Players")
+            local LocalPlayer = Players.LocalPlayer
+            local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+
+            VacationST._RespawnConnection = Character:WaitForChild("Humanoid").Died:Connect(function()
+                task.wait(1)
+                game:GetService("ReplicatedStorage").Respawn:FireServer()
+            end)
+        else
+            if VacationST._RespawnConnection then
+                VacationST._RespawnConnection:Disconnect()
+                VacationST._RespawnConnection = nil
+            end
+        end
+    end
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 -- Tab Main Mtab
-local Mtab1 = Mtab:CreateSection("Vacation ✈️ (Story)")
+local Mtab1 = Mtab:CreateSection("Misc")
 Mtab:CreateButton({
-    Name = "Respawn",
+    Name = "inf edit",
     SectionParent = Mtab1,
     Interact = "Run",
     Callback = function()
-        game:GetService("ReplicatedStorage").Respawn:FireServer()
+        
     end
 })
 
