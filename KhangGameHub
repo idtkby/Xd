@@ -221,6 +221,44 @@ VacationST[#VacationST+1] = Tab2:CreateButton({
 
 
 
+-- Khóa các nút nếu không đúng game.PlaceId
+if game.PlaceId ~= 3703119491 then
+    task.defer(function()
+        for _, element in pairs(VacationST) do
+            element:Lock("In Game only")
+        end
+    end)
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Tab Main Mtab
+local Mtab1 = Mtab:CreateSect      element:Lock("Trench War only")
+        end
+    end)
+end
+
+ then
+    task.defer(function()
+        for _, element in pairs(TW) do
+            element:Lock("Trench War only")
+        end
+    end)
+end
+
+
 
 
 
