@@ -37,11 +37,11 @@ local Window = ArrayField:CreateWindow({
 })
 
 local Default = Window:CreateTab("Default")
-local Defaultinfo = Default:CreateSection("Info", false)
+local Defaultinfo = Default:CreateSection("Info", true)
 
 Default:CreateParagraph({
     Title = "This Script",
-    Content = "•Script made by Khang\n•Ytub: KhangRobloxScr\n•Username: concacrobloxntkphuh"
+    Content = "Script made by Khang\nYtub: KhangRobloxScr\nUsername: concacrobloxntkphuh"
 }, Defaultinfo) -- Section này là section thật (false), KHÔNG phải Label
 
 Default:CreateParagraph({
@@ -53,8 +53,10 @@ Default:CreateParagraph({
 local Tab = Window:CreateTab("Trench War", 4483362458)
 
 -- Nếu không đúng gameID thì lock
-if game.PlaceId ~= 6654918151 then
-    Tab:Lock("Locked")
+if game.PlaceId ~= 6654918151 then  
+    task.defer(function()
+        Tab:Lock("Locked")
+    end)
 end
 
 local T1 = Tab:CreateSection("Main", false)
