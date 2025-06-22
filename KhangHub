@@ -82,7 +82,7 @@ InfoTab:CreateSection("GameHub")
 
 InfoTab:CreateParagraph({
 	Title = "Game Hub",
-	Content = -- Version 1.0 --",
+	Content = "-- Version 1.0 --",
 })
 
 InfoTab:CreateSection("Script owner")
