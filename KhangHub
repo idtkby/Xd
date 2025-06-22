@@ -78,6 +78,13 @@ InfoTab:CreateParagraph({
 	Content = "[+] Add esp Candle\n [+] Add Auto pick up items\n  [+] Fix lag esp Doll\n-- Version 2.3 --",
 })
 
+InfoTab:CreateSection("GameHub")
+
+InfoTab:CreateParagraph({
+	Title = "Game Hub",
+	Content = -- Version 1.0 --",
+})
+
 InfoTab:CreateSection("Script owner")
 
 InfoTab:CreateParagraph({
@@ -98,7 +105,7 @@ local tp = Window:CreateTab("Teleport Game", "map")
 
 HbTab:CreateSection("Dead Rails (Game)")
 HbTab:CreateButton({
-    Name = "Dead Rails (Game) [Script]",
+    Name = "Dead Rails (Game)",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Dead%20rails%20hub"))()
     end,
@@ -114,7 +121,7 @@ tp:CreateButton({
 
 HbTab:CreateSection("Mansion & Hospital")
 HbTab:CreateButton({
-    Name = "Eyes The Horror Game [Script]",
+    Name = "Eyes The Horror Game",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Eyes%20hub"))()
     end,
@@ -137,7 +144,7 @@ tp:CreateButton({
 
 HbTab:CreateSection("The Forest")
 HbTab:CreateButton({
-    Name = "7 Days To Live [Script]",
+    Name = "7 Days To Live",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/7DaysForest"))()
     end,
@@ -153,7 +160,7 @@ tp:CreateButton({
 
 HbTab:CreateSection("Nightmare")
 HbTab:CreateButton({
-    Name = "AOONI Nightmare [Script]",
+    Name = "AOONI Nightmare",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/AOONI%20Nightmare%20UI"))()
     end,
@@ -170,14 +177,14 @@ tp:CreateButton({
 HbTab:CreateSection("PETAPETA")
 tp:CreateSection("Petapeta")
 HbTab:CreateButton({
-    Name = "PETAPETA | Level6 [Script]",
+    Name = "PETAPETA | Level6",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/PETAPETA%7C%20Level%206%20UI"))()
     end,
 })
 HbTab:CreateSection("School")
 HbTab:CreateButton({
-    Name = "PETAPETA: School of Nightmares [Script]",
+    Name = "PETAPETA: School of Nightmares",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/PETAPETA%3A%20School%20of%20Nightmares%20UI"))()
     end,
@@ -202,6 +209,14 @@ tp:CreateSection("Hey!!!")
 tp:CreateParagraph({
 	Title = "Note",
 	Content = "•Some games will not be able to teleport.\n•Có một số game không sử dụng tp đc",
+})
+
+HbTab:CreateSection("GameHub")
+HbTab:CreateButton({
+    Name = "Game Hub",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/KhangGameHub"))()
+    end,
 })
 
 
