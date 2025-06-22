@@ -1,0 +1,90 @@
+task.spawn(function()
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local LocalPlayer = Players.LocalPlayer
+    local maxDistance = 10
+    local espColor = Color3.fromRGB(255, 255, 255)
+    local outlineColor = Color3.fromRGB(0, 0, 0)
+    local activeESP = {}
+
+    local function isFromAnyPlayer(part)
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr.Character and part:IsDescendantOf(plr.Character) then
+                return true
+            end
+        end
+        return false
+    end
+
+local function createESP(part)
+    if activeESP[part] or part:FindFirstChild("PartESP") then return end
+
+    local gui = Instance.new("BillboardGui")
+    gui.Name = "PartESP"
+    gui.AlwaysOnTop = true
+    gui.Size = UDim2.new(0, 100, 0, 20)
+    gui.StudsOffset = Vector3.new(0, 2, 0)
+    gui.Parent = part
+
+    local text = Instance.new("TextLabel")
+    text.Size = UDim2.new(1, 0, 1, 0)
+    text.BackgroundTransparency = 1
+    text.Text = part.Name
+    text.TextColor3 = espColor
+    text.TextStrokeColor3 = outlineColor
+    text.TextStrokeTransparency = 0
+    text.TextScaled = true
+    text.Font = Enum.Font.GothamBold
+    text.Parent = gui
+
+    activeESP[part] = gui
+end
+
+    local function removeESP(part)
+        if activeESP[part] then
+            activeESP[part]:Destroy()
+            activeESP[part] = nil
+        end
+    end
+
+    local function getClosestPointOnPart(part, point)
+        local relative = part.CFrame:PointToObjectSpace(point)
+        local halfSize = part.Size / 2
+        local clamped = Vector3.new(
+            math.clamp(relative.X, -halfSize.X, halfSize.X),
+            math.clamp(relative.Y, -halfSize.Y, halfSize.Y),
+            math.clamp(relative.Z, -halfSize.Z, halfSize.Z)
+        )
+        return part.CFrame:PointToWorldSpace(clamped)
+    end
+
+    task.spawn(function()
+        while true do
+            task.wait(0.5)
+            local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not root then continue end
+
+            local rootPos = root.Position
+            local nearby = {}
+
+            for _, part in ipairs(workspace:GetDescendants()) do
+                if part:IsA("BasePart") and not isFromAnyPlayer(part) and part:IsDescendantOf(workspace) then
+                    local closestPoint = getClosestPointOnPart(part, rootPos)
+                    local dist = (closestPoint - rootPos).Magnitude
+                    if dist <= maxDistance then
+                        nearby[part] = true
+                        if not activeESP[part] then
+                            createESP(part)
+                        end
+                    end
+                end
+            end
+
+            for part, _ in pairs(activeESP) do
+                if not nearby[part] or not part:IsDescendantOf(workspace) then
+                    removeESP(part)
+                end
+            end
+        end
+    end)
+end)
