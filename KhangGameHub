@@ -58,3 +58,5 @@ Tab:CreateButton({
         loadstring(game:HttpGet("https://scriptblox.com/raw/Universal-Script-hitbox-expander-real-good-7163"))()
     end
 })
+
+local Mtab = Window:CreateTab("Misc", "menu")
