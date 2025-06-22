@@ -387,6 +387,7 @@ end
 
 
 
+
 -- Tab4 - Floppa: Tower Defense
 local FloTdf = {}
 
@@ -420,6 +421,7 @@ local towers = {
     {name = "CatBase", cost = 1750},
     {name = "Kotek", cost = 2500},
     {name = "FloppaGunner", cost = 7150},
+    {name = "WawaCat",cost = 500},
 }
 
 -- Sắp xếp theo cost tăng dần
@@ -445,6 +447,78 @@ for _, tower in ipairs(towers) do
     })
 end
 
+local T4T2 = Tab4:CreateSection("Towers (Special)", false)
+local specialTowers = {
+    "Bunny",
+    "Catto",
+    "ChromeDino",
+    "CorruptedFloppa",
+    "FloppaGolem",
+    "HallowsJinx"
+}
+
+for _, name in ipairs(specialTowers) do
+    FloTdf[#FloTdf + 1] = Tab4:CreateButton({
+        Name = name,
+        SectionParent = T4T2,
+        Callback = function()
+            local player = game.Players.LocalPlayer
+            local args = {
+                [1] = name,
+                [2] = CFrame.new(player.Character.HumanoidRootPart.Position) * CFrame.Angles(0, 0, 0)
+            }
+            game:GetService("ReplicatedStorage").Functions.SpawnTower:InvokeServer(unpack(args))
+        end
+    })
+end
+
+local T4T3 = Tab4:CreateSection("Note", false)
+
+local TowerStats = {
+    {Name = "AgentDog", DMG = "11", CD = "2.8"},
+    {Name = "Floppa", DMG = "4", CD = "1.2"},
+    {Name = "Yipee", DMG = "9", CD = "14"},
+    {Name = "Sogga", DMG = "8", CD = "1.5"},
+    {Name = "Pablo", DMG = "4", CD = "2.5"},
+    {Name = "Salado", DMG = "12", CD = "1.2"},
+    {Name = "Guppy", DMG = "3", CD = "0.5"},
+    {Name = "JinxCat", DMG = "7", CD = "5"},
+    {Name = "Cow", DMG = "7", CD = "0.95"}, 
+    {Name = "CatNip", DMG = "Far", CD = "mer"},
+    {Name = "Nyanko", DMG = "2", CD = "1.3"},
+    {Name = "MsFloppa", DMG = "80", CD = "idk"},
+    {Name = "ElGato", DMG = "2", CD = "0.55"},
+    {Name = "Doge", DMG = "25", CD = "4.5"}, 
+    {Name = "WawaCat", DMG = "18", CD = "2.5"}, 
+    {Name = "Gyakkko", DMG = "8", CD = "0.9"}, 
+    {Name = "PlaceHolderCube", DMG = "1", CD = "0"}, 
+    {Name = "PartyGato", DMG = "35", CD = "3.8"}, 
+    {Name = "Chomik", DMG = "450", CD = "5"}, 
+    {Name = "Citter", DMG = "8", CD = "2"}, 
+    {Name = "Chop", DMG = "18", CD = "2.7"}, 
+    {Name = "RocketCat", DMG = "13", CD = "3"}, 
+    {Name = "Golly", DMG = "20", CD = "25"}, 
+    {Name = "Ember", DMG = "3", CD = "0"}, 
+    {Name = "Gatito", DMG = "17", CD = "0.8"}, 
+    {Name = "Capybara", DMG = "Boo", CD = "ter"}, 
+    {Name = "CatBase", DMG = "Summon 5 Cat", CD = "idk"}, 
+    {Name = "Kotek", DMG = "1", CD = "20"}, 
+    {Name = "FloppaGunner", DMG = "5", CD = "0.01"}, 
+    {Name = "Special ---------------", DMG = "nil", CD = "nil"}, 
+    {Name = "Bunny", DMG = "idk", CD = "idk"}, 
+    {Name = "Catto", DMG = "idk", CD = "idk"}, 
+    {Name = "ChromeDino", DMG = "idk", CD = "idk"}, 
+    {Name = "CorruptedFloppa", DMG = "idk", CD = "idk"}, 
+    {Name = "HallowsJinx", DMG = "idk", CD = "idk"}, 
+    {Name = "HallowsJinx", DMG = "idk", CD = "idk"},
+}
+for _, tower in ipairs(TowerStats) do
+    Tab4:CreateParagraph({
+        Title = tower.Name,
+        Content = "DMG: " .. tower.DMG .. "\nCD: " .. tower.CD
+    }, T4T3)
+end
+
 -- Khóa toàn bộ khi không ở đúng Place
 if game.PlaceId ~= 9597943779 then
     task.defer(function()
@@ -453,7 +527,6 @@ if game.PlaceId ~= 9597943779 then
         end
     end)
 end
-
 
 
 
