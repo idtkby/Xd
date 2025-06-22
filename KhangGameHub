@@ -500,6 +500,39 @@ Mtab:CreateToggle({
 })
 
 Mtab:CreateButton({
+    Name = "Nrcam",
+    SectionParent = Mtab2,
+    Interact = "Run",
+    Callback = function()
+        local player = game:GetService("Players").LocalPlayer
+
+-- Giá»¯ DevTouchCameraMode luĂ´n lĂ  Classic
+local function setTouchCamera()
+    if player then
+        player.DevTouchCameraMode = Enum.DevTouchCameraMovementMode.Classic
+    end
+end
+
+setTouchCamera()
+player:GetPropertyChangedSignal("DevTouchCameraMode"):Connect(setTouchCamera)
+
+-- Giá»¯ DevComputerCameraMode luĂ´n lĂ  Classic
+task.spawn(function()
+    local function setComputerCamera()
+        if player then
+            player.DevComputerCameraMode = Enum.DevComputerCameraMovementMode.Classic
+        end
+    end
+
+    setComputerCamera()
+    player:GetPropertyChangedSignal("DevComputerCameraMode"):Connect(setComputerCamera)
+end)
+    end
+})
+
+
+
+Mtab:CreateButton({
     Name = "inf edit",
     SectionParent = Mtab1,
     Interact = "Run",
