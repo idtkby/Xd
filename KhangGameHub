@@ -37,18 +37,18 @@ local Window = ArrayField:CreateWindow({
 })
 
 local Default = Window:CreateTab("Default")
-
-local Mtab = Window:CreateTab("Misc", 6031265988)
-local Defaultinfo = Default:CreateSection("Info", true)
 local Tab = Window:CreateTab("Trench War", 4483362458)
+local Mtab = Window:CreateTab("Misc", 6031265988)
 
--- Nếu không đúng gameID thì lock
-if game.PlaceId ~= 6654918151 then  
-    task.defer(function()
-        Tab:Lock("Locked")
-    end)
-end
 
+
+
+
+
+
+
+-- Default
+local Defaultinfo = Default:CreateSection("Info", true)
 
 Default:CreateParagraph({
     Title = "This Script",
@@ -60,10 +60,18 @@ Default:CreateParagraph({
     Content = "[+] Add Trench War\n-- Version 1.0 --"
 }, Defaultinfo) -- Section này là section thật (false), KHÔNG phải Label
 
--- Tab Trench war, Tab
+
+
+
+
+-- Tab
 local T1 = Tab:CreateSection("Main", false)
 
-Tab:CreateButton({
+-- Tạo bảng chứa tất cả element cần khóa
+local TW = {} -- Trench War Elements
+
+-- Nút 1
+TW[#TW+1] = Tab:CreateButton({
     Name = "No cooldown",
     SectionParent = T1,
     Interact = "Run",
@@ -71,11 +79,11 @@ Tab:CreateButton({
         g = hookfunction(wait, function(seconds)
             return g(0)
         end)
-        
     end
 })
 
-Tab:CreateButton({
+-- Nút 2
+TW[#TW+1] = Tab:CreateButton({
     Name = "Hitbox Gui",
     SectionParent = T1,
     Interact = "Run",
@@ -83,6 +91,21 @@ Tab:CreateButton({
         loadstring(game:HttpGet("https://scriptblox.com/raw/Universal-Script-hitbox-expander-real-good-7163"))()
     end
 })
+
+-- Khóa các nút nếu không đúng game.PlaceId
+if game.PlaceId ~= 6654918151 then
+    task.defer(function()
+        for _, element in pairs(TW) do
+            element:Lock("Trench War only")
+        end
+    end)
+end
+
+
+
+
+
+
 
 -- Tab Main Mtab
 local Mtab1 = Mtab:CreateSection("VACATION STORY🛫")
@@ -94,3 +117,4 @@ Mtab:CreateButton({
         game:GetService("ReplicatedStorage").Respawn:FireServer()
     end
 })
+
