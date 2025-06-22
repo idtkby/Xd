@@ -1,0 +1,59 @@
+getgenv().SecureMode = false
+local ArrayField = loadstring(game:HttpGet("https://raw.githubusercontent.com/Hosvile/Refinement/main/MC%3AArrayfield%20Library"))()
+
+local Window = ArrayField:CreateWindow({
+    Name = "Game Hub",
+    LoadingTitle = "Loading...",
+    LoadingSubtitle = "Script by khang",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = nil,
+        FileName = "ArrayField"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "sirius",
+        RememberJoins = true
+    },
+    KeySystem = true,
+    KeySettings = {
+        Title = "ArrayField",
+        Subtitle = "Key System",
+        Note = "Ytub: KhangRobloxScr",
+        FileName = "ArrayFieldsKeys",
+        SaveKey = false,
+        GrabKeyFromSite = false,
+        Key = {"Hello", "Bye"},
+        Actions = {
+            [1] = {
+                Text = 'Click here to getkey',
+                OnPress = function()
+                    setclipboard("Hello")
+                end,
+            }
+        },
+    }
+})
+
+local Tab = Window:CreateTab("Trench War", 4483362458)
+local Section = Tab:CreateSection("Main", false)
+
+Tab:CreateButton({
+    Name = "no cooldown",
+    SectionParent = Section,
+    Interact = "Run",
+    Callback = function()
+        g = hookfunction(wait, function(seconds)
+            return g(0)
+        end)
+        print("HI")
+    end
+})
+
+Tab:CreateButton({
+    Name = "Hitbox Gui",
+    Interact = "Run",
+    Callback = function()
+        
+    end
+})
