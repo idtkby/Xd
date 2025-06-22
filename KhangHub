@@ -212,28 +212,37 @@ tp:CreateParagraph({
 })
 
 HbTab:CreateSection("GameHub")
-HbTab:CreateButton({          
-    Name = "Game Hub",          
-    Callback = function()  
+HbTab:CreateButton({
+    Name = "Game Hub",
+    Callback = function()
         local success, err = pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/KhangGameHub"))()
+            local scriptContent = game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/KhangGameHub")
+            loadstring(scriptContent)() -- Thử thực thi
         end)
 
         if success then
-            -- Nếu Rayfield GUI đang tồn tại thì xoá
-            local ray = game:GetService("CoreGui"):FindFirstChild("Rayfield")
-            if ray then ray:Destroy() end
+            -- Nếu thực thi thành công, xoá Rayfield GUI
+            if game.CoreGui:FindFirstChild("Rayfield") then
+                game.CoreGui.Rayfield:Destroy()
+            end
         else
-            warn("Unable to load Game Hub: " .. tostring(err))
-            game.StarterGui:SetCore("SendNotification", {
+            -- Nếu lỗi (executor không hỗ trợ), hiện thông báo lỗi
+            local RayfieldLibrary = require(game.CoreGui:FindFirstChild("Rayfield").Client.UI.Elements.Library) -- tuỳ bản bạn có thể bỏ dòng này nếu có biến sẵn
+            RayfieldLibrary:Notify({
                 Title = "Error",
-                Text = "Your Executor is not compatible with this script.",
-                Duration = 5
+                Content = "Your Executor does not match the script",
+                Duration = 5,
+                Image = 4483362458,
+                Actions = {
+                    Ignore = {
+                        Name = "Ok",
+                        Callback = function() end
+                    }
+                }
             })
         end
-    end,          
+    end
 })
-
 
 end)
 
