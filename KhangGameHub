@@ -37,7 +37,18 @@ local Window = ArrayField:CreateWindow({
 })
 
 local Default = Window:CreateTab("Default")
+
+local Mtab = Window:CreateTab("Misc", 6031265988)
 local Defaultinfo = Default:CreateSection("Info", true)
+local Tab = Window:CreateTab("Trench War", 4483362458)
+
+-- Nếu không đúng gameID thì lock
+if game.PlaceId ~= 6654918151 then  
+    task.defer(function()
+        Tab:Lock("Locked")
+    end)
+end
+
 
 Default:CreateParagraph({
     Title = "This Script",
@@ -49,16 +60,7 @@ Default:CreateParagraph({
     Content = "[+] Add Trench War\n-- Version 1.0 --"
 }, Defaultinfo) -- Section này là section thật (false), KHÔNG phải Label
 
--- Sau khi tạo tab
-local Tab = Window:CreateTab("Trench War", 4483362458)
-
--- Nếu không đúng gameID thì lock
-if game.PlaceId ~= 6654918151 then  
-    task.defer(function()
-        Tab:Lock("Locked")
-    end)
-end
-
+-- Tab Trench war, Tab
 local T1 = Tab:CreateSection("Main", false)
 
 Tab:CreateButton({
@@ -82,7 +84,7 @@ Tab:CreateButton({
     end
 })
 
-local Mtab = Window:CreateTab("Misc", 6031265988)
+-- Tab Main Mtab
 local Mtab1 = Mtab:CreateSection("VACATION STORY🛫")
 Mtab:CreateButton({
     Name = "Respawn",
