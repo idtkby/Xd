@@ -94,7 +94,7 @@ end
 local Default = Window:CreateTab("Default")
 local Tab = Window:CreateTab("Trench War", 6034985497)
 local Tab2 = Window:CreateTab("Vacation ✈️ (Story)", 6034985497)
-local Tab3 = Window:CreateTab("The $1,000,000 Glass Bridge", 6034985497)
+local Tab3 = Window:CreateTab("The $1M Glass Bridge", 6034985497)
 local Mtab = Window:CreateTab("Misc")
 
 
@@ -114,7 +114,7 @@ Default:CreateParagraph({
 
 Default:CreateParagraph({
     Title = "Version",
-    Content = "-- Version 1.0 --"
+    Content = "-- Version 1.5 --"
 }, Defaultinfo) -- Section này là section thật (false), KHÔNG phải Label
 
 
