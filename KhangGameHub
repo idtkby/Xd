@@ -23,7 +23,7 @@ local Window = ArrayField:CreateWindow({
     },
     KeySystem = true,
     KeySettings = {
-        Title = "ArrayField",
+        Title = "KhangHub",
         Subtitle = "Key System",
         Note = "Ytub: KhangRobloxScr",
         FileName = "KGameHKeys",
@@ -393,7 +393,105 @@ end
 
 
 -- Tab Main Mtab
+local Mtab2 = Mtab:CreateSection("Player")
 local Mtab1 = Mtab:CreateSection("Misc")
+
+-- Third Person Mode Toggle
+Mtab:CreateToggle({
+    Name = "Third Person Mode",
+    SectionParent = Mtab2,
+    CurrentValue = false,
+    Callback = function(enabled)
+        local player = game.Players.LocalPlayer
+        if enabled then
+            player.CameraMode = Enum.CameraMode.Classic
+            Window:Notify({
+                Title = "Góc nhìn",
+                Content = "Đã chuyển sang Third Person",
+                Duration = 2
+            })
+        else
+            player.CameraMode = Enum.CameraMode.LockFirstPerson
+            Window:Notify({
+                Title = "Góc nhìn",
+                Content = "Đã chuyển sang First Person",
+                Duration = 2
+            })
+        end
+    end,
+})
+
+-- Infinite Jump Toggle
+local infJump
+local infJumpDebounce = false
+
+Mtab:CreateToggle({
+    Name = "InfJump",
+    SectionParent = Mtab2,
+    CurrentValue = false,
+    Callback = function(enabled)
+        if enabled then
+            if infJump then infJump:Disconnect() end
+            infJumpDebounce = false
+            infJump = game:GetService("UserInputService").JumpRequest:Connect(function()
+                if not infJumpDebounce then
+                    infJumpDebounce = true
+                    local humanoid = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+                    if humanoid then
+                        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                    end
+                    task.wait()
+                    infJumpDebounce = false
+                end
+            end)
+        else
+            if infJump then infJump:Disconnect() end
+            infJumpDebounce = false
+        end
+    end,
+})
+
+-- Noclip Toggle
+local Clip = true
+local Noclipping
+local floatName = "HumanoidRootPart"
+
+Mtab:CreateToggle({
+    Name = "Noclip",
+    SectionParent = Mtab2,
+    CurrentValue = false,
+    Callback = function(enabled)
+        local RunService = game:GetService("RunService")
+        local player = game.Players.LocalPlayer
+        if enabled then
+            Clip = false
+            task.wait(0.1)
+            local function NoclipLoop()
+                if not Clip and player.Character then
+                    for _, part in pairs(player.Character:GetDescendants()) do
+                        if part:IsA("BasePart") and part.CanCollide and part.Name ~= floatName then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end
+            Noclipping = RunService.Stepped:Connect(NoclipLoop)
+            Window:Notify({
+                Title = "Noclip",
+                Content = "Noclip Enabled",
+                Duration = 3
+            })
+        else
+            if Noclipping then Noclipping:Disconnect() end
+            Clip = true
+            Window:Notify({
+                Title = "Noclip",
+                Content = "Noclip Disabled",
+                Duration = 3
+            })
+        end
+    end,
+})
 
 -- Khai báo dịch vụ
 local PromptService = game:GetService("ProximityPromptService")
@@ -402,7 +500,7 @@ local Workspace = game:GetService("Workspace")
 -- Toggle: Instant Prompt
 Mtab:CreateToggle({
     Name = "Instant interact",
-    SectionParent = Mtab1,
+    SectionParent = Mtab2,
     CurrentValue = false,
     Callback = function(enabled)
         if enabled then
