@@ -177,6 +177,7 @@ local 2T = Tab2:CreateSection("Main", false)
 
 VacationST[#VacationST+1] = Tab2:CreateToggle({
     Name = "Enable Respawn [OP]",
+    Section = 2T,
     CurrentValue = false,
     Callback = function(state)
         if state then
@@ -198,6 +199,14 @@ VacationST[#VacationST+1] = Tab2:CreateToggle({
 })
 
 
+VacationST[#VacationST+1] = Tab2:CreateButton({
+    Name = "Esp Log",
+    SectionParent = 2T,
+    Interact = "Run",
+    Callback = function()
+        
+    end
+})
 
 
 
