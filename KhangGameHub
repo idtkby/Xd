@@ -36,6 +36,19 @@ local Window = ArrayField:CreateWindow({
     }
 })
 
+local Default = Window:CreateTab("Default")
+local Defaultinfo = Default:CreateSection("Info", false)
+
+Default:CreateParagraph({
+    Title = "This Script",
+    Content = "•Script made by Khang\n•Ytub: KhangRobloxScr\n•Username: concacrobloxntkphuh"
+}, Defaultinfo) -- Section này là section thật (false), KHÔNG phải Label
+
+Default:CreateParagraph({
+    Title = "Update",
+    Content = "[+] Add Trench War\n-- Version 1.0 --"
+}, Defaultinfo) -- Section này là section thật (false), KHÔNG phải Label
+
 -- Sau khi tạo tab
 local Tab = Window:CreateTab("Trench War", 4483362458)
 
