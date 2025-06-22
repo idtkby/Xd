@@ -215,7 +215,7 @@ VacationST[#VacationST+1] = Tab2:CreateButton({
     SectionParent = 2T,
     Interact = "Run",
     Callback = function()
-        
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/espnpc"))()
     end
 })
 
@@ -242,6 +242,15 @@ Mtab:CreateButton({
     Interact = "Run",
     Callback = function()
         
+    end
+})
+
+Mtab:CreateButton({
+    Name = "Player Esp",
+    SectionParent = Mtab1,
+    Interact = "Run",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/PlayerEsp"))()
     end
 })
 
