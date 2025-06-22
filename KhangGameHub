@@ -36,6 +36,55 @@ local Window = ArrayField:CreateWindow({
     }
 })
 
+
+
+
+
+
+
+-- Tạo hàm ESP chung
+local function autoESP(filterFn, color, labelText)
+	task.spawn(function()
+		while true do
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if filterFn(obj) then
+					if not obj:FindFirstChild("AutoESP") then
+						local hl = Instance.new("Highlight")
+						hl.Name = "AutoESP"
+						hl.OutlineColor = color
+						hl.OutlineTransparency = 0
+						hl.FillTransparency = 1
+						hl.Parent = obj
+					end
+					if not obj:FindFirstChild("ESPLabel") and obj:IsA("BasePart") then
+						local bill = Instance.new("BillboardGui", obj)
+						bill.Name = "ESPLabel"
+						bill.Size = UDim2.new(0, 100, 0, 40)
+						bill.StudsOffset = Vector3.new(0, 2, 0)
+						bill.AlwaysOnTop = true
+						local txt = Instance.new("TextLabel", bill)
+						txt.Size = UDim2.new(1, 0, 1, 0)
+						txt.BackgroundTransparency = 1
+						txt.TextColor3 = color
+						txt.TextStrokeTransparency = 0.5
+						txt.Text = labelText or obj.Name
+						txt.Font = Enum.Font.Bodoni
+						txt.TextScaled = true
+					end
+				end
+			end
+			task.wait(5)
+		end
+	end)
+end
+
+
+
+
+
+
+
+
 local Default = Window:CreateTab("Default")
 local Tab = Window:CreateTab("Trench War", 6034985497)
 local Tab2 = Window:CreateTab("Vacation ✈️ (Story)", 6034985497)
