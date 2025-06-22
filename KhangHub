@@ -215,26 +215,33 @@ HbTab:CreateSection("GameHub")
 HbTab:CreateButton({
     Name = "Game Hub",
     Callback = function()
-        local success, result = pcall(function()
-            return loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/KhangGameHub"))()
+        local success, code = pcall(function()
+            return game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/KhangGameHub")
         end)
 
-        if success then
-            KhangHub:Destroy()
-        else
-            Rayfield:Notify({
-                Title = "Error",
-                Content = "Your Executor does not support this.",
-                Duration = 6,
-                Image = 4483362458, -- Biểu tượng lỗi (Roblox ID)
-                Actions = {
-                    Ignore = {
-                        Name = "OK",
-                        Callback = function() end
-                    }
-                }
-            })
+        if success and code then
+            local loadSuccess, runResult = pcall(function()
+                return loadstring(code)()
+            end)
+
+            if loadSuccess then
+                Rayfield:Destroy()
+                return
+            end
         end
+
+        Rayfield:Notify({
+            Title = "Error",
+            Content = "Your Executor does not support this.",
+            Duration = 6,
+            Image = 4483362458,
+            Actions = {
+                OK = {
+                    Name = "OK",
+                    Callback = function() end
+                }
+            }
+        })
     end,
 })
 
