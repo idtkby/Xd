@@ -48,11 +48,11 @@ local Mtab = Window:CreateTab("Misc", 6031265988)
 
 
 -- Default
-local Defaultinfo = Default:CreateSection("Info", true)
+local Defaultinfo = Default:CreateSection("Info", false)
 
 Default:CreateParagraph({
     Title = "This Script",
-    Content = "Script made by Khang\nYtub: KhangRobloxScr\nUsername: concacrobloxntkphuh"
+    Content = "Script made by Khang | Ytub: KhangRobloxScr\nUsername: concacrobloxntkphuh"
 }, Defaultinfo) -- Section này là section thật (false), KHÔNG phải Label
 
 Default:CreateParagraph({
@@ -120,7 +120,7 @@ end
 
 
 -- Tab Main Mtab
-local Mtab1 = Mtab:CreateSection("VACATION STORY🛫")
+local Mtab1 = Mtab:CreateSection("Vacation ✈️ (Story)")
 Mtab:CreateButton({
     Name = "Respawn",
     SectionParent = Mtab1,
