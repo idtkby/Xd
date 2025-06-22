@@ -99,7 +99,7 @@ TW[#TW+1] = Tab:CreateButton({
     SectionParent = T2,
     Interact = "Run",
     Callback = function()
-        loadstring(game:HttpGet(""))()
+        loadstring(game:HttpGet("https://pastefy.app/twFnI1wv/raw"))()
     end
 })
 
