@@ -446,7 +446,7 @@ for _, tower in ipairs(towers) do
 end
 
 -- Khóa toàn bộ khi không ở đúng Place
-if game.PlaceId ~= 5961054350 then
+if game.PlaceId ~= 9597943779 then
     task.defer(function()
         for _, element in pairs(FloTdf) do
             element:Lock("In Game only")
