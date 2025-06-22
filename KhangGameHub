@@ -269,12 +269,12 @@ end
 
 
 
-local 1m$gl = {} -- The $1,000,000 Glass Bridge Elements
+local m$gl = {} -- The $1,000,000 Glass Bridge Elements
 -- Tab3
 local Section3 = Tab3:CreateSection("Main", false)
 
 -- Glass wall highlight
-1m$gl[#1m$gl+1] = Tab3:CreateButton({
+m$gl[#m$gl+1] = Tab3:CreateButton({
     Name = "Glass ESP",
     SectionParent = Section3,
     Interact = "Run",
@@ -305,7 +305,7 @@ local Section3 = Tab3:CreateSection("Main", false)
 
 -- Toggle Auto Wins
 local isAutoEzActive = false
-1m$gl[#1m$gl+1] = Tab3:CreateToggle({
+m$gl[#m$gl+1] = Tab3:CreateToggle({
     Name = "Auto Wins",
     SectionParent = Section3,
     CurrentValue = false,
@@ -324,7 +324,7 @@ local isAutoEzActive = false
 })
 
 -- Textbox để nhập số tiền cần xoá
-1m$gl[#1m$gl+1] = Tab3:CreateInput({
+m$gl[#m$gl+1] = Tab3:CreateInput({
     Name = "Free money",
     SectionParent = Section3,
     PlaceholderText = "Enter amount",
@@ -341,7 +341,7 @@ local isAutoEzActive = false
 })
 
 -- Nút fix tiền (xoá sạch)
-1m$gl[#1m$gl+1] = Tab3:CreateButton({
+m$gl[#m$gl+1] = Tab3:CreateButton({
     Name = "Fix Money",
     SectionParent = Section3,
     Interact = "Run",
@@ -357,7 +357,7 @@ local isAutoEzActive = false
 -- Khóa các nút nếu không đúng game.PlaceId
 if game.PlaceId ~= 94334774575565 then
     task.defer(function()
-        for _, element in pairs(1m$gl) do
+        for _, element in pairs(m$gl) do
             element:Lock("In Game only")
         end
     end)
