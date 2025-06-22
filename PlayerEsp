@@ -24,7 +24,6 @@ task.spawn(function()
         textLabel.TextStrokeTransparency = 0
         textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
         textLabel.Font = Enum.Font.Bodoni
-        textLabel.TextSize = 15
         textLabel.Text = player.Name
 
         -- Gắn Highlight trắng
