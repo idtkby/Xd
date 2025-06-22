@@ -60,7 +60,7 @@ Tab:CreateButton({
     end
 })
 
-local Mtab = Window:CreateTab("Misc", menu)
+local Mtab = Window:CreateTab("Misc", 6031265988)
 local Mtab1 = Mtab:CreateSection("VACATION STORY🛫")
 Mtab:CreateButton({
     Name = "Respawn",
