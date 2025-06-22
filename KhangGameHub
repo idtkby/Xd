@@ -88,7 +88,7 @@ end
 local Default = Window:CreateTab("Default")
 local Tab = Window:CreateTab("Trench War", 6034985497)
 local Tab2 = Window:CreateTab("Vacation ✈️ (Story)", 6034985497)
-local Tab3 = Window:CreateTab("1m", 6034985497)
+local Tab3 = Window:CreateTab("The $1,000,000 Glass Bridge", 6034985497)
 local Mtab = Window:CreateTab("Misc")
 
 
@@ -159,7 +159,7 @@ TW[#TW+1] = Tab:CreateButton({
 if game.PlaceId ~= 6654918151 then
     task.defer(function()
         for _, element in pairs(TW) do
-            element:Lock("Trench War only")
+            element:Lock("In Game only")
         end
     end)
 end
@@ -269,14 +269,15 @@ end
 
 
 
-local m$gl = {} -- The $1,000,000 Glass Bridge Elements
+local mSgl = {} -- The $1,000,000 Glass Bridge Elements
 -- Tab3
-local Section3 = Tab3:CreateSection("Main", false)
+local T3T = Tab3:CreateSection("Main", false)
+local T3T2 = Tab3:CreateSection("Money", false)
 
 -- Glass wall highlight
-m$gl[#m$gl+1] = Tab3:CreateButton({
+mSgl[#mSgl+1] = Tab3:CreateButton({
     Name = "Glass ESP",
-    SectionParent = Section3,
+    SectionParent = T3T,
     Interact = "Run",
     Callback = function()
         task.spawn(function()
@@ -305,9 +306,9 @@ m$gl[#m$gl+1] = Tab3:CreateButton({
 
 -- Toggle Auto Wins
 local isAutoEzActive = false
-m$gl[#m$gl+1] = Tab3:CreateToggle({
+mSgl[#mSgl+1] = Tab3:CreateToggle({
     Name = "Auto Wins",
-    SectionParent = Section3,
+    SectionParent = T3T,
     CurrentValue = false,
     Callback = function(value)
         isAutoEzActive = value
@@ -324,9 +325,9 @@ m$gl[#m$gl+1] = Tab3:CreateToggle({
 })
 
 -- Textbox để nhập số tiền cần xoá
-m$gl[#m$gl+1] = Tab3:CreateInput({
+mSgl[#mSgl+1] = Tab3:CreateInput({
     Name = "Free money",
-    SectionParent = Section3,
+    SectionParent = T3T2,
     PlaceholderText = "Enter amount",
     Callback = function(text)
         local num = tonumber(text)
@@ -341,9 +342,9 @@ m$gl[#m$gl+1] = Tab3:CreateInput({
 })
 
 -- Nút fix tiền (xoá sạch)
-m$gl[#m$gl+1] = Tab3:CreateButton({
+mSgl[#mSgl+1] = Tab3:CreateButton({
     Name = "Fix Money",
-    SectionParent = Section3,
+    SectionParent = T3T2,
     Interact = "Run",
     Callback = function()
         local args = {
@@ -357,7 +358,7 @@ m$gl[#m$gl+1] = Tab3:CreateButton({
 -- Khóa các nút nếu không đúng game.PlaceId
 if game.PlaceId ~= 87854376962069 then
     task.defer(function()
-        for _, element in pairs(m$gl) do
+        for _, element in pairs(mSgl) do
             element:Lock("In Game only")
         end
     end)
