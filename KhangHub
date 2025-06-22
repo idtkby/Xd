@@ -82,14 +82,14 @@ InfoTab:CreateSection("GameHub")
 
 InfoTab:CreateParagraph({
 	Title = "Game Hub",
-	Content = "-- Version 1.0 --",
+	Content = "[+] Add The $1M...\n [+] Add Esp NPC, Players, Part\n-- Version 1.5 --",
 })
 
 InfoTab:CreateSection("Script owner")
 
 InfoTab:CreateParagraph({
 	Title = "-- KhangRobloxScr --",
-	Content = "",
+	Content = "Username: concacrobloxntkphuh",
 })
 
 
