@@ -173,26 +173,54 @@ end
 local VacationST = {} -- Vacation ✈️ (Story) Elements
 
 -- Tab2
-local 2T = Tab2:CreateSection("Main", false)
+local T2T = Tab2:CreateSection("Main", false)
 
 VacationST[#VacationST+1] = Tab2:CreateToggle({
-    Name = "Enable Respawn [OP]",
-    Section = 2T,
+    Name = "Auto Respawn",
+    SectionParent = T2T,
     CurrentValue = false,
     Callback = function(state)
-        if state then
-            local Players = game:GetService("Players")
-            local LocalPlayer = Players.LocalPlayer
-            local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
 
-            VacationST._RespawnConnection = Character:WaitForChild("Humanoid").Died:Connect(function()
+        -- Hàm thiết lập sự kiện khi nhân vật spawn
+        local function SetupAutoRespawn()
+            if VacationST._DiedConnection then
+                VacationST._DiedConnection:Disconnect()
+            end
+
+            local Character = LocalPlayer.Character
+            if not Character then return end
+
+            local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+            if not Humanoid then return end
+
+            VacationST._DiedConnection = Humanoid.Died:Connect(function()
                 task.wait(1)
                 game:GetService("ReplicatedStorage").Respawn:FireServer()
             end)
+        end
+
+        if state then
+            -- Kết nối lại mỗi lần nhân vật mới được tạo
+            VacationST._CharConn = LocalPlayer.CharacterAdded:Connect(function()
+                task.wait(1) -- đợi nhân vật fully loaded
+                SetupAutoRespawn()
+            end)
+
+            -- Thiết lập lần đầu nếu đã có character
+            if LocalPlayer.Character then
+                SetupAutoRespawn()
+            end
         else
-            if VacationST._RespawnConnection then
-                VacationST._RespawnConnection:Disconnect()
-                VacationST._RespawnConnection = nil
+            -- Gỡ kết nối khi tắt
+            if VacationST._CharConn then
+                VacationST._CharConn:Disconnect()
+                VacationST._CharConn = nil
+            end
+            if VacationST._DiedConnection then
+                VacationST._DiedConnection:Disconnect()
+                VacationST._DiedConnection = nil
             end
         end
     end
@@ -201,7 +229,7 @@ VacationST[#VacationST+1] = Tab2:CreateToggle({
 
 VacationST[#VacationST+1] = Tab2:CreateButton({
     Name = "Esp Log",
-    SectionParent = 2T,
+    SectionParent = T2T,
     Interact = "Run",
     Callback = function()
         autoESP(function(p)
@@ -212,7 +240,7 @@ VacationST[#VacationST+1] = Tab2:CreateButton({
 
 VacationST[#VacationST+1] = Tab2:CreateButton({
     Name = "Esp NPC",
-    SectionParent = 2T,
+    SectionParent = T2T,
     Interact = "Run",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/espnpc"))()
@@ -238,25 +266,6 @@ end
 
 
 
-
-
-
-
-
-
--- Tab Main Mtab
-local Mtab1 = Mtab:CreateSect      element:Lock("Trench War only")
-        end
-    end)
-end
-
- then
-    task.defer(function()
-        for _, element in pairs(TW) do
-            element:Lock("Trench War only")
-        end
-    end)
-end
 
 
 
