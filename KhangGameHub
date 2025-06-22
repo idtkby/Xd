@@ -36,11 +36,11 @@ local Window = ArrayField:CreateWindow({
 })
 
 local Tab = Window:CreateTab("Trench War", 4483362458)
-local Section = Tab:CreateSection("Main", false)
+local Tab = Tab:CreateSection("Main", false)
 
 Tab:CreateButton({
     Name = "no cooldown",
-    SectionParent = Section,
+    SectionParent = Tab,
     Interact = "Run",
     Callback = function()
         g = hookfunction(wait, function(seconds)
@@ -52,11 +52,20 @@ Tab:CreateButton({
 
 Tab:CreateButton({
     Name = "Hitbox Gui",
-    SectionParent = Section,
+    SectionParent = Tab,
     Interact = "Run",
     Callback = function()
         loadstring(game:HttpGet("https://scriptblox.com/raw/Universal-Script-hitbox-expander-real-good-7163"))()
     end
 })
 
-local Mtab = Window:CreateTab("Misc", "menu")
+local Mtab = Window:CreateTab("Misc", menu)
+local Mtab1 = Mtab:CreateSection("VACATION STORY🛫")
+Mtab:CreateButton({
+    Name = "Respawn",
+    SectionParent = Mtab1,
+    Interact = "Run",
+    Callback = function()
+        game:GetService("ReplicatedStorage").Respawn:FireServer()
+    end
+})
