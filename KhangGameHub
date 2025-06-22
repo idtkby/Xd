@@ -36,7 +36,14 @@ local Window = ArrayField:CreateWindow({
     }
 })
 
+-- Sau khi tạo tab
 local Tab = Window:CreateTab("Trench War", 4483362458)
+
+-- Nếu không đúng gameID thì lock
+if game.PlaceId ~= 6654918151 then
+    Tab:Lock("Locked")
+end
+
 local T1 = Tab:CreateSection("Main", false)
 
 Tab:CreateButton({
