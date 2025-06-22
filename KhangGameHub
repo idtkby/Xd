@@ -1,3 +1,9 @@
+-- Khai báo các dịch vụ cần thiết
+local player = game.Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local camera = workspace.CurrentCamera
+
 getgenv().SecureMode = false
 local ArrayField = loadstring(game:HttpGet("https://raw.githubusercontent.com/Hosvile/Refinement/main/MC%3AArrayfield%20Library"))()
 
@@ -388,6 +394,47 @@ end
 
 -- Tab Main Mtab
 local Mtab1 = Mtab:CreateSection("Misc")
+
+-- Khai báo dịch vụ
+local PromptService = game:GetService("ProximityPromptService")
+local Workspace = game:GetService("Workspace")
+
+-- Toggle: Instant Prompt
+Mtab:CreateToggle({
+    Name = "Instant interact",
+    SectionParent = Mtab1,
+    CurrentValue = false,
+    Callback = function(enabled)
+        if enabled then
+            -- Cài đặt toàn bộ prompt hiện tại về HoldDuration = 0
+            for _, v in ipairs(Workspace:GetDescendants()) do
+                if v:IsA("ProximityPrompt") then
+                    v.HoldDuration = 0
+                end
+            end
+
+            -- Tự động cài prompt mới về 0 khi người dùng bắt đầu giữ
+            PromptService.PromptButtonHoldBegan:Connect(function(prompt)
+                if prompt:IsA("ProximityPrompt") then
+                    prompt.HoldDuration = 0
+                end
+            end)
+
+            Window:Notify({
+                Title = "Instant Prompt Enabled",
+                Content = "All proximity prompts now require no hold duration.",
+                Duration = 3
+            })
+        else
+            Window:Notify({
+                Title = "Instant Prompt Disabled",
+                Content = "Proximity prompts will use default hold duration.",
+                Duration = 3
+            })
+        end
+    end
+})
+
 Mtab:CreateButton({
     Name = "inf edit",
     SectionParent = Mtab1,
