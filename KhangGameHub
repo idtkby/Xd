@@ -355,7 +355,7 @@ m$gl[#m$gl+1] = Tab3:CreateButton({
 
 
 -- Khóa các nút nếu không đúng game.PlaceId
-if game.PlaceId ~= 94334774575565 then
+if game.PlaceId ~= 87854376962069 then
     task.defer(function()
         for _, element in pairs(m$gl) do
             element:Lock("In Game only")
