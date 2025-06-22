@@ -212,13 +212,26 @@ tp:CreateParagraph({
 })
 
 HbTab:CreateSection("GameHub")
-HbTab:CreateButton({
-    Name = "Game Hub",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/KhangGameHub"))()
-wait(1)
-Rayfield:Destroy()
-    end,
+HbTab:CreateButton({          
+    Name = "Game Hub",          
+    Callback = function()  
+        local success, err = pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/KhangGameHub"))()
+        end)
+
+        if success then
+            -- Nếu Rayfield GUI đang tồn tại thì xoá
+            local ray = game:GetService("CoreGui"):FindFirstChild("Rayfield")
+            if ray then ray:Destroy() end
+        else
+            warn("Unable to load Game Hub: " .. tostring(err))
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Error",
+                Text = "Your Executor is not compatible with this script.",
+                Duration = 5
+            })
+        end
+    end,          
 })
 
 
