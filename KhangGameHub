@@ -90,12 +90,13 @@ end
 
 
 
-
+-- AllTab 
 local Default = Window:CreateTab("Default")
 local Tab = Window:CreateTab("Trench War", 6034985497)
 local Tab2 = Window:CreateTab("Vacation ✈️ (Story)", 6034985497)
 local Tab3 = Window:CreateTab("The $1M Glass Bridge", 6034985497)
 local Tab4 = Window:CreateTab("Floppa: Tower Defense", 6034985497)
+local Tab5 = Window:CreateTab("Break In Simulator", 6034985497)
 local Mtab = Window:CreateTab("Misc")
 
 
@@ -535,6 +536,171 @@ if game.PlaceId ~= 9597943779 then
         end
     end)
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local BreakinSim = {}
+
+-- Tab5
+local T5T = Tab5:CreateSection("Main", false)
+
+-- Button chạy PutBoardOn
+BreakinSim[#BreakinSim+1] = Tab5:CreateButton({
+    Name = "SafeHome",
+    SectionParent = T5T,
+    Callback = function()
+        local coordsList = {
+            {CFrame.new(82.762, 26.441, 28, -1, 0, -8.742e-08, 0, 1, 0, 8.742e-08, 0, -1), Vector3.new(0,180,0)},
+            {CFrame.new(68.5, 27.337, 13.121, -4.37e-08, 0, 1, 0, 1, 0, -1, 0, -4.37e-08), Vector3.new(0,90,0)},
+            {CFrame.new(68.5, 26.934, -8.673, -4.37e-08, 0, 1, 0, 1, 0, -1, 0, -4.37e-08), Vector3.new(0,90,0)},
+            {CFrame.new(120, 26.339, -8.556, -4.37e-08, 0, -1, 0, 1, 0, 1, 0, -4.37e-08), Vector3.new(0,-90,0)},
+            {CFrame.new(120, 25.451, -30.3, -4.37e-08, 0, -1, 0, 1, 0, 1, 0, -4.37e-08), Vector3.new(0,-90,0)},
+            {CFrame.new(68.5, 26.684, -38.031, -4.37e-08, 0, 1, 0, 1, 0, -1, 0, -4.37e-08), Vector3.new(0,90,0)},
+            {CFrame.new(68.5, 26.485, -52.823, -4.37e-08, 0, 1, 0, 1, 0, -1, 0, -4.37e-08), Vector3.new(0,90,0)},
+            {CFrame.new(79.238, 26.043, -67, -1, 0, -8.742e-08, 0, 1, 0, 8.742e-08, 0, -1), Vector3.new(0,180,0)},
+            {CFrame.new(105.014, 26.872, -67, -1, 0, -8.742e-08, 0, 1, 0, 8.742e-08, 0, -1), Vector3.new(0,180,0)},
+            {CFrame.new(119.9, 26.529, -53.278, -4.37e-08, 0, -1, 0, 1, 0, 1, 0, -4.37e-08), Vector3.new(0,-90,0)},
+            {CFrame.new(79.581, 10.624, 28, -1, 0, -8.742e-08, 0, 1, 0, 8.742e-08, 0, -1), Vector3.new(0,180,0)},
+            {CFrame.new(119.8, 10.957, -15.738, -4.37e-08, 0, -1, 0, 1, 0, 1, 0, -4.37e-08), Vector3.new(0,-90,0)},
+            {CFrame.new(120, 10.936, 16.085, -4.37e-08, 0, -1, 0, 1, 0, 1, 0, -4.37e-08), Vector3.new(0,-90,0)},
+            {CFrame.new(101.350, 10.908, -66.999, -1, 0, -8.742e-08, 0, 1, 0, 8.742e-08, 0, -1), Vector3.new(0,180,0)},
+            {CFrame.new(81.735, 10.695, -66.999, -1, 0, -8.742e-08, 0, 1, 0, 8.742e-08, 0, -1), Vector3.new(0,180,0)},
+            {CFrame.new(68.5, 10.694, -53.105, -4.37e-08, 0, 1, 0, 1, 0, -1, 0, -4.37e-08), Vector3.new(0,90,0)},
+            {CFrame.new(68.3, 11.306, -8.775, -4.37e-08, 0, 1, 0, 1, 0, -1, 0, -4.37e-08), Vector3.new(0,90,0)},
+            {CFrame.new(68.5, 11.381, 17.621, -4.37e-08, 0, 1, 0, 1, 0, -1, 0, -4.37e-08), Vector3.new(0,90,0)},
+            {CFrame.new(106.356, 10.231, 28, -1, 0, -8.742e-08, 0, 1, 0, 8.742e-08, 0, -1), Vector3.new(0,180,0)},
+            {CFrame.new(104.976, 26.445, 28, -1, 0, -8.742e-08, 0, 1, 0, 8.742e-08, 0, -1), Vector3.new(0,180,0)},
+            {CFrame.new(120, 27.194, 13.547, -4.37e-08, 0, -1, 0, 1, 0, 1, 0, -4.37e-08), Vector3.new(0,-90,0)},
+        }
+
+        for _, v in ipairs(coordsList) do
+            game:GetService("ReplicatedStorage"):WaitForChild("RemoteEvents"):WaitForChild("PutBoardOn"):FireServer(v[1], v[2])
+            task.wait(0.1)
+        end
+    end
+})
+
+BreakinSim[#BreakinSim+1] = Tab5:CreateToggle({
+	Name = "Auto Farm Diamond",
+	CurrentValue = false,
+	SectionParent = T5T,
+	Callback = function(state)
+		getgenv()._AFD = state
+
+		task.spawn(function()
+			local Players = game:GetService("Players")
+			local RunService = game:GetService("RunService")
+			local LocalPlayer = Players.LocalPlayer
+			local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+			local HRP = Character:WaitForChild("HumanoidRootPart")
+
+			LocalPlayer.CharacterAdded:Connect(function()
+				Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+				HRP = Character:WaitForChild("HumanoidRootPart")
+			end)
+
+			local function triggerPrompt(obj)
+				if obj:IsA("ProximityPrompt") then
+					fireproximityprompt(obj, math.huge)
+				elseif obj:IsA("ClickDetector") then
+					fireclickdetector(obj)
+				elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
+					firetouchinterest(HRP, obj.Parent, 0)
+					task.wait()
+					firetouchinterest(HRP, obj.Parent, 1)
+				end
+			end
+
+			while getgenv()._AFD do
+				-- TP đến toạ độ gần prompt
+				HRP.CFrame = CFrame.new(81.99, -21.50, -137.58)
+				task.wait(0.2)
+
+				-- Kích hoạt 15 lần prompt gần nhất
+				for i = 1, 15 do
+					local nearestPrompt
+					local minDist = 25
+
+					for _, obj in ipairs(workspace:GetDescendants()) do
+						if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(LocalPlayer.Character) then
+							local part = obj.Parent
+							if part and part:IsA("BasePart") then
+								local dist = (HRP.Position - part.Position).Magnitude
+								if dist < minDist then
+									minDist = dist
+									nearestPrompt = obj
+								end
+							end
+						end
+					end
+
+					if nearestPrompt then
+						pcall(triggerPrompt, nearestPrompt)
+					end
+					task.wait(0.05)
+				end
+
+				-- Xử lý Touch_Part
+				local tp = workspace:FindFirstChild("Touch_Part", true)
+				if not tp then
+					HRP.CFrame = CFrame.new(76.37, 47.71, -58.09)
+					repeat
+						task.wait(0.2)
+						tp = workspace:FindFirstChild("Touch_Part", true)
+					until not getgenv()._AFD or tp
+				end
+
+				if tp then
+					HRP.CFrame = tp.CFrame + Vector3.new(0, 2, 0)
+				end
+
+				task.wait(3)
+			end
+		end)
+	end
+})
+
+
+-- Lock nếu không ở đúng PlaceId
+if game.PlaceId ~= 15064853712 then
+    task.defer(function()
+        for _, element in pairs(BreakinSim) do
+            element:Lock("In Game only")
+        end
+    end)
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
