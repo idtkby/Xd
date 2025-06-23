@@ -451,7 +451,7 @@ end
 
 -- Danh sách tower kèm giá
 local towers = {
-    {name = "Bunny", cost = 168},
+    {name = "Bunny", cost = 800},
     {name = "Catto", cost = 168},
     {name = "ChromeDino", cost = 100},
     {name = "CorruptedFloppa", cost = 100},
@@ -515,7 +515,7 @@ local TowerStats = {
     {Name = "Kotek",        DMG = "1",     CD = "20",    Range = "5 (kỹ năng: tăng 1 dmg/giảm cd mỗi wave)"},
     {Name = "FloppaGunner", DMG = "5",     CD = "0.01",  Range = "12"},
     {Name = "Special ---------------", DMG = "nil", CD = "nil", Range = "nil"},
-    {Name = "Bunny",        DMG = "idk",   CD = "idk",   Range = "idk"},
+    {Name = "Bunny",        DMG = "16",   CD = "1.25",   Range = "11"},
     {Name = "Catto",        DMG = "idk",   CD = "idk",   Range = "idk"},
     {Name = "ChromeDino",   DMG = "5",     CD = "1",     Range = "idk"},
     {Name = "CorruptedFloppa", DMG = "7",  CD = "1",     Range = "idk"},
