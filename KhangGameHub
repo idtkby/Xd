@@ -821,6 +821,113 @@ Mtab:CreateToggle({
     end  
 })
 
+Mtab:CreateToggle({
+	Name = "Kill Aura",
+	CurrentValue = false,
+	SectionParent = Mtab2,
+	Callback = function(state)
+		if not state then
+			local connections = getgenv().configs and getgenv().configs.connection
+			if connections then
+				local Disable = configs.Disable
+				for i, v in pairs(connections) do v:Disconnect() end
+				Disable:Fire()
+				Disable:Destroy()
+				table.clear(configs)
+			end
+			return
+		end
+
+		local Disable = Instance.new("BindableEvent")
+		getgenv().configs = {
+			connections = {},
+			Disable = Disable,
+			Size = Vector3.new(10, 10, 10),
+			DeathCheck = true
+		}
+
+		local Players = cloneref(game:GetService("Players"))
+		local RunService = cloneref(game:GetService("RunService"))
+		local lp = Players.LocalPlayer
+		local Run = true
+
+		local Ignorelist = OverlapParams.new()
+		Ignorelist.FilterType = Enum.RaycastFilterType.Include
+
+		local function getchar(plr)
+			local plr = plr or lp
+			return plr.Character
+		end
+
+		local function gethumanoid(plr)
+			local char = plr:IsA("Model") and plr or getchar(plr)
+			if char then
+				return char:FindFirstChildWhichIsA("Humanoid")
+			end
+		end
+
+		local function IsAlive(Humanoid)
+			return Humanoid and Humanoid.Health > 0
+		end
+
+		local function GetTouchInterest(Tool)
+			return Tool and Tool:FindFirstChildWhichIsA("TouchTransmitter", true)
+		end
+
+		local function GetTargets(LocalChar)
+			local list = {}
+			for _, v in ipairs(workspace:GetDescendants()) do
+				if v:IsA("Model") and v ~= LocalChar and v:FindFirstChildWhichIsA("Humanoid") then
+					table.insert(list, v)
+				end
+			end
+			return list
+		end
+
+		local function Attack(Tool, TouchPart, TargetPart)
+			if Tool:IsDescendantOf(workspace) then
+				Tool:Activate()
+				firetouchinterest(TouchPart, TargetPart, 1)
+				firetouchinterest(TouchPart, TargetPart, 0)
+			end
+		end
+
+		table.insert(getgenv().configs.connections, Disable.Event:Connect(function()
+			Run = false
+		end))
+
+		task.spawn(function()
+			while Run do
+				local char = getchar()
+				if IsAlive(gethumanoid(char)) then
+					local Tool = char and char:FindFirstChildWhichIsA("Tool")
+					local TouchInterest = Tool and GetTouchInterest(Tool)
+					if TouchInterest then
+						local TouchPart = TouchInterest.Parent
+						local Targets = GetTargets(char)
+						Ignorelist.FilterDescendantsInstances = Targets
+
+						local Hits = workspace:GetPartBoundsInBox(TouchPart.CFrame, TouchPart.Size + getgenv().configs.Size, Ignorelist)
+						for _, part in ipairs(Hits) do
+							local model = part:FindFirstAncestorWhichIsA("Model")
+							if table.find(Targets, model) then
+								if getgenv().configs.DeathCheck then
+									if IsAlive(gethumanoid(model)) then
+										Attack(Tool, TouchPart, part)
+									end
+								else
+									Attack(Tool, TouchPart, part)
+								end
+							end
+						end
+					end
+				end
+				RunService.Heartbeat:Wait()
+			end
+		end)
+	end
+})
+
 Mtab:CreateButton({
     Name = "Nrcam",
     SectionParent = Mtab2,
