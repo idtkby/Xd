@@ -323,6 +323,35 @@ mSgl[#mSgl+1] = Tab3:CreateButton({
     end
 })
 
+mSgl[#mSgl+1] = Tab3:CreateButton({
+    Name = "Give Rainbow Carpet",
+    SectionParent = T3T,
+    Interact = "Run",
+    Callback = function()
+        game:GetService("ReplicatedStorage"):WaitForChild("SpinEvents"):WaitForChild("SextoPremio"):FireServer()
+
+    end
+})
+
+mSgl[#mSgl+1] = Tab3:CreateButton({
+    Name = "h1",
+    SectionParent = T3T,
+    Interact = "Run",
+    Callback = function()
+        game:GetService("ReplicatedStorage"):WaitForChild("HeliEvents"):WaitForChild("remote1"):FireServer()
+
+    end
+})
+mSgl[#mSgl+1] = Tab3:CreateButton({
+    Name = "h2",
+    SectionParent = T3T,
+    Interact = "Run",
+    Callback = function()
+        game:GetService("ReplicatedStorage"):WaitForChild("HeliEvents"):WaitForChild("remote2"):FireServer()
+
+    end
+})
+
 -- Toggle Auto Wins
 local isAutoEzActive = false
 mSgl[#mSgl+1] = Tab3:CreateToggle({
@@ -337,6 +366,33 @@ mSgl[#mSgl+1] = Tab3:CreateToggle({
                     [1] = game:GetService("Players").LocalPlayer
                 }
                 game:GetService("ReplicatedStorage").GiveClaimMoney:FireServer(unpack(args))
+                task.wait(1)
+            end
+        end)
+    end
+})
+
+mSgl[#mSgl+1] = Tab3:CreateToggle({
+    Name = "Break All Wrong",
+    CurrentValue = false,
+    SectionParent = T3T,
+    Callback = function(state)
+        getgenv()._INF_MONEY = state
+
+        task.spawn(function()
+            while getgenv()._INF_MONEY do
+                for i = 1, 42 do
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+
+local args = {
+    Players.LocalPlayer,
+    Workspace:WaitForChild("Glasses"):WaitForChild("Wrong"):WaitForChild("glass")
+}
+
+ReplicatedStorage:WaitForChild("BrokeGlassEvent_O"):FireServer(unpack(args))
+end
                 task.wait(1)
             end
         end)
