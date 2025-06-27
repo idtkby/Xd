@@ -186,7 +186,7 @@ local VacationST = {} -- Vacation ✈️ (Story) Elements
 local T2T = Tab2:CreateSection("Main", false)
 
 VacationST[#VacationST+1] = Tab2:CreateToggle({
-    Name = "Auto Respawn",
+    Name = "Enable Respawn",
     SectionParent = T2T,
     CurrentValue = false,
     Callback = function(state)
