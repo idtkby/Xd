@@ -372,33 +372,6 @@ mSgl[#mSgl+1] = Tab3:CreateToggle({
     end
 })
 
-mSgl[#mSgl+1] = Tab3:CreateToggle({
-    Name = "Break All Wrong",
-    CurrentValue = false,
-    SectionParent = T3T,
-    Callback = function(state)
-        getgenv()._INF_MONEY = state
-
-        task.spawn(function()
-            while getgenv()._INF_MONEY do
-                for i = 1, 42 do
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
-
-local args = {
-    Players.LocalPlayer,
-    Workspace:WaitForChild("Glasses"):WaitForChild("Wrong"):WaitForChild("glass")
-}
-
-ReplicatedStorage:WaitForChild("BrokeGlassEvent_O"):FireServer(unpack(args))
-end
-                task.wait(1)
-            end
-        end)
-    end
-})
-
 -- Textbox để nhập số tiền cần xoá
 mSgl[#mSgl+1] = Tab3:CreateInput({
     Name = "Free money",
