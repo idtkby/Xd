@@ -91,14 +91,14 @@ local mainTab = Window:CreateTab("Visual", eye)
 mainTab:CreateButton({
 	Name = "Esp PetaPeta",
 	Callback = function()
-		loadstring(game:HttpGet("https://protected-roblox-scripts.onrender.com/4ff8c4ca4bd5179cd082f640899fc8f3"))()
+	task.spawn(function()
+	local espColor = Color3.fromRGB(255, 133, 145) -- Màu chữ + Highlight
+	local outlineColor = Color3.fromRGB(0, 0, 0)   -- Viền chữ + viền highlight
 
-task.spawn(function()
-	local espColor = Color3.fromRGB(255, 133, 145) -- Đỏ
-	local outlineColor = Color3.fromRGB(0, 0, 0) -- Viền chữ màu đen
-
-	-- Tạo ESP
 	local function createESP(item)
+		if item:FindFirstChild("EnemyESP") or item:FindFirstChild("ESPHighlight") then return end
+
+		-- BillboardGui
 		local billboard = Instance.new("BillboardGui")
 		billboard.Name = "EnemyESP"
 		billboard.AlwaysOnTop = true
@@ -117,23 +117,37 @@ task.spawn(function()
 		textLabel.Size = UDim2.new(1, 0, 1, 0)
 		textLabel.Font = Enum.Font.Bodoni
 		textLabel.TextScaled = true
+
+		-- Highlight
+		local hl = Instance.new("Highlight")
+		hl.Name = "ESPHighlight"
+		hl.FillColor = espColor
+		hl.FillTransparency = 0.5
+		hl.OutlineColor = outlineColor
+		hl.OutlineTransparency = 0
+		hl.Adornee = item
+		hl.Parent = item
 	end
 
-	local function checkForEnemies()
+	local function isEnemyModel(model)
+		return model:IsA("Model") and (model.Name == "EnemyModel" or model.Name == "EnemyModel_Stage6")
+	end
+
+	local function checkExisting()
 		for _, item in ipairs(workspace:GetDescendants()) do
-			if item:IsA("Model") and item.Name == "EnemyModel" and not item:FindFirstChild("EnemyESP") then
+			if isEnemyModel(item) then
 				createESP(item)
 			end
 		end
 	end
 
 	workspace.DescendantAdded:Connect(function(descendant)
-		if descendant:IsA("Model") and descendant.Name == "EnemyModel" then
+		if isEnemyModel(descendant) then
 			createESP(descendant)
 		end
 	end)
 
-	checkForEnemies()
+	checkExisting()
 end)
 	end,
 })
