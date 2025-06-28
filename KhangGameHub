@@ -427,7 +427,7 @@ mSgl[#mSgl+1] = Tab3:CreateToggle({
         task.spawn(function()
             while getgenv()._INF_MONEY do
                 local args = {
-                    [1] = -922337203685477600
+                    [1] = -9223
                 }
                 game:GetService("ReplicatedStorage").CratesUtilities.Remotes.RemoveMoney:FireServer(unpack(args))
                 task.wait(0.05)
