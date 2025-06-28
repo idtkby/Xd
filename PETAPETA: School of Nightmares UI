@@ -383,6 +383,7 @@ local locations = {
     {Name = "Teacher's Room", Position = Vector3.new(7.24, 19.80, 108.62)},
     {Name = "Secret", Position = Vector3.new(-46.67, 19.8, -94.98)},
     {Name = "Secret Room", Position = Vector3.new(62.95, 19.80, 118.94)},
+    {Name = "Secret Room 2", Position = Vector3.new(-119.27, 4.95, -90.83)},
 }
 for _, loc in ipairs(locations) do
     TeleportTab:CreateButton({
