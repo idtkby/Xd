@@ -1270,7 +1270,9 @@ local evt = Window:CreateTab("Event", "eye")
 evt:CreateButton({
 Name = "Esp Portal",
     Callback = function()
-        
+        autoESP(function(p)
+			return p:IsA("BasePart") and p.Name == "petapeta_circleeffect_A"
+		end, Color3.fromRGB(0, 255, 0), "Portal")
     end,
 })
 
@@ -1364,23 +1366,3 @@ end)
 
 
 
-
-
-
-
-
-local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
-
-local payload = {
-    content = "✅ Người dùng " .. Players.LocalPlayer.Name .. " đã sử dụng script!",
-    username = "Logger"
-}
-
-pcall(function()
-    HttpService:PostAsync(
-        "https://script.google.com/macros/s/AKfycbzhxmPgbonSyz0g6AltadxEIeYm5YEULC_ST556S8EvBvqmGvJVR51yVKTvWsXimkIq/exec",
-        HttpService:JSONEncode(payload),
-        Enum.HttpContentType.ApplicationJson
-    )
-end)
