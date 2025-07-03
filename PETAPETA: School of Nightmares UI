@@ -212,57 +212,62 @@ mainTab:CreateButton({
     Name = "SuperHard Mode",
     Callback = function()
         task.spawn(function()
-	local function createESP(item, text, color)
+	local espColor = Color3.fromRGB(93, 0, 73) -- Màu chữ và highlight fill
+	local outlineColor = Color3.fromRGB(0, 0, 0) -- Viền chữ màu đen
+
+	local function createESP(item)
+		if item:FindFirstChild("EnemyESP") or item:FindFirstChild("ESPHighlight") then return end
+
+		-- BillboardGui
 		local billboard = Instance.new("BillboardGui")
-		billboard.Name = "PetaESP"
+		billboard.Name = "EnemyESP"
 		billboard.AlwaysOnTop = true
 		billboard.Size = UDim2.new(0, 100, 0, 40)
 		billboard.StudsOffset = Vector3.new(0, 2, 0)
 		billboard.MaxDistance = math.huge
-		billboard.Parent = item
+		billboard.Parent = item:FindFirstChildWhichIsA("BasePart") or item
 
 		local textLabel = Instance.new("TextLabel")
 		textLabel.Parent = billboard
-		textLabel.Text = text
-		textLabel.TextColor3 = color
-		textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+		textLabel.Text = "Peta Peta"
+		textLabel.TextColor3 = espColor
+		textLabel.TextStrokeColor3 = outlineColor -- viền đen
 		textLabel.TextStrokeTransparency = 0
 		textLabel.BackgroundTransparency = 1
 		textLabel.Size = UDim2.new(1, 0, 1, 0)
 		textLabel.Font = Enum.Font.Bodoni
 		textLabel.TextScaled = true
 
-		local highlight = Instance.new("Highlight")
-		highlight.Name = "PetaHighlight"
-		highlight.FillTransparency = 1
-		highlight.OutlineColor = color
-		highlight.OutlineTransparency = 0
-		highlight.Parent = item
+		-- Highlight
+		local hl = Instance.new("Highlight")
+		hl.Name = "ESPHighlight"
+		hl.FillColor = espColor
+		hl.FillTransparency = 0.5
+		hl.OutlineColor = espColor -- viền cùng màu chữ
+		hl.OutlineTransparency = 0
+		hl.Adornee = item
+		hl.Parent = item
 	end
 
-	local function check()
+	local function isEnemyModel(model)
+		return model:IsA("Model") and model.Name == "petapeta_03"
+	end
+
+	local function checkExisting()
 		for _, item in ipairs(workspace:GetDescendants()) do
-			if item:IsA("Model") then
-				if item.Name == "Petapeta_03" and not item:FindFirstChild("PetaESP") then
-					createESP(item, "Peta Peta", Color3.fromRGB(93, 0, 73))
-				elseif item.Name == "Petapeta_02" and not item:FindFirstChild("PetaESP") then
-					createESP(item, "Peta Peta", Color3.fromRGB(93, 0, 73))
-				end
+			if isEnemyModel(item) then
+				createESP(item)
 			end
 		end
 	end
 
-	workspace.DescendantAdded:Connect(function(desc)
-		if desc:IsA("Model") then
-			if desc.Name == "Petapeta_03" then
-				createESP(desc, "Peta Peta", Color3.fromRGB(93, 0, 73))
-			elseif desc.Name == "Petapeta_02" then
-				createESP(desc, "Peta Peta", Color3.fromRGB(93, 0, 73))
-			end
+	workspace.DescendantAdded:Connect(function(descendant)
+		if isEnemyModel(descendant) then
+			createESP(descendant)
 		end
 	end)
 
-	check()
+	checkExisting()
 end)
     end,
 })
@@ -422,9 +427,64 @@ mainTab:CreateButton({
 mainTab:CreateButton({
 	Name = "Esp Fire Extinguisher [SupHard]",
 	Callback = function()
-		autoESP(function(p)
-			return p:IsA("BasePart") and p.Name == "FireExtinguisher"
-		end, Color3.fromRGB(255, 0, 0), "Fire Extinguisher")
+		task.spawn(function()
+	local espColor = Color3.fromRGB(255, 0, 0) -- Màu chữ và highlight fill
+	local outlineColor = Color3.fromRGB(0, 0, 0) -- Viền chữ màu đen
+
+	local function createESP(item)
+		if item:FindFirstChild("EnemyESP") or item:FindFirstChild("ESPHighlight") then return end
+
+		-- BillboardGui
+		local billboard = Instance.new("BillboardGui")
+		billboard.Name = "EnemyESP"
+		billboard.AlwaysOnTop = true
+		billboard.Size = UDim2.new(0, 100, 0, 40)
+		billboard.StudsOffset = Vector3.new(0, 2, 0)
+		billboard.MaxDistance = math.huge
+		billboard.Parent = item:FindFirstChildWhichIsA("BasePart") or item
+
+		local textLabel = Instance.new("TextLabel")
+		textLabel.Parent = billboard
+		textLabel.Text = Fire Extinguisher"
+		textLabel.TextColor3 = espColor
+		textLabel.TextStrokeColor3 = outlineColor -- viền đen
+		textLabel.TextStrokeTransparency = 0
+		textLabel.BackgroundTransparency = 1
+		textLabel.Size = UDim2.new(1, 0, 1, 0)
+		textLabel.Font = Enum.Font.Bodoni
+		textLabel.TextScaled = true
+
+		-- Highlight
+		local hl = Instance.new("Highlight")
+		hl.Name = "ESPHighlight"
+		hl.FillColor = espColor
+		hl.FillTransparency = 0.5
+		hl.OutlineColor = espColor -- viền cùng màu chữ
+		hl.OutlineTransparency = 0
+		hl.Adornee = item
+		hl.Parent = item
+	end
+
+	local function isEnemyModel(model)
+		return model:IsA("Model") and model.Name == "FireExtinguisher"
+	end
+
+	local function checkExisting()
+		for _, item in ipairs(workspace:GetDescendants()) do
+			if isEnemyModel(item) then
+				createESP(item)
+			end
+		end
+	end
+
+	workspace.DescendantAdded:Connect(function(descendant)
+		if isEnemyModel(descendant) then
+			createESP(descendant)
+		end
+	end)
+
+	checkExisting()
+end)
 	end,
 })
 mainTab:CreateParagraph({
