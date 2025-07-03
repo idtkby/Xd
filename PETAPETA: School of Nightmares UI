@@ -445,7 +445,7 @@ mainTab:CreateButton({
 
 		local textLabel = Instance.new("TextLabel")
 		textLabel.Parent = billboard
-		textLabel.Text = Fire Extinguisher"
+		textLabel.Text = "Fire Extinguisher"
 		textLabel.TextColor3 = espColor
 		textLabel.TextStrokeColor3 = outlineColor -- viền đen
 		textLabel.TextStrokeTransparency = 0
@@ -491,6 +491,25 @@ mainTab:CreateParagraph({
 	Title = "Esp Fire Ex.. Note",
 	Content = "You can turn on instant interact to put out the fire because it doesn't need fire ex..",
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
