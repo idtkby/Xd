@@ -1404,6 +1404,13 @@ KTab:CreateButton({
     end,
   })
 
+KTab:CreateButton({
+Name = "discord test",
+    Callback = function()
+        setclipboard("https://discord.gg/wBatSesGHZ")
+    end,
+})
+
 
 
 
