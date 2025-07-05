@@ -520,32 +520,40 @@ OtherTab:CreateButton({
 OtherTab:CreateButton({
     Name = "RareHorse Notice",
     Callback = function()
-        local GuiService = game:GetService("StarterGui")
-local workspace = game:GetService("Workspace")
+        task.spawn(function()
+	local StarterGui = game:GetService("StarterGui")
 
-local horseIDs = {
-    Model_WarHorse = 98866039236398,
-    Model_DeathHorse = 117026495479263,
-    Model_PestilenceHorse = 137680581466072,
-    Model_FamineHorse = 72130171723716,
-}
+	local iconMap = {
+		Model_WarHorse = "rbxthumb://type=Asset&id=98866039236398&w=150&h=150",
+		Model_DeathHorse = "rbxthumb://type=Asset&id=117026495479263&w=150&h=150",
+		Model_PestilenceHorse = "rbxthumb://type=Asset&id=137680581466072&w=150&h=150",
+		Model_FamineHorse = "rbxthumb://type=Asset&id=72130171723716&w=150&h=150"
+	}
 
--- Hàm thông báo
-local function notifyHorse(name, imageId)
-    GuiService:SetCore("SendNotification", {
-        Title = "[!] Apocalypse Horse Spawned!",
-        Text = name .. " has appeared in the world!",
-        Duration = 6,
-        Icon = "rbxthumb://type=Asset&id=" .. imageId .. "&w=150&h=150"
-    })
-end
+	local function notifyHorse(name)
+		local icon = iconMap[name]
+		if icon then
+			StarterGui:SetCore("SendNotification", {
+				Title = "Horse Notice",
+				Text = name,
+				Icon = icon,
+				Duration = 5
+			})
+		end
+	end
 
--- Theo dõi workspace khi có model được thêm
-workspace.ChildAdded:Connect(function(child)
-    if horseIDs[child.Name] then
-        local horseName = child.Name:gsub("Model_", ""):gsub("Horse", "") -- Lấy tên rút gọn
-        notifyHorse(horseName, horseIDs[child.Name])
-    end
+	workspace.DescendantAdded:Connect(function(obj)
+		if obj:IsA("Model") and iconMap[obj.Name] then
+			notifyHorse(obj.Name)
+		end
+	end)
+
+	-- Kiểm tra sẵn nếu nó đã có từ trước
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("Model") and iconMap[obj.Name] then
+			notifyHorse(obj.Name)
+		end
+	end
 end)
     end,
 })
