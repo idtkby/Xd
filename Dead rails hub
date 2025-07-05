@@ -94,13 +94,6 @@ TeleportTab:CreateButton({
     end,
 })
 
-TeleportTab:CreateButton({
-    Name = "Find Unicorn",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/hbjrev/erhjf.github.io/refs/heads/main/hew.lua"))()
-    end,
-})
-
 TeleportTab:CreateSection("Train Tp")
 
 TeleportTab:CreateButton({
@@ -118,6 +111,39 @@ TeleportTab:CreateButton({
                 break
             end
         end
+    end,
+})
+
+TeleportTab:CreateSection("Horse")
+
+TeleportTab:CreateButton({
+    Name = "Find Unicorn",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/hbjrev/erhjf.github.io/refs/heads/main/hew.lua"))()
+    end,
+})
+TeleportTab:CreateButton({
+    Name = "Find War",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/fjruie/Warhorse.github.io/refs/heads/main/ringta.lua"))()
+    end,
+})
+TeleportTab:CreateButton({
+    Name = "Find Death",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/fjruie/newdeathtptest.github.io/refs/heads/main/newtest.lua"))()
+    end,
+})
+TeleportTab:CreateButton({
+    Name = "Find Pestilence",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/wehjf/Pestilenceringta.github.io/refs/heads/main/horseringta"))()
+    end,
+})
+TeleportTab:CreateButton({
+    Name = "Find Famine",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/wehjf/famineringta.github.io/refs/heads/main/horseringta.lua"))()
     end,
 })
 
@@ -488,6 +514,39 @@ OtherTab:CreateButton({
     Name = "VehicleFly",
     Callback = function()
         loadstring(game:HttpGet('https://raw.githubusercontent.com/GhostPlayer352/Test4/main/Vehicle%20Fly%20Gui'))()
+    end,
+})
+
+OtherTab:CreateButton({
+    Name = "RareHorse Notice",
+    Callback = function()
+        local GuiService = game:GetService("StarterGui")
+local workspace = game:GetService("Workspace")
+
+local horseIDs = {
+    Model_WarHorse = 98866039236398,
+    Model_DeathHorse = 117026495479263,
+    Model_PestilenceHorse = 137680581466072,
+    Model_FamineHorse = 72130171723716,
+}
+
+-- Hàm thông báo
+local function notifyHorse(name, imageId)
+    GuiService:SetCore("SendNotification", {
+        Title = "[!] Apocalypse Horse Spawned!",
+        Text = name .. " has appeared in the world!",
+        Duration = 6,
+        Icon = "rbxthumb://type=Asset&id=" .. imageId .. "&w=150&h=150"
+    })
+end
+
+-- Theo dõi workspace khi có model được thêm
+workspace.ChildAdded:Connect(function(child)
+    if horseIDs[child.Name] then
+        local horseName = child.Name:gsub("Model_", ""):gsub("Horse", "") -- Lấy tên rút gọn
+        notifyHorse(horseName, horseIDs[child.Name])
+    end
+end)
     end,
 })
 
