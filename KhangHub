@@ -50,7 +50,7 @@ InfoTab:CreateParagraph({
 InfoTab:CreateSection("Updates")
 InfoTab:CreateParagraph({
 	Title = "Dead Rails (Alpha)",
-	Content = "[+] Added StillWater\n [+] Added Find Unicorn\n  [+] Update Ringta UI and Nathub\n-- Version 3.1.0 --",
+	Content = "[+] Add RareHorse Notice\n [+] Add Tp RareHorse\n-- Version 3.2.0 --",
 })
 
 InfoTab:CreateParagraph({
