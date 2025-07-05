@@ -137,7 +137,7 @@ TeleportTab:CreateButton({
 TeleportTab:CreateButton({
     Name = "Find Pestilence",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/wehjf/Pestilenceringta.github.io/refs/heads/main/horseringta"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/wehjf/Pestilenceringta.github.io/refs/heads/main/horseringta.lua"))()
     end,
 })
 TeleportTab:CreateButton({
