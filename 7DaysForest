@@ -246,10 +246,9 @@ local LocalPlayer = Players.LocalPlayer
 
 local AutoKeyRunning = false
 local KeyConnection
-local DescendantConnection
 local KeyList = {}
 
-MTab:CreateToggle({
+MTab:CreateToggle({ -- ✅ Đổi KTab thành MTab
 	Name = "Auto Interact",
 	CurrentValue = false,
 	Callback = function(state)
@@ -260,9 +259,8 @@ MTab:CreateToggle({
 			local lastTriggerTime = {}
 
 			local function isIgnored(obj)
-				local parent = obj.Parent
-				if not parent then return false end
-				return parent.Name == "Workbench" or parent.Name == "Door"
+				local part = obj:IsA("BasePart") and obj or obj:FindFirstAncestorWhichIsA("BasePart")
+				return part and (part.Name == "Workbench" or part.Name == "Door")
 			end
 
 			local function scanInteractables()
@@ -271,7 +269,7 @@ MTab:CreateToggle({
 					if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") 
 						and not obj:IsDescendantOf(LocalPlayer.Character)
 						and not isIgnored(obj) then
-
+						
 						local model = obj:FindFirstAncestorWhichIsA("Model")
 						table.insert(KeyList, {model = model, obj = obj})
 					end
@@ -280,7 +278,7 @@ MTab:CreateToggle({
 
 			scanInteractables()
 
-			DescendantConnection = workspace.DescendantAdded:Connect(function(desc)
+			workspace.DescendantAdded:Connect(function(desc)
 				if AutoKeyRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest")
 					and not desc:IsDescendantOf(LocalPlayer.Character)
 					and not isIgnored(desc) then
@@ -358,15 +356,10 @@ MTab:CreateToggle({
 					end
 				end
 			end)
-
 		else
 			if KeyConnection then
 				KeyConnection:Disconnect()
 				KeyConnection = nil
-			end
-			if DescendantConnection then
-				DescendantConnection:Disconnect()
-				DescendantConnection = nil
 			end
 			KeyList = {}
 		end
