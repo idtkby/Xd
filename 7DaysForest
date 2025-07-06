@@ -244,48 +244,36 @@ local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-local AutoItemRunning = false
-local ItemConnection
-local ItemList = {}
+local AutoKeyRunning = false
+local KeyConnection
+local KeyList = {}
 
-MTab:CreateToggle({
-	Name = "Auto Collect Items",
+KTab:CreateToggle({
+	Name = "Auto Interact", -- 🔄 Đổi tên tại đây
 	CurrentValue = false,
 	Callback = function(state)
-		AutoItemRunning = state
+		AutoKeyRunning = state
 		if state then
 			local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 			local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 			local lastTriggerTime = {}
 
-			local ValidNames = {
-				["flax"] = true,
-				["pebbles"] = true,
-				["Raw Bear Meat"] = true,
-				["Raw Deer Meat"] = true,
-				["Bone"] = true,
-    ["log"] = true,
-			}
-
-			local function scanItems()
-				ItemList = {}
+			local function scanInteractables()
+				KeyList = {}
 				for _, obj in ipairs(workspace:GetDescendants()) do
 					if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(LocalPlayer.Character) then
 						local model = obj:FindFirstAncestorWhichIsA("Model")
-						if model and ValidNames[model.Name] then
-							table.insert(ItemList, {model = model, obj = obj})
-						end
+						table.insert(KeyList, {model = model, obj = obj})
 					end
 				end
 			end
 
-			scanItems()
+			scanInteractables()
+
 			workspace.DescendantAdded:Connect(function(desc)
-				if AutoItemRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") then
+				if AutoKeyRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") and not desc:IsDescendantOf(LocalPlayer.Character) then
 					local model = desc:FindFirstAncestorWhichIsA("Model")
-					if model and ValidNames[model.Name] then
-						table.insert(ItemList, {model = model, obj = desc})
-					end
+					table.insert(KeyList, {model = model, obj = desc})
 				end
 			end)
 
@@ -326,19 +314,19 @@ MTab:CreateToggle({
 				return closest, minDist
 			end
 
-			ItemConnection = RunService.Heartbeat:Connect(function()
-				if not AutoItemRunning or not LocalPlayer.Character then return end
+			KeyConnection = RunService.Heartbeat:Connect(function()
+				if not AutoKeyRunning or not LocalPlayer.Character then return end
 				local HRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 				if not HRP then return end
 
 				local now = tick()
-				for i = #ItemList, 1, -1 do
-					local data = ItemList[i]
+				for i = #KeyList, 1, -1 do
+					local data = KeyList[i]
 					local model = data.model
 					local obj = data.obj
 
 					if not model or not model:IsDescendantOf(workspace) or not obj or not obj:IsDescendantOf(model) then
-						table.remove(ItemList, i)
+						table.remove(KeyList, i)
 						continue
 					end
 
@@ -347,29 +335,26 @@ MTab:CreateToggle({
 					end
 
 					local _, dist = getClosestPart(model, HRP.Position)
-					if dist and dist <= 15 then -- tăng khoảng cách
+					if dist and dist <= 10 then
 						local success = triggerPrompt(obj)
 						if success then
 							lastTriggerTime[model] = now
 						else
-							table.remove(ItemList, i)
+							table.remove(KeyList, i)
 						end
 					end
 				end
 			end)
 		else
-			if ItemConnection then
-				ItemConnection:Disconnect()
-				ItemConnection = nil
+			if KeyConnection then
+				KeyConnection:Disconnect()
+				KeyConnection = nil
 			end
-			ItemList = {}
+			KeyList = {}
 		end
 	end
 })
-MTab:CreateParagraph({
-	Title = "Support Items",
-	Content = "Bone, Flax, Pebble, Raw Bear Meat, Raw Deer Meat, Wood",
-})
+  
 
 MTab:CreateSection("Get Berry")
 
