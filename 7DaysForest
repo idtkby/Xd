@@ -761,6 +761,115 @@ VTab:CreateToggle({
 	end
 })
 
+local itemRunning = false
+local itemConnection
+
+VTab:CreateToggle({
+	Name = "Items",
+	CurrentValue = false,
+	Flag = "ItemESP",
+	Callback = function(state)
+		itemRunning = state
+
+		if itemConnection then
+			itemConnection:Disconnect()
+			itemConnection = nil
+		end
+
+		local LocalPlayer = game:GetService("Players").LocalPlayer
+		local camera = workspace.CurrentCamera
+
+		-- Tên và màu cho từng loại object
+		local itemSettings = {
+			pebbles = {label = "Pebble", color = Color3.fromRGB(200, 200, 200)},
+			abandoned_shack = {label = "Materials", color = Color3.fromRGB(137, 80, 0)},
+			flax = {label = "Flax", color = Color3.fromRGB(18, 111, 0)},
+			heli_crash = {label = "Heli Crash", color = Color3.fromRGB(255, 212, 143)},
+		}
+
+		-- Dọn sạch ESP cũ
+		for _, v in ipairs(workspace:GetDescendants()) do
+			if v:FindFirstChild("ItemESP") then v.ItemESP:Destroy() end
+			if v:FindFirstChild("ItemHL") then v.ItemHL:Destroy() end
+		end
+
+		if not state then return end
+
+		local function createESP(item, name, color)
+			if item:FindFirstChild("ItemESP") then return end
+
+			local billboard = Instance.new("BillboardGui")
+			billboard.Name = "ItemESP"
+			billboard.AlwaysOnTop = true
+			billboard.Size = UDim2.new(0, 100, 0, 40)
+			billboard.StudsOffset = Vector3.new(0, 2, 0)
+			billboard.MaxDistance = math.huge
+			billboard.Parent = item
+
+			local textLabel = Instance.new("TextLabel")
+			textLabel.Parent = billboard
+			textLabel.Text = name
+			textLabel.TextColor3 = color
+			textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+			textLabel.TextStrokeTransparency = 0
+			textLabel.BackgroundTransparency = 1
+			textLabel.Size = UDim2.new(1, 0, 1, 0)
+			textLabel.TextScaled = false
+			textLabel.Font = Enum.Font.GothamBold
+			textLabel.TextSize = 25
+
+			local hl = Instance.new("Highlight")
+			hl.Name = "ItemHL"
+			hl.FillColor = color
+			hl.FillTransparency = 0.8
+			hl.OutlineColor = color
+			hl.OutlineTransparency = 0
+			hl.Adornee = item
+			hl.Parent = item
+
+			-- Theo dõi để tự xoá nếu item biến mất
+			local con
+			con = game:GetService("RunService").RenderStepped:Connect(function()
+				if not itemRunning or not item:IsDescendantOf(workspace) then
+					if billboard then billboard:Destroy() end
+					if hl then hl:Destroy() end
+					if con then con:Disconnect() end
+				end
+
+				-- Điều chỉnh size chữ
+				if item:IsDescendantOf(workspace) then
+					local distance = (camera.CFrame.Position - item:GetPivot().Position).Magnitude
+					local size = math.clamp(25 * (1 - distance / 200), 10, 25)
+					textLabel.TextSize = size
+				end
+			end)
+		end
+
+		local function handleItem(item)
+			local setting = itemSettings[item.Name]
+			if setting then
+				createESP(item, setting.label, setting.color)
+			end
+		end
+
+		-- Quét toàn bộ hiện tại
+		for _, item in ipairs(workspace:GetDescendants()) do
+			if item:IsA("Model") and itemSettings[item.Name] then
+				handleItem(item)
+			end
+		end
+
+		-- Theo dõi khi có thêm mới
+		itemConnection = workspace.DescendantAdded:Connect(function(descendant)
+			if descendant:IsA("Model") and itemSettings[descendant.Name] then
+				task.wait(0.1)
+				handleItem(descendant)
+			end
+		end)
+	end
+})
+
+
 
 
 VTab:CreateSection("Bloodmoon")
@@ -883,11 +992,6 @@ local locations = {
     {Name = "House roof 🏠", Position = Vector3.new(57.73, 68.46, 417.58)},
     {Name = "River 🏞️", Position = Vector3.new(-227.99, -0.84, 341.59)},
     {Name = "Skeleton 💀", Position = Vector3.new(145.43, 12.63, 234.22)},
-    {Name = "Turret1", Position = Vector3.new(-110.91, 37.91, 352.01)},
-    {Name = "Turret2", Position = Vector3.new(-5.95, 26.77, 258.23)},
-    {Name = "Turret3", Position = Vector3.new(117.83, 34.97, 336.75)},
-    {Name = "Turret4", Position = Vector3.new(95.04, 34.41, 491.53)},
-    {Name = "Helicopter 🚁 (Waiting to appear)", Position = Vector3.new(-318.54, 30.69, -110.7)},
 }
 
 for _, loc in ipairs(locations) do
@@ -926,45 +1030,22 @@ end
 
 
 
-local CTab = Window:CreateTab("Updating...", "wrench")
-local lp = game.Players.LocalPlayer
-
-CTab:CreateSection("Ingredient")
-local woodLabel = CTab:CreateLabel("WOOD: ...")
-
-task.spawn(function()
-	local stats = lp:WaitForChild("stats", 10)
-	if not stats then
-		woodLabel:Set("Wood🪵: [stats not found]")
-		return
-	end
-
-	local wood = stats:WaitForChild("wood", 10)
-	if not wood then
-		woodLabel:Set("Wood: [wood not found]")
-		return
-	end
-
-	woodLabel:Set("Wood: " .. tostring(wood.Value))
-
-	wood:GetPropertyChangedSignal("Value"):Connect(function()
-		woodLabel:Set("Wood: " .. tostring(wood.Value))
-	end)
-end)
+local CTab = Window:CreateTab("Craft", "wrench")
 
 -- Section: Builds
 CTab:CreateSection("Builds")
 local builds = {
-	{Name = "Cabbage Farm", Requires = "🥦15 WOOD / Engineer: 8 WOOD"},
-	{Name = "Bed", Requires = "🛌7 WOOD / Engineer: 4 WOOD"},
-	{Name = "Campfire", Requires = "🔥10 WOOD / Engineer: 5 WOOD"},
-	{Name = "Chair", Requires = "🪑2 WOOD / Engineer: 1 WOOD"},
-	{Name = "Ladder", Requires = "3 WOOD / Engineer: 2 WOOD"},
-	{Name = "Table", Requires = "🟫4 WOOD / Engineer: 2 WOOD"},
-	{Name = "Torch", Requires = "🕯️1 WOOD / Engineer: 1 WOOD"},
-	{Name = "Wall", Requires = "🧱3 WOOD / Engineer: 2 WOOD"},
-	{Name = "Wide Wall", Requires = "🧱5 WOOD / Engineer: 3 WOOD"},
-}
+	{Name = "Planter", Requires = "15 Wood"},
+	{Name = "Campfire", Requires = "4 Wood, 9 Stone"},
+	{Name = "Chair", Requires = "2 Wood"},
+	{Name = "Ladder", Requires = "5 Wood"},
+	{Name = "Table", Requires = "4 Wood"},
+	{Name = "Torch", Requires = "1 Wood, 1 Stone"},
+	{Name = "Wall", Requires = "3 Wood"},
+	{Name = "Wide Wall", Requires = "5 Wood"},
+ {Name = "Door", Requires = "6 Wood"),
+ {Name = "Totem", Requires = "30 Wood"),
+} 
 
 for _, b in ipairs(builds) do
 	CTab:CreateButton({
@@ -978,10 +1059,30 @@ end
 -- Section: Items
 CTab:CreateSection("Items")
 local items = {
-	{Name = "Left Leather Pad", Requires = "7 Leather"},
-	{Name = "Right Leather Pad", Requires = "7 Leather"},
-	{Name = "Leather Jacket", Requires = "15 Leather"},
-	{Name = "Fishing Rod", Requires = "20 WOOD"},
+	{Name = "Left Leather Pad", Requires = "5 Leather, 3 String"},
+	{Name = "Right Leather Pad", Requires = "5 Leather, 3 String"},
+ {Name = "Left Wood Kneepad", Requires = "6 Wood, 4 String"},
+ {Name = "Right Wood Kneepad", Requires = "6 Wood, 4 String"},
+	{Name = "Leather Jacket", Requires = "15 Leather, 10 String"},
+	{Name = "Fishing Rod", Requires = "1 Wood, 12 String"},
+ {Name = "Makeshift Sickle", Requires = "7 Wood, 4 Stone, 3 String"},
+ {Name = "Repair Hammer", Requires = "13 Wood, 8 Stone, 3 String"},
+}
+
+for _, i in ipairs(items) do
+	CTab:CreateButton({
+		Name = "Craft " .. i.Name .. " [" .. i.Requires .. "]",
+		Callback = function()
+			game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(i.Name)
+		end
+	})
+end
+
+-- Section: Materials 
+CTab:CreateSection("Materials")
+local items = {
+	{Name = "Bonemeal", Requires = "12 Bone"},
+	{Name = "String", Requires = "3 Flax"},
 }
 
 for _, i in ipairs(items) do
@@ -1067,13 +1168,6 @@ local InstantPromptToggle = KTab:CreateToggle({
                 Duration = 2
             })
         end
-    end,
-})
-
-KTab:CreateButton({
-    Name = "Enable Chat",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/enable%20chat"))()
     end,
 })
 
