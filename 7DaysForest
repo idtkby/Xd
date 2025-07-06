@@ -5,7 +5,7 @@ end
 
 -- Thông báo khi đúng ID game
 game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "✓ Game Check Passed",
+    Title = "✓ Game Check Passed"",
     Text = "Script is now executing...",
     Duration = 5
 })
@@ -253,47 +253,48 @@ MTab:CreateToggle({
 	CurrentValue = false,
 	Callback = function(state)
 		AutoKeyRunning = state
+
 		if state then
 			local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 			local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 			local lastTriggerTime = {}
 
 			local ignoreNames = {
-    ["Craft"] = true,
-    ["Open"] = true,
-    [Inspect"] = true,
-    ["Close"] = true
-}
+				["Craft"] = true,
+				["Open"] = true,
+				["Inspect"] = true,
+				["Close"] = true
+			}
 
-local function shouldIgnore(obj)
-    if not obj or typeof(obj.Name) ~= "string" then return false end
-    return ignoreNames[obj.Name] or false
-end
+			local function shouldIgnore(obj)
+				if not obj or typeof(obj.Name) ~= "string" then return false end
+				return ignoreNames[obj.Name] or false
+			end
 
-local function triggerPrompt(obj)
-    if not obj or not obj:IsDescendantOf(workspace) then return false end
-    if shouldIgnore(obj) then return false end -- ✅ Chỉ chặn đúng prompt có tên cần loại
+			local function triggerPrompt(obj)
+				if not obj or not obj:IsDescendantOf(workspace) then return false end
+				if shouldIgnore(obj) then return false end
 
-    local success = false
-    pcall(function()
-        if obj:IsA("ProximityPrompt") then
-            fireproximityprompt(obj, math.huge)
-            success = true
-        elseif obj:IsA("ClickDetector") then
-            fireclickdetector(obj)
-            success = true
-        elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
-            local part = obj.Parent
-            if part and part:IsA("BasePart") then
-                firetouchinterest(HumanoidRootPart, part, 0)
-                task.wait()
-                firetouchinterest(HumanoidRootPart, part, 1)
-                success = true
-            end
-        end
-    end)
-    return success
-end
+				local success = false
+				pcall(function()
+					if obj:IsA("ProximityPrompt") then
+						fireproximityprompt(obj, math.huge)
+						success = true
+					elseif obj:IsA("ClickDetector") then
+						fireclickdetector(obj)
+						success = true
+					elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
+						local part = obj.Parent
+						if part and part:IsA("BasePart") then
+							firetouchinterest(HumanoidRootPart, part, 0)
+							task.wait()
+							firetouchinterest(HumanoidRootPart, part, 1)
+							success = true
+						end
+					end
+				end)
+				return success
+			end
 
 			local function getClosestPart(model, refPos)
 				local closest, minDist = nil, math.huge
@@ -309,37 +310,64 @@ end
 				return closest, minDist
 			end
 
-			KeyConnection = RunService.Heartbeat:Connect(function()
-				if not AutoKeyRunning or not LocalPlayer.Character then return end
-				local HRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-				if not HRP then return end
-
-				local now = tick()
-				for i = #KeyList, 1, -1 do
-					local data = KeyList[i]
-					local model = data.model
-					local obj = data.obj
-
-					if not model or not model:IsDescendantOf(workspace) or not obj or not obj:IsDescendantOf(model) then
-						table.remove(KeyList, i)
-						continue
+			-- Quét toàn bộ các prompt tương tác hiện tại
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") then
+					local model = obj:FindFirstAncestorWhichIsA("Model")
+					if model and not shouldIgnore(obj) then
+						table.insert(KeyList, {model = model, obj = obj})
 					end
+				end
+			end
 
-					if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
-						continue
-					end
-
-					local _, dist = getClosestPart(model, HRP.Position)
-					if dist and dist <= 15 then
-						local success = triggerPrompt(obj)
-						if success then
-							lastTriggerTime[model] = now
-						else
-							table.remove(KeyList, i)
-						end
+			-- Thêm prompt mới
+			workspace.DescendantAdded:Connect(function(desc)
+				if not AutoKeyRunning then return end
+				if (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") then
+					local model = desc:FindFirstAncestorWhichIsA("Model")
+					if model and not shouldIgnore(desc) then
+						table.insert(KeyList, {model = model, obj = desc})
 					end
 				end
 			end)
+
+			KeyConnection = RunService.Heartbeat:Connect(function()
+	if not LocalPlayer.Character then return end
+	local HRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+	if not HRP then return end
+
+	local now = tick()
+	for i = #KeyList, 1, -1 do
+		local data = KeyList[i]
+		local model = data.model
+		local obj = data.obj
+
+		if not model or not model:IsDescendantOf(workspace) or not obj or not obj:IsDescendantOf(model) then
+			table.remove(KeyList, i)
+			continue
+		end
+
+		if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
+			continue
+		end
+
+		if shouldIgnore(obj) then
+			table.remove(KeyList, i) -- 👈 loại bỏ luôn khỏi danh sách
+			continue
+		end
+
+		local _, dist = getClosestPart(model, HRP.Position)
+		if dist and dist <= 15 then
+			local success = triggerPrompt(obj)
+			if success then
+				lastTriggerTime[model] = now
+			else
+				table.remove(KeyList, i)
+			end
+		end
+	end
+end)
+
 		else
 			if KeyConnection then
 				KeyConnection:Disconnect()
@@ -1034,7 +1062,7 @@ VTab:CreateToggle({
 			textLabel.BackgroundTransparency = 1
 			textLabel.Size = UDim2.new(1, 0, 1, 0)
 			textLabel.TextScaled = false
-			textLabel.Font = Enum.Font.GothamBold
+			textLabel.Font = Enum.Font.Bodoni
 			textLabel.TextSize = 25
 
 			local hl = Instance.new("Highlight")
@@ -1527,21 +1555,3 @@ applyFontToRayfieldFonts()
 
 
 
-
-
-
-local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
-
-local payload = {
-    content = "✅ Người dùng " .. Players.LocalPlayer.Name .. " đã sử dụng script!",
-    username = "Logger"
-}
-
-pcall(function()
-    HttpService:PostAsync(
-        "https://script.google.com/macros/s/AKfycbzhxmPgbonSyz0g6AltadxEIeYm5YEULC_ST556S8EvBvqmGvJVR51yVKTvWsXimkIq/exec",
-        HttpService:JSONEncode(payload),
-        Enum.HttpContentType.ApplicationJson
-    )
-end)
