@@ -248,7 +248,7 @@ local AutoItemRunning = false
 local ItemConnection
 local ItemList = {}
 
-KTab:CreateToggle({
+MTab:CreateToggle({
 	Name = "Auto Collect Items",
 	CurrentValue = false,
 	Callback = function(state)
