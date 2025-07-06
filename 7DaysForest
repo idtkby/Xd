@@ -5,7 +5,7 @@ end
 
 -- Thông báo khi đúng ID game
 game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "✓ Game Check Passed"",
+    Title = "✓ Game Check Passed",
     Text = "Script is now executing...",
     Duration = 5
 })
@@ -263,7 +263,7 @@ MTab:CreateToggle({
 				["Craft"] = true,
 				["Open"] = true,
 				["Inspect"] = true,
-				["Close"] = true
+				["Close"] = true,
 			}
 
 			local function shouldIgnore(obj)
