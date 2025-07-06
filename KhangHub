@@ -60,7 +60,7 @@ InfoTab:CreateParagraph({
 
 InfoTab:CreateParagraph({
 	Title = "7 Day To Live",
-	Content = "[+] Add Esp Items\n [+] Update Craft Tab\n-- Version 2.1.0 --",
+	Content = "[+] Add Esp Items\n [+] Add Auto Collect Items\n  [+] Update Craft, Teleport Tab\n   [-] Remove Auto Collect Wood\n-- Version 2.1.0 --",
 })
 
 InfoTab:CreateParagraph({
