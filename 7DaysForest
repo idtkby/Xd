@@ -248,7 +248,7 @@ local AutoKeyRunning = false
 local KeyConnection
 local KeyList = {}
 
-MTab:CreateToggle({ -- ✅ Đổi KTab thành MTab
+KTab:CreateToggle({
 	Name = "Auto Interact",
 	CurrentValue = false,
 	Callback = function(state)
@@ -258,20 +258,20 @@ MTab:CreateToggle({ -- ✅ Đổi KTab thành MTab
 			local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 			local lastTriggerTime = {}
 
-			local function isIgnored(obj)
-				local part = obj:IsA("BasePart") and obj or obj:FindFirstAncestorWhichIsA("BasePart")
-				return part and (part.Name == "Workbench" or part.Name == "Door")
-			end
+			local excludedNames = {
+				Base = true,
+				Core = true,
+				Turret = true
+			}
 
 			local function scanInteractables()
 				KeyList = {}
 				for _, obj in ipairs(workspace:GetDescendants()) do
-					if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") 
-						and not obj:IsDescendantOf(LocalPlayer.Character)
-						and not isIgnored(obj) then
-						
+					if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(LocalPlayer.Character) then
 						local model = obj:FindFirstAncestorWhichIsA("Model")
-						table.insert(KeyList, {model = model, obj = obj})
+						if model and not excludedNames[model.Name] then
+							table.insert(KeyList, {model = model, obj = obj})
+						end
 					end
 				end
 			end
@@ -279,12 +279,11 @@ MTab:CreateToggle({ -- ✅ Đổi KTab thành MTab
 			scanInteractables()
 
 			workspace.DescendantAdded:Connect(function(desc)
-				if AutoKeyRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest")
-					and not desc:IsDescendantOf(LocalPlayer.Character)
-					and not isIgnored(desc) then
-
+				if AutoKeyRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") and not desc:IsDescendantOf(LocalPlayer.Character) then
 					local model = desc:FindFirstAncestorWhichIsA("Model")
-					table.insert(KeyList, {model = model, obj = desc})
+					if model and not excludedNames[model.Name] then
+						table.insert(KeyList, {model = model, obj = desc})
+					end
 				end
 			end)
 
@@ -346,7 +345,7 @@ MTab:CreateToggle({ -- ✅ Đổi KTab thành MTab
 					end
 
 					local _, dist = getClosestPart(model, HRP.Position)
-					if dist and dist <= 10 then
+					if dist and dist <= 3 then
 						local success = triggerPrompt(obj)
 						if success then
 							lastTriggerTime[model] = now
