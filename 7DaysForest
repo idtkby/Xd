@@ -13,6 +13,10 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
 task.wait(1) -- Đợi 1s trước khi thực thi 
 
 task.spawn(function()
+print("----    ---- ----    ----    ------    ----    ---- ------------ ") print("****   ****  ****    ****   ********   *****   **** ************ ") print("----  ----   ----    ----  ----------  ------  ---- ----         ") print("*********    ************ ****    **** ************ ****  ****** ") print("---------    ------------ ------------ ------------ ----  ------ ") print("****  ****   ****    **** ************ ****  ****** ****    **** ") print("----   ----  ----    ---- ----    ---- ----   ----- ------------ ") print("****    **** ****    **** ****    **** ****    **** ************ ")                                                                  
+end)
+
+task.spawn(function()
 -- Khai báo các dịch vụ cần thiết
 local player = game.Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
@@ -1023,13 +1027,6 @@ end
 
 
 
-
-
-
-
-
-
-
 local CTab = Window:CreateTab("Craft", "wrench")
 
 -- Section: Builds
@@ -1043,8 +1040,8 @@ local builds = {
 	{Name = "Torch", Requires = "1 Wood, 1 Stone"},
 	{Name = "Wall", Requires = "3 Wood"},
 	{Name = "Wide Wall", Requires = "5 Wood"},
- {Name = "Door", Requires = "6 Wood"),
- {Name = "Totem", Requires = "30 Wood"),
+ {Name = "Door", Requires = "6 Wood"},
+ {Name = "Totem", Requires = "30 Wood"},
 } 
 
 for _, b in ipairs(builds) do
@@ -1093,6 +1090,12 @@ for _, i in ipairs(items) do
 		end
 	})
 end
+
+
+
+
+
+
 
 
 
