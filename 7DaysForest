@@ -991,11 +991,10 @@ TeleportTab:CreateSection("Main Location")
 
 -- Vị trí chính
 local locations = {
-    {Name = "House 🏠", Position = Vector3.new(60.99, 48.58, 417.10)},
-    {Name = "House balcony 🏠", Position = Vector3.new(37.34, 52.72, 420.62)},
-    {Name = "House roof 🏠", Position = Vector3.new(57.73, 68.46, 417.58)},
-    {Name = "River 🏞️", Position = Vector3.new(-227.99, -0.84, 341.59)},
-    {Name = "Skeleton 💀", Position = Vector3.new(145.43, 12.63, 234.22)},
+    {Name = "House 🏠", Position = Vector3.new(1325.89, 52.96, 1320.49)}, 
+    {Name = "House balcony 🏠", Position = Vector3.new(1305.89, 63.27, 1319.71)},
+    {Name = "House roof 🏠", Position = Vector3.new(1328.49, 76.53, 1320.09)},
+    {Name = "River 🏞️", Position = Vector3.new(871.11, 9.98, 1337.17)},
 }
 
 for _, loc in ipairs(locations) do
