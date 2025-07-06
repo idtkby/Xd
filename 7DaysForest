@@ -264,6 +264,7 @@ MTab:CreateToggle({
                 ["Craft"]   = true,
                 ["Open"]    = true,
                 ["Inspect"] = true,
+                ["Buy"]     = true,
                 ["Close"]   = true,
             }
 
