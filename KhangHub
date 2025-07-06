@@ -60,7 +60,7 @@ InfoTab:CreateParagraph({
 
 InfoTab:CreateParagraph({
 	Title = "7 Day To Live",
-	Content = "[+] Added Eat Button (Full hungry)\n [+] Added Craft Tab\n  [+] Added Toggle Instant interact\n   [+] Added Auto Chop Tree\n    [+] Updated Infinite Yield to v6.3.2\n-- Version 2.0.0 --",
+	Content = "[+] Add Esp Items\n [+] Update Craft Tab\n-- Version 2.1.0 --",
 })
 
 InfoTab:CreateParagraph({
