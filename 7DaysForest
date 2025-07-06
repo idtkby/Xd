@@ -248,7 +248,7 @@ local AutoKeyRunning = false
 local KeyConnection
 local KeyList = {}
 
-KTab:CreateToggle({
+MTab:CreateToggle({
 	Name = "Auto Interact", -- 🔄 Đổi tên tại đây
 	CurrentValue = false,
 	Callback = function(state)
