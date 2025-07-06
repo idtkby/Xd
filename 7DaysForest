@@ -248,7 +248,7 @@ local AutoKeyRunning = false
 local KeyConnection
 local KeyList = {}
 
-KTab:CreateToggle({
+MTab:CreateToggle({
 	Name = "Auto Interact",
 	CurrentValue = false,
 	Callback = function(state)
@@ -258,57 +258,37 @@ KTab:CreateToggle({
 			local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 			local lastTriggerTime = {}
 
-			local excludedNames = {
-				Base = true,
-				Core = true,
-				Turret = true
-			}
+			local ignoreNames = {
+	["Craft"] = true,
+	["Open"] = true,
+	["Close"] = true,
+ ["Inspect"] = true,
+}
 
-			local function scanInteractables()
-				KeyList = {}
-				for _, obj in ipairs(workspace:GetDescendants()) do
-					if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(LocalPlayer.Character) then
-						local model = obj:FindFirstAncestorWhichIsA("Model")
-						if model and not excludedNames[model.Name] then
-							table.insert(KeyList, {model = model, obj = obj})
-						end
-					end
-				end
+local function triggerPrompt(obj)
+	if not obj or not obj:IsDescendantOf(workspace) then return false end
+	if ignoreNames[obj.Name] then return false end -- ❌ Bỏ qua tại đây
+
+	local success = false
+	pcall(function()
+		if obj:IsA("ProximityPrompt") then
+			fireproximityprompt(obj, math.huge)
+			success = true
+		elseif obj:IsA("ClickDetector") then
+			fireclickdetector(obj)
+			success = true
+		elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
+			local part = obj.Parent
+			if part and part:IsA("BasePart") then
+				firetouchinterest(HumanoidRootPart, part, 0)
+				task.wait()
+				firetouchinterest(HumanoidRootPart, part, 1)
+				success = true
 			end
-
-			scanInteractables()
-
-			workspace.DescendantAdded:Connect(function(desc)
-				if AutoKeyRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") and not desc:IsDescendantOf(LocalPlayer.Character) then
-					local model = desc:FindFirstAncestorWhichIsA("Model")
-					if model and not excludedNames[model.Name] then
-						table.insert(KeyList, {model = model, obj = desc})
-					end
-				end
-			end)
-
-			local function triggerPrompt(obj)
-				if not obj or not obj:IsDescendantOf(workspace) then return false end
-				local success = false
-				pcall(function()
-					if obj:IsA("ProximityPrompt") then
-						fireproximityprompt(obj, math.huge)
-						success = true
-					elseif obj:IsA("ClickDetector") then
-						fireclickdetector(obj)
-						success = true
-					elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
-						local part = obj.Parent
-						if part and part:IsA("BasePart") then
-							firetouchinterest(HumanoidRootPart, part, 0)
-							task.wait()
-							firetouchinterest(HumanoidRootPart, part, 1)
-							success = true
-						end
-					end
-				end)
-				return success
-			end
+		end
+	end)
+	return success
+end
 
 			local function getClosestPart(model, refPos)
 				local closest, minDist = nil, math.huge
@@ -345,7 +325,7 @@ KTab:CreateToggle({
 					end
 
 					local _, dist = getClosestPart(model, HRP.Position)
-					if dist and dist <= 3 then
+					if dist and dist <= 15 then
 						local success = triggerPrompt(obj)
 						if success then
 							lastTriggerTime[model] = now
