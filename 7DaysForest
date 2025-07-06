@@ -873,7 +873,7 @@ VTab:CreateToggle({
 
 
 
-local TeleportTab = Window:CreateTab("Teleport", "map")
+local TeleportTab = Window:CreateTab("Updating...", "map")
 TeleportTab:CreateSection("Main Location")
 
 -- Vị trí chính
@@ -926,7 +926,7 @@ end
 
 
 
-local CTab = Window:CreateTab("Craft", "wrench")
+local CTab = Window:CreateTab("Updating...", "wrench")
 local lp = game.Players.LocalPlayer
 
 CTab:CreateSection("Ingredient")
