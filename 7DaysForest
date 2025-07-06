@@ -246,10 +246,11 @@ local LocalPlayer = Players.LocalPlayer
 
 local AutoKeyRunning = false
 local KeyConnection
+local DescendantConnection
 local KeyList = {}
 
 MTab:CreateToggle({
-	Name = "Auto Interact", -- 🔄 Đổi tên tại đây
+	Name = "Auto Interact",
 	CurrentValue = false,
 	Callback = function(state)
 		AutoKeyRunning = state
@@ -258,10 +259,19 @@ MTab:CreateToggle({
 			local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 			local lastTriggerTime = {}
 
+			local function isIgnored(obj)
+				local parent = obj.Parent
+				if not parent then return false end
+				return parent.Name == "Workbench" or parent.Name == "Door"
+			end
+
 			local function scanInteractables()
 				KeyList = {}
 				for _, obj in ipairs(workspace:GetDescendants()) do
-					if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(LocalPlayer.Character) then
+					if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") 
+						and not obj:IsDescendantOf(LocalPlayer.Character)
+						and not isIgnored(obj) then
+
 						local model = obj:FindFirstAncestorWhichIsA("Model")
 						table.insert(KeyList, {model = model, obj = obj})
 					end
@@ -270,8 +280,11 @@ MTab:CreateToggle({
 
 			scanInteractables()
 
-			workspace.DescendantAdded:Connect(function(desc)
-				if AutoKeyRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") and not desc:IsDescendantOf(LocalPlayer.Character) then
+			DescendantConnection = workspace.DescendantAdded:Connect(function(desc)
+				if AutoKeyRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest")
+					and not desc:IsDescendantOf(LocalPlayer.Character)
+					and not isIgnored(desc) then
+
 					local model = desc:FindFirstAncestorWhichIsA("Model")
 					table.insert(KeyList, {model = model, obj = desc})
 				end
@@ -335,7 +348,7 @@ MTab:CreateToggle({
 					end
 
 					local _, dist = getClosestPart(model, HRP.Position)
-					if dist and dist <= 10 then
+					if dist and dist <= 3 then
 						local success = triggerPrompt(obj)
 						if success then
 							lastTriggerTime[model] = now
@@ -345,10 +358,15 @@ MTab:CreateToggle({
 					end
 				end
 			end)
+
 		else
 			if KeyConnection then
 				KeyConnection:Disconnect()
 				KeyConnection = nil
+			end
+			if DescendantConnection then
+				DescendantConnection:Disconnect()
+				DescendantConnection = nil
 			end
 			KeyList = {}
 		end
