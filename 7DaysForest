@@ -240,46 +240,135 @@ MTab:CreateToggle({
 	end
 })
 
-local autoCollectLog = false
-local heartbeatConnection
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
-MTab:CreateToggle({
-	Name = "Auto collect wood",
+local AutoItemRunning = false
+local ItemConnection
+local ItemList = {}
+
+KTab:CreateToggle({
+	Name = "Auto Collect Items",
 	CurrentValue = false,
-	Flag = "AutoCollectLog",
 	Callback = function(state)
-		autoCollectLog = state
-
-		if heartbeatConnection then
-			heartbeatConnection:Disconnect()
-			heartbeatConnection = nil
-		end
-
+		AutoItemRunning = state
 		if state then
-			local Players = game:GetService("Players")
-			local RunService = game:GetService("RunService")
-			local LocalPlayer = Players.LocalPlayer
+			local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+			local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+			local lastTriggerTime = {}
 
-			heartbeatConnection = RunService.Heartbeat:Connect(function()
-				local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-				local hrp = char:FindFirstChild("HumanoidRootPart")
-				if not hrp then return end
+			local ValidNames = {
+				["flax"] = true,
+				["pebbles"] = true,
+				["Raw Bear Meat"] = true,
+				["Raw Deer Meat"] = true,
+				["Bone"] = true,
+    ["log"] = true,
+			}
 
-				for _, model in ipairs(workspace:GetDescendants()) do
-					if model:IsA("Model") and model.Name:lower() == "log" then
-						local part = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
-						local prompt = model:FindFirstChildWhichIsA("ProximityPrompt", true)
+			local function scanItems()
+				ItemList = {}
+				for _, obj in ipairs(workspace:GetDescendants()) do
+					if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(LocalPlayer.Character) then
+						local model = obj:FindFirstAncestorWhichIsA("Model")
+						if model and ValidNames[model.Name] then
+							table.insert(ItemList, {model = model, obj = obj})
+						end
+					end
+				end
+			end
 
-						if part and prompt and (hrp.Position - part.Position).Magnitude <= 10 then
-							pcall(function()
-								fireproximityprompt(prompt)
-							end)
+			scanItems()
+			workspace.DescendantAdded:Connect(function(desc)
+				if AutoItemRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") then
+					local model = desc:FindFirstAncestorWhichIsA("Model")
+					if model and ValidNames[model.Name] then
+						table.insert(ItemList, {model = model, obj = desc})
+					end
+				end
+			end)
+
+			local function triggerPrompt(obj)
+				if not obj or not obj:IsDescendantOf(workspace) then return false end
+				local success = false
+				pcall(function()
+					if obj:IsA("ProximityPrompt") then
+						fireproximityprompt(obj, math.huge)
+						success = true
+					elseif obj:IsA("ClickDetector") then
+						fireclickdetector(obj)
+						success = true
+					elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
+						local part = obj.Parent
+						if part and part:IsA("BasePart") then
+							firetouchinterest(HumanoidRootPart, part, 0)
+							task.wait()
+							firetouchinterest(HumanoidRootPart, part, 1)
+							success = true
+						end
+					end
+				end)
+				return success
+			end
+
+			local function getClosestPart(model, refPos)
+				local closest, minDist = nil, math.huge
+				for _, part in ipairs(model:GetChildren()) do
+					if part:IsA("BasePart") then
+						local dist = (part.Position - refPos).Magnitude
+						if dist < minDist then
+							minDist = dist
+							closest = part
+						end
+					end
+				end
+				return closest, minDist
+			end
+
+			ItemConnection = RunService.Heartbeat:Connect(function()
+				if not AutoItemRunning or not LocalPlayer.Character then return end
+				local HRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+				if not HRP then return end
+
+				local now = tick()
+				for i = #ItemList, 1, -1 do
+					local data = ItemList[i]
+					local model = data.model
+					local obj = data.obj
+
+					if not model or not model:IsDescendantOf(workspace) or not obj or not obj:IsDescendantOf(model) then
+						table.remove(ItemList, i)
+						continue
+					end
+
+					if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
+						continue
+					end
+
+					local _, dist = getClosestPart(model, HRP.Position)
+					if dist and dist <= 15 then -- tăng khoảng cách
+						local success = triggerPrompt(obj)
+						if success then
+							lastTriggerTime[model] = now
+						else
+							table.remove(ItemList, i)
 						end
 					end
 				end
 			end)
+		else
+			if ItemConnection then
+				ItemConnection:Disconnect()
+				ItemConnection = nil
+			end
+			ItemList = {}
 		end
 	end
+})
+MTab:CreateParagraph({
+	Title = "Support Items",
+	Content = "Bone, Flax, Pebble, Raw Bear Meat, Raw Deer Meat, Wood",
 })
 
 MTab:CreateSection("Get Berry")
