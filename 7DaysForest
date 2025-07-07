@@ -166,11 +166,9 @@ local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
 local running = false
-local connection
 local heliList = {}
 local originalCFrame = nil
 
--- ⚙️ Hàm tìm prompt hợp lệ
 local function isValidPrompt(obj)
 	return obj and obj:IsDescendantOf(Workspace) and (
 		obj:IsA("ProximityPrompt") or
@@ -179,7 +177,6 @@ local function isValidPrompt(obj)
 	)
 end
 
--- ⚙️ Kích hoạt prompt gần trong phạm vi 10 stud
 local function activateNearbyPrompts()
 	local char = LocalPlayer.Character
 	if not char then return end
@@ -210,7 +207,6 @@ local function activateNearbyPrompts()
 	end
 end
 
--- ⚙️ Tìm heli_crash gần nhất còn tồn tại
 local function getNearestHeli()
 	local char = LocalPlayer.Character
 	if not char then return end
@@ -219,7 +215,7 @@ local function getNearestHeli()
 	if not HRP then return end
 
 	local nearest, minDist = nil, math.huge
-	for i, heli in ipairs(heliList) do
+	for _, heli in ipairs(heliList) do
 		if heli:IsDescendantOf(Workspace) then
 			local dist = (heli:GetPivot().Position - HRP.Position).Magnitude
 			if dist < minDist then
@@ -231,7 +227,6 @@ local function getNearestHeli()
 	return nearest
 end
 
--- ⚙️ Lọc danh sách heli_crash hiện có
 local function refreshHelis()
 	heliList = {}
 	for _, v in ipairs(Workspace:GetDescendants()) do
@@ -241,7 +236,21 @@ local function refreshHelis()
 	end
 end
 
--- 🧠 Luồng chạy
+local function teleportSafe(cf)
+	local char = LocalPlayer.Character
+	if not char then return end
+
+	local HRP = char:FindFirstChild("HumanoidRootPart")
+	local Humanoid = char:FindFirstChildOfClass("Humanoid")
+
+	if not HRP or not Humanoid then return end
+
+	Humanoid.PlatformStand = true
+	HRP.CFrame = cf
+	task.wait(0.1)
+	Humanoid.PlatformStand = false
+end
+
 local function autoCollect()
 	while running do
 		refreshHelis()
@@ -252,11 +261,8 @@ local function autoCollect()
 		local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 		if not hrp then break end
 
-		-- Teleport đến heli
-		local cf = target:GetPivot() + Vector3.new(0, 4, 0)
-		hrp.CFrame = cf
+		teleportSafe(target:GetPivot() + Vector3.new(0, 4, 0))
 
-		-- Chờ thu thập prompt xung quanh
 		local timeout = 10
 		while timeout > 0 and running do
 			activateNearbyPrompts()
@@ -264,31 +270,26 @@ local function autoCollect()
 			timeout -= 0.5
 		end
 
-		-- Bỏ heli đã xử lý
 		table.remove(heliList, table.find(heliList, target))
 	end
 
-	-- Trả về vị trí ban đầu
 	if originalCFrame and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-		LocalPlayer.Character.HumanoidRootPart.CFrame = originalCFrame
+		teleportSafe(originalCFrame)
 	end
 end
 
--- 🧩 Tạo Toggle Rayfield
+-- ✅ Gắn vào MTab
 MTab:CreateToggle({
-	Name = "Auto Collect heli crash",
+	Name = "Collect heli crash",
 	CurrentValue = false,
-	Flag = "GotoHeli",
+	Flag = "CollectHeliCrash",
 	Callback = function(state)
 		running = state
-
-		if running then
-			-- Lưu vị trí ban đầu
+		if state then
 			local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 			if hrp then
 				originalCFrame = hrp.CFrame
 			end
-
 			task.spawn(autoCollect)
 		else
 			heliList = {}
