@@ -29,7 +29,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 -- Tạo cửa sổ giao diện chính
 local Window = Rayfield:CreateWindow({
     Name = "Script By gnahK [PETAPETA: School of Nightmares]",
-    LoadingTitle = "Loading Hub...",
+    LoadingTitle = "Loading Script...",
     LoadingSubtitle = "Please wait",
     ConfigurationSaving = {
         Enabled = true,
