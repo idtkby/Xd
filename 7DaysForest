@@ -1368,7 +1368,73 @@ for _, loc in ipairs(locations) do
         end
     })
 end
+local usedTargets = {}
 
+TeleportTab:CreateButton({
+	Name = "Go to Materials",
+	Callback = function()
+		local Players = game:GetService("Players")
+		local LocalPlayer = Players.LocalPlayer
+		local Workspace = game:GetService("Workspace")
+
+		local function getHRP()
+			local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+			return char:WaitForChild("HumanoidRootPart", 5)
+		end
+
+		local function getUnvisitedAbandoned()
+			local nearest, minDist = nil, math.huge
+			local hrp = getHRP()
+			if not hrp then return end
+
+			for _, obj in ipairs(Workspace:GetDescendants()) do
+				if obj:IsA("Model") and obj.Name == "abandoned_shack" and not usedTargets[obj] then
+					local part = obj:FindFirstChildWhichIsA("BasePart")
+					if part then
+						local dist = (hrp.Position - part.Position).Magnitude
+						if dist < minDist then
+							minDist = dist
+							nearest = obj
+						end
+					end
+				end
+			end
+			return nearest, minDist
+		end
+
+		local function safeTeleport(cf)
+			local hrp = getHRP()
+			if not hrp then return end
+
+			for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
+				if v:IsA("BasePart") then
+					v.CanCollide = false
+					v.Velocity = Vector3.zero
+					v.RotVelocity = Vector3.zero
+				end
+			end
+
+			task.wait()
+			hrp.Anchored = true
+			hrp.CFrame = cf * CFrame.new(0, 3, 0)
+			task.wait(0.15)
+			hrp.Anchored = false
+		end
+
+		local target, dist = getUnvisitedAbandoned()
+		if target then
+			local mainPart = target:FindFirstChildWhichIsA("BasePart")
+			if mainPart then
+				safeTeleport(mainPart.CFrame)
+				print("Đã dịch chuyển đến abandoned_shack | Dist:", math.floor(dist))
+				usedTargets[target] = true
+			end
+		else
+			warn("Không còn abandoned_shack để dịch chuyển.")
+			error("Hết Materials để dịch chuyển đến.") -- 🔴 Gọi lỗi để vô hiệu hoá nút
+		end
+	end
+})
 
 
 
