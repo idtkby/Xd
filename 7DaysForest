@@ -335,7 +335,7 @@ MTab:CreateToggle({
 					end
 
 					local _, dist = getClosestPart(model, HRP.Position)
-					if dist and dist <= 15 then
+					if dist and dist <= 10 then
 						local success = triggerPrompt(obj)
 						if success then
 							lastTriggerTime[model] = now
