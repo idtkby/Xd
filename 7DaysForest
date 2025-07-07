@@ -160,6 +160,460 @@ end
 createAutoScrapToggle(MTab, "Auto Scrap", 0.5)
 createAutoScrapToggle(MTab, "Auto Scrap (Fast)", 0.15)
 
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local running = false
+local connection
+local heliList = {}
+local originalCFrame = nil
+
+-- ⚙️ Hàm tìm prompt hợp lệ
+local function isValidPrompt(obj)
+	return obj and obj:IsDescendantOf(Workspace) and (
+		obj:IsA("ProximityPrompt") or
+		obj:IsA("ClickDetector") or
+		obj.Name == "TouchInterest"
+	)
+end
+
+-- ⚙️ Kích hoạt prompt gần trong phạm vi 10 stud
+local function activateNearbyPrompts()
+	local char = LocalPlayer.Character
+	if not char then return end
+
+	local HRP = char:FindFirstChild("HumanoidRootPart")
+	if not HRP then return end
+
+	for _, obj in ipairs(Workspace:GetDescendants()) do
+		if isValidPrompt(obj) then
+			local part = obj:IsA("TouchTransmitter") and obj.Parent or obj.Parent
+			if part and part:IsA("BasePart") then
+				local dist = (part.Position - HRP.Position).Magnitude
+				if dist <= 10 then
+					pcall(function()
+						if obj:IsA("ProximityPrompt") then
+							fireproximityprompt(obj, math.huge)
+						elseif obj:IsA("ClickDetector") then
+							fireclickdetector(obj)
+						elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
+							firetouchinterest(HRP, part, 0)
+							task.wait()
+							firetouchinterest(HRP, part, 1)
+						end
+					end)
+				end
+			end
+		end
+	end
+end
+
+-- ⚙️ Tìm heli_crash gần nhất còn tồn tại
+local function getNearestHeli()
+	local char = LocalPlayer.Character
+	if not char then return end
+
+	local HRP = char:FindFirstChild("HumanoidRootPart")
+	if not HRP then return end
+
+	local nearest, minDist = nil, math.huge
+	for i, heli in ipairs(heliList) do
+		if heli:IsDescendantOf(Workspace) then
+			local dist = (heli:GetPivot().Position - HRP.Position).Magnitude
+			if dist < minDist then
+				minDist = dist
+				nearest = heli
+			end
+		end
+	end
+	return nearest
+end
+
+-- ⚙️ Lọc danh sách heli_crash hiện có
+local function refreshHelis()
+	heliList = {}
+	for _, v in ipairs(Workspace:GetDescendants()) do
+		if v:IsA("Model") and v.Name == "heli_crash" then
+			table.insert(heliList, v)
+		end
+	end
+end
+
+-- 🧠 Luồng chạy
+local function autoCollect()
+	while running do
+		refreshHelis()
+
+		local target = getNearestHeli()
+		if not target then break end
+
+		local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+		if not hrp then break end
+
+		-- Teleport đến heli
+		local cf = target:GetPivot() + Vector3.new(0, 4, 0)
+		hrp.CFrame = cf
+
+		-- Chờ thu thập prompt xung quanh
+		local timeout = 10
+		while timeout > 0 and running do
+			activateNearbyPrompts()
+			task.wait(0.5)
+			timeout -= 0.5
+		end
+
+		-- Bỏ heli đã xử lý
+		table.remove(heliList, table.find(heliList, target))
+	end
+
+	-- Trả về vị trí ban đầu
+	if originalCFrame and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+		LocalPlayer.Character.HumanoidRootPart.CFrame = originalCFrame
+	end
+end
+
+-- 🧩 Tạo Toggle Rayfield
+MTab:CreateToggle({
+	Name = "Collect heli crash",
+	CurrentValue = false,
+	Flag = "GotoHeli",
+	Callback = function(state)
+		running = state
+
+		if running then
+			-- Lưu vị trí ban đầu
+			local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			if hrp then
+				originalCFrame = hrp.CFrame
+			end
+
+			task.spawn(autoCollect)
+		else
+			heliList = {}
+			originalCFrame = nil
+		end
+	end
+})
+
+local autoHeal = false
+
+MTab:CreateToggle({
+    Name = "Auto Heal Players",
+    CurrentValue = false,
+    Flag = "AutoHealPlayers",
+    Callback = function(Value)
+        autoHeal = Value
+        if autoHeal then
+            task.spawn(function()
+                while autoHeal do
+                    for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+                        local char = player.Character
+                        if char and char:FindFirstChild("Humanoid") and char:FindFirstChild("HumanoidRootPart") then
+                            local hp = char.Humanoid.Health
+                            local maxHp = char.Humanoid.MaxHealth
+                            if hp < maxHp then
+                                local args = { char }
+                                game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("heal"):FireServer(unpack(args))
+                            end
+                        end
+                    end
+                    task.wait(0.5)
+                end
+            end)
+        end
+    end,
+})
+
+local autoFishingRunning = false
+
+MTab:CreateToggle({
+	Name = "Auto fishing [Fishing Rod]",
+	CurrentValue = false,
+	Flag = "AutoFishingToggle",
+	Callback = function(state)
+		autoFishingRunning = state
+
+		if state then
+			task.spawn(function()
+				while autoFishingRunning do
+					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("cast"):FireServer()
+					wait(0.2)
+
+					for i = 1, 8 do
+						game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("hit_fish"):FireServer()
+						task.wait(0.03)
+			end
+
+
+					task.wait(1)
+				end
+			end)
+		end
+	end
+})
+
+local autoFishingRunning = false
+
+MTab:CreateToggle({
+	Name = "Auto chop trees",
+	CurrentValue = false,
+	Flag = "AutoFishingToggle",
+	Callback = function(state)
+		autoFishingRunning = state
+
+		if state then
+			task.spawn(function()
+				while autoFishingRunning do
+					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("swing_axe"):FireServer()
+
+
+
+					task.wait(0.5)
+				end
+			end)
+		end
+	end
+})
+
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local AutoKeyRunning = false
+local KeyConnection
+local KeyList = {}
+
+MTab:CreateToggle({
+	Name = "Auto Interact", -- 🔄 Đổi tên tại đây
+	CurrentValue = false,
+	Callback = function(state)
+		AutoKeyRunning = state
+		if state then
+			local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+			local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+			local lastTriggerTime = {}
+
+			local function scanInteractables()
+				KeyList = {}
+				for _, obj in ipairs(workspace:GetDescendants()) do
+					if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(LocalPlayer.Character) then
+						local model = obj:FindFirstAncestorWhichIsA("Model")
+						table.insert(KeyList, {model = model, obj = obj})
+					end
+				end
+			end
+
+			scanInteractables()
+
+			workspace.DescendantAdded:Connect(function(desc)
+				if AutoKeyRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") and not desc:IsDescendantOf(LocalPlayer.Character) then
+					local model = desc:FindFirstAncestorWhichIsA("Model")
+					table.insert(KeyList, {model = model, obj = desc})
+				end
+			end)
+
+			local function triggerPrompt(obj)
+				if not obj or not obj:IsDescendantOf(workspace) then return false end
+				local success = false
+				pcall(function()
+					if obj:IsA("ProximityPrompt") then
+						fireproximityprompt(obj, math.huge)
+						success = true
+					elseif obj:IsA("ClickDetector") then
+						fireclickdetector(obj)
+						success = true
+					elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
+						local part = obj.Parent
+						if part and part:IsA("BasePart") then
+							firetouchinterest(HumanoidRootPart, part, 0)
+							task.wait()
+							firetouchinterest(HumanoidRootPart, part, 1)
+							success = true
+						end
+					end
+				end)
+				return success
+			end
+
+			local function getClosestPart(model, refPos)
+				local closest, minDist = nil, math.huge
+				for _, part in ipairs(model:GetChildren()) do
+					if part:IsA("BasePart") then
+						local dist = (part.Position - refPos).Magnitude
+						if dist < minDist then
+							minDist = dist
+							closest = part
+						end
+					end
+				end
+				return closest, minDist
+			end
+
+			KeyConnection = RunService.Heartbeat:Connect(function()
+				if not AutoKeyRunning or not LocalPlayer.Character then return end
+				local HRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+				if not HRP then return end
+
+				local now = tick()
+				for i = #KeyList, 1, -1 do
+					local data = KeyList[i]
+					local model = data.model
+					local obj = data.obj
+
+					if not model or not model:IsDescendantOf(workspace) or not obj or not obj:IsDescendantOf(model) then
+						table.remove(KeyList, i)
+						continue
+					end
+
+					if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
+						continue
+					end
+
+					local _, dist = getClosestPart(model, HRP.Position)
+					if dist and dist <= 10 then
+						local success = triggerPrompt(obj)
+						if success then
+							lastTriggerTime[model] = now
+						else
+							table.remove(KeyList, i)
+						end
+					end
+				end
+			end)
+		else
+			if KeyConnection then
+				KeyConnection:Disconnect()
+				KeyConnection = nil
+			end
+			KeyList = {}
+		end
+	end
+})roximityPrompt") or
+		obj:IsA("ClickDetector") or
+		obj.Name == "TouchInterest"
+	)
+end
+
+-- ⚙️ Kích hoạt prompt gần trong phạm vi 10 stud
+local function activateNearbyPrompts()
+	local char = LocalPlayer.Character
+	if not char then return end
+
+	local HRP = char:FindFirstChild("HumanoidRootPart")
+	if not HRP then return end
+
+	for _, obj in ipairs(Workspace:GetDescendants()) do
+		if isValidPrompt(obj) then
+			local part = obj:IsA("TouchTransmitter") and obj.Parent or obj.Parent
+			if part and part:IsA("BasePart") then
+				local dist = (part.Position - HRP.Position).Magnitude
+				if dist <= 10 then
+					pcall(function()
+						if obj:IsA("ProximityPrompt") then
+							fireproximityprompt(obj, math.huge)
+						elseif obj:IsA("ClickDetector") then
+							fireclickdetector(obj)
+						elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
+							firetouchinterest(HRP, part, 0)
+							task.wait()
+							firetouchinterest(HRP, part, 1)
+						end
+					end)
+				end
+			end
+		end
+	end
+end
+
+-- ⚙️ Tìm heli_crash gần nhất còn tồn tại
+local function getNearestHeli()
+	local char = LocalPlayer.Character
+	if not char then return end
+
+	local HRP = char:FindFirstChild("HumanoidRootPart")
+	if not HRP then return end
+
+	local nearest, minDist = nil, math.huge
+	for i, heli in ipairs(heliList) do
+		if heli:IsDescendantOf(Workspace) then
+			local dist = (heli:GetPivot().Position - HRP.Position).Magnitude
+			if dist < minDist then
+				minDist = dist
+				nearest = heli
+			end
+		end
+	end
+	return nearest
+end
+
+-- ⚙️ Lọc danh sách heli_crash hiện có
+local function refreshHelis()
+	heliList = {}
+	for _, v in ipairs(Workspace:GetDescendants()) do
+		if v:IsA("Model") and v.Name == "heli_crash" then
+			table.insert(heliList, v)
+		end
+	end
+end
+
+-- 🧠 Luồng chạy
+local function autoCollect()
+	while running do
+		refreshHelis()
+
+		local target = getNearestHeli()
+		if not target then break end
+
+		local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+		if not hrp then break end
+
+		-- Teleport đến heli
+		local cf = target:GetPivot() + Vector3.new(0, 4, 0)
+		hrp.CFrame = cf
+
+		-- Chờ thu thập prompt xung quanh
+		local timeout = 10
+		while timeout > 0 and running do
+			activateNearbyPrompts()
+			task.wait(0.5)
+			timeout -= 0.5
+		end
+
+		-- Bỏ heli đã xử lý
+		table.remove(heliList, table.find(heliList, target))
+	end
+
+	-- Trả về vị trí ban đầu
+	if originalCFrame and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+		LocalPlayer.Character.HumanoidRootPart.CFrame = originalCFrame
+	end
+end
+
+-- 🧩 Tạo Toggle Rayfield
+TeleportTab:CreateToggle({
+	Name = "Goto and collect heli",
+	CurrentValue = false,
+	Flag = "GotoHeli",
+	Callback = function(state)
+		running = state
+
+		if running then
+			-- Lưu vị trí ban đầu
+			local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			if hrp then
+				originalCFrame = hrp.CFrame
+			end
+
+			task.spawn(autoCollect)
+		else
+			heliList = {}
+			originalCFrame = nil
+		end
+	end
+})
+
 local autoHeal = false
 
 MTab:CreateToggle({
@@ -1213,9 +1667,9 @@ TeleportTab:CreateSection("Main Location")
 
 -- Vị trí chính
 local locations = {
-    {Name = "House 🏠", Position = Vector3.new(1325.89, 52.96, 1320.49)}, 
-    {Name = "House balcony 🏠", Position = Vector3.new(1305.89, 63.27, 1319.71)},
-    {Name = "House roof 🏠", Position = Vector3.new(1328.49, 76.53, 1320.09)},
+    {Name = "House 🏠", Position = Vector3.new(1328.45, 29.15, 1320.02)}, 
+    {Name = "House balcony 🏠", Position = Vector3.new(1305.69, 42.51, 1319.58)},
+    {Name = "House roof 🏠", Position = Vector3.new(1328.53, 56.30, 1319.72)},
     {Name = "River 🏞️", Position = Vector3.new(871.11, 9.98, 1337.17)},
 }
 
