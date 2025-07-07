@@ -241,7 +241,7 @@ MTab:CreateToggle({
 })
 
 local RunService = game:GetService("RunService")
-local Players   = game:GetService("Players")
+local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 local AutoKeyRunning = false
@@ -249,136 +249,110 @@ local KeyConnection
 local KeyList = {}
 
 MTab:CreateToggle({
-    Name = "Auto Interact",
-    CurrentValue = false,
-    Callback = function(state)
-        AutoKeyRunning = state
+	Name = "Auto Interact", -- 🔄 Đổi tên tại đây
+	CurrentValue = false,
+	Callback = function(state)
+		AutoKeyRunning = state
+		if state then
+			local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+			local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+			local lastTriggerTime = {}
 
-        if state then
-            local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-            local HRP       = Character:WaitForChild("HumanoidRootPart")
-            local lastTriggerTime = {}
+			local function scanInteractables()
+				KeyList = {}
+				for _, obj in ipairs(workspace:GetDescendants()) do
+					if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(LocalPlayer.Character) then
+						local model = obj:FindFirstAncestorWhichIsA("Model")
+						table.insert(KeyList, {model = model, obj = obj})
+					end
+				end
+			end
 
-            -- Các từ khóa hiển thị của ProximityPrompt cần bỏ qua
-            local ignoreActions = {
-                ["Craft"]   = true,
-                ["Open"]    = true,
-                ["Inspect"] = true,
-                ["Buy"]     = true,
-                ["Close"]   = true,
-            }
+			scanInteractables()
 
-            -- Hàm kiểm tra có nên bỏ qua obj này không
-            local function shouldIgnore(obj)
-                if obj:IsA("ProximityPrompt") then
-                    return ignoreActions[obj.ActionText] or false
-                end
-                -- Nếu muốn bỏ qua ClickDetector nào thì check parent.Name ở đây
-                -- Ví dụ: if obj:IsA("ClickDetector") and obj.Parent.Name == "Bench" then return true end
-                return false
-            end
+			workspace.DescendantAdded:Connect(function(desc)
+				if AutoKeyRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") and not desc:IsDescendantOf(LocalPlayer.Character) then
+					local model = desc:FindFirstAncestorWhichIsA("Model")
+					table.insert(KeyList, {model = model, obj = desc})
+				end
+			end)
 
-            -- Gửi lệnh kích hoạt
-            local function triggerPrompt(obj)
-                if not obj or not obj:IsDescendantOf(workspace) then return false end
-                if shouldIgnore(obj) then return false end
+			local function triggerPrompt(obj)
+				if not obj or not obj:IsDescendantOf(workspace) then return false end
+				local success = false
+				pcall(function()
+					if obj:IsA("ProximityPrompt") then
+						fireproximityprompt(obj, math.huge)
+						success = true
+					elseif obj:IsA("ClickDetector") then
+						fireclickdetector(obj)
+						success = true
+					elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
+						local part = obj.Parent
+						if part and part:IsA("BasePart") then
+							firetouchinterest(HumanoidRootPart, part, 0)
+							task.wait()
+							firetouchinterest(HumanoidRootPart, part, 1)
+							success = true
+						end
+					end
+				end)
+				return success
+			end
 
-                local success = false
-                pcall(function()
-                    if obj:IsA("ProximityPrompt") then
-                        fireproximityprompt(obj, math.huge)
-                        success = true
-                    elseif obj:IsA("ClickDetector") then
-                        fireclickdetector(obj)
-                        success = true
-                    elseif obj.Name == "TouchInterest" then
-                        local part = obj.Parent
-                        if part and part:IsA("BasePart") then
-                            firetouchinterest(HRP, part, 0)
-                            task.wait()
-                            firetouchinterest(HRP, part, 1)
-                            success = true
-                        end
-                    end
-                end)
-                return success
-            end
+			local function getClosestPart(model, refPos)
+				local closest, minDist = nil, math.huge
+				for _, part in ipairs(model:GetChildren()) do
+					if part:IsA("BasePart") then
+						local dist = (part.Position - refPos).Magnitude
+						if dist < minDist then
+							minDist = dist
+							closest = part
+						end
+					end
+				end
+				return closest, minDist
+			end
 
-            local function getClosestPart(model, refPos)
-                local closest, minDist = nil, math.huge
-                for _, part in ipairs(model:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        local d = (part.Position - refPos).Magnitude
-                        if d < minDist then
-                            minDist, closest = d, part
-                        end
-                    end
-                end
-                return closest, minDist
-            end
+			KeyConnection = RunService.Heartbeat:Connect(function()
+				if not AutoKeyRunning or not LocalPlayer.Character then return end
+				local HRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+				if not HRP then return end
 
-            -- Quét ban đầu
-            KeyList = {}
-            for _, obj in ipairs(workspace:GetDescendants()) do
-                if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest")
-                and not shouldIgnore(obj) then
-                    local model = obj:FindFirstAncestorWhichIsA("Model")
-                    if model then
-                        table.insert(KeyList, {model = model, obj = obj})
-                    end
-                end
-            end
+				local now = tick()
+				for i = #KeyList, 1, -1 do
+					local data = KeyList[i]
+					local model = data.model
+					local obj = data.obj
 
-            -- Thêm mới
-            workspace.DescendantAdded:Connect(function(desc)
-                if not AutoKeyRunning then return end
-                if desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest" then
-                    if shouldIgnore(desc) then return end
-                    local model = desc:FindFirstAncestorWhichIsA("Model")
-                    if model then
-                        table.insert(KeyList, {model = model, obj = desc})
-                    end
-                end
-            end)
+					if not model or not model:IsDescendantOf(workspace) or not obj or not obj:IsDescendantOf(model) then
+						table.remove(KeyList, i)
+						continue
+					end
 
-            -- Loop để tự động kích hoạt
-            KeyConnection = RunService.Heartbeat:Connect(function()
-                if not LocalPlayer.Character then return end
-                local now = tick()
-                for i = #KeyList, 1, -1 do
-                    local data = KeyList[i]
-                    local model = data.model
-                    local obj   = data.obj
+					if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
+						continue
+					end
 
-                    if not model:IsDescendantOf(workspace)
-                    or not obj:IsDescendantOf(workspace) then
-                        table.remove(KeyList, i)
-                        continue
-                    end
-
-                    if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
-                        continue
-                    end
-
-                    local _, dist = getClosestPart(model, HRP.Position)
-                    if dist and dist <= 15 then
-                        if triggerPrompt(obj) then
-                            lastTriggerTime[model] = now
-                        else
-                            table.remove(KeyList, i)
-                        end
-                    end
-                end
-            end)
-
-        else
-            if KeyConnection then
-                KeyConnection:Disconnect()
-                KeyConnection = nil
-            end
-            KeyList = {}
-        end
-    end
+					local _, dist = getClosestPart(model, HRP.Position)
+					if dist and dist <= 3 then
+						local success = triggerPrompt(obj)
+						if success then
+							lastTriggerTime[model] = now
+						else
+							table.remove(KeyList, i)
+						end
+					end
+				end
+			end)
+		else
+			if KeyConnection then
+				KeyConnection:Disconnect()
+				KeyConnection = nil
+			end
+			KeyList = {}
+		end
+	end
 })
   
 
@@ -1289,6 +1263,7 @@ local builds = {
 	{Name = "Wide Wall", Requires = "5 Wood"},
  {Name = "Door", Requires = "6 Wood"},
  {Name = "Totem", Requires = "30 Wood"},
+ {Name = "Cauldron", Requires = "2 Wood, 20 Stone"},
 } 
 
 for _, b in ipairs(builds) do
