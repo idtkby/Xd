@@ -10,7 +10,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- Tạo cửa sổ giao diện chính
 local Window = Rayfield:CreateWindow({
-    Name = "KhangHub",
+    Name = "gnahKHub",
     LoadingTitle = "Loading Hub...",
     LoadingSubtitle = "Please wait",
     ConfigurationSaving = {
