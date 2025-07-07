@@ -1034,6 +1034,8 @@ VTab:CreateToggle({
 			pebbles = {label = "Pebble", color = Color3.fromRGB(200, 200, 200)},
 			abandoned_shack = {label = "Materials", color = Color3.fromRGB(137, 80, 0)},
 			flax = {label = "Flax", color = Color3.fromRGB(18, 111, 0)},
+			carrot = {label = "Carrot", color = Color3.fromRGB(255, 137, 64)},
+   flower = {label = "Flower", color = Color3.fromRGB(255, 185, 215)},
 			heli_crash = {label = "Heli Crash", color = Color3.fromRGB(255, 212, 143)},
 		}
 
