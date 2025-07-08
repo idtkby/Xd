@@ -424,6 +424,69 @@ mainTab:CreateButton({
 	end,
 })
 
+
+mainTab:CreateButton({
+Name = "Esp Portal",
+    Callback = function()
+        autoESP(function(p)
+			return p:IsA("BasePart") and p.Name == "petapeta_circleeffect_A"
+		end, Color3.fromRGB(0, 255, 0), "Portal")
+    end,
+})
+
+
+mainTab:CreateButton({
+    Name = "Esp Shoe Shelf [Lv 3],
+    Callback = function()
+        local positions = {
+	Vector3.new(-52.95, 34.65, 79.25),
+	Vector3.new(89.46, 34.65, -49.66),
+
+}
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+for _, pos in ipairs(positions) do
+	local part = Instance.new("Part")
+	part.Name = "Shoe shelf"
+	part.Anchored = true
+	part.CanCollide = false
+	part.Transparency = 1
+	part.Size = Vector3.new(2, 3, 2)
+	part.Position = pos
+	part.Parent = workspace
+
+	local gui = Instance.new("BillboardGui")
+	gui.Name = "ShoeShelfTag"
+	gui.Adornee = part
+	gui.AlwaysOnTop = true
+	gui.Size = UDim2.new(0, 100, 0, 40)
+	gui.StudsOffset = Vector3.new(0, 2, 0)
+	gui.Parent = part
+
+	local label = Instance.new("TextLabel", gui)
+	label.Size = UDim2.new(1, 0, 1, 0)
+	label.BackgroundTransparency = 1
+	label.TextColor3 = Color3.fromRGB(185, 209, 255)
+	label.TextStrokeTransparency = 0
+	label.Font = Enum.Font.Bodoni
+	label.TextScaled = true
+	label.Text = "Shoe shelf | Dis: ..."
+
+	-- Tự cập nhật khoảng cách
+	RunService.RenderStepped:Connect(function()
+		local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+		if hrp and part and part.Parent then
+			local dist = (part.Position - hrp.Position).Magnitude
+			label.Text = string.format("Shoe shelf | Dis: %.1f", dist)
+		end
+	end)
+end
+    end,
+})
+
 mainTab:CreateButton({
 	Name = "Esp Fire Extinguisher [SupHard]",
 	Callback = function()
@@ -1416,67 +1479,6 @@ Name = "discord test",
 
 local evt = Window:CreateTab("Event", "eye")
 
-evt:CreateButton({
-Name = "Esp Portal",
-    Callback = function()
-        autoESP(function(p)
-			return p:IsA("BasePart") and p.Name == "petapeta_circleeffect_A"
-		end, Color3.fromRGB(0, 255, 0), "Portal")
-    end,
-})
-
-
-evt:CreateButton({
-    Name = "Esp Shoe Shelf [Alpha]",
-    Callback = function()
-        local positions = {
-	Vector3.new(-52.95, 34.65, 79.25),
-	Vector3.new(89.46, 34.65, -49.66),
-
-}
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-
-for _, pos in ipairs(positions) do
-	local part = Instance.new("Part")
-	part.Name = "Shoe shelf"
-	part.Anchored = true
-	part.CanCollide = false
-	part.Transparency = 1
-	part.Size = Vector3.new(2, 3, 2)
-	part.Position = pos
-	part.Parent = workspace
-
-	local gui = Instance.new("BillboardGui")
-	gui.Name = "ShoeShelfTag"
-	gui.Adornee = part
-	gui.AlwaysOnTop = true
-	gui.Size = UDim2.new(0, 100, 0, 40)
-	gui.StudsOffset = Vector3.new(0, 2, 0)
-	gui.Parent = part
-
-	local label = Instance.new("TextLabel", gui)
-	label.Size = UDim2.new(1, 0, 1, 0)
-	label.BackgroundTransparency = 1
-	label.TextColor3 = Color3.fromRGB(185, 209, 255)
-	label.TextStrokeTransparency = 0
-	label.Font = Enum.Font.Bodoni
-	label.TextScaled = true
-	label.Text = "Shoe shelf | Dis: ..."
-
-	-- Tự cập nhật khoảng cách
-	RunService.RenderStepped:Connect(function()
-		local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-		if hrp and part and part.Parent then
-			local dist = (part.Position - hrp.Position).Magnitude
-			label.Text = string.format("Shoe shelf | Dis: %.1f", dist)
-		end
-	end)
-end
-    end,
-})
 
 
 
