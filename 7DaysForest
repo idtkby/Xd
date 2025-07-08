@@ -327,56 +327,29 @@ MTab:CreateToggle({
     end,
 })
 
-local autoFishingRunning = false
+local autoFishingRunning = false    
+    
+MTab:CreateToggle({    
+	Name = "Auto chop tree",    
+	CurrentValue = false,    
+	Flag = "AutoFishingToggle",    
+	Callback = function(state)    
+		autoFishingRunning = state    
+    
+		if state then    
+			task.spawn(function()    
+				while autoFishingRunning do    
+					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("swing_axe"):FireServer()    
 
-MTab:CreateToggle({
-	Name = "Auto fishing [Fishing Rod]",
-	CurrentValue = false,
-	Flag = "AutoFishingToggle",
-	Callback = function(state)
-		autoFishingRunning = state
-
-		if state then
-			task.spawn(function()
-				while autoFishingRunning do
-					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("cast"):FireServer()
-					wait(0.2)
-
-					for i = 1, 8 do
-						game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("hit_fish"):FireServer()
-						task.wait(0.03)
-			end
-
-
-					task.wait(1)
-				end
-			end)
-		end
-	end
-})
-
-local autoFishingRunning = false
-
-MTab:CreateToggle({
-	Name = "Auto chop trees",
-	CurrentValue = false,
-	Flag = "AutoFishingToggle",
-	Callback = function(state)
-		autoFishingRunning = state
-
-		if state then
-			task.spawn(function()
-				while autoFishingRunning do
-					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("swing_axe"):FireServer()
-
-
-
-					task.wait(0.5)
-				end
-			end)
-		end
-	end
-})
+    
+    
+    
+					task.wait(0.5)    
+				end    
+			end)    
+		end    
+	end    
+})    
 
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
