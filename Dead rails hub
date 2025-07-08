@@ -522,36 +522,58 @@ OtherTab:CreateButton({
     Callback = function()
         task.spawn(function()
 	local StarterGui = game:GetService("StarterGui")
+	local SoundService = game:GetService("SoundService")
 
 	local iconMap = {
 		Model_WarHorse = "rbxthumb://type=Asset&id=98866039236398&w=150&h=150",
 		Model_DeathHorse = "rbxthumb://type=Asset&id=117026495479263&w=150&h=150",
 		Model_PestilenceHorse = "rbxthumb://type=Asset&id=137680581466072&w=150&h=150",
+		Model_Unicorn = "rbxthumb://type=Asset&id=110643675610032&w=150&h=150",
 		Model_FamineHorse = "rbxthumb://type=Asset&id=72130171723716&w=150&h=150"
 	}
 
-	local function notifyHorse(name)
+	local function notifyHorse(name, model)
 		local icon = iconMap[name]
 		if icon then
 			StarterGui:SetCore("SendNotification", {
 				Title = "Horse Notice",
-				Text = "Rhorse has spawn",
+				Text = "Target has spawn",
 				Icon = icon,
 				Duration = 5
 			})
+
+			-- Highlight xanh dương trong 3s
+			local highlight = Instance.new("Highlight")
+			highlight.FillColor = Color3.fromRGB(0, 170, 255)
+			highlight.OutlineColor = Color3.new(1, 1, 1)
+			highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+			highlight.Parent = model
+			highlight.Adornee = model
+
+			task.delay(3, function()
+				highlight:Destroy()
+			end)
+
+			-- Âm thanh phát hiện
+			local s = Instance.new("Sound", SoundService)
+			s.SoundId = "rbxassetid://6026984224"
+			s.Volume = 1
+			s:Play()
+			s.Ended:Connect(function()
+				s:Destroy()
+			end)
 		end
 	end
 
 	workspace.DescendantAdded:Connect(function(obj)
 		if obj:IsA("Model") and iconMap[obj.Name] then
-			notifyHorse(obj.Name)
+			notifyHorse(obj.Name, obj)
 		end
 	end)
 
-	-- Kiểm tra sẵn nếu nó đã có từ trước
 	for _, obj in ipairs(workspace:GetDescendants()) do
 		if obj:IsA("Model") and iconMap[obj.Name] then
-			notifyHorse(obj.Name)
+			notifyHorse(obj.Name, obj)
 		end
 	end
 end)
