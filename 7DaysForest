@@ -1346,7 +1346,7 @@ VTab:CreateToggle({
 
 
 
-local TeleportTab = Window:CreateTab("Updating...", "map")
+local TeleportTab = Window:CreateTab("Teleport", "map")
 TeleportTab:CreateSection("Main Location")
 
 TeleportTab:CreateButton({  
