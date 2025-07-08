@@ -263,7 +263,7 @@ local function autoCollect()
 
 		teleportSafe(target:GetPivot() + Vector3.new(0, 4, 0))
 
-		local timeout = 10
+		local timeout = 5
 		while timeout > 0 and running do
 			activateNearbyPrompts()
 			task.wait(0.5)
@@ -280,7 +280,7 @@ end
 
 -- ✅ Gắn vào MTab
 MTab:CreateToggle({
-	Name = "Collect heli crash",
+	Name = "Collect heli crash [Day >2]",
 	CurrentValue = false,
 	Flag = "CollectHeliCrash",
 	Callback = function(state)
@@ -1417,7 +1417,7 @@ end
 local usedTargets = {}
 
 TeleportTab:CreateButton({
-	Name = "Go to Materials [Limited]",
+	Name = "Go to Materials [Limited][Day >2]",
 	Callback = function()
 		local Players = game:GetService("Players")
 		local LocalPlayer = Players.LocalPlayer
@@ -1551,7 +1551,7 @@ end
 CTab:CreateSection("Materials")
 local items = {
 	{Name = "Bonemeal", Requires = "12 Bone"},
-	{Name = "String", Requires = "3 Flax"},
+	{Name = "String", Requires = "5 Flax"},
 }
 
 for _, i in ipairs(items) do
