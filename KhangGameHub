@@ -292,6 +292,7 @@ local mSgl = {} -- The $1,000,000 Glass Bridge Elements
 -- Tab3
 local T3T = Tab3:CreateSection("Main", false)
 local T3T2 = Tab3:CreateSection("Money", false)
+local T3T3 = Tab3:CreateSection("Buy", false)
 
 -- Glass wall highlight
 mSgl[#mSgl+1] = Tab3:CreateButton({
@@ -403,6 +404,48 @@ game:GetService("ReplicatedStorage"):WaitForChild("FreeGearEvent"):FireServer(un
 end
     end
 })
+
+mSgl[#mSgl+1] = Tab3:CreateButton({
+    Name = "Red Coil",
+    SectionParent = T3T3,
+    Interact = "buy",
+    Callback = function()
+        game:GetService("ReplicatedStorage"):WaitForChild("Money_Coil_Remotes"):WaitForChild("Fire"):FireServer()
+    end
+})
+mSgl[#mSgl+1] = Tab3:CreateButton({
+    Name = "Yellow Coil",
+    SectionParent = T3T3,
+    Interact = "buy",
+    Callback = function()
+        game:GetService("ReplicatedStorage"):WaitForChild("Money_Coil_Remotes"):WaitForChild("CoilGold"):FireServer()
+    end
+})
+mSgl[#mSgl+1] = Tab3:CreateButton({
+    Name = "Void Coil",
+    SectionParent = T3T3,
+    Interact = "buy",
+    Callback = function()
+        game:GetService("ReplicatedStorage"):WaitForChild("Money_Coil_Remotes"):WaitForChild("Void"):FireServer()
+    end
+})
+mSgl[#mSgl+1] = Tab3:CreateButton({
+    Name = "Diamond Carpet",
+    SectionParent = T3T3,
+    Interact = "buy",
+    Callback = function()
+        game:GetService("ReplicatedStorage"):WaitForChild("CarpetsEvents"):WaitForChild("DiamondPrompt"):FireServer()
+    end
+})
+mSgl[#mSgl+1] = Tab3:CreateButton({
+    Name = "Golden Carpet",
+    SectionParent = T3T3,
+    Interact = "buy",
+    Callback = function()
+        game:GetService("ReplicatedStorage"):WaitForChild("CarpetsEvents"):WaitForChild("GoldenPrompt"):FireServer()
+    end
+})
+
 
 -- Nút fix tiền (xoá sạch)
 mSgl[#mSgl+1] = Tab3:CreateButton({
