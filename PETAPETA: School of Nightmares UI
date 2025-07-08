@@ -426,7 +426,7 @@ mainTab:CreateButton({
 
 
 mainTab:CreateButton({
-Name = "Esp Portal",
+Name = "Esp Portal [Lv 3]",
     Callback = function()
         autoESP(function(p)
 			return p:IsA("BasePart") and p.Name == "petapeta_circleeffect_A"
@@ -590,9 +590,9 @@ local locations = {
     {Name = "Safe Room", Position = Vector3.new(-62.83, 4.95, 114.93)},
     {Name = "Music Room", Position = Vector3.new(117.54, 19.80, -125.32)},
     {Name = "Teacher's Room", Position = Vector3.new(7.24, 19.80, 108.62)},
-    {Name = "Secret", Position = Vector3.new(-46.67, 19.8, -94.98)},
-    {Name = "Secret Room", Position = Vector3.new(62.95, 19.80, 118.94)},
-    {Name = "Secret Room 2", Position = Vector3.new(-119.27, 4.95, -90.83)},
+    {Name = "Secret [Lv 2]", Position = Vector3.new(-46.67, 19.8, -94.98)},
+    {Name = "Secret Room [Lv 2]", Position = Vector3.new(62.95, 19.80, 118.94)},
+    {Name = "Secret Room 2 [Lv 2]", Position = Vector3.new(-119.27, 4.95, -90.83)},
 }
 for _, loc in ipairs(locations) do
     TeleportTab:CreateButton({
