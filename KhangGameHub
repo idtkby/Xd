@@ -23,7 +23,7 @@ local Window = ArrayField:CreateWindow({
     },
     KeySystem = true,
     KeySettings = {
-        Title = "KhangHub",
+        Title = "IgnahK Hub",
         Subtitle = "Key System",
         Note = "Ytub: KhangRobloxScr",
         FileName = "KGameHKeys",
