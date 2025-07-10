@@ -584,18 +584,18 @@ mainTab:CreateParagraph({
 local TeleportTab = Window:CreateTab("Teleport", "map")
 TeleportTab:CreateSection("Main Location")
 
--- Vị trí chính
 local locations = {
     {Name = "Door", Position = Vector3.new(10.35, 4.51, 116.89)},
     {Name = "Safe Room", Position = Vector3.new(-62.83, 4.95, 114.93)},
     {Name = "Music Room", Position = Vector3.new(117.54, 19.80, -125.32)},
     {Name = "Teacher's Room", Position = Vector3.new(7.24, 19.80, 108.62)},
     {Name = "Secret [Lv 2]", Position = Vector3.new(-46.67, 19.8, -94.98)},
-    {Name = "Secret 2 [Lv 3]", Position = Vector3.new(-46,54, 34,65, -90,76)}
+    {Name = "Secret 2 [Lv 3]", Position = Vector3.new(-46.54, 34.65, -90.76)},
     {Name = "Secret Room [Lv 2]", Position = Vector3.new(62.95, 19.80, 118.94)},
     {Name = "Secret Room 2 [Lv 2]", Position = Vector3.new(-119.27, 4.95, -90.83)},
-    {Name = "Secret Room 3 [Lv 3]", Position = Vector3.new(-116,11, 34,65, 23,35)}
+    {Name = "Secret Room 3 [Lv 3]", Position = Vector3.new(-116.11, 34.65, 23.35)}
 }
+
 for _, loc in ipairs(locations) do
     TeleportTab:CreateButton({
         Name = "Go to " .. loc.Name,
