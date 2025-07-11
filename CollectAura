@@ -22,7 +22,6 @@ btn.TextSize = 14
 btn.Active = true
 btn.Draggable = true
 
--- Bật/tắt
 btn.MouseButton1Click:Connect(function()
 	AutoKeyRunning = not AutoKeyRunning
 	btn.Text = "Auto Interact: " .. (AutoKeyRunning and "ON" or "OFF")
@@ -75,7 +74,7 @@ btn.MouseButton1Click:Connect(function()
 			KeyList = {}
 			for _, obj in ipairs(workspace:GetDescendants()) do
 				if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(LocalPlayer.Character) then
-					local model = obj:FindFirstAncestorWhichIsA("Model")
+					local model = obj:FindFirstAncestorWhichIsA("Model") or obj.Parent
 					table.insert(KeyList, {model = model, obj = obj})
 				end
 			end
@@ -85,7 +84,7 @@ btn.MouseButton1Click:Connect(function()
 
 		workspace.DescendantAdded:Connect(function(desc)
 			if AutoKeyRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") and not desc:IsDescendantOf(LocalPlayer.Character) then
-				local model = desc:FindFirstAncestorWhichIsA("Model")
+				local model = desc:FindFirstAncestorWhichIsA("Model") or desc.Parent
 				table.insert(KeyList, {model = model, obj = desc})
 			end
 		end)
@@ -106,17 +105,11 @@ btn.MouseButton1Click:Connect(function()
 					continue
 				end
 
-				if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
-					continue
-				end
-
 				local _, dist = getClosestPart(model, HRP.Position)
 				if dist and dist <= 15 then
 					local success = triggerPrompt(obj)
 					if success then
 						lastTriggerTime[model] = now
-					else
-						table.remove(KeyList, i)
 					end
 				end
 			end
