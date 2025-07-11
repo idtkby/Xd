@@ -360,6 +360,11 @@ end)
 	end,
 })
 
+mainTab:CreateParagraph({
+	Title = "KeyEsp note",
+	Content = " The key is in the sky because it can appear in the *shoe shelf*",
+})
+
 mainTab:CreateButton({
     Name = "Esp Shoe shelf",
     Callback = function()
@@ -1456,6 +1461,140 @@ KTab:CreateButton({
 })
 
 KTab:CreateButton({
+Name = "Tp to Key&Door Gui",
+    Callback = function()
+        local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local function getHRP()
+	local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	return char:WaitForChild("HumanoidRootPart", 5)
+end
+
+local function getExitKeyNearest()
+	local nearest, minDist = nil, math.huge
+	local hrp = getHRP()
+	if not hrp then return end
+
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("Model") and obj.Name == "ExitKey" then
+			local part = obj:FindFirstChildWhichIsA("BasePart")
+			if part then
+				local dist = (hrp.Position - part.Position).Magnitude
+				if dist < minDist then
+					minDist = dist
+					nearest = part
+				end
+			end
+		elseif obj:IsA("BasePart") and obj.Name == "ExitKey" then
+			local dist = (hrp.Position - obj.Position).Magnitude
+			if dist < minDist then
+				minDist = dist
+				nearest = obj
+			end
+		end
+	end
+
+	return nearest, minDist
+end
+
+local function jumpOnce()
+	local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+	if hum then
+		hum:ChangeState(Enum.HumanoidStateType.Jumping)
+	end
+end
+
+local function safeTeleport(targetCFrame)
+	local hrp = getHRP()
+	if not hrp then return end
+
+	for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
+		if v:IsA("BasePart") then
+			v.CanCollide = false
+			v.Velocity = Vector3.zero
+			v.RotVelocity = Vector3.zero
+		end
+	end
+
+	task.wait()
+	hrp.Anchored = true
+	hrp.CFrame = targetCFrame * CFrame.new(6, 6, 0)
+	task.wait(0.1)
+	hrp.Anchored = false
+
+	jumpOnce()
+end
+
+local function teleportToExitKey()
+	local target, dist = getExitKeyNearest()
+	if target and dist <= 450 then
+		safeTeleport(target.CFrame)
+	else
+		warn("Không tìm thấy ExitKey hoặc quá xa (>450).")
+	end
+end
+
+local function teleportToDoor()
+	safeTeleport(CFrame.new(10.11, 4.50, 119.77))
+end
+
+-- GUI
+local gui = Instance.new("ScreenGui", game:GetService("CoreGui"))
+gui.Name = "TpGUI"
+gui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 180, 0, 110)
+frame.Position = UDim2.new(0, 10, 0.5, -55)
+frame.BackgroundColor3 = Color3.new(0, 0, 0)
+frame.BackgroundTransparency = 0.3
+frame.Active = true
+frame.Draggable = true
+
+local corner = Instance.new("UICorner", frame)
+corner.CornerRadius = UDim.new(0, 3)
+
+local stroke = Instance.new("UIStroke", frame)
+stroke.Color = Color3.new(1, 1, 1)
+stroke.Thickness = 1
+
+-- Nút Tp to Key
+local keyBtn = Instance.new("TextButton", frame)
+keyBtn.Size = UDim2.new(1, -20, 0, 40)
+keyBtn.Position = UDim2.new(0, 10, 0, 10)
+keyBtn.Text = "Tp to Key"
+keyBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+keyBtn.TextColor3 = Color3.new(1, 1, 1)
+keyBtn.Font = Enum.Font.SourceSansBold
+keyBtn.TextScaled = true
+keyBtn.AutoButtonColor = true
+
+local keyBtnCorner = Instance.new("UICorner", keyBtn)
+keyBtnCorner.CornerRadius = UDim.new(0, 3)
+
+keyBtn.MouseButton1Click:Connect(teleportToExitKey)
+
+-- Nút Tp to Door
+local doorBtn = Instance.new("TextButton", frame)
+doorBtn.Size = UDim2.new(1, -20, 0, 40)
+doorBtn.Position = UDim2.new(0, 10, 0, 60)
+doorBtn.Text = "Tp to Door"
+doorBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+doorBtn.TextColor3 = Color3.new(1, 1, 1)
+doorBtn.Font = Enum.Font.SourceSansBold
+doorBtn.TextScaled = true
+doorBtn.AutoButtonColor = true
+
+local doorBtnCorner = Instance.new("UICorner", doorBtn)
+doorBtnCorner.CornerRadius = UDim.new(0, 3)
+
+doorBtn.MouseButton1Click:Connect(teleportToDoor)
+    end,
+})
+
+KTab:CreateButton({
     Name = "maxtnt05",
     Callback = function()
         loadstring(game:HttpGet("https://pastebin.com/raw/RLzFFC9z"))()
@@ -1470,7 +1609,7 @@ KTab:CreateButton({
   })
 
 KTab:CreateButton({
-Name = "discord test",
+Name = "discord (Support)",
     Callback = function()
         setclipboard("https://discord.gg/wBatSesGHZ")
     end,
