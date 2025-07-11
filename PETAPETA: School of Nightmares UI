@@ -1499,19 +1499,14 @@ local function getExitKeyNearest()
 	return nearest, minDist
 end
 
-local function jumpOnce()
-	local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-	if hum then
-		hum:ChangeState(Enum.HumanoidStateType.Jumping)
-	end
-end
-
 local function safeTeleport(targetCFrame)
 	local hrp = getHRP()
 	if not hrp then return end
 
+	local parts = {}
 	for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
 		if v:IsA("BasePart") then
+			table.insert(parts, v)
 			v.CanCollide = false
 			v.Velocity = Vector3.zero
 			v.RotVelocity = Vector3.zero
@@ -1524,7 +1519,12 @@ local function safeTeleport(targetCFrame)
 	task.wait(0.1)
 	hrp.Anchored = false
 
-	jumpOnce()
+	-- Khôi phục lại CanCollide
+	for _, part in ipairs(parts) do
+		if part:IsDescendantOf(LocalPlayer.Character) then
+			part.CanCollide = true
+		end
+	end
 end
 
 local function teleportToExitKey()
@@ -1553,12 +1553,8 @@ frame.BackgroundTransparency = 0.3
 frame.Active = true
 frame.Draggable = true
 
-local corner = Instance.new("UICorner", frame)
-corner.CornerRadius = UDim.new(0, 3)
-
-local stroke = Instance.new("UIStroke", frame)
-stroke.Color = Color3.new(1, 1, 1)
-stroke.Thickness = 1
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 3)
+Instance.new("UIStroke", frame).Color = Color3.new(1, 1, 1)
 
 -- Nút Tp to Key
 local keyBtn = Instance.new("TextButton", frame)
@@ -1570,10 +1566,7 @@ keyBtn.TextColor3 = Color3.new(1, 1, 1)
 keyBtn.Font = Enum.Font.SourceSansBold
 keyBtn.TextScaled = true
 keyBtn.AutoButtonColor = true
-
-local keyBtnCorner = Instance.new("UICorner", keyBtn)
-keyBtnCorner.CornerRadius = UDim.new(0, 3)
-
+Instance.new("UICorner", keyBtn).CornerRadius = UDim.new(0, 3)
 keyBtn.MouseButton1Click:Connect(teleportToExitKey)
 
 -- Nút Tp to Door
@@ -1586,10 +1579,7 @@ doorBtn.TextColor3 = Color3.new(1, 1, 1)
 doorBtn.Font = Enum.Font.SourceSansBold
 doorBtn.TextScaled = true
 doorBtn.AutoButtonColor = true
-
-local doorBtnCorner = Instance.new("UICorner", doorBtn)
-doorBtnCorner.CornerRadius = UDim.new(0, 3)
-
+Instance.new("UICorner", doorBtn).CornerRadius = UDim.new(0, 3)
 doorBtn.MouseButton1Click:Connect(teleportToDoor)
     end,
 })
