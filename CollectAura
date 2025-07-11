@@ -111,7 +111,7 @@ btn.MouseButton1Click:Connect(function()
 				end
 
 				local _, dist = getClosestPart(model, HRP.Position)
-				if dist and dist <= 3 then
+				if dist and dist <= 15 then
 					local success = triggerPrompt(obj)
 					if success then
 						lastTriggerTime[model] = now
