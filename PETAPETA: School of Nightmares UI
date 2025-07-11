@@ -944,69 +944,114 @@ local HumanModCons = {}
 local Camera = workspace.CurrentCamera
 local DefaultFOV = Camera.FieldOfView
 local TargetFOV = 104
+local ExitKeyNear = false
+local active = false
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local speaker = Players.LocalPlayer
 
+-- Hàm lấy ExitKey Part gần nhất
+local function getNearestExitKey()
+	local nearest, minDist = nil, math.huge
+	local hrp = speaker.Character and speaker.Character:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("Tool") and obj.Name == "ExitKey" then
+			continue -- bỏ qua tool
+		end
+		if (obj:IsA("Model") and obj.Name == "ExitKey") or (obj:IsA("BasePart") and obj.Name == "ExitKey") then
+			local part = obj:IsA("BasePart") and obj or obj:FindFirstChildWhichIsA("BasePart")
+			if part then
+				local dist = (hrp.Position - part.Position).Magnitude
+				if dist < minDist then
+					minDist = dist
+					nearest = part
+				end
+			end
+		end
+	end
+
+	return nearest, minDist
+end
+
+-- Hàm gán tốc độ và FOV
+local function applySpeedAndFOV(speed)
+	local char = speaker.Character
+	local human = char and char:FindFirstChildOfClass("Humanoid")
+	if not human then return end
+	human.WalkSpeed = speed
+	Camera.FieldOfView = speed == 22 and TargetFOV or DefaultFOV
+end
+
+-- Theo dõi liên tục khoảng cách
+RunService.Heartbeat:Connect(function()
+	if not active then return end
+	local _, dist = getNearestExitKey()
+	if dist then
+		if dist <= 10 and not ExitKeyNear then
+			ExitKeyNear = true
+			applySpeedAndFOV(16)
+		elseif dist > 10 and ExitKeyNear then
+			ExitKeyNear = false
+			applySpeedAndFOV(22)
+		end
+	end
+end)
+
+-- Toggle GUI
 KTab:CreateToggle({  
 	Name = "Inf Sprint (max upgrade)",  
 	CurrentValue = false,  
 	Flag = "SpeedToggle",  
 	Callback = function(state)  
-		local speaker = game.Players.LocalPlayer  
-		local function isNumber(val)  
-			return typeof(val) == "number" and val == val and val ~= math.huge and val ~= -math.huge  
-		end  
-  
+		active = state
 		if state then  
-			-- Đặt FOV mục tiêu  
-			Camera.FieldOfView = TargetFOV
+			applySpeedAndFOV(22)
 
-			-- Giữ FOV cố định nếu bị thay đổi  
-			HumanModCons.fovChanged = Camera:GetPropertyChangedSignal("FieldOfView"):Connect(function()  
-				if Camera.FieldOfView ~= TargetFOV then  
-					Camera.FieldOfView = TargetFOV  
-				end  
+			HumanModCons.fovChanged = Camera:GetPropertyChangedSignal("FieldOfView"):Connect(function()
+				if not ExitKeyNear and Camera.FieldOfView ~= TargetFOV then
+					Camera.FieldOfView = TargetFOV
+				end
 			end)
 
-			local args = { true, 22 }  
-			local speed = args[1] or 16  
-			if args[2] then  
-				speed = args[2]  
-			end  
-  
-			if isNumber(speed) then  
-				local Char = speaker.Character or workspace:FindFirstChild(speaker.Name)  
-				local Human = Char and Char:FindFirstChildWhichIsA("Humanoid")  
-  
-				local function WalkSpeedChange()  
-					if Char and Human then  
-						Human.WalkSpeed = speed  
-					end  
-				end  
-  
-				WalkSpeedChange()  
-  
-				HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)  
-					or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)  
-  
-				HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false)  
-					or speaker.CharacterAdded:Connect(function(nChar)  
-						Char, Human = nChar, nChar:WaitForChild("Humanoid")  
-						WalkSpeedChange()  
-						HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)  
-							or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)  
-					end)  
-			end  
-		else  
-			-- Trả lại FOV ban đầu khi tắt  
-			Camera.FieldOfView = DefaultFOV
-
-			-- Ngắt kết nối giữ FOV  
-			if HumanModCons.fovChanged then  
-				HumanModCons.fovChanged:Disconnect()  
-				HumanModCons.fovChanged = nil  
+			local function monitorWalkSpeed()
+				local char = speaker.Character
+				local human = char and char:FindFirstChildWhichIsA("Humanoid")
+				if human then
+					HumanModCons.wsLoop = human:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+						if not ExitKeyNear and human.WalkSpeed ~= 22 then
+							human.WalkSpeed = 22
+						end
+					end)
+				end
 			end
 
-			HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false) or nil  
-			HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false) or nil  
+			monitorWalkSpeed()
+			HumanModCons.wsCA = speaker.CharacterAdded:Connect(function(char)
+				char:WaitForChild("Humanoid")
+				monitorWalkSpeed()
+			end)
+
+		else  
+			ExitKeyNear = false
+			Camera.FieldOfView = DefaultFOV
+			applySpeedAndFOV(16)
+
+			if HumanModCons.fovChanged then
+				HumanModCons.fovChanged:Disconnect()
+				HumanModCons.fovChanged = nil
+			end
+
+			if HumanModCons.wsLoop then
+				HumanModCons.wsLoop:Disconnect()
+				HumanModCons.wsLoop = nil
+			end
+
+			if HumanModCons.wsCA then
+				HumanModCons.wsCA:Disconnect()
+				HumanModCons.wsCA = nil
+			end
 		end  
 	end  
 })
