@@ -985,17 +985,21 @@ local function applySpeedAndFOV(speed)
 end
 
 -- Theo dõi liên tục khoảng cách
-RunService.Heartbeat:Connect(function()
-	if not active then return end
-	local _, dist = getNearestExitKey()
-	if dist then
-		if dist <= 10 and not ExitKeyNear then
-			ExitKeyNear = true
-			applySpeedAndFOV(16)
-		elseif dist > 10 and ExitKeyNear then
-			ExitKeyNear = false
-			applySpeedAndFOV(22)
+task.spawn(function()
+	while true do
+		if active then
+			local _, dist = getNearestExitKey()
+			if dist then
+				if dist <= 10 and not ExitKeyNear then
+					ExitKeyNear = true
+					applySpeedAndFOV(16)
+				elseif dist > 10 and ExitKeyNear then
+					ExitKeyNear = false
+					applySpeedAndFOV(22)
+				end
+			end
 		end
+		task.wait(0.3) -- Giảm tần suất xuống ~3 lần/giây
 	end
 end)
 
