@@ -1004,7 +1004,71 @@ VTab:CreateButton({
     end,
 })
 
-local VTab = ... -- Gắn VTab bạn đang dùng trong GUI
+VTab:CreateButton({
+Name = "Glass",
+Callback = function()
+task.spawn(function()
+	local espName = "ItemESP" -- Tên node ESP trong BillboardGui
+	local highlightName = "ItemHighlight" -- Tên node highlight
+	local itemName = "glass" -- 🔁 ← Tên object cần ESP (VD: "Tble", "Flower", "scrap")
+
+	local labelText = "glass" -- 🔁 ← Văn bản hiện trên ESP
+	local espColor = Color3.fromRGB(255, 255, 255)
+	local outlineColor = Color3.fromRGB(0, 0, 0)
+	local highlightColor = Color3.fromRGB(255, 255, 255)
+
+	-- Tạo ESP
+	local function createESP(item)
+		if item:FindFirstChild(espName) then return end
+
+		local billboard = Instance.new("BillboardGui")
+		billboard.Name = espName
+		billboard.AlwaysOnTop = true
+		billboard.Size = UDim2.new(0, 200, 0, 50)
+		billboard.StudsOffset = Vector3.new(0, 3, 0)
+		billboard.MaxDistance = math.huge
+		billboard.Parent = item
+
+		local textLabel = Instance.new("TextLabel", billboard)
+		textLabel.Text = labelText
+		textLabel.TextColor3 = espColor
+		textLabel.TextStrokeColor3 = outlineColor
+		textLabel.TextStrokeTransparency = 0
+		textLabel.BackgroundTransparency = 1
+		textLabel.Size = UDim2.new(1, 0, 1, 0)
+		textLabel.TextSize = 12
+		textLabel.Font = Enum.Font.SourceSansBold
+
+		local highlight = Instance.new("Highlight")
+		highlight.Name = highlightName
+		highlight.FillColor = highlightColor
+		highlight.FillTransparency = 0.5
+		highlight.OutlineColor = highlightColor
+		highlight.OutlineTransparency = 0
+		highlight.Parent = item
+	end
+
+	-- Quét ban đầu
+	for _, item in ipairs(workspace:GetDescendants()) do
+		if item.Name == itemName and not item:FindFirstChild(espName) then
+			createESP(item)
+		end
+	end
+
+	-- Lắng nghe khi object mới xuất hiện
+	workspace.DescendantAdded:Connect(function(descendant)
+		if descendant.Name == itemName and not descendant:FindFirstChild(espName) then
+			task.wait(0.1)
+			createESP(descendant)
+		end
+	end)
+end)
+end,
+})
+
+VTab:CreateSection("ESP Toggles")
+
+local VTab = VTab -- Gắn VTab bạn đang dùng trong GUI
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local camera = workspace.CurrentCamera
@@ -1021,11 +1085,16 @@ local itemSettings = {
 	carrot = {label = "Carrot", color = Color3.fromRGB(255, 137, 64)},
 	flower = {label = "Flower", color = Color3.fromRGB(255, 185, 215)},
 	pebbles = {label = "Pebble", color = Color3.fromRGB(200, 200, 200)},
+	cabin = {label = "Cabin", color = Color3.fromRGB(137, 80, 0)},
+ scrap = {label = "Scrap", color = Color3.fromRGB(136, 69, 53)},
 	stone = {label = "Stone", color = Color3.fromRGB(200, 200, 200)},
-	glass = {label = "Glass", color = Color3.fromRGB(255, 255, 255)},
 	abandoned_shack = {label = "Materials", color = Color3.fromRGB(137, 80, 0)},
 	heli_crash = {label = "Heli Crash", color = Color3.fromRGB(255, 212, 143)},
 }
+
+--[[
+ = {label = "", color = Color3.fromRGB()},
+]]
 
 -- Tạo ESP
 local function createESP(item, name, color)
@@ -1120,11 +1189,6 @@ for objName, setting in pairs(itemSettings) do
 		end
 	})
 end
-
-
-
-
-VTab:CreateSection("Bloodmoon")
 
 local bloodRunning = false
 local bloodConnection
@@ -1329,7 +1393,13 @@ for _, loc in ipairs(locations) do
         end
     })
 end
+
 local usedTargets = {}
+local pendingTargets = {} -- Tự động cập nhật nếu có object mới
+local allowedNames = {
+	["abandoned_shack"] = true,
+	["cabin"] = true
+}
 
 TeleportTab:CreateButton({
 	Name = "Go to Materials [Limited][Day >2]",
@@ -1343,13 +1413,13 @@ TeleportTab:CreateButton({
 			return char:WaitForChild("HumanoidRootPart", 5)
 		end
 
-		local function getUnvisitedAbandoned()
+		local function getUnvisitedTarget()
 			local nearest, minDist = nil, math.huge
 			local hrp = getHRP()
 			if not hrp then return end
 
-			for _, obj in ipairs(Workspace:GetDescendants()) do
-				if obj:IsA("Model") and obj.Name == "abandoned_shack" and not usedTargets[obj] then
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if obj:IsA("Model") and allowedNames[obj.Name] and not usedTargets[obj] then
 					local part = obj:FindFirstChildWhichIsA("BasePart")
 					if part then
 						local dist = (hrp.Position - part.Position).Magnitude
@@ -1382,21 +1452,29 @@ TeleportTab:CreateButton({
 			hrp.Anchored = false
 		end
 
-		local target, dist = getUnvisitedAbandoned()
+		local target, dist = getUnvisitedTarget()
 		if target then
 			local mainPart = target:FindFirstChildWhichIsA("BasePart")
 			if mainPart then
 				safeTeleport(mainPart.CFrame)
-				print("Đã dịch chuyển đến abandoned_shack | Dist:", math.floor(dist))
+				print("Đã dịch chuyển đến:", target.Name, "| Dist:", math.floor(dist))
 				usedTargets[target] = true
 			end
 		else
-			warn("Không còn abandoned_shack để dịch chuyển.")
-			error("Limit reached.") -- 🔴 Gọi lỗi để vô hiệu hoá nút
+			warn("Không còn target để dịch chuyển.")
+			error("Limit reached.") -- Gọi lỗi để vô hiệu hoá nút
 		end
 	end
 })
 
+-- Theo dõi object mới
+workspace.DescendantAdded:Connect(function(obj)
+	if obj:IsA("Model") and allowedNames[obj.Name] then
+		if not usedTargets[obj] then
+			pendingTargets[obj] = true -- nếu sau này cần dùng
+		end
+	end
+end)
 
 
 
@@ -1432,7 +1510,18 @@ local builds = {
  {Name = "Stone Workbench", Requires = "8 Wood, 30 Stone, 4 Glass"},
  {Name = "Building Stone", Requires = "---------------------------------------------"},
  {Name = "Cauldron", Requires = "2 Wood, 20 Stone"},
+ {Name = "Stone Chair", Requires = "2 Stone"},
+ {Name = "Stone Door", Requires = "6 Stone"},
+ {Name = "Stone Ladder", Requires = "5 Stone"},
+ {Name = "Stone Table", Requires = "4 Stone"},
+ {Name = "Stone Wall", Requires = "3 Stone"},
+ {Name = "Stone Wide Wall", Requires = "5 Stone"},
+ {Name = "Stone Window Wide Wall", Requires = "5 Stone, 2 Glass"},
 } 
+
+--[[
+ {Name = "", Requires = ""},
+]]
 
 for _, b in ipairs(builds) do
 	CTab:CreateButton({
@@ -1444,7 +1533,7 @@ for _, b in ipairs(builds) do
 end
 
 -- Section: Items
-CTab:CreateSection("Items")
+CTab:CreateSection("Items Wood")
 local items = {
 	{Name = "Left Leather Pad", Requires = "5 Leather, 3 String"},
 	{Name = "Right Leather Pad", Requires = "5 Leather, 3 String"},
@@ -1452,8 +1541,12 @@ local items = {
  {Name = "Right Wood Kneepad", Requires = "6 Wood, 4 String"},
 	{Name = "Leather Jacket", Requires = "15 Leather, 10 String"},
 	{Name = "Fishing Rod", Requires = "1 Wood, 12 String"},
+ {Name = "Wood Pickaxe", Requires = "10 Wood, 3 String"},
+ {Name = " Items Stone  ", Requires = "---------------------------------------------"},
  {Name = "Makeshift Sickle", Requires = "7 Wood, 4 Stone, 3 String"},
- {Name = "Repair Hammer", Requires = "13 Wood, 8 Stone, 3 String"},
+ {Name = "Repair Hammer", Requires = "13 Wood, 5 Stone, 3 String"},
+ {Name = "Stone Pickaxe", Requires = "2 Wood, 7 Stone, 3 String"},
+ {Name = "Stone Axe", Requires = "2 Wood, 7 Stone, 3 String"},
 }
 
 for _, i in ipairs(items) do
