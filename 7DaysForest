@@ -1188,117 +1188,122 @@ VTab:CreateToggle({
 	end
 })
 
-local itemRunning = false
-local itemConnection
+local VTab = ... -- Gắn VTab bạn đang dùng trong GUI
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
 
-VTab:CreateToggle({
-	Name = "Items",
-	CurrentValue = false,
-	Flag = "ItemESP",
-	Callback = function(state)
-		itemRunning = state
+local activeESPList = {} -- Danh sách object ESP đang bật
+local espObjects = {}    -- Lưu ESP đã tạo để tránh tạo trùng
+local espRunning = false
+local renderLoop
 
-		if itemConnection then
-			itemConnection:Disconnect()
-			itemConnection = nil
-		end
+-- Cấu hình từng loại object
+local itemSettings = {
+	flax = {label = "Flax", color = Color3.fromRGB(18, 111, 0)},
+	carrot = {label = "Carrot", color = Color3.fromRGB(255, 137, 64)},
+	flower = {label = "Flower", color = Color3.fromRGB(255, 185, 215)},
+	pebbles = {label = "Pebble", color = Color3.fromRGB(200, 200, 200)},
+	stone = {label = "Stone", color = Color3.fromRGB(200, 200, 200)},
+	glass = {label = "Glass", color = Color3.fromRGB(255, 255, 255)},
+	abandoned_shack = {label = "Materials", color = Color3.fromRGB(137, 80, 0)},
+	heli_crash = {label = "Heli Crash", color = Color3.fromRGB(255, 212, 143)},
+}
 
-		local LocalPlayer = game:GetService("Players").LocalPlayer
-		local camera = workspace.CurrentCamera
+-- Tạo ESP
+local function createESP(item, name, color)
+	if espObjects[item] then return end
 
-		-- Tên và màu cho từng loại object
-		local itemSettings = {
-			pebbles = {label = "Pebble", color = Color3.fromRGB(200, 200, 200)},
-			stone = {label = "Stone", color = Color3.fromRGB(200, 200, 200)},
-			abandoned_shack = {label = "Materials", color = Color3.fromRGB(137, 80, 0)},
-			flax = {label = "Flax", color = Color3.fromRGB(18, 111, 0)},
-			carrot = {label = "Carrot", color = Color3.fromRGB(255, 137, 64)},
-   flower = {label = "Flower", color = Color3.fromRGB(255, 185, 215)},
-   glass = {label = "Glass", color = Color3.fromRGB(255, 255, 255)},
-			heli_crash = {label = "Heli Crash", color = Color3.fromRGB(255, 212, 143)},
-		}
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name = "ItemESP"
+	billboard.AlwaysOnTop = true
+	billboard.Size = UDim2.new(0, 100, 0, 40)
+	billboard.StudsOffset = Vector3.new(0, 2, 0)
+	billboard.MaxDistance = math.huge
+	billboard.Parent = item
 
-		-- Dọn sạch ESP cũ
-		for _, v in ipairs(workspace:GetDescendants()) do
-			if v:FindFirstChild("ItemESP") then v.ItemESP:Destroy() end
-			if v:FindFirstChild("ItemHL") then v.ItemHL:Destroy() end
-		end
+	local textLabel = Instance.new("TextLabel")
+	textLabel.Parent = billboard
+	textLabel.Text = name
+	textLabel.TextColor3 = color
+	textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+	textLabel.TextStrokeTransparency = 0
+	textLabel.BackgroundTransparency = 1
+	textLabel.Size = UDim2.new(1, 0, 1, 0)
+	textLabel.Font = Enum.Font.Bodoni
+	textLabel.TextScaled = false
+	textLabel.TextSize = 20
 
-		if not state then return end
+	local hl = Instance.new("Highlight")
+	hl.Name = "ItemHL"
+	hl.FillColor = color
+	hl.FillTransparency = 0.8
+	hl.OutlineColor = color
+	hl.OutlineTransparency = 0
+	hl.Adornee = item
+	hl.Parent = item
 
-		local function createESP(item, name, color)
-			if item:FindFirstChild("ItemESP") then return end
+	espObjects[item] = {gui = billboard, hl = hl, label = textLabel}
+end
 
-			local billboard = Instance.new("BillboardGui")
-			billboard.Name = "ItemESP"
-			billboard.AlwaysOnTop = true
-			billboard.Size = UDim2.new(0, 100, 0, 40)
-			billboard.StudsOffset = Vector3.new(0, 2, 0)
-			billboard.MaxDistance = math.huge
-			billboard.Parent = item
-
-			local textLabel = Instance.new("TextLabel")
-			textLabel.Parent = billboard
-			textLabel.Text = name
-			textLabel.TextColor3 = color
-			textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-			textLabel.TextStrokeTransparency = 0
-			textLabel.BackgroundTransparency = 1
-			textLabel.Size = UDim2.new(1, 0, 1, 0)
-			textLabel.TextScaled = false
-			textLabel.Font = Enum.Font.Bodoni
-			textLabel.TextSize = 25
-
-			local hl = Instance.new("Highlight")
-			hl.Name = "ItemHL"
-			hl.FillColor = color
-			hl.FillTransparency = 0.8
-			hl.OutlineColor = color
-			hl.OutlineTransparency = 0
-			hl.Adornee = item
-			hl.Parent = item
-
-			-- Theo dõi để tự xoá nếu item biến mất
-			local con
-			con = game:GetService("RunService").RenderStepped:Connect(function()
-				if not itemRunning or not item:IsDescendantOf(workspace) then
-					if billboard then billboard:Destroy() end
-					if hl then hl:Destroy() end
-					if con then con:Disconnect() end
-				end
-
-				-- Điều chỉnh size chữ
-				if item:IsDescendantOf(workspace) then
-					local distance = (camera.CFrame.Position - item:GetPivot().Position).Magnitude
-					local size = math.clamp(25 * (1 - distance / 200), 10, 25)
-					textLabel.TextSize = size
-				end
-			end)
-		end
-
-		local function handleItem(item)
-			local setting = itemSettings[item.Name]
-			if setting then
-				createESP(item, setting.label, setting.color)
-			end
-		end
-
-		-- Quét toàn bộ hiện tại
-		for _, item in ipairs(workspace:GetDescendants()) do
-			if item:IsA("Model") and itemSettings[item.Name] then
-				handleItem(item)
-			end
-		end
-
-		-- Theo dõi khi có thêm mới
-		itemConnection = workspace.DescendantAdded:Connect(function(descendant)
-			if descendant:IsA("Model") and itemSettings[descendant.Name] then
-				task.wait(0.1)
-				handleItem(descendant)
-			end
-		end)
+-- Xóa ESP
+local function removeESP(item)
+	local data = espObjects[item]
+	if data then
+		if data.gui then data.gui:Destroy() end
+		if data.hl then data.hl:Destroy() end
+		espObjects[item] = nil
 	end
-})
+end
+
+-- Tạo toggle cho từng loại
+for objName, setting in pairs(itemSettings) do
+	VTab:CreateToggle({
+		Name = "ESP: " .. setting.label,
+		CurrentValue = false,
+		Callback = function(state)
+			activeESPList[objName] = state
+
+			-- Dọn object nếu tắt
+			if not state then
+				for obj in pairs(espObjects) do
+					if obj.Name == objName then
+						removeESP(obj)
+					end
+				end
+			end
+
+			-- Bắt đầu render nếu chưa chạy
+			if not espRunning then
+				espRunning = true
+				renderLoop = RunService.RenderStepped:Connect(function()
+					for _, obj in ipairs(workspace:GetDescendants()) do
+						if obj:IsA("Model") and activeESPList[obj.Name] then
+							if not espObjects[obj] then
+								local setting = itemSettings[obj.Name]
+								createESP(obj, setting.label, setting.color)
+							end
+						end
+					end
+
+					-- Update size, remove nếu item mất
+					for obj, data in pairs(espObjects) do
+						if not obj:IsDescendantOf(workspace) or not activeESPList[obj.Name] then
+							removeESP(obj)
+						else
+							local dist = (camera.CFrame.Position - obj:GetPivot().Position).Magnitude
+							local size = math.clamp(25 * (1 - dist / 200), 10, 25)
+							if data.label then
+								data.label.TextSize = size
+							end
+						end
+					end
+				end)
+			end
+		end
+	})
+end
 
 
 
@@ -1605,10 +1610,10 @@ local builds = {
 	{Name = "Torch", Requires = "1 Wood, 1 Stone"},
 	{Name = "Wall", Requires = "3 Wood"},
 	{Name = "Wide Wall", Requires = "5 Wood"},
- {Name = "Window Wide Wall", Requires = "5 Wood, 2 Glass
+ {Name = "Window Wide Wall", Requires = "5 Wood, 2 Glass"},
  {Name = "Door", Requires = "6 Wood"},
  {Name = "Totem", Requires = "30 Wood"},
- {Name = "Stone Workbench", = "8 Wood, 30 Stone, 4 Glass"},
+ {Name = "Stone Workbench", Requires = "8 Wood, 30 Stone, 4 Glass"},
  {Name = "Building Stone", Requires = "---------------------------------------------"},
  {Name = "Cauldron", Requires = "2 Wood, 20 Stone"},
 } 
