@@ -1668,6 +1668,24 @@ KTab:CreateButton({
 
 KTab:CreateSection("Other")
 
+local dayConnection
+
+-- Tạo Paragraph trong KTab
+local dayParagraph = KTab:CreateParagraph({
+	Title = "Current Day",
+	Content = "Day: ?",
+})
+
+-- Kết nối cập nhật giá trị gained_days
+dayConnection = game:GetService("RunService").RenderStepped:Connect(function()
+	local val = game:GetService("ReplicatedStorage"):FindFirstChild("gained_days")
+	if val and val:IsA("NumberValue") then
+		dayParagraph:SetContent("Day: " .. tostring(val.Value))
+	else
+		dayParagraph:SetContent("Day: ?")
+	end
+end)
+
 KTab:CreateButton({
     Name = "Eat Button (Full Hungry)",
     Callback = function()
