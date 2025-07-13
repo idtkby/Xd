@@ -1068,40 +1068,34 @@ end,
 
 VTab:CreateSection("ESP Toggles")
 
-local VTab = VTab -- Gắn VTab bạn đang dùng trong GUI
+local workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
-local activeESPList = {} -- Danh sách object ESP đang bật
-local espObjects = {}    -- Lưu ESP đã tạo để tránh tạo trùng
-local espRunning = false
-local renderLoop
+local activeESPList = {}
+local espObjects = {}
+local addedConnection
 
--- Cấu hình từng loại object
+-- Config item
 local itemSettings = {
 	flax = {label = "Flax", color = Color3.fromRGB(18, 111, 0)},
 	carrot = {label = "Carrot", color = Color3.fromRGB(255, 137, 64)},
 	flower = {label = "Flower", color = Color3.fromRGB(255, 185, 215)},
 	pebbles = {label = "Pebble", color = Color3.fromRGB(200, 200, 200)},
 	cabin = {label = "Cabin", color = Color3.fromRGB(137, 80, 0)},
- scrap = {label = "Scrap", color = Color3.fromRGB(136, 69, 53)},
+	scrap = {label = "Scrap", color = Color3.fromRGB(136, 69, 53)},
 	stone = {label = "Stone", color = Color3.fromRGB(200, 200, 200)},
 	abandoned_shack = {label = "Materials", color = Color3.fromRGB(137, 80, 0)},
 	heli_crash = {label = "Heli Crash", color = Color3.fromRGB(255, 212, 143)},
- well = {label = "Well", color = Color3.fromRGB(150, 150, 150)},
- cross = {label = "Cross", color = Color3.fromRGB(150, 75, 0)},
- dead_house = {label = "House", color = Color3.fromRGB(150, 75, 0)},
- stair = {label = "Stair", color = Color3.fromRGB(99, 95, 98)},
- campsite1 = {label = "Campsite", color = Color3.fromRGB(255, 50, 0)},
+	well = {label = "Well", color = Color3.fromRGB(150, 150, 150)},
+	cross = {label = "Cross", color = Color3.fromRGB(150, 75, 0)},
+	dead_house = {label = "House", color = Color3.fromRGB(150, 75, 0)},
+	stair = {label = "Stair", color = Color3.fromRGB(99, 95, 98)},
+	campsite1 = {label = "Campsite", color = Color3.fromRGB(255, 50, 0)},
 }
 
---[[
- = {label = "", color = Color3.fromRGB()},
-]]
-
--- Tạo ESP
 local function createESP(item, name, color)
 	if espObjects[item] then return end
 
@@ -1113,31 +1107,27 @@ local function createESP(item, name, color)
 	billboard.MaxDistance = math.huge
 	billboard.Parent = item
 
-	local textLabel = Instance.new("TextLabel")
-	textLabel.Parent = billboard
-	textLabel.Text = name
-	textLabel.TextColor3 = color
-	textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-	textLabel.TextStrokeTransparency = 0
-	textLabel.BackgroundTransparency = 1
-	textLabel.Size = UDim2.new(1, 0, 1, 0)
-	textLabel.Font = Enum.Font.Bodoni
-	textLabel.TextScaled = false
-	textLabel.TextSize = 20
+	local label = Instance.new("TextLabel", billboard)
+	label.Text = name
+	label.TextColor3 = color
+	label.TextStrokeColor3 = Color3.new(0, 0, 0)
+	label.TextStrokeTransparency = 0
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.new(1, 0, 1, 0)
+	label.Font = Enum.Font.Bodoni
+	label.TextSize = 20
 
-	local hl = Instance.new("Highlight")
+	local hl = Instance.new("Highlight", item)
 	hl.Name = "ItemHL"
 	hl.FillColor = color
 	hl.FillTransparency = 0.8
 	hl.OutlineColor = color
 	hl.OutlineTransparency = 0
 	hl.Adornee = item
-	hl.Parent = item
 
-	espObjects[item] = {gui = billboard, hl = hl, label = textLabel}
+	espObjects[item] = {gui = billboard, hl = hl, label = label}
 end
 
--- Xóa ESP
 local function removeESP(item)
 	local data = espObjects[item]
 	if data then
@@ -1147,25 +1137,31 @@ local function removeESP(item)
 	end
 end
 
--- Tạo toggle cho từng loại
-for objName, setting in pairs(itemSettings) do
-	VTab:CreateToggle({
-		Name = "ESP: " .. setting.label,
-		CurrentValue = false,
-		Callback = function(state)
-			local addedConnection
-local function scanOnce()
-	for _, obj in ipairs(workspace:GetDescendants()) do
-		if obj:IsA("Model") and activeESPList[obj.Name] then
-			if not espObjects[obj] then
-				local setting = itemSettings[obj.Name]
-				createESP(obj, setting.label, setting.color)
-			end
+-- Update size chữ mỗi frame
+RunService.RenderStepped:Connect(function()
+	for obj, data in pairs(espObjects) do
+		if obj:IsDescendantOf(workspace) and data.label then
+			local dist = (camera.CFrame.Position - obj:GetPivot().Position).Magnitude
+			data.label.TextSize = math.clamp(25 * (1 - dist / 200), 10, 25)
+		else
+			removeESP(obj)
 		end
 	end
-end
+end)
 
--- Tạo toggle cho từng loại
+-- Theo dõi object mới spawn
+if addedConnection then addedConnection:Disconnect() end
+addedConnection = workspace.DescendantAdded:Connect(function(obj)
+	if obj:IsA("Model") and activeESPList[obj.Name] and not espObjects[obj] then
+		local setting = itemSettings[obj.Name]
+		if setting then
+			task.wait(0.1)
+			createESP(obj, setting.label, setting.color)
+		end
+	end
+end)
+
+-- Tạo toggle cho mỗi loại
 for objName, setting in pairs(itemSettings) do
 	VTab:CreateToggle({
 		Name = "ESP: " .. setting.label,
@@ -1173,46 +1169,19 @@ for objName, setting in pairs(itemSettings) do
 		Callback = function(state)
 			activeESPList[objName] = state
 
-			if state then
-				scanOnce()
-
-				-- Theo dõi object mới
-				if not addedConnection then
-					addedConnection = workspace.DescendantAdded:Connect(function(obj)
-						if obj:IsA("Model") and activeESPList[obj.Name] then
-							task.wait(0.1)
-							if not espObjects[obj] then
-								local setting = itemSettings[obj.Name]
-								createESP(obj, setting.label, setting.color)
-							end
-						end
-					end)
-				end
-			else
-				-- Xóa ESP khi tắt toggle
+			if not state then
 				for obj in pairs(espObjects) do
 					if obj.Name == objName then
 						removeESP(obj)
 					end
 				end
-			end
-
-			-- Nếu chưa có vòng lặp render thì tạo
-			if not espRunning then
-				espRunning = true
-				renderLoop = RunService.RenderStepped:Connect(function()
-					for obj, data in pairs(espObjects) do
-						if not obj:IsDescendantOf(workspace) or not activeESPList[obj.Name] then
-							removeESP(obj)
-						else
-							local dist = (camera.CFrame.Position - obj:GetPivot().Position).Magnitude
-							local size = math.clamp(25 * (1 - dist / 200), 10, 25)
-							if data.label then
-								data.label.TextSize = size
-							end
-						end
+			else
+				-- Quét hiện tại 1 lần
+				for _, obj in ipairs(workspace:GetDescendants()) do
+					if obj:IsA("Model") and obj.Name == objName and not espObjects[obj] then
+						createESP(obj, setting.label, setting.color)
 					end
-				end)
+				end
 			end
 		end
 	})
