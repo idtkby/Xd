@@ -1093,6 +1093,8 @@ local itemSettings = {
  well = {label = "Well", color = Color3.fromRGB(150, 150, 150)},
  cross = {label = "Cross", color = Color3.fromRGB(150, 75, 0)},
  dead_house = {label = "House", color = Color3.fromRGB(150, 75, 0)},
+ stair = {label = "Stair", color = Color3.fromRGB(99, 95, 98)},
+ campsite1 = {label = "Campsite", color = Color3.fromRGB(255, 50, 0)},
 }
 
 --[[
@@ -1151,10 +1153,43 @@ for objName, setting in pairs(itemSettings) do
 		Name = "ESP: " .. setting.label,
 		CurrentValue = false,
 		Callback = function(state)
+			local addedConnection
+local function scanOnce()
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("Model") and activeESPList[obj.Name] then
+			if not espObjects[obj] then
+				local setting = itemSettings[obj.Name]
+				createESP(obj, setting.label, setting.color)
+			end
+		end
+	end
+end
+
+-- Tạo toggle cho từng loại
+for objName, setting in pairs(itemSettings) do
+	VTab:CreateToggle({
+		Name = "ESP: " .. setting.label,
+		CurrentValue = false,
+		Callback = function(state)
 			activeESPList[objName] = state
 
-			-- Dọn object nếu tắt
-			if not state then
+			if state then
+				scanOnce()
+
+				-- Theo dõi object mới
+				if not addedConnection then
+					addedConnection = workspace.DescendantAdded:Connect(function(obj)
+						if obj:IsA("Model") and activeESPList[obj.Name] then
+							task.wait(0.1)
+							if not espObjects[obj] then
+								local setting = itemSettings[obj.Name]
+								createESP(obj, setting.label, setting.color)
+							end
+						end
+					end)
+				end
+			else
+				-- Xóa ESP khi tắt toggle
 				for obj in pairs(espObjects) do
 					if obj.Name == objName then
 						removeESP(obj)
@@ -1162,20 +1197,10 @@ for objName, setting in pairs(itemSettings) do
 				end
 			end
 
-			-- Bắt đầu render nếu chưa chạy
+			-- Nếu chưa có vòng lặp render thì tạo
 			if not espRunning then
 				espRunning = true
 				renderLoop = RunService.RenderStepped:Connect(function()
-					for _, obj in ipairs(workspace:GetDescendants()) do
-						if obj:IsA("Model") and activeESPList[obj.Name] then
-							if not espObjects[obj] then
-								local setting = itemSettings[obj.Name]
-								createESP(obj, setting.label, setting.color)
-							end
-						end
-					end
-
-					-- Update size, remove nếu item mất
 					for obj, data in pairs(espObjects) do
 						if not obj:IsDescendantOf(workspace) or not activeESPList[obj.Name] then
 							removeESP(obj)
@@ -1192,6 +1217,7 @@ for objName, setting in pairs(itemSettings) do
 		end
 	})
 end
+
 
 local bloodRunning = false
 local bloodConnection
