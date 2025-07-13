@@ -1090,6 +1090,9 @@ local itemSettings = {
 	stone = {label = "Stone", color = Color3.fromRGB(200, 200, 200)},
 	abandoned_shack = {label = "Materials", color = Color3.fromRGB(137, 80, 0)},
 	heli_crash = {label = "Heli Crash", color = Color3.fromRGB(255, 212, 143)},
+ well = {label = "Well", color = Color3.fromRGB(150, 150, 150)},
+ cross = {label = "Cross", color = Color3.fromRGB(150, 75, 0)},
+ dead_house = {label = "House", color = Color3.fromRGB(150, 75, 0)},
 }
 
 --[[
