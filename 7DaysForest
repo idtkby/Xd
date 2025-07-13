@@ -325,30 +325,6 @@ MTab:CreateToggle({
             end)
         end
     end,
-})
-
-local autoFishingRunning = false    
-    
-MTab:CreateToggle({    
-	Name = "Auto chop tree",    
-	CurrentValue = false,    
-	Flag = "AutoFishingToggle",    
-	Callback = function(state)    
-		autoFishingRunning = state    
-    
-		if state then    
-			task.spawn(function()    
-				while autoFishingRunning do    
-					game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("swing_axe"):FireServer()    
-
-    
-    
-    
-					task.wait(0.5)    
-				end    
-			end)    
-		end    
-	end    
 })    
 
 local RunService = game:GetService("RunService")
@@ -1192,7 +1168,7 @@ local bloodRunning = false
 local bloodConnection
 
 VTab:CreateToggle({
-	Name = "Blood bark 🩸 (Bloodmoon)",
+	Name = "Blood bark [Bloodmoon]",
 	CurrentValue = false,
 	Flag = "BloodESP",
 	Callback = function(state)
