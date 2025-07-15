@@ -1044,19 +1044,18 @@ end,
 
 VTab:CreateSection("ESP Toggles")
 
-local workspace = game:GetService("Workspace")
+local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
-local camera = workspace.CurrentCamera
+local Camera = Workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
 local activeESPList = {}
 local espObjects = {}
-local addedConnection
 
--- Config item
+-- Cấu hình
 local itemSettings = {
-	flax = {label = "Flax", color = Color3.fromRGB(18, 111, 0)},
+	flax = {label = "Cordage", color = Color3.fromRGB(18, 111, 0)},
 	carrot = {label = "Carrot", color = Color3.fromRGB(255, 137, 64)},
 	flower = {label = "Flower", color = Color3.fromRGB(255, 185, 215)},
 	pebbles = {label = "Pebble", color = Color3.fromRGB(200, 200, 200)},
@@ -1072,72 +1071,66 @@ local itemSettings = {
 	campsite1 = {label = "Campsite", color = Color3.fromRGB(255, 50, 0)},
 }
 
-local function createESP(item, name, color)
+-- Tạo ESP Billboard
+local function createESP(item, text, color)
 	if espObjects[item] then return end
+	local part = item:FindFirstChildWhichIsA("BasePart") or item.PrimaryPart
+	if not part then return end
 
-	local billboard = Instance.new("BillboardGui")
-	billboard.Name = "ItemESP"
-	billboard.AlwaysOnTop = true
-	billboard.Size = UDim2.new(0, 100, 0, 40)
-	billboard.StudsOffset = Vector3.new(0, 2, 0)
-	billboard.MaxDistance = math.huge
-	billboard.Parent = item
+	local gui = Instance.new("BillboardGui")
+	gui.Name = "ItemESP"
+	gui.AlwaysOnTop = true
+	gui.Size = UDim2.new(0, 100, 0, 40)
+	gui.StudsOffset = Vector3.new(0, 2, 0)
+	gui.MaxDistance = 500 -- Giới hạn hiển thị xa
+	gui.Adornee = part
+	gui.Parent = item
 
-	local label = Instance.new("TextLabel", billboard)
-	label.Text = name
-	label.TextColor3 = color
-	label.TextStrokeColor3 = Color3.new(0, 0, 0)
-	label.TextStrokeTransparency = 0
+	local label = Instance.new("TextLabel", gui)
 	label.BackgroundTransparency = 1
 	label.Size = UDim2.new(1, 0, 1, 0)
+	label.Text = text
+	label.TextColor3 = color
 	label.Font = Enum.Font.Bodoni
+	label.TextStrokeColor3 = Color3.new(0, 0, 0)
+	label.TextStrokeTransparency = 0
 	label.TextSize = 20
 
-	local hl = Instance.new("Highlight", item)
-	hl.Name = "ItemHL"
-	hl.FillColor = color
-	hl.FillTransparency = 0.8
-	hl.OutlineColor = color
-	hl.OutlineTransparency = 0
-	hl.Adornee = item
-
-	espObjects[item] = {gui = billboard, hl = hl, label = label}
+	espObjects[item] = {gui = gui, label = label}
 end
 
+-- Xoá ESP
 local function removeESP(item)
 	local data = espObjects[item]
 	if data then
 		if data.gui then data.gui:Destroy() end
-		if data.hl then data.hl:Destroy() end
 		espObjects[item] = nil
 	end
 end
 
--- Update size chữ mỗi frame
+-- Update TextSize theo khoảng cách
 RunService.RenderStepped:Connect(function()
-	for obj, data in pairs(espObjects) do
-		if obj:IsDescendantOf(workspace) and data.label then
-			local dist = (camera.CFrame.Position - obj:GetPivot().Position).Magnitude
-			data.label.TextSize = math.clamp(25 * (1 - dist / 200), 10, 25)
+	for item, data in pairs(espObjects) do
+		if not item:IsDescendantOf(Workspace) or not activeESPList[item.Name] then
+			removeESP(item)
 		else
-			removeESP(obj)
+			local pos = item:GetPivot().Position
+			local dist = (Camera.CFrame.Position - pos).Magnitude
+			data.label.TextSize = math.clamp(25 * (1 - dist / 200), 10, 25)
 		end
 	end
 end)
 
--- Theo dõi object mới spawn
-if addedConnection then addedConnection:Disconnect() end
-addedConnection = workspace.DescendantAdded:Connect(function(obj)
-	if obj:IsA("Model") and activeESPList[obj.Name] and not espObjects[obj] then
+-- Theo dõi spawn mới
+Workspace.DescendantAdded:Connect(function(obj)
+	if obj:IsA("Model") and itemSettings[obj.Name] and activeESPList[obj.Name] then
+		task.wait(0.05)
 		local setting = itemSettings[obj.Name]
-		if setting then
-			task.wait(0.1)
-			createESP(obj, setting.label, setting.color)
-		end
+		createESP(obj, setting.label, setting.color)
 	end
 end)
 
--- Tạo toggle cho mỗi loại
+-- Tạo toggle từng loại
 for objName, setting in pairs(itemSettings) do
 	VTab:CreateToggle({
 		Name = "ESP: " .. setting.label,
@@ -1152,8 +1145,8 @@ for objName, setting in pairs(itemSettings) do
 					end
 				end
 			else
-				-- Quét hiện tại 1 lần
-				for _, obj in ipairs(workspace:GetDescendants()) do
+				-- Tạo ESP cho object đã tồn tại
+				for _, obj in ipairs(Workspace:GetChildren()) do
 					if obj:IsA("Model") and obj.Name == objName and not espObjects[obj] then
 						createESP(obj, setting.label, setting.color)
 					end
@@ -1162,7 +1155,6 @@ for objName, setting in pairs(itemSettings) do
 		end
 	})
 end
-
 
 local bloodRunning = false
 local bloodConnection
@@ -1509,18 +1501,18 @@ end
 -- Section: Items
 CTab:CreateSection("Items Wood")
 local items = {
-	{Name = "Left Leather Pad", Requires = "5 Leather, 3 String"},
-	{Name = "Right Leather Pad", Requires = "5 Leather, 3 String"},
- {Name = "Left Wood Kneepad", Requires = "6 Wood, 4 String"},
- {Name = "Right Wood Kneepad", Requires = "6 Wood, 4 String"},
-	{Name = "Leather Jacket", Requires = "15 Leather, 10 String"},
-	{Name = "Fishing Rod", Requires = "1 Wood, 12 String"},
- {Name = "Wood Pickaxe", Requires = "10 Wood, 3 String"},
+	{Name = "Left Leather Pad", Requires = "5 Leather, 3 Cordage"},
+	{Name = "Right Leather Pad", Requires = "5 Leather, 3 Cordage"},
+ {Name = "Left Wood Kneepad", Requires = "6 Wood, 4 Cordage"},
+ {Name = "Right Wood Kneepad", Requires = "6 Wood, 4 Cordage"},
+	{Name = "Leather Jacket", Requires = "15 Leather, 10 Cordage"},
+	{Name = "Fishing Rod", Requires = "1 Wood, 12 Cordage"},
+ {Name = "Wood Pickaxe", Requires = "10 Wood, 3 Cordage"},
  {Name = " Items Stone  ", Requires = "---------------------------------------------"},
- {Name = "Makeshift Sickle", Requires = "7 Wood, 4 Stone, 3 String"},
- {Name = "Repair Hammer", Requires = "13 Wood, 5 Stone, 3 String"},
- {Name = "Stone Pickaxe", Requires = "2 Wood, 7 Stone, 3 String"},
- {Name = "Stone Axe", Requires = "2 Wood, 7 Stone, 3 String"},
+ {Name = "Makeshift Sickle", Requires = "7 Wood, 4 Stone, 3 Cordage"},
+ {Name = "Repair Hammer", Requires = "13 Wood, 5 Stone, 3 Cordage"},
+ {Name = "Stone Pickaxe", Requires = "2 Wood, 7 Stone, 3 Cordage"},
+ {Name = "Stone Axe", Requires = "2 Wood, 7 Stone, 3 Cordage"},
 }
 
 for _, i in ipairs(items) do
@@ -1536,7 +1528,6 @@ end
 CTab:CreateSection("Misc")
 local items = {
 	{Name = "Bonemeal", Requires = "12 Bone"},
-	{Name = "String", Requires = "5 Flax"},
 }
 
 for _, i in ipairs(items) do
