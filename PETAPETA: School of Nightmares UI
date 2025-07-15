@@ -1630,6 +1630,24 @@ doorBtn.TextScaled = true
 doorBtn.AutoButtonColor = true
 Instance.new("UICorner", doorBtn).CornerRadius = UDim.new(0, 3)
 doorBtn.MouseButton1Click:Connect(teleportToDoor)
+-- Phím tắt Z và X
+local UserInputService = game:GetService("UserInputService")
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	if input.KeyCode == Enum.KeyCode.Z then
+		teleportToExitKey()
+	elseif input.KeyCode == Enum.KeyCode.X then
+		teleportToDoor()
+	end
+end)
+
+game:GetService("StarterGui"):
+SetCore("SendNotification", {
+    Title = "Window",
+    Text = "Key: Z, X",
+    Duration = 5 
+})
     end,
 })
 
