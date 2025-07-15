@@ -446,6 +446,7 @@ mainTab:CreateButton({
         local positions = {
 	Vector3.new(-52.95, 34.65, 79.25),
 	Vector3.new(89.46, 34.65, -49.66),
+ Vector3.new(-97.82, 34.65, 111.77),
 
 }
 
