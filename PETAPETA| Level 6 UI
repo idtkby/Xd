@@ -155,8 +155,8 @@ mainTab:CreateButton({
 end)
 task.spawn(function()
 game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "PETAPETA-ONI",
-    Text = "WHeRE AeR YuO HuMan",
+    Title = "PETAPETA Notice",
+    Text = "Loading Sound...",
     Duration = 5,
     Icon = "rbxassetid://80778411575637"
 })
