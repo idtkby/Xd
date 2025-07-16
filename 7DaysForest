@@ -1145,8 +1145,8 @@ for objName, setting in pairs(itemSettings) do
 					end
 				end
 			else
-				-- Tạo ESP cho object đã tồn tại
-				for _, obj in ipairs(Workspace:GetChildren()) do
+				-- Quét toàn bộ Descendants thay vì chỉ GetChildren
+				for _, obj in ipairs(Workspace:GetDescendants()) do
 					if obj:IsA("Model") and obj.Name == objName and not espObjects[obj] then
 						createESP(obj, setting.label, setting.color)
 					end
