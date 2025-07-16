@@ -164,20 +164,27 @@ pcall(function()
 		Icon = "rbxassetid://83439791036389"
 	})
 end)
+-- Cảnh báo khi Enemy_Model xuất hiện
 local Workspace = game:GetService("Workspace")
 local SoundService = game:GetService("SoundService")
 
--- Tạo âm thanh
-local alertSound = Instance.new("Sound")
-alertSound.Name = "EnemyAlert"
-alertSound.SoundId = "rbxassetid://3802270141" -- Âm thanh cảnh báo (hoặc thay bằng ID khác)
-alertSound.Volume = 2
-alertSound.Parent = SoundService
+-- Âm thanh cảnh báo (nếu đã có sẵn)
+local warningSound = Instance.new("Sound")
+warningSound.Name = "EnemyAlert"
+warningSound.SoundId = "rbxassetid://6026984224" -- có thể thay ID tùy ý
+warningSound.Volume = 1
+warningSound.Parent = SoundService
 
--- Theo dõi Enemy_Model xuất hiện
+-- Bắt sự kiện tạo mới
 Workspace.DescendantAdded:Connect(function(obj)
 	if obj:IsA("Model") and obj.Name == "Enemy_Model" then
-		alertSound:Play()
+		task.wait(0.1) -- Đợi chút để chắc chắn model ổn định
+		if warningSound.IsLoaded then
+			warningSound:Play()
+		else
+			warningSound.Loaded:Wait()
+			warningSound:Play()
+		end
 	end
 end)
 end)
