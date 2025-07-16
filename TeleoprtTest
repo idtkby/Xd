@@ -43,6 +43,23 @@ HbTab:CreateButton({
    end
 })
 
+HbTab:CreateSection("7 day to live")
+HbTab:CreateButton({
+   Name = "sea",
+   Callback = function()
+      local gameId = 77970919775750
+      game:GetService("TeleportService"):Teleport(gameId)
+   end
+})
+HbTab:CreateButton({
+   Name = "moon",
+   Callback = function()
+      local gameId = 135516941692071
+      game:GetService("TeleportService"):Teleport(gameId)
+   end
+})
+
+
 HbTab:CreateSection("Server")
 HbTab:CreateButton({
     Name = "Server Hop",
