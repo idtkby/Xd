@@ -168,17 +168,17 @@ end)
 local Workspace = game:GetService("Workspace")
 local SoundService = game:GetService("SoundService")
 
--- Âm thanh cảnh báo (nếu đã có sẵn)
+-- Tạo âm cảnh báo
 local warningSound = Instance.new("Sound")
 warningSound.Name = "EnemyAlert"
-warningSound.SoundId = "rbxassetid://6026984224" -- có thể thay ID tùy ý
+warningSound.SoundId = "rbxassetid://6026984224"
 warningSound.Volume = 1
 warningSound.Parent = SoundService
 
--- Bắt sự kiện tạo mới
+-- Nghe sự kiện tạo mới trong workspace
 Workspace.DescendantAdded:Connect(function(obj)
-	if obj:IsA("Model") and obj.Name == "Enemy_Model" then
-		task.wait(0.1) -- Đợi chút để chắc chắn model ổn định
+	if obj:IsA("BasePart") and obj.Name == "Enemy_Model" then
+		task.wait(0.1)
 		if warningSound.IsLoaded then
 			warningSound:Play()
 		else
