@@ -1,0 +1,57 @@
+task.spawn(function()
+-- Khai báo các dịch vụ cần thiết
+local player = game.Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local camera = workspace.CurrentCamera
+
+-- Tải và khởi tạo thư viện GUI Rayfield
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Tạo cửa sổ giao diện chính
+local Window = Rayfield:CreateWindow({
+    Name = "Script by IgnahK",
+    LoadingTitle = "Loading Script...",
+    LoadingSubtitle = "Please wait",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "MyHubFolder",
+        FileName = "MyHubConfig"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "",
+        RememberJoins = false
+    },
+    KeySystem = false,
+})
+
+-- Thông báo đã tải
+Rayfield:Notify({
+    Title = "Welcome!",
+    Content = "Script Loaded",
+    Duration = 2
+})
+local HbTab = Window:CreateTab("Game", "map")
+
+HbTab:CreateSection("Mode")
+HbTab:CreateButton({
+   Name = "Moon Mode [Not supported]",
+   Callback = function()
+      local gameId = 77970919775750
+      game:GetService("TeleportService"):Teleport(gameId)
+   end
+})
+HbTab:CreateButton({
+   Name = "Sea Mode [Not supported]",
+   Callback = function()
+      local gameId = 135516941692071
+      game:GetService("TeleportService"):Teleport(gameId)
+   end
+})
+HbTab:CreateParagraph({
+	Title = "Note",
+	Content = "You can only solo!",
+})
+
+end)
