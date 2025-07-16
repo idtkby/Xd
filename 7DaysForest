@@ -1,0 +1,12 @@
+if game.PlaceId == 17474746614 then -- loppy
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/7daystoliveloppy"))()
+elseif game.PlaceId == 121308443347459 then -- in forest
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/7DayForest_Vietmamese"))()
+else
+    print("huh") -- (Ko dính id game nào)
+end
+
+--[[
+elseif game.PlaceId == 0000 or game.PlaceId == 0000 or game.PlaceId == 0000 then
+]]
