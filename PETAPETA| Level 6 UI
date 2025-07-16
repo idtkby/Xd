@@ -692,6 +692,55 @@ KTab:CreateToggle({
 	end
 })
 
+local HumanModCons = {}
+
+KTab:CreateToggle({
+	Name = "FastSp 16*2",
+	CurrentValue = false,
+	Flag = "SpeedToggle",
+	Callback = function(state)
+		local speaker = game.Players.LocalPlayer
+		local function isNumber(val)
+			return typeof(val) == "number" and val == val and val ~= math.huge and val ~= -math.huge
+		end
+
+		if state then
+			local args = { true, 32 }
+			local speed = args[1] or 16
+			if args[2] then
+				speed = args[2]
+			end
+
+			if isNumber(speed) then
+				local Char = speaker.Character or workspace:FindFirstChild(speaker.Name)
+				local Human = Char and Char:FindFirstChildWhichIsA("Humanoid")
+
+				local function WalkSpeedChange()
+					if Char and Human then
+						Human.WalkSpeed = speed
+					end
+				end
+
+				WalkSpeedChange()
+
+				HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)
+					or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)
+
+				HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false)
+					or speaker.CharacterAdded:Connect(function(nChar)
+						Char, Human = nChar, nChar:WaitForChild("Humanoid")
+						WalkSpeedChange()
+						HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)
+							or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)
+					end)
+			end
+		else
+			HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false) or nil
+			HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false) or nil
+		end
+	end
+})
+
 KTab:CreateSection("Other")
   
 KTab:CreateButton({
