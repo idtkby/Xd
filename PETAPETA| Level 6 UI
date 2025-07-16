@@ -167,24 +167,28 @@ end)
 -- Cảnh báo khi Enemy_Model xuất hiện
 local Workspace = game:GetService("Workspace")
 local SoundService = game:GetService("SoundService")
+local StarterGui = game:GetService("StarterGui")
 
--- Tạo âm cảnh báo
-local warningSound = Instance.new("Sound")
-warningSound.Name = "EnemyAlert"
-warningSound.SoundId = "rbxassetid://6026984224"
-warningSound.Volume = 1
-warningSound.Parent = SoundService
+-- Tạo âm thanh cảnh báo
+local alertSound = Instance.new("Sound")
+alertSound.Name = "EnemyAlert"
+alertSound.SoundId = "rbxassetid://9118823102"
+alertSound.Volume = 2
+alertSound.Parent = SoundService
 
--- Nghe sự kiện tạo mới trong workspace
+-- Theo dõi Enemy_Model (là BasePart) xuất hiện
 Workspace.DescendantAdded:Connect(function(obj)
 	if obj:IsA("BasePart") and obj.Name == "Enemy_Model" then
-		task.wait(0.1)
-		if warningSound.IsLoaded then
-			warningSound:Play()
-		else
-			warningSound.Loaded:Wait()
-			warningSound:Play()
-		end
+		alertSound:Play()
+
+		pcall(function()
+			StarterGui:SetCore("SendNotification", {
+				Title = "GURURU",
+				Text = "HuMan, DoN't HidE",
+				Duration = 5,
+				Icon = "rbxassetid://83439791036389" -- Ảnh bạn cung cấp
+			})
+		end)
 	end
 end)
 end)
