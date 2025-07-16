@@ -154,12 +154,16 @@ mainTab:CreateButton({
 	checkExisting()
 end)
 task.spawn(function()
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "PETAPETA Notice",
-    Text = "Loading Sound...",
-    Duration = 5,
-    Icon = "rbxassetid://80778411575637"
-})
+local StarterGui = game:GetService("StarterGui")
+
+pcall(function()
+	StarterGui:SetCore("SendNotification", {
+		Title = "PETAPETA Notice",
+		Text = "Loading Sound...",
+		Duration = 5,
+		Icon = "rbxassetid://83439791036389"
+	})
+end)
 local Workspace = game:GetService("Workspace")
 local SoundService = game:GetService("SoundService")
 
