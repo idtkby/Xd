@@ -107,7 +107,7 @@ mainTab:CreateButton({
 		billboard.Name = "EnemyESP"
 		billboard.AlwaysOnTop = true
 		billboard.Size = UDim2.new(0, 100, 0, 40)
-		billboard.StudsOffset = Vector3.new(0, 2, 0)
+		billboard.StudsOffset = Vector3.new(0, 0, 0)
 		billboard.MaxDistance = math.huge
 		billboard.Parent = item
 
@@ -152,6 +152,29 @@ mainTab:CreateButton({
 	end)
 
 	checkExisting()
+end)
+task.spawn(function()
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "PETAPETA-ONI",
+    Text = "WHeRE AeR YuO HuMan",
+    Duration = 5,
+    Icon = "rbxassetid://80778411575637"
+})
+local Workspace = game:GetService("Workspace")
+local SoundService = game:GetService("SoundService")
+
+-- Tạo âm thanh
+local alertSound = Instance.new("Sound")
+alertSound.Name = "EnemyAlert"
+alertSound.SoundId = "rbxassetid://3802270141" -- Âm thanh cảnh báo (hoặc thay bằng ID khác)
+alertSound.Volume = 2
+alertSound.Parent = SoundService
+
+-- Theo dõi Enemy_Model xuất hiện
+Workspace.DescendantAdded:Connect(function(obj)
+	if obj:IsA("Model") and obj.Name == "Enemy_Model" then
+		alertSound:Play()
+	end
 end)
 	end,
 })
