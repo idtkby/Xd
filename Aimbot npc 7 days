@@ -127,7 +127,7 @@ end
 
 -- Main loop
 local lastUpdate = 0
-local UPDATE_INTERVAL = 5
+local UPDATE_INTERVAL = 10
 
 RunService.Heartbeat:Connect(function(dt)
 	updateDrawings()
@@ -196,5 +196,55 @@ UserInputService.InputChanged:Connect(function(input)
 	if input == dragInput and dragging then
 		update(input)
 	end
+end)
+-- Nút XÓA GUI
+local DeleteButton = Instance.new("TextButton")
+DeleteButton.Size = UDim2.new(0, 30, 0, 30)
+DeleteButton.Position = UDim2.new(0, 10, 0, 60)
+DeleteButton.Text = "Delete"
+DeleteButton.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+DeleteButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+DeleteButton.Font = Enum.Font.GothamBold
+DeleteButton.TextSize = 10
+DeleteButton.Parent = ScreenGui
+
+-- Hai nút xác nhận
+local SureButton = Instance.new("TextButton")
+SureButton.Size = UDim2.new(0, 60, 0, 35)
+SureButton.Position = UDim2.new(0, 150, 0, 65)
+SureButton.Text = "Sure"
+SureButton.BackgroundColor3 = Color3.fromRGB(0, 180, 0)
+SureButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SureButton.Font = Enum.Font.GothamBold
+SureButton.TextSize = 14
+SureButton.Visible = false
+SureButton.Parent = ScreenGui
+
+local NoButton = Instance.new("TextButton")
+NoButton.Size = UDim2.new(0, 60, 0, 35)
+NoButton.Position = UDim2.new(0, 215, 0, 65)
+NoButton.Text = "No"
+NoButton.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+NoButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+NoButton.Font = Enum.Font.GothamBold
+NoButton.TextSize = 14
+NoButton.Visible = false
+NoButton.Parent = ScreenGui
+
+DeleteButton.MouseButton1Click:Connect(function()
+	SureButton.Visible = true
+	NoButton.Visible = true
+end)
+
+SureButton.MouseButton1Click:Connect(function()
+	FOVring:Remove()
+	ScreenGui:Destroy()
+	isAiming = false
+	script:Destroy() -- Nếu dùng executor thì bỏ dòng này
+end)
+
+NoButton.MouseButton1Click:Connect(function()
+	SureButton.Visible = false
+	NoButton.Visible = false
 end)
 end)
