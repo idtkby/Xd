@@ -1249,7 +1249,7 @@ local Camera = Workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
 local activeESPList = {}
-local espObjects = {}
+local espObjects = {} -- Key: DebugId -> Value: gui info
 
 -- Danh sách loại trừ SCP
 local excludedNPCs = {
@@ -1267,16 +1267,18 @@ local itemSettings = {
 
 -- Xoá ESP
 local function removeESP(item)
-	local data = espObjects[item]
+	local id = item:GetDebugId()
+	local data = espObjects[id]
 	if data and data.gui then
 		data.gui:Destroy()
 	end
-	espObjects[item] = nil
+	espObjects[id] = nil
 end
 
 -- Tạo ESP Billboard
 local function createESP(item, baseText, color)
-	if espObjects[item] then return end
+	local id = item:GetDebugId()
+	if espObjects[id] then return end
 	local humanoid = item:FindFirstChildOfClass("Humanoid")
 	if not humanoid or humanoid.Health <= 0 then return end
 
@@ -1302,9 +1304,8 @@ local function createESP(item, baseText, color)
 	label.TextStrokeTransparency = 0
 	label.TextSize = 20
 
-	espObjects[item] = {gui = gui, label = label, humanoid = humanoid, baseText = baseText}
+	espObjects[id] = {gui = gui, label = label, humanoid = humanoid, baseText = baseText, model = item}
 
-	-- Tự xoá khi chết hoặc biến mất
 	task.spawn(function()
 		humanoid.Died:Connect(function()
 			removeESP(item)
@@ -1317,10 +1318,11 @@ local function createESP(item, baseText, color)
 	end)
 end
 
--- Update TextSize và Health mammoth
+-- Cập nhật textsize + máu mammoth
 RunService.RenderStepped:Connect(function()
-	for item, data in pairs(espObjects) do
-		if not item:IsDescendantOf(Workspace) then
+	for id, data in pairs(espObjects) do
+		local item = data.model
+		if not item or not item:IsDescendantOf(Workspace) then
 			removeESP(item)
 		else
 			local pos = item:GetPivot().Position
@@ -1336,51 +1338,46 @@ RunService.RenderStepped:Connect(function()
 	end
 end)
 
--- Theo dõi NPC mới
+-- Theo dõi NPC mới spawn
 Workspace.DescendantAdded:Connect(function(obj)
-	if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and not Players:GetPlayerFromCharacter(obj) then
-		local name = obj.Name:lower()
+	local model = obj:FindFirstAncestorOfClass("Model")
+	if model and model:FindFirstChildOfClass("Humanoid") and not Players:GetPlayerFromCharacter(model) then
+		task.wait(0.05)
+		local name = model.Name:lower()
 
 		if activeESPList["scps"] and not excludedNPCs[name] then
-			createESP(obj, obj.Name, Color3.fromRGB(255, 255, 255))
-			return
-		end
-
-		if itemSettings[name] and activeESPList[name] then
+			createESP(model, model.Name, Color3.fromRGB(255, 255, 255))
+		elseif itemSettings[name] and activeESPList[name] then
 			local setting = itemSettings[name]
-			createESP(obj, setting.label, setting.color)
+			createESP(model, setting.label, setting.color)
 		end
 	end
 end)
 
--- Toggle SCPs (trừ 3 con riêng)
+-- Toggle SCPs
 VTab:CreateToggle({
 	Name = "ESP: SCPs",
 	CurrentValue = false,
 	Callback = function(state)
 		activeESPList["scps"] = state
 
-		for _, obj in ipairs(Workspace:GetDescendants()) do
-			if obj:IsA("Model") and obj:FindFirstChildOfClass("Humanoid") and not Players:GetPlayerFromCharacter(obj) then
-				local name = obj.Name:lower()
+		for _, model in ipairs(Workspace:GetDescendants()) do
+			if model:IsA("Model") and model:FindFirstChildOfClass("Humanoid") and not Players:GetPlayerFromCharacter(model) then
+				local name = model.Name:lower()
 				local isExcluded = excludedNPCs[name]
 				local isSpecific = itemSettings[name]
 
-				if state then
-					if not isExcluded and not espObjects[obj] then
-						createESP(obj, obj.Name, Color3.fromRGB(255, 255, 255))
-					end
-				else
-					if not isSpecific and not isExcluded then
-						removeESP(obj)
-					end
+				if state and not isExcluded then
+					createESP(model, model.Name, Color3.fromRGB(255, 255, 255))
+				elseif not state and not isSpecific and not isExcluded then
+					removeESP(model)
 				end
 			end
 		end
 	end
 })
 
--- Toggle riêng (deer, bear, mammoth)
+-- Toggle riêng từng loại
 for objName, setting in pairs(itemSettings) do
 	VTab:CreateToggle({
 		Name = "ESP: " .. setting.label,
@@ -1388,16 +1385,12 @@ for objName, setting in pairs(itemSettings) do
 		Callback = function(state)
 			activeESPList[objName] = state
 
-			if not state then
-				for obj in pairs(espObjects) do
-					if obj.Name:lower() == objName then
-						removeESP(obj)
-					end
-				end
-			else
-				for _, obj in ipairs(Workspace:GetDescendants()) do
-					if obj:IsA("Model") and obj.Name:lower() == objName and obj:FindFirstChild("Humanoid") and not espObjects[obj] then
-						createESP(obj, setting.label, setting.color)
+			for _, model in ipairs(Workspace:GetDescendants()) do
+				if model:IsA("Model") and model.Name:lower() == objName and model:FindFirstChildOfClass("Humanoid") then
+					if state then
+						createESP(model, setting.label, setting.color)
+					else
+						removeESP(model)
 					end
 				end
 			end
