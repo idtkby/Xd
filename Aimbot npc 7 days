@@ -41,6 +41,8 @@ NPCNameLabel.Text = "NPC: None"
 NPCNameLabel.TextSize = 14
 NPCNameLabel.Font = Enum.Font.GothamBold
 NPCNameLabel.Parent = ScreenGui
+NPCNameLabel.Active = true
+NPCNameLabel.Draggable = true
 
 local Sound = Instance.new("Sound", game.SoundService)
 Sound.SoundId = "rbxassetid://6026984224"
