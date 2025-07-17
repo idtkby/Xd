@@ -1250,25 +1250,34 @@ local LocalPlayer = Players.LocalPlayer
 local activeESPList = {}
 local espObjects = {}
 
--- Danh sách loại trừ
+-- Danh sách loại trừ SCP
 local excludedNPCs = {
 	bear = true,
 	deer = true,
 	mammoth = true
 }
 
--- Cấu hình từng loại cụ thể
+-- Cấu hình từng loại
 local itemSettings = {
-	bear = {label = "Bear", color = Color3.fromRGB(0, 255, 0)},
-	deer = {label = "Deer", color = Color3.fromRGB(255, 255, 0)},
-	mammoth = {label = "Mammoth", color = Color3.fromRGB(255, 0, 0)},
+	deer = {label = "Deer", color = Color3.fromRGB(0, 255, 0)},
+	bear = {label = "Bear", color = Color3.fromRGB(255, 255, 0)},
+	mammoth = {label = "Mammoth", color = Color3.fromRGB(155, 0, 0)},
 }
 
+-- Xoá ESP
+local function removeESP(item)
+	local data = espObjects[item]
+	if data and data.gui then
+		data.gui:Destroy()
+	end
+	espObjects[item] = nil
+end
+
 -- Tạo ESP Billboard
-local function createESP(item, text, color)
+local function createESP(item, baseText, color)
 	if espObjects[item] then return end
 	local humanoid = item:FindFirstChildOfClass("Humanoid")
-	if not humanoid or humanoid.Health <= 0 then return end -- Không tạo nếu đã chết
+	if not humanoid or humanoid.Health <= 0 then return end
 
 	local part = item.PrimaryPart or item:FindFirstChild("Head") or item:FindFirstChildWhichIsA("BasePart")
 	if not part then return end
@@ -1285,14 +1294,14 @@ local function createESP(item, text, color)
 	local label = Instance.new("TextLabel", gui)
 	label.BackgroundTransparency = 1
 	label.Size = UDim2.new(1, 0, 1, 0)
-	label.Text = text
+	label.Text = baseText
 	label.TextColor3 = color
 	label.Font = Enum.Font.Bodoni
 	label.TextStrokeColor3 = Color3.new(0, 0, 0)
 	label.TextStrokeTransparency = 0
 	label.TextSize = 20
 
-	espObjects[item] = {gui = gui, label = label}
+	espObjects[item] = {gui = gui, label = label, humanoid = humanoid, baseText = baseText}
 
 	-- Tự xoá khi chết hoặc biến mất
 	task.spawn(function()
@@ -1307,7 +1316,7 @@ local function createESP(item, text, color)
 	end)
 end
 
--- Update TextSize theo khoảng cách
+-- Update TextSize và Health mammoth
 RunService.RenderStepped:Connect(function()
 	for item, data in pairs(espObjects) do
 		if not item:IsDescendantOf(Workspace) then
@@ -1315,30 +1324,35 @@ RunService.RenderStepped:Connect(function()
 		else
 			local pos = item:GetPivot().Position
 			local dist = (Camera.CFrame.Position - pos).Magnitude
-			data.label.TextSize = math.clamp(25 * (1 - dist / 200), 10, 25)
+			data.label.TextSize = math.clamp(25 * (1 - dist / 500), 10, 25)
+
+			if item.Name:lower() == "mammoth" then
+				local hp = math.floor(data.humanoid.Health)
+				local max = math.floor(data.humanoid.MaxHealth)
+				data.label.Text = data.baseText .. " | " .. hp .. "/" .. max
+			end
 		end
 	end
 end)
 
--- Theo dõi spawn mới (chung)
+-- Theo dõi NPC mới
 Workspace.DescendantAdded:Connect(function(obj)
 	if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and not Players:GetPlayerFromCharacter(obj) then
 		local name = obj.Name:lower()
 
-		-- Nếu là SCPs và đang bật
 		if activeESPList["scps"] and not excludedNPCs[name] then
 			createESP(obj, obj.Name, Color3.fromRGB(255, 255, 255))
 			return
 		end
 
-		-- Nếu là trong itemSettings riêng
 		if itemSettings[name] and activeESPList[name] then
-			createESP(obj, itemSettings[name].label, itemSettings[name].color)
+			local setting = itemSettings[name]
+			createESP(obj, setting.label, setting.color)
 		end
 	end
 end)
 
--- Tạo toggle SCPs
+-- Toggle SCPs (trừ 3 con riêng)
 VTab:CreateToggle({
 	Name = "ESP: SCPs",
 	CurrentValue = false,
@@ -1365,7 +1379,7 @@ VTab:CreateToggle({
 	end
 })
 
--- Tạo toggle cho từng NPC riêng
+-- Toggle riêng (deer, bear, mammoth)
 for objName, setting in pairs(itemSettings) do
 	VTab:CreateToggle({
 		Name = "ESP: " .. setting.label,
