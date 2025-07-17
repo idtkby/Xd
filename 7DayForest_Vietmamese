@@ -967,13 +967,6 @@ VTab:CreateButton({
 })
 
 VTab:CreateButton({
-    Name = "Animal and spcs",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Esp%20Npc"))()
-    end,
-})
-
-VTab:CreateButton({
     Name = "Easter egg 🥚 (Fishing)",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Eastereggesp"))()
@@ -1245,6 +1238,169 @@ VTab:CreateToggle({
 		checkForBloodBark()
 	end
 })
+
+VTab:CreateSection("ESP Animal, SCPs")
+
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local Camera = Workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+
+local activeESPList = {}
+local espObjects = {}
+
+-- Danh sách loại trừ
+local excludedNPCs = {
+	bear = true,
+	deer = true,
+	mammoth = true
+}
+
+-- Cấu hình từng loại cụ thể
+local itemSettings = {
+	bear = {label = "Bear", color = Color3.fromRGB(0, 255, 0)},
+	deer = {label = "Deer", color = Color3.fromRGB(255, 255, 0)},
+	mammoth = {label = "Mammoth", color = Color3.fromRGB(255, 0, 0)},
+}
+
+-- Tạo ESP Billboard
+local function createESP(item, text, color)
+	if espObjects[item] then return end
+	local humanoid = item:FindFirstChildOfClass("Humanoid")
+	if not humanoid or humanoid.Health <= 0 then return end -- Không tạo nếu đã chết
+
+	local part = item.PrimaryPart or item:FindFirstChild("Head") or item:FindFirstChildWhichIsA("BasePart")
+	if not part then return end
+
+	local gui = Instance.new("BillboardGui")
+	gui.Name = "ItemESP"
+	gui.AlwaysOnTop = true
+	gui.Size = UDim2.new(0, 100, 0, 40)
+	gui.StudsOffset = Vector3.new(0, 2, 0)
+	gui.MaxDistance = 1000
+	gui.Adornee = part
+	gui.Parent = item
+
+	local label = Instance.new("TextLabel", gui)
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.new(1, 0, 1, 0)
+	label.Text = text
+	label.TextColor3 = color
+	label.Font = Enum.Font.Bodoni
+	label.TextStrokeColor3 = Color3.new(0, 0, 0)
+	label.TextStrokeTransparency = 0
+	label.TextSize = 20
+
+	espObjects[item] = {gui = gui, label = label}
+
+	-- Tự xoá khi chết hoặc biến mất
+	task.spawn(function()
+		humanoid.Died:Connect(function()
+			removeESP(item)
+		end)
+		item.AncestryChanged:Connect(function(_, parent)
+			if not parent then
+				removeESP(item)
+			end
+		end)
+	end)
+end
+
+-- Update TextSize theo khoảng cách
+RunService.RenderStepped:Connect(function()
+	for item, data in pairs(espObjects) do
+		if not item:IsDescendantOf(Workspace) then
+			removeESP(item)
+		else
+			local pos = item:GetPivot().Position
+			local dist = (Camera.CFrame.Position - pos).Magnitude
+			data.label.TextSize = math.clamp(25 * (1 - dist / 200), 10, 25)
+		end
+	end
+end)
+
+-- Theo dõi spawn mới (chung)
+Workspace.DescendantAdded:Connect(function(obj)
+	if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and not Players:GetPlayerFromCharacter(obj) then
+		local name = obj.Name:lower()
+
+		-- Nếu là SCPs và đang bật
+		if activeESPList["scps"] and not excludedNPCs[name] then
+			createESP(obj, obj.Name, Color3.fromRGB(255, 255, 255))
+			return
+		end
+
+		-- Nếu là trong itemSettings riêng
+		if itemSettings[name] and activeESPList[name] then
+			createESP(obj, itemSettings[name].label, itemSettings[name].color)
+		end
+	end
+end)
+
+-- Tạo toggle SCPs
+VTab:CreateToggle({
+	Name = "ESP: SCPs",
+	CurrentValue = false,
+	Callback = function(state)
+		activeESPList["scps"] = state
+
+		if not state then
+			for obj in pairs(espObjects) do
+				local name = obj.Name:lower()
+				if not itemSettings[name] and not excludedNPCs[name] then
+					removeESP(obj)
+				end
+			end
+		else
+			for _, obj in ipairs(Workspace:GetDescendants()) do
+				if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and not Players:GetPlayerFromCharacter(obj) then
+					local name = obj.Name:lower()
+					if not excludedNPCs[name] and not espObjects[obj] then
+						createESP(obj, obj.Name, Color3.fromRGB(255, 255, 255))
+					end
+				end
+			end
+		end
+	end
+})
+
+-- Tạo toggle cho từng NPC riêng
+for objName, setting in pairs(itemSettings) do
+	VTab:CreateToggle({
+		Name = "ESP: " .. setting.label,
+		CurrentValue = false,
+		Callback = function(state)
+			activeESPList[objName] = state
+
+			if not state then
+				for obj in pairs(espObjects) do
+					if obj.Name:lower() == objName then
+						removeESP(obj)
+					end
+				end
+			else
+				for _, obj in ipairs(Workspace:GetDescendants()) do
+					if obj:IsA("Model") and obj.Name:lower() == objName and obj:FindFirstChild("Humanoid") and not espObjects[obj] then
+						createESP(obj, setting.label, setting.color)
+					end
+				end
+			end
+		end
+	})
+end
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
