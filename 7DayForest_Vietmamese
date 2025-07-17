@@ -56,11 +56,18 @@ local MTab = Window:CreateTab("Main", "home")
 MTab:CreateSection("Main")
 
   MTab:CreateButton({
-    Name = "Aimbot  (Some npc may not work)",
+    Name = "Aimbot",
     Callback = function()
       loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Aimbot%20npc%207%20days"))()
     end,
   })
+
+MTab:CreateButton({
+Name = "Aimbot V2 [Strong Device]",
+Callback = function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/main/aimbot%20v2"))()
+end,
+})
 
 local savedCFrame = nil
 
