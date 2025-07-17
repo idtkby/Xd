@@ -1055,7 +1055,7 @@ local itemSettings = {
 	cabin = {label = "Cabin", color = Color3.fromRGB(137, 80, 0)},
 	scrap = {label = "Scrap", color = Color3.fromRGB(136, 69, 53)},
 	stone = {label = "Stone", color = Color3.fromRGB(200, 200, 200)},
- Turret = {label = "Turret", color = Color3.fromRGB(0, 0, 0)}
+ Turret = {label = "Turret", color = Color3.fromRGB(0, 0, 0)},
 	abandoned_shack = {label = "Materials", color = Color3.fromRGB(137, 80, 0)},
 	heli_crash = {label = "Heli Crash", color = Color3.fromRGB(255, 212, 143)},
 	well = {label = "Well", color = Color3.fromRGB(150, 150, 150)},
