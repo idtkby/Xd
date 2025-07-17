@@ -1360,19 +1360,19 @@ VTab:CreateToggle({
 	Callback = function(state)
 		activeESPList["scps"] = state
 
-		if not state then
-			for obj in pairs(espObjects) do
+		for _, obj in ipairs(Workspace:GetDescendants()) do
+			if obj:IsA("Model") and obj:FindFirstChildOfClass("Humanoid") and not Players:GetPlayerFromCharacter(obj) then
 				local name = obj.Name:lower()
-				if not itemSettings[name] and not excludedNPCs[name] then
-					removeESP(obj)
-				end
-			end
-		else
-			for _, obj in ipairs(Workspace:GetDescendants()) do
-				if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and not Players:GetPlayerFromCharacter(obj) then
-					local name = obj.Name:lower()
-					if not excludedNPCs[name] and not espObjects[obj] then
+				local isExcluded = excludedNPCs[name]
+				local isSpecific = itemSettings[name]
+
+				if state then
+					if not isExcluded and not espObjects[obj] then
 						createESP(obj, obj.Name, Color3.fromRGB(255, 255, 255))
+					end
+				else
+					if not isSpecific and not isExcluded then
+						removeESP(obj)
 					end
 				end
 			end
