@@ -4560,7 +4560,6 @@ CMDs[#CMDs + 1] = {NAME = 'minzoom [num]', DESC = 'Minimum camera zoom'}
 CMDs[#CMDs + 1] = {NAME = 'camdistance [num]', DESC = 'Changes camera distance from your player'}
 CMDs[#CMDs + 1] = {NAME = 'fov [num]', DESC = 'Adjusts field of view (default is 70)'}
 CMDs[#CMDs + 1] = {NAME = 'fixcam / restorecam', DESC = 'Fixes camera'}
-CMDs[#CMDs + 1] = {NAME = 'invisicam', DESC = 'Fixes camera'}
 CMDs[#CMDs + 1] = {NAME = 'enableshiftlock / enablesl', DESC = 'Enables the shift lock option'}
 CMDs[#CMDs + 1] = {NAME = 'lookat [player]', DESC = 'Moves your camera view to a player'}
 CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
@@ -4631,7 +4630,6 @@ CMDs[#CMDs + 1] = {NAME = 'uncarpet', DESC = 'Undoes carpet'}
 CMDs[#CMDs + 1] = {NAME = 'friend [player]', DESC = 'Sends a friend request to certain players'}
 CMDs[#CMDs + 1] = {NAME = 'unfriend [player]', DESC = 'Unfriends certain players'}
 CMDs[#CMDs + 1] = {NAME = 'headsit [player]', DESC = 'Sit on a players head'}
-CMDs[#CMDs + 1] = {NAME = 'backsit [player]', DESC = 'Sit on a players back'}
 CMDs[#CMDs + 1] = {NAME = 'walkto / follow [player]', DESC = 'Follow a player'}
 CMDs[#CMDs + 1] = {NAME = 'pathfindwalkto / pathfindfollow [player]', DESC = 'Follow a player using pathfinding'}
 CMDs[#CMDs + 1] = {NAME = 'pathfindwalktowaypoint / pathfindwalktowp [waypoint]', DESC = 'Walk to a waypoint using pathfinding'}
@@ -4816,8 +4814,14 @@ CMDs[#CMDs + 1] = {NAME = 'listento [player]', DESC = 'Listens to the area aroun
 CMDs[#CMDs + 1] = {NAME = 'unlistento', DESC = 'Disables listento'}
 CMDs[#CMDs + 1] = {NAME = 'jerk', DESC = 'Makes you jork it'}
 CMDs[#CMDs + 1] = {NAME = 'unsuspendvc', DESC = 'Unsuspends you from voice chat'}
+CMDs[#CMDs + 1] = {NAME = '', DESC = 'set Section'}
 CMDs[#CMDs + 1] = {NAME = 'norotationcamera / nrcam', DESC = 'Prevents your screen from rotating when moving horizontally'}
 CMDs[#CMDs + 1] = {NAME = 'vflyandflybutton / vandflyb', DESC = 'Gives you 2 buttons, Fly and VFly suitable for mobile'}
+CMDs[#CMDs + 1] = {NAME = 'invisicam', DESC = 'set inviscam'}
+CMDs[#CMDs + 1] = {NAME = 'backsit [player]', DESC = 'Sit on a players back'}
+CMDs[#CMDs + 1] = {NAME = 'walktogui', DESC = 'Give Walkto GUI'}
+CMDs[#CMDs + 1] = {NAME = 'gotogui', DESC = 'Give Goto GUI'}
+CMDs[#CMDs + 1] = {NAME = 'walktogui2', DESC = 'Give walktogui but using pathfind'}
 wait()
 
 for i = 1, #CMDs do
@@ -8489,9 +8493,7 @@ addcmd('fixcam',{'restorecam'},function(args, speaker)
 	speaker.Character.Head.Anchored = false
 end)
 
-addcmd('invisicam',{},function(args, speaker)
-	game:GetService("Players").LocalPlayer.DevCameraOcclusionMode = Enum.DevCameraOcclusionMode.Invisicam
-end)
+
 
 addcmd('enableshiftlock',{'enablesl','shiftlock'},function(args, speaker)
 	speaker.DevEnableMouseLock = true
@@ -10433,21 +10435,6 @@ addcmd('headsit',{},function(args, speaker)
 		headSit = RunService.Heartbeat:Connect(function()
 			if Players:FindFirstChild(Players[v].Name) and Players[v].Character ~= nil and getRoot(Players[v].Character) and getRoot(speaker.Character) and speaker.Character:FindFirstChildOfClass('Humanoid').Sit == true then
 				getRoot(speaker.Character).CFrame = getRoot(Players[v].Character).CFrame * CFrame.Angles(0,math.rad(0),0)* CFrame.new(0,1.6,0.4)
-			else
-				headSit:Disconnect()
-			end
-		end)
-	end
-end)
-
-addcmd('backsit',{},function(args, speaker)
-	local players = getPlayer(args[1], speaker)
-	if headSit then headSit:Disconnect() end
-	for i,v in pairs(players)do
-		speaker.Character:FindFirstChildOfClass('Humanoid').Sit = true
-		headSit = RunService.Heartbeat:Connect(function()
-			if Players:FindFirstChild(Players[v].Name) and Players[v].Character ~= nil and getRoot(Players[v].Character) and getRoot(speaker.Character) and speaker.Character:FindFirstChildOfClass('Humanoid').Sit == true then
-				getRoot(speaker.Character).CFrame = getRoot(Players[v].Character).CFrame * CFrame.Angles(0,math.rad(0),0)* CFrame.new(0,0,1.3)
 			else
 				headSit:Disconnect()
 			end
@@ -12771,6 +12758,30 @@ addcmd('removecmd',{'deletecmd'},function(args, speaker)
 	removecmd(args[1])
 end)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 addcmd('norotationcamera',{'nrcam'},function(args, speaker)
 	local player = game:GetService("Players").LocalPlayer
 
@@ -12945,6 +12956,72 @@ addcmd('vflyandflybutton',{'vandflyb'},function(args, speaker)
     warn("-----------------------------------------------------------")
     end)
 end)
+
+addcmd('backsit',{},function(args, speaker)
+	local players = getPlayer(args[1], speaker)
+	if headSit then headSit:Disconnect() end
+	for i,v in pairs(players)do
+		speaker.Character:FindFirstChildOfClass('Humanoid').Sit = true
+		headSit = RunService.Heartbeat:Connect(function()
+			if Players:FindFirstChild(Players[v].Name) and Players[v].Character ~= nil and getRoot(Players[v].Character) and getRoot(speaker.Character) and speaker.Character:FindFirstChildOfClass('Humanoid').Sit == true then
+				getRoot(speaker.Character).CFrame = getRoot(Players[v].Character).CFrame * CFrame.Angles(0,math.rad(0),0)* CFrame.new(0,0,1.3)
+			else
+				headSit:Disconnect()
+			end
+		end)
+	end
+end)
+
+addcmd('walktogui',{},function(args, speaker)
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/walkto"))()
+end)
+
+
+addcmd('gotogui',{},function(args, speaker)
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/goto"))()
+end)
+
+addcmd('invisicam',{},function(args, speaker)
+	game:GetService("Players").LocalPlayer.DevCameraOcclusionMode = Enum.DevCameraOcclusionMode.Invisicam
+end)
+
+addcmd('walktogui2', {}, function(args, speaker)
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/walktogui2"))()
+end)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 if IsOnMobile then
 	local QuickCapture = Instance.new("TextButton")
