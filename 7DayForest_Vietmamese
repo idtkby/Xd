@@ -1646,7 +1646,7 @@ local builds = {
  {Name = "Totem", Requires = "30 Wood"},
  {Name = "Stone Workbench", Requires = "8 Wood, 30 Stone, 4 Glass"},
  {Name = "Building Stone", Requires = "---------------------------------------------"},
- {Name = "Cauldron", Requires = "2 Wood, 20 Stone"},
+ {Name = "Cauldron", Requires = "2 Wood, 15 Stone"},
  {Name = "Stone Chair", Requires = "2 Stone"},
  {Name = "Stone Door", Requires = "6 Stone"},
  {Name = "Stone Ladder", Requires = "5 Stone"},
