@@ -4823,6 +4823,10 @@ CMDs[#CMDs + 1] = {NAME = 'walktogui', DESC = 'Give Walkto GUI'}
 CMDs[#CMDs + 1] = {NAME = 'gotogui', DESC = 'Give Goto GUI'}
 CMDs[#CMDs + 1] = {NAME = 'walktogui2', DESC = 'Give walktogui but using pathfind'}
 CMDs[#CMDs + 1] = {NAME = 'toolname', DESC = 'Give a label show tool equipping'}
+CMDs[#CMDs + 1] = {NAME = 'espnpcs', DESC = 'ESP all NPCs in workspace'}
+CMDs[#CMDs + 1] = {NAME = 'unespnpcs', DESC = 'UnNPC ESPs'}
+CMDs[#CMDs + 1] = {NAME = "espnpcs2", DESC = "ESP all NPCs in workspace"}
+CMDs[#CMDs + 1] = {NAME = "unespnpcs2", DESC = "UnNPC ESPs"}
 wait()
 
 for i = 1, #CMDs do
@@ -12993,6 +12997,245 @@ end)
 addcmd('toolname', {}, function(args, speaker)
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/ToolName"))()
 end)
+
+addcmd("espnpcs", {}, function(args, speaker)
+	local Players = game:GetService("Players")
+	local LocalPlayer = Players.LocalPlayer
+	local workspace = game:GetService("Workspace")
+	local RunService = game:GetService("RunService")
+
+	local function isPlayerCharacter(model)
+		for _, plr in ipairs(Players:GetPlayers()) do
+			if plr.Character == model then return true end
+		end
+		return false
+	end
+
+	local function espRedItalic(target)
+		if not target or target:FindFirstChild("ESP_RedItalic") then return end
+		local humanoid = target:FindFirstChildOfClass("Humanoid")
+		if humanoid and humanoid.Health > 0 then
+			if isPlayerCharacter(target) then return end
+			local mainPart = target:FindFirstChild("HumanoidRootPart") or target:FindFirstChildWhichIsA("BasePart")
+			if not mainPart then return end
+
+			local billboard = Instance.new("BillboardGui")
+			billboard.Name = "ESP_RedItalic"
+			billboard.Size = UDim2.new(0, 120, 0, 30)
+			billboard.Adornee = mainPart
+			billboard.AlwaysOnTop = true
+			billboard.MaxDistance = math.huge
+			billboard.Parent = target
+
+			local label = Instance.new("TextLabel", billboard)
+			label.Size = UDim2.new(1, 0, 1, 0)
+			label.BackgroundTransparency = 1
+			label.TextColor3 = Color3.fromRGB(255, 255, 255)
+			label.TextStrokeTransparency = 0.4
+			label.Font = Enum.Font.SourceSansBold
+			label.TextScaled = true
+
+			local con
+			con = RunService.RenderStepped:Connect(function()
+				if not target:IsDescendantOf(workspace) or humanoid.Health <= 0 then
+					if billboard then billboard:Destroy() end
+					local hl = target:FindFirstChild("ESP_RedOutline")
+					if hl then hl:Destroy() end
+					if con then con:Disconnect() end
+					return
+				end
+				label.Text = string.format("%s | %d", target.Name, humanoid.Health)
+			end)
+
+			local highlight = Instance.new("Highlight")
+			highlight.Name = "ESP_RedOutline"
+			highlight.FillColor = Color3.fromRGB(255, 0, 0)
+			highlight.FillTransparency = 1
+			highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+			highlight.OutlineTransparency = 0.1
+			highlight.Adornee = target
+			highlight.Parent = target
+		end
+	end
+
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:FindFirstChildOfClass("Humanoid") then
+			espRedItalic(obj)
+		end
+	end
+
+	_G.espnpc_connection = workspace.DescendantAdded:Connect(function(obj)
+		task.wait()
+		if obj:FindFirstChildOfClass("Humanoid") then
+			espRedItalic(obj)
+		end
+	end)
+end)
+
+addcmd("unespnpcs", {}, function(args, speaker)
+	if _G.espnpc_connection then
+		_G.espnpc_connection:Disconnect()
+		_G.espnpc_connection = nil
+	end
+
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		local esp = obj:FindFirstChild("ESP_RedItalic")
+		local hl = obj:FindFirstChild("ESP_RedOutline")
+		if esp then esp:Destroy() end
+		if hl then hl:Destroy() end
+	end
+end)
+
+-- inf npc
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local COREGUI = game:GetService("CoreGui")
+local LocalPlayer = Players.LocalPlayer
+
+local NPCESPEnabled = false
+local espTransparency = 0.8
+
+local function getRoot(model)
+	return model:FindFirstChild("HumanoidRootPart") or model:FindFirstChild("Torso")
+end
+
+local function isPlayerCharacter(model)
+	for _, plr in ipairs(Players:GetPlayers()) do
+		if plr.Character == model then return true end
+	end
+	return false
+end
+
+local function round(num, numDecimalPlaces)
+	local mult = 10 ^ (numDecimalPlaces or 0)
+	return math.floor(num * mult + 0.5) / mult
+end
+
+local function removeESP(npc)
+	local folder = COREGUI:FindFirstChild(npc.Name .. "_ESP")
+	if folder then folder:Destroy() end
+end
+
+local function createESP(npc)
+	if not NPCESPEnabled then return end
+	if not npc:IsA("Model") then return end
+	if isPlayerCharacter(npc) then return end
+	if not npc:FindFirstChildOfClass("Humanoid") then return end
+	if not getRoot(npc) then return end
+
+	task.spawn(function()
+		local folder = Instance.new("Folder", COREGUI)
+		folder.Name = npc.Name .. "_ESP"
+
+		local function refreshESP()
+			local root = getRoot(npc)
+			local hum = npc:FindFirstChildOfClass("Humanoid")
+			if not root or not hum then return end
+
+			for _, v in ipairs(folder:GetChildren()) do v:Destroy() end
+
+			for _, part in ipairs(npc:GetChildren()) do
+				if part:IsA("BasePart") then
+					local box = Instance.new("BoxHandleAdornment", folder)
+					box.Adornee = part
+					box.AlwaysOnTop = true
+					box.ZIndex = 10
+					box.Size = part.Size
+					box.Transparency = espTransparency
+					box.Color3 = Color3.fromRGB(255,255,255)
+				end
+			end
+
+			if npc:FindFirstChild("Head") then
+				local bill = Instance.new("BillboardGui", folder)
+				bill.Adornee = npc.Head
+				bill.Size = UDim2.new(0, 100, 0, 150)
+				bill.StudsOffset = Vector3.new(0, 1, 0)
+				bill.AlwaysOnTop = true
+				bill.Name = "Label"
+
+				local text = Instance.new("TextLabel", bill)
+				text.BackgroundTransparency = 1
+				text.Position = UDim2.new(0, 0, 0, -50)
+				text.Size = UDim2.new(0, 100, 0, 100)
+				text.Font = Enum.Font.SourceSansSemibold
+				text.TextSize = 20
+				text.TextColor3 = Color3.fromRGB(255, 255, 255)
+				text.TextStrokeTransparency = 0
+				text.TextYAlignment = Enum.TextYAlignment.Bottom
+				text.Text = ""
+			end
+		end
+
+		local function updateText()
+			local label = folder:FindFirstChild("Label")
+			local root = getRoot(npc)
+			local hum = npc:FindFirstChildOfClass("Humanoid")
+			if label and root and hum and LocalPlayer.Character and getRoot(LocalPlayer.Character) then
+				local dist = math.floor((getRoot(LocalPlayer.Character).Position - root.Position).Magnitude)
+				local hp = round(hum.Health, 1)
+				label.TextLabel.Text = "Name: " .. npc.Name .. " | Health: " .. hp .. " | Studs: " .. dist
+			end
+		end
+
+		refreshESP()
+
+		local stepConn = RunService.RenderStepped:Connect(function()
+			if not folder.Parent or not NPCESPEnabled then
+				folder:Destroy()
+				stepConn:Disconnect()
+			else
+				updateText()
+			end
+		end)
+
+		local hum = npc:FindFirstChildOfClass("Humanoid")
+		if hum then
+			hum.Died:Connect(function()
+				removeESP(npc)
+				if stepConn then stepConn:Disconnect() end
+			end)
+		end
+	end)
+end
+
+local function clearAllESP()
+	for _, v in ipairs(COREGUI:GetChildren()) do
+		if v.Name:sub(-4) == "_ESP" then
+			v:Destroy()
+		end
+	end
+end
+
+-- ADDCMD: Bật ESP cho tất cả NPC
+addcmd('espnpcs2', {}, function(args, speaker)
+	NPCESPEnabled = true
+	clearAllESP()
+	for _, model in ipairs(workspace:GetDescendants()) do
+		if model:IsA("Model") and model:FindFirstChildOfClass("Humanoid") and not isPlayerCharacter(model) then
+			createESP(model)
+		end
+	end
+end)
+
+-- ADDCMD: Tắt ESP NPC
+addcmd('unespnpcs2', {}, function(args, speaker)
+	NPCESPEnabled = false
+	clearAllESP()
+end)
+
+-- Theo dõi NPC mới xuất hiện
+workspace.DescendantAdded:Connect(function(obj)
+	if NPCESPEnabled and obj:IsA("Model") and obj:FindFirstChildOfClass("Humanoid") and not isPlayerCharacter(obj) then
+		task.wait()
+		createESP(obj)
+	end
+end)
+-- inf npc
+
+
+
+
 
 
 
