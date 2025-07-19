@@ -70,7 +70,7 @@ InfoTab:CreateParagraph({
 
 InfoTab:CreateParagraph({
 	Title = "PETAPETA: School of Nightmares",
-	Content = "[+] Add Esp Peta Shard and Fire Ex..\n-- Version 1.6.0 --",
+	Content = "[+] Add Esp Boost Items\n-- Version 1.6.1 --",
 })
 
 InfoTab:CreateParagraph({
