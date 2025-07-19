@@ -13089,154 +13089,152 @@ end)
 -- inf npc
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local COREGUI = game:GetService("CoreGui")
-local speaker = Players.LocalPlayer
-local ESPenabled = false
+local CoreGui = game:GetService("CoreGui")
+local LocalPlayer = Players.LocalPlayer
+
+local NPCESPEnabled = false
 local espTransparency = 0.8
 
-local function getRoot(char)
-	return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso")
+local function getRoot(obj)
+	return obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Torso") or obj:FindFirstChildWhichIsA("BasePart")
 end
 
-local function round(num, numDecimalPlaces)
-	local mult = 10 ^ (numDecimalPlaces or 0)
-	return math.floor(num * mult + 0.5) / mult
+local function isPlayerCharacter(model)
+	for _, plr in ipairs(Players:GetPlayers()) do
+		if plr.Character == model then return true end
+	end
+	return false
 end
 
-local function isValidNPC(model)
-	return model:IsA("Model") and model:FindFirstChildOfClass("Humanoid") and model:FindFirstChild("Head") and not Players:FindFirstChild(model.Name)
+local function removeESP(obj)
+	local esp = CoreGui:FindFirstChild(obj:GetDebugId() .. "_ESP")
+	if esp then esp:Destroy() end
 end
 
-local function removeESP(model)
-	local folder = COREGUI:FindFirstChild(model.Name .. "_ESP")
-	if folder then
-		folder:Destroy()
+local function round(n, d)
+	local m = 10 ^ (d or 0)
+	return math.floor(n * m + 0.5) / m
+end
+
+local function createESP(obj)
+	if isPlayerCharacter(obj) then return end
+	if not (obj:IsA("Model") or obj:IsA("BasePart")) then return end
+
+	local hasHealth = obj:FindFirstChildOfClass("Humanoid") or obj:FindFirstChild("Health")
+	if not hasHealth then return end
+	if CoreGui:FindFirstChild(obj:GetDebugId() .. "_ESP") then return end
+
+	local folder = Instance.new("Folder", CoreGui)
+	folder.Name = obj:GetDebugId() .. "_ESP"
+
+	local function refresh()
+	for _, v in ipairs(folder:GetChildren()) do v:Destroy() end
+
+	local head = obj:FindFirstChild("Head") or getRoot(obj)
+	if head then
+		local bill = Instance.new("BillboardGui")
+		bill.Adornee = head
+		bill.Size = UDim2.new(0, 100, 0, 150)
+		bill.StudsOffset = Vector3.new(0, 1, 0)
+		bill.AlwaysOnTop = true
+		bill.Name = "Label"
+		bill.Parent = folder -- ❗ Phải có để hiển thị
+
+		local text = Instance.new("TextLabel")
+		text.BackgroundTransparency = 1
+		text.Position = UDim2.new(0, 0, 0, -50)
+		text.Size = UDim2.new(0, 100, 0, 100)
+		text.Font = Enum.Font.SourceSansSemibold
+		text.TextSize = 20
+		text.TextColor3 = Color3.fromRGB(255, 255, 255)
+		text.TextStrokeTransparency = 0
+		text.TextYAlignment = Enum.TextYAlignment.Bottom
+		text.Text = ""
+		text.Parent = bill -- ❗ Phải có để gắn label
+	end
+
+	for _, part in ipairs(obj:GetDescendants()) do
+		if part:IsA("BasePart") then
+			local box = Instance.new("BoxHandleAdornment")
+			box.Adornee = part
+			box.Size = part.Size
+			box.AlwaysOnTop = true
+			box.Transparency = espTransparency
+			box.ZIndex = 5
+			box.Color3 = Color3.new(0, 0, 0) -- màu box đen
+			box.Parent = folder -- ❗ Bắt buộc để box hiển thị
+		end
 	end
 end
 
-local function createESP(model)
-	if not ESPenabled or not isValidNPC(model) then return end
-	if COREGUI:FindFirstChild(model.Name .. "_ESP") then return end
-
-	task.spawn(function()
-		local folder = Instance.new("Folder", COREGUI)
-		folder.Name = model.Name .. "_ESP"
-
-		local function refreshESP()
-			local root = getRoot(model)
-			local hum = model:FindFirstChildOfClass("Humanoid")
-			if not root or not hum then return end
-
-			for _, v in ipairs(folder:GetChildren()) do v:Destroy() end
-
-			for _, part in ipairs(model:GetChildren()) do
-				if part:IsA("BasePart") then
-					local box = Instance.new("BoxHandleAdornment", folder)
-					box.Adornee = part
-					box.AlwaysOnTop = true
-					box.ZIndex = 10
-					box.Size = part.Size
-					box.Transparency = espTransparency
-					box.Color3 = Color3.fromRGB(1,1,1)
-				end
-			end
-
-			local head = model:FindFirstChild("Head")
-			if head then
-				local bill = Instance.new("BillboardGui", folder)
-				bill.Adornee = head
-				bill.Size = UDim2.new(0, 100, 0, 150)
-				bill.StudsOffset = Vector3.new(0, 2, 0)
-				bill.AlwaysOnTop = true
-				bill.Name = "Label"
-
-				local text = Instance.new("TextLabel", bill)
-				text.BackgroundTransparency = 1
-				text.Size = UDim2.new(1, 0, 0, 100)
-				text.Font = Enum.Font.SourceSansSemibold
-				text.TextSize = 20
-				text.TextColor3 = Color3.fromRGB(255, 255, 0)
-				text.TextStrokeTransparency = 0
-				text.TextYAlignment = Enum.TextYAlignment.Bottom
-				text.Text = ""
+	local function updateText()
+		local gui = folder:FindFirstChild("Label")
+		local healthObj = obj:FindFirstChildOfClass("Humanoid") or obj:FindFirstChild("Health")
+		local root = getRoot(obj)
+		local myRoot = getRoot(LocalPlayer.Character)
+		if gui and healthObj and root and myRoot then
+			local dist = (myRoot.Position - root.Position).Magnitude
+			local label = gui:FindFirstChildOfClass("TextLabel")
+			if label then
+				local value = healthObj:IsA("Humanoid") and healthObj.Health or tonumber(healthObj.Value) or 0
+				label.Text = "Name: " .. obj.Name .. " | HP: " .. round(value, 1) .. " | Dist: " .. math.floor(dist)
 			end
 		end
+	end
 
-		local function updateText()
-			local label = folder:FindFirstChild("Label")
-			local text = label and label:FindFirstChildOfClass("TextLabel")
-			local root = getRoot(model)
-			local myRoot = getRoot(speaker.Character or {})
-			local hum = model:FindFirstChildOfClass("Humanoid")
-			if text and root and myRoot and hum then
-				local dist = math.floor((myRoot.Position - root.Position).Magnitude)
-				local hp = round(hum.Health, 1)
-				text.Text = "Name: " .. model.Name .. " | Health: " .. hp .. " | Studs: " .. dist
-			end
+	refresh()
+
+	local rsConn = RunService.RenderStepped:Connect(function()
+		local healthObj = obj:FindFirstChildOfClass("Humanoid") or obj:FindFirstChild("Health")
+		local value = healthObj and (healthObj:IsA("Humanoid") and healthObj.Health or tonumber(healthObj.Value)) or 0
+
+		if not NPCESPEnabled or not obj:IsDescendantOf(workspace) or not healthObj or value <= 0 then
+			removeESP(obj)
+			rsConn:Disconnect()
+			return
 		end
 
-		refreshESP()
-
-		local stepConn = RunService.RenderStepped:Connect(function()
-			if not folder.Parent or not ESPenabled then
-				stepConn:Disconnect()
-				return
-			end
-			updateText()
-		end)
-
-		local hum = model:FindFirstChildOfClass("Humanoid")
-		if hum then
-			hum.Died:Connect(function()
-				removeESP(model)
-			end)
-		end
+		updateText()
 	end)
 end
 
 local function clearAllESP()
-	for _, v in ipairs(COREGUI:GetChildren()) do
-		if v.Name:sub(-4) == "_ESP" then
+	for _, v in ipairs(CoreGui:GetChildren()) do
+		if v:IsA("Folder") and v.Name:sub(-4) == "_ESP" then
 			v:Destroy()
 		end
 	end
 end
 
-local function createESPForAllNPCs()
-	for _, npc in ipairs(workspace:GetDescendants()) do
-		if isValidNPC(npc) then
-			createESP(npc)
+-- Bật ESP
+addcmd('espnpcs2', {}, function()
+	NPCESPEnabled = true
+	clearAllESP()
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		local ok = obj:IsA("Model") or obj:IsA("BasePart")
+		local hasHealth = obj:FindFirstChildOfClass("Humanoid") or obj:FindFirstChild("Health")
+		if ok and hasHealth and not isPlayerCharacter(obj) then
+			createESP(obj)
 		end
 	end
-end
+end)
 
--- Tự động thêm ESP khi NPC spawn
-workspace.DescendantAdded:Connect(function(desc)
-	if ESPenabled and isValidNPC(desc) then
+-- Tắt ESP
+addcmd('unespnpcs2', {}, function()
+	NPCESPEnabled = false
+	clearAllESP()
+end)
+
+-- Theo dõi spawn
+workspace.DescendantAdded:Connect(function(obj)
+	if NPCESPEnabled then
 		task.wait(0.2)
-		createESP(desc)
+		local ok = obj:IsA("Model") or obj:IsA("BasePart")
+		local hasHealth = obj:FindFirstChildOfClass("Humanoid") or obj:FindFirstChild("Health")
+		if ok and hasHealth and not isPlayerCharacter(obj) then
+			createESP(obj)
+		end
 	end
-end)
-
--- Tự động xoá ESP khi NPC bị xoá
-workspace.DescendantRemoving:Connect(function(desc)
-	if desc:IsA("Model") and desc:FindFirstChild("Head") then
-		removeESP(desc)
-	end
-end)
-
--- INF YIELD CMD
-addcmd("espnpcs2", {"enables npc esp"}, function()
-	ESPenabled = true
-	clearAllESP()
-	createESPForAllNPCs()
-	notif("ESP NPC", "Đã bật ESP tất cả NPC!", 5)
-end)
-
-addcmd("unespnpcs2", {"disables npc esp"}, function()
-	ESPenabled = false
-	clearAllESP()
-	notif("ESP NPC", "Đã tắt ESP tất cả NPC!", 5)
 end)
 -- inf npc
 
