@@ -561,8 +561,112 @@ mainTab:CreateParagraph({
 	Content = "You can turn on instant interact to put out the fire because it doesn't need fire ex..",
 })
 
+mainTab:CreateSection("ESP Boost Items")
 
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local Camera = Workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
 
+local activeESPList = {}
+local espObjects = {}
+
+-- Cấu hình
+local itemSettings = {
+	Speed shoes = {label = "Speed Boost", color = Color3.fromRGB(0, 255, 185)},
+	Peta choco = {label = "Chocolate", color = Color3.fromRGB(128, 68, 0)},
+}
+
+-- Tạo ESP Billboard
+local function createESP(item, text, color)
+	if espObjects[item] then return end
+	local part = item:FindFirstChildWhichIsA("BasePart") or item.PrimaryPart
+	if not part then return end
+
+	local gui = Instance.new("BillboardGui")
+	gui.Name = "ItemESP"
+	gui.AlwaysOnTop = true
+	gui.Size = UDim2.new(0, 100, 0, 40)
+	gui.StudsOffset = Vector3.new(0, 2, 0)
+	gui.MaxDistance = 700 -- Giới hạn hiển thị xa
+	gui.Adornee = part
+	gui.Parent = item
+
+	local label = Instance.new("TextLabel", gui)
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.new(1, 0, 1, 0)
+	label.Text = text
+	label.TextColor3 = color
+	label.Font = Enum.Font.Bodoni
+	label.TextStrokeColor3 = Color3.new(0, 0, 0)
+	label.TextStrokeTransparency = 0
+	label.TextSize = 20
+
+	espObjects[item] = {gui = gui, label = label}
+end
+
+-- Xoá ESP
+local function removeESP(item)
+	local data = espObjects[item]
+	if data then
+		if data.gui then data.gui:Destroy() end
+		espObjects[item] = nil
+	end
+end
+
+-- Update TextSize theo khoảng cách
+RunService.RenderStepped:Connect(function()
+	for item, data in pairs(espObjects) do
+		if not item:IsDescendantOf(Workspace) or not activeESPList[item.Name] then
+			removeESP(item)
+		else
+			local pos = item:GetPivot().Position
+			local dist = (Camera.CFrame.Position - pos).Magnitude
+			data.label.TextSize = math.clamp(25 * (1 - dist / 200), 10, 25)
+		end
+	end
+end)
+
+-- Theo dõi spawn mới
+Workspace.DescendantAdded:Connect(function(obj)
+	if obj:IsA("Model") and itemSettings[obj.Name] and activeESPList[obj.Name] then
+		task.wait(0.05)
+		local setting = itemSettings[obj.Name]
+		createESP(obj, setting.label, setting.color)
+	end
+end)
+
+-- Tạo toggle từng loại
+for objName, setting in pairs(itemSettings) do
+	mainTab:CreateToggle({
+		Name = "ESP: " .. setting.label,
+		CurrentValue = false,
+		Callback = function(state)
+			activeESPList[objName] = state
+
+			if not state then
+				for obj in pairs(espObjects) do
+					if obj.Name == objName then
+						removeESP(obj)
+					end
+				end
+			else
+				-- Quét toàn bộ Descendants thay vì chỉ GetChildren
+				for _, obj in ipairs(Workspace:GetDescendants()) do
+					if obj:IsA("Model") and obj.Name == objName and not espObjects[obj] then
+						createESP(obj, setting.label, setting.color)
+					end
+				end
+			end
+		end
+	})
+end
+
+mainTab:CreateParagraph({
+	Title = ":3",
+	Content = "Instead of rewriting the script, I directly copied the scr of 7dtl and changed the obj",
+})
 
 
 
