@@ -574,8 +574,8 @@ local espObjects = {}
 
 -- Cấu hình
 local itemSettings = {
-	Speed shoes = {label = "Speed Boost", color = Color3.fromRGB(0, 255, 185)},
-	Peta choco = {label = "Chocolate", color = Color3.fromRGB(128, 68, 0)},
+	["Speed shoes"] = {label = "Speed Boost", color = Color3.fromRGB(0, 255, 185)},
+	["Peta choco"] = {label = "Chocolate", color = Color3.fromRGB(128, 68, 0)},
 }
 
 -- Tạo ESP Billboard
