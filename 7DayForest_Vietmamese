@@ -1072,6 +1072,21 @@ local itemSettings = {
 	campsite1 = {label = "Campsite", color = Color3.fromRGB(255, 50, 0)},
 }
 
+--[[
+ Object = {label = "Name", color = Color3.fromRGB(255,255,255)
+-- nếu object có khoảng trắng:  Enemy Model
+ ["Enemy Model"] = {label = "Enemy Model", color = Color3.fromRGB(255,255,255)
+
+-- -- sao chép nhanh
+
+  = {label = "", color = Color3.fromRGB()
+
+-- nếu object có khoảng trắng
+
+ [""] = {label = "", color = Color3.fromRGB()
+
+]]
+
 -- Tạo ESP Billboard
 local function createESP(item, text, color)
 	if espObjects[item] then return end
