@@ -1866,7 +1866,7 @@ KTab:CreateButton({
 })
 
 KTab:CreateButton({
-Name = "AutoCollectItemsGUI"
+Name = "AutoCollectItemsGUI",
 Callback = function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/main/autocollectitems"))()
 end,
