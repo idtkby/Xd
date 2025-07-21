@@ -1865,6 +1865,13 @@ KTab:CreateButton({
     end,
 })
 
+KTab:CreateButton({
+Name = "AutoCollectItemsGUI"
+Callback = function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/main/autocollectitems"))()
+end,
+})
+
 
 KTab:CreateSection("Save location")
 local originalPos = nil
