@@ -937,27 +937,30 @@ local itemSettings = {
 	scrap = {label = "Scrap", color = Color3.fromRGB(136, 69, 53)},
 }
 
+-- 🌟 Tạo dropdown dạng key-label riêng để lấy key chính xác
+local keyLabelMap = {}
+local labelOptions = {}
+
+for key, info in pairs(itemSettings) do
+	table.insert(labelOptions, info.label)
+	keyLabelMap[info.label] = key
+end
+
 local function createAutoItemCollector(tab)
 	local isRunning = false
 
 	-- Dropdown chọn loại item
 	tab:CreateDropdown({
 		Name = "Select Item",
-		Options = (function()
-			local opts = {}
-			for key, setting in pairs(itemSettings) do
-				table.insert(opts, setting.label .. " (" .. key .. ")")
-			end
-			return opts
-		end)(),
-		CurrentOption = "Scrap (scrap)",
+		Options = labelOptions,
+		CurrentOption = itemSettings[selectedItem].label,
 		Callback = function(option)
-			local key = option:match("%((.-)%)")
-			if itemSettings[key] then
+			local key = keyLabelMap[option]
+			if key then
 				selectedItem = key
 				Rayfield:Notify({
-					Title = "Item",
-					Content = "Selected: " .. itemSettings[key].label,
+					Title = "Item Selected",
+					Content = "Now collecting: " .. option,
 					Duration = 2
 				})
 			end
@@ -970,12 +973,11 @@ local function createAutoItemCollector(tab)
 		CurrentValue = false,
 		Flag = "AutoItem",
 		Callback = function(state)
-			local Players = game:GetService("Players")
-			local lp = Players.LocalPlayer
-
-			isRunning = state
+			local lp = game:GetService("Players").LocalPlayer
 			local char = lp.Character or lp.CharacterAdded:Wait()
 			local hrp = char:WaitForChild("HumanoidRootPart")
+
+			isRunning = state
 
 			if not state then
 				Rayfield:Notify({Title = "Auto Collect", Content = "Disabled", Duration = 2})
@@ -1010,7 +1012,7 @@ local function createAutoItemCollector(tab)
 				while isRunning do
 					local part, prompt = findNextItem()
 					if not part then
-						Rayfield:Notify({Title = "Auto Collect", Content = "No Item Found", Duration = 2})
+						Rayfield:Notify({Title = "Auto Collect", Content = "No " .. itemSettings[selectedItem].label .. " found", Duration = 2})
 						break
 					end
 
@@ -1034,7 +1036,7 @@ local function createAutoItemCollector(tab)
 						end
 					end)
 
-					task.wait(0.1)
+					task.wait(0.1) -- Không delay chờ
 				end
 			end)
 
@@ -1043,7 +1045,7 @@ local function createAutoItemCollector(tab)
 	})
 end
 
--- Gọi hàm tạo toggle
+-- Tạo toggle + dropdown trên tab
 createAutoItemCollector(MTab)
 
 
