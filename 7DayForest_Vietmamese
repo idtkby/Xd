@@ -927,127 +927,108 @@ MTab:CreateInput({
 MTab:CreateSection("Auto Collect")
 
 local savedCFrame = nil
-local selectedItem = "scrap" -- Mặc định là scrap
+local selectedItem = "scrap" -- mặc định
+local collectedList = {}
 
-local itemSettings = {
-	flax = {label = "Cordage", color = Color3.fromRGB(18, 111, 0)},
-	carrot = {label = "Carrot", color = Color3.fromRGB(255, 137, 64)},
-	flower = {label = "Flower", color = Color3.fromRGB(255, 185, 215)},
-	pebbles = {label = "Pebble", color = Color3.fromRGB(200, 200, 200)},
-	scrap = {label = "Scrap", color = Color3.fromRGB(136, 69, 53)},
-}
+-- Tạo dropdown để chọn item
+Tab:CreateDropdown({
+	Name = "Chọn loại item",
+	Options = {"scrap", "flax", "carrot", "flower", "pebbles"},
+	CurrentOption = "scrap",
+	Flag = "ItemDropdown",
+	Callback = function(option)
+		selectedItem = option
+	end
+})
 
--- 🌟 Tạo dropdown dạng key-label riêng để lấy key chính xác
-local keyLabelMap = {}
-local labelOptions = {}
+-- Tạo toggle tự động thu thập
+Tab:CreateToggle({
+	Name = "Auto Collect",
+	CurrentValue = false,
+	Flag = "AutoCollect",
+	Callback = function(state)
+		local Players = game:GetService("Players")
+		local lp = Players.LocalPlayer
+		local isRunning = state
 
-for key, info in pairs(itemSettings) do
-	table.insert(labelOptions, info.label)
-	keyLabelMap[info.label] = key
-end
+		if not state then
+			Rayfield:Notify({Title = "Auto Collect", Content = "Disabled", Duration = 2})
 
-local function createAutoItemCollector(tab)
-	local isRunning = false
-
-	-- Dropdown chọn loại item
-	tab:CreateDropdown({
-		Name = "Select Item",
-		Options = labelOptions,
-		CurrentOption = itemSettings[selectedItem].label,
-		Callback = function(option)
-			local key = keyLabelMap[option]
-			if key then
-				selectedItem = key
-				Rayfield:Notify({
-					Title = "Item Selected",
-					Content = "Now collecting: " .. option,
-					Duration = 2
-				})
-			end
-		end
-	})
-
-	-- Toggle
-	tab:CreateToggle({
-		Name = "Auto Collect Item",
-		CurrentValue = false,
-		Flag = "AutoItem",
-		Callback = function(state)
-			local lp = game:GetService("Players").LocalPlayer
-			local char = lp.Character or lp.CharacterAdded:Wait()
-			local hrp = char:WaitForChild("HumanoidRootPart")
-
-			isRunning = state
-
-			if not state then
-				Rayfield:Notify({Title = "Auto Collect", Content = "Disabled", Duration = 2})
-				task.delay(1, function()
-					if hrp and savedCFrame then
-						char:PivotTo(savedCFrame)
-						savedCFrame = nil
-						Rayfield:Notify({Title = "Auto Collect", Content = "Teleported back", Duration = 2})
-					end
-				end)
-				return
-			end
-
-			savedCFrame = hrp.CFrame
-
-			local function findNextItem()
-				for _, obj in ipairs(workspace:GetDescendants()) do
-					if obj:IsA("Model") and obj.Name:lower() == selectedItem then
-						local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-						local prompt = obj:FindFirstChildWhichIsA("ProximityPrompt", true)
-							or obj:FindFirstChildWhichIsA("ClickDetector", true)
-							or obj:FindFirstChild("TouchInterest", true)
-						if part and prompt then
-							return part, prompt
-						end
-					end
-				end
-				return nil
-			end
-
-			task.spawn(function()
-				while isRunning do
-					local part, prompt = findNextItem()
-					if not part then
-						Rayfield:Notify({Title = "Auto Collect", Content = "No " .. itemSettings[selectedItem].label .. " found", Duration = 2})
-						break
-					end
-
-					hrp.CFrame = CFrame.new(part.Position + Vector3.new(0, 6.3, 0))
-
-					local humanoid = char:FindFirstChildOfClass("Humanoid")
-					if humanoid then
-						humanoid.PlatformStand = false
-						humanoid.Sit = false
-					end
-
-					pcall(function()
-						if prompt:IsA("ProximityPrompt") then
-							fireproximityprompt(prompt)
-						elseif prompt:IsA("ClickDetector") then
-							fireclickdetector(prompt)
-						elseif prompt.Name == "TouchInterest" then
-							firetouchinterest(hrp, part, 0)
-							task.wait()
-							firetouchinterest(hrp, part, 1)
-						end
-					end)
-
-					task.wait(0.1) -- Không delay chờ
+			task.delay(1, function()
+				local char = lp.Character or lp.CharacterAdded:Wait()
+				local hrp = char:FindFirstChild("HumanoidRootPart")
+				if hrp and savedCFrame then
+					char:PivotTo(savedCFrame)
+					savedCFrame = nil
+					Rayfield:Notify({Title = "Auto Collect", Content = "Teleported back", Duration = 2})
 				end
 			end)
 
-			Rayfield:Notify({Title = "Auto Collect", Content = "Started", Duration = 2})
+			return
 		end
-	})
-end
 
--- Tạo toggle + dropdown trên tab
-createAutoItemCollector(MTab)
+		-- Lưu vị trí
+		local char = lp.Character or lp.CharacterAdded:Wait()
+		local hrp = char:WaitForChild("HumanoidRootPart")
+		savedCFrame = hrp.CFrame
+		collectedList = {} -- reset danh sách đã thu thập
 
+		while isRunning do
+			task.wait(0.1)
+
+			local found = nil
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if obj:IsA("Model") and obj.Name:lower() == selectedItem then
+					if collectedList[obj] then continue end
+
+					local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+					local prompt = obj:FindFirstChildWhichIsA("ProximityPrompt", true)
+						or obj:FindFirstChildWhichIsA("ClickDetector", true)
+						or obj:FindFirstChild("TouchInterest", true)
+
+					if part and prompt then
+						found = {model = obj, part = part, prompt = prompt}
+						break
+					end
+				end
+			end
+
+			if not found then
+				task.wait(1)
+				continue
+			end
+
+			collectedList[found.model] = true -- đánh dấu là đã thu
+			hrp.CFrame = CFrame.new(found.part.Position + Vector3.new(0, 6.3, 0))
+			task.wait(0.15)
+
+			local humanoid = char:FindFirstChildOfClass("Humanoid")
+			if humanoid then
+				humanoid.PlatformStand = false
+				humanoid.Sit = false
+			end
+
+			pcall(function()
+				if found.prompt:IsA("ProximityPrompt") then
+					fireproximityprompt(found.prompt)
+				elseif found.prompt:IsA("ClickDetector") then
+					fireclickdetector(found.prompt)
+				elseif found.prompt.Name == "TouchInterest" then
+					firetouchinterest(hrp, found.part, 0)
+					task.wait()
+					firetouchinterest(hrp, found.part, 1)
+				end
+			end)
+
+			-- Đợi object biến mất khỏi workspace
+			local timeout = 4
+			while timeout > 0 and found.model and found.model.Parent do
+				task.wait(0.2)
+				timeout -= 0.2
+			end
+		end
+	end
+})
 
 
 
