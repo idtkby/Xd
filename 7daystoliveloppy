@@ -100,4 +100,51 @@ HbTab:CreateButton({
 		end
 	end
 })
+local BuyTab = Window:CreateTab("BuyTab", 4483362458)
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local remote = ReplicatedStorage:WaitForChild("remotes"):WaitForChild("buy_gear")
+
+local itemCounts = {
+    ["Bear Trap"] = 0,
+    ["Turret"] = 0,
+    ["Bandage"] = 0,
+    ["Flashlight"] = 0,
+    ["Scrap Detector"] = 0,
+    ["Hammer"] = 0,
+    ["Teddy"] = 0
+}
+
+-- Textbox nhập số lượng cho từng item
+for itemName, _ in pairs(itemCounts) do
+    BuyTab:CreateInput({
+        Name = itemName,
+        PlaceholderText = "Số lượng...",
+        RemoveTextAfterFocusLost = false,
+        Callback = function(value)
+            local number = tonumber(value)
+            if number and number > 0 then
+                itemCounts[itemName] = number
+            else
+                itemCounts[itemName] = 0
+            end
+        end
+    })
+end
+
+-- Nút mua tất cả
+BuyTab:CreateButton({
+    Name = "Execute Buy All",
+    Callback = function()
+        task.spawn(function()
+            for item, count in pairs(itemCounts) do
+                for i = 1, count do
+                    pcall(function()
+                        remote:FireServer(item)
+                    end)
+                end
+            end
+        end)
+    end
+})
 end)
