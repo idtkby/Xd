@@ -1442,7 +1442,7 @@ local TeleportTab = Window:CreateTab("Teleport", "map")
 TeleportTab:CreateSection("Main Location")
 TeleportTab:CreateParagraph({
 	Title = "Note",
-	Content = "Teleportation may not be correct because 7dtl currently has 2 maps",
+	Content = "Teleportation may not be correct because 7dtl currently has 3-4 maps",
 })
 -- Vị trí chính
 local locations = {
