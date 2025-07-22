@@ -1738,6 +1738,108 @@ local InstantPromptToggle = KTab:CreateToggle({
     end,
 })
 
+local RunService = game:GetService("RunService")
+local speaker = game.Players.LocalPlayer
+local noclipConnection
+local diedConnection
+
+KTab:CreateToggle({
+	Name = "Noclip",
+	Default = false,
+	Flag = "NoclipToggle",
+	Callback = function(state)
+		if state then
+			local char = speaker.Character or speaker.CharacterAdded:Wait()
+			local humanoid = char:FindFirstChildOfClass("Humanoid")
+
+			-- Kích hoạt Noclip
+			noclipConnection = RunService.Stepped:Connect(function()
+				local c = speaker.Character
+				if not c then return end
+				for _, part in ipairs(c:GetDescendants()) do
+					if part:IsA("BasePart") then
+						part.CanCollide = false
+					end
+				end
+			end)
+
+			-- Nếu chết thì tắt
+			if humanoid then
+				diedConnection = humanoid.Died:Connect(function()
+					if noclipConnection then
+						noclipConnection:Disconnect()
+						noclipConnection = nil
+					end
+					if diedConnection then
+						diedConnection:Disconnect()
+						diedConnection = nil
+					end
+					-- Tắt nút
+					KTab.Flags["NoclipToggle"] = false
+				end)
+			end
+		else
+			-- Hủy kết nối nếu đang bật
+			if noclipConnection then
+				noclipConnection:Disconnect()
+				noclipConnection = nil
+			end
+			if diedConnection then
+				diedConnection:Disconnect()
+				diedConnection = nil
+			end
+		end
+	end
+})
+
+local Lighting = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+
+local brightLoop = nil
+local oldLighting = {}
+
+KTab:CreateToggle({
+    Name = "Full Bright",
+    CurrentValue = false,
+    Callback = function(state)
+        if state then
+            -- 🌕 Lưu thông số gốc
+            oldLighting = {
+                Brightness = Lighting.Brightness,
+                ClockTime = Lighting.ClockTime,
+                FogEnd = Lighting.FogEnd,
+                GlobalShadows = Lighting.GlobalShadows,
+                OutdoorAmbient = Lighting.OutdoorAmbient,
+            }
+
+            -- 🌞 Bật ánh sáng
+            local function brightFunc()
+                Lighting.Brightness = 2
+                Lighting.ClockTime = 14
+                Lighting.FogEnd = 100000
+                Lighting.GlobalShadows = false
+                Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+            end
+
+            brightFunc()
+            brightLoop = RunService.RenderStepped:Connect(brightFunc)
+        else
+            -- 🌑 Tắt ánh sáng và khôi phục lại
+            if brightLoop then brightLoop:Disconnect() end
+
+            if oldLighting then
+                pcall(function()
+                    Lighting.Brightness = oldLighting.Brightness
+                    Lighting.ClockTime = oldLighting.ClockTime
+                    Lighting.FogEnd = oldLighting.FogEnd
+                    Lighting.GlobalShadows = oldLighting.GlobalShadows
+                    Lighting.OutdoorAmbient = oldLighting.OutdoorAmbient
+                end)
+            end
+        end
+    end
+})
+
 KTab:CreateButton({
     Name = "Anti-Void",
     Callback = function()
