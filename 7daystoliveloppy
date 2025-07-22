@@ -54,7 +54,7 @@ HbTab:CreateParagraph({
 	Content = "You can only solo!",
 })
 
-HbTab:CreateSection("Scrap Visual')
+HbTab:CreateSection("Scrap Visual")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
