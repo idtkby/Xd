@@ -119,7 +119,7 @@ local itemCounts = {
 for itemName, _ in pairs(itemCounts) do
     BuyTab:CreateInput({
         Name = itemName,
-        PlaceholderText = "Số lượng...",
+        PlaceholderText = "Input number...",
         RemoveTextAfterFocusLost = false,
         Callback = function(value)
             local number = tonumber(value)
