@@ -60,7 +60,7 @@ InfoTab:CreateParagraph({
 
 InfoTab:CreateParagraph({
 	Title = "7 Day To Live",
-	Content = "[+] Update Tab Craft and Visual\n-- Version 2.1.1 --",
+	Content = "[+] Update Tab\n °Craft\n    + Add some new items and builds\n    - Remove outdated items and builds\n °Visual\n    - Remove toggle Esp Items\n    + Add Section 'Esp Toggle'\n    + Add Section 'Esp Animal, SCPs'\n °Teleport\n    + Fix Go to 'River'\n  +   Add Go to 'Void'\n[+] Add Full Bright Toggle\n[+] Add Noclip Toggle\n-- Version 2.2.0 --",
 })
 
 InfoTab:CreateParagraph({
