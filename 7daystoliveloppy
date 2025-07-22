@@ -80,4 +80,24 @@ HbTab:CreateToggle({
 		end
 	end
 })
+HbTab:CreateButton({
+	Name = "Get all Badge",
+	Callback = function()
+		local badges = {
+			"carnivore", "experimentalist", "close_call", "explorer", "fischer",
+			"hero", "insanity", "lorax", "pacifist", "slayer",
+			"survivor", "trapper", "untouchable", "vegetarian"
+		}
+
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local remote = ReplicatedStorage:WaitForChild("remotes"):WaitForChild("claim_achievement")
+
+		for _, badge in ipairs(badges) do
+			pcall(function()
+				remote:FireServer(badge)
+			end)
+			task.wait(0.1) -- delay nhẹ tránh overload
+		end
+	end
+})
 end)
