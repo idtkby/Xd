@@ -1449,7 +1449,7 @@ local locations = {
     {Name = "House", Position = Vector3.new(1328.45, 29.15, 1320.02)}, 
     {Name = "House balcony 🏠", Position = Vector3.new(1305.69, 42.51, 1319.58)},
     {Name = "House roof 🏠", Position = Vector3.new(1328.53, 56.30, 1319.72)},
-    {Name = "River 🏞️ (Updating)", Position = Vector3.new(871.11, 9.98, 1337.17)},
+    {Name = "River 🏞️", Position = Vector3.new(1253.24, 13.81, 1134.77)},
 }
 
 for _, loc in ipairs(locations) do
@@ -1463,6 +1463,18 @@ for _, loc in ipairs(locations) do
         end
     })
 end
+
+TeleportTab:CreateSection("Misc")
+
+TeleportTab:CreateButton({
+        Name = "Go to Void",
+        Callback = function()
+            local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = CFrame.new(1374.68, 2.50, 1415.18)
+            end
+        end
+    })
 
 local usedTargets = {}
 local pendingTargets = {} -- Tự động cập nhật nếu có object mới
