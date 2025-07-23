@@ -147,4 +147,13 @@ BuyTab:CreateButton({
         end)
     end
 })
+
+BuyTab:CreateParagraph({
+	Title = "note",
+	Content = "It might be a bit hard to explain but in short, if you want a bug, just put the number above 5, for example 3 turrets + 2 bandages is fine. If you want a bug, just put it above 5, for example 10 turrets and 1 bandage.",
+})
+BuyTab:CreateParagraph({
+	Title = "note2",
+	Content = "note you want bug set number above 5 and press Execute if you press then you can not buy more",
+})
 end)
