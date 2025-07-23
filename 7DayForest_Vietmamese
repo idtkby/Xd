@@ -1450,7 +1450,7 @@ local locations = {
     {Name = "House balcony 🏠", Position = Vector3.new(1305.69, 42.51, 1319.58)},
     {Name = "House roof 🏠", Position = Vector3.new(1328.53, 56.30, 1319.72)},
     {Name = "River 🏞️", Position = Vector3.new(1253.24, 13.81, 1134.77)}, 
-    {Name = "House balcony 🏠[Map2]", Position = Vector3.new.(1307.94, 69.88, 1321.95)},
+    {Name = "House balcony 🏠[Map2]", Position = Vector3.new(1307.94, 69.88, 1321.95)},
     {Name = "House roof 🏠[Map2]", Position = Vector3.new(1326.80, 84.83, 1322.15)},
     {Name = "River 🏞️[Map2]", Position = Vector3.new(1417, 8, 2269)}, 
 }
