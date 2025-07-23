@@ -1,0 +1,36 @@
+-- Khai báo các dịch vụ cần thiết
+local player = game.Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local camera = workspace.CurrentCamera
+
+-- Tải và khởi tạo thư viện GUI Rayfield
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Tạo cửa sổ giao diện chính
+local Window = Rayfield:CreateWindow({
+    Name = "Script by IgnahK",
+    LoadingTitle = "Loading Script...",
+    LoadingSubtitle = "Please wait",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "MyHubFolder",
+        FileName = "MyHubConfig"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "",
+        RememberJoins = false
+    },
+    KeySystem = false,
+})
+
+-- Thông báo đã tải
+Rayfield:Notify({
+    Title = "Welcome!",
+    Content = "Script Loaded",
+    Duration = 2
+})
+
+-- Tạo Tab Teleport
+local InfoTab = Window:CreateTab("Info", 4483362458)
