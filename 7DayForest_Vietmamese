@@ -1628,6 +1628,7 @@ local items = {
 	{Name = "Leather Jacket", Requires = "15 Leather, 10 Cordage"},
 	{Name = "Fishing Rod", Requires = "1 Wood, 12 Cordage"},
  {Name = "Wood Pickaxe", Requires = "10 Wood, 3 Cordage"},
+ {Name = "Flower Crown", Requires = "1 Wood, 6 Corbage, 6 Flower"},
  {Name = " Items Stone  ", Requires = "---------------------------------------------"},
  {Name = "Makeshift Sickle", Requires = "7 Wood, 4 Stone, 3 Cordage"},
  {Name = "Repair Hammer", Requires = "13 Wood, 5 Stone, 3 Cordage"},
