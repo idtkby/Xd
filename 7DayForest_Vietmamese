@@ -1449,10 +1449,11 @@ local locations = {
     {Name = "House", Position = Vector3.new(1328.45, 29.15, 1320.02)}, 
     {Name = "House balcony 🏠", Position = Vector3.new(1305.69, 42.51, 1319.58)},
     {Name = "House roof 🏠", Position = Vector3.new(1328.53, 56.30, 1319.72)},
-    {Name = "River 🏞️", Position = Vector3.new(1253.24, 13.81, 1134.77)}, 
     {Name = "House balcony 🏠[Map2]", Position = Vector3.new(1307.94, 69.88, 1321.95)},
     {Name = "House roof 🏠[Map2]", Position = Vector3.new(1326.80, 84.83, 1322.15)},
-    {Name = "River 🏞️[Map2]", Position = Vector3.new(1417, 8, 2269)}, 
+    {Name = "House[Map3]", Position = Vector3.new(1326.74, 42.57, 1322.02)},
+    {Name = "House balcony [Map3]", Position = Vector3.new(1305.78, 53.57, 1321.77)}, 
+    {Name = "House roof [Map3]", Position = Vector3.new(1326.80, 66.57, 1322.15)}, 
 }
 
 for _, loc in ipairs(locations) do
