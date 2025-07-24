@@ -86,7 +86,7 @@ HbTab:CreateButton({
 		local badges = {
 			"carnivore", "experimentalist", "close_call", "explorer", "fischer",
 			"hero", "insanity", "lorax", "pacifist", "slayer",
-			"survivor", "trapper", "untouchable", "vegetarian"
+			"survivor", "trapper", "untouchable", "thor", "vegetarian"
 		}
 
 		local ReplicatedStorage = game:GetService("ReplicatedStorage")
