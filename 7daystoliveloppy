@@ -61,7 +61,7 @@ local RunService = game:GetService("RunService")
 local autoHero = false
 
 HbTab:CreateToggle({
-	Name = "INF SCRAPS [PATCHED](work old server 24/7/2025<)",
+	Name = "INF SCRAPS [PATCHED](work old server 23/7/2025<)",
 	CurrentValue = false,
 	Callback = function(state)
 		autoHero = state
