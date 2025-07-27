@@ -576,6 +576,7 @@ local espObjects = {}
 local itemSettings = {
 	["Speed shoes"] = {label = "Speed Boost", color = Color3.fromRGB(0, 255, 185)},
 	["Peta choco"] = {label = "Chocolate", color = Color3.fromRGB(128, 68, 0)},
+	["Reinforcement nails"] = {label = "Nail", color = Color3.fromRGB(128, 128, 128)},
 }
 
 -- Tạo ESP Billboard
