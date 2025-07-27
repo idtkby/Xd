@@ -10,7 +10,7 @@ local ArrayField = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ho
 local Window = ArrayField:CreateWindow({
     Name = "Game Hub",
     LoadingTitle = "Loading...",
-    LoadingSubtitle = "Script by khang",
+    LoadingSubtitle = "Script by Khang",
     ConfigurationSaving = {
         Enabled = true,
         FolderName = "KhangHGGui",
@@ -1115,17 +1115,28 @@ end)
 
 
 
+local originalWait -- Biến lưu wait gốc
+
 Mtab:CreateToggle({
     Name = "No Cooldown",
     Description = "Remove cooldown (only works in some games)",
     CurrentValue = false,
     SectionParent = Mtab1,
     Callback = function(state)
-        if state and not getgenv()._NOCD_HOOKED then
-            getgenv()._NOCD_HOOKED = true
-            g = hookfunction(wait, function(seconds)
-                return g(0)
-            end)
+        if state then
+            if not getgenv()._NOCD_HOOKED then
+                getgenv()._NOCD_HOOKED = true
+                originalWait = hookfunction(wait, function(seconds)
+                    return originalWait(0)
+                end)
+            end
+        else
+            if getgenv()._NOCD_HOOKED and originalWait then
+                -- Gỡ hook bằng cách hook lại thành wait gốc
+                hookfunction(wait, originalWait)
+                getgenv()._NOCD_HOOKED = false
+                originalWait = nil
+            end
         end
     end
 })
