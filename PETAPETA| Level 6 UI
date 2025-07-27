@@ -89,7 +89,7 @@ local function autoESP(filterFn, color, labelText)
 end
 
 -- Tab chính
-local mainTab = Window:CreateTab("Visual", eye)
+local mainTab = Window:CreateTab("Visual", "eye")
 
 -- ESP Buttons
 mainTab:CreateButton({
@@ -354,6 +354,177 @@ mainTab:CreateButton({
     end,
 })
 
+
+
+
+
+
+
+
+local V2 = Window:CreateTab("Visual 2 (alpha)", "eye")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local Camera = Workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+
+local activeESPList = {}
+local espObjects = {}
+
+-- ⚙️ Danh sách các nhóm ESP
+local espGroups = {
+	{
+		label = "Safe",
+		objects = {
+			["Meshes/safe_Safe"] = {label = "Safe", color = Color3.fromRGB(255, 255, 0)},
+			keymetal02 = {label = "Safe", color = Color3.fromRGB(255, 255, 0)}
+		}
+	},
+	{
+		label = "Box",
+		objects = {
+			BoxBottom = {label = "Box", color = Color3.fromRGB(0,255,0)}
+		}
+	},
+	{
+		label = "Doll",
+		objects = {
+			DollBlackHead = {label = "Doll", color = Color3.fromRGB(255,255,255)},
+			DollHead = {label = "Doll", color = Color3.fromRGB(245,245,245)}
+		}
+	},
+	{
+		label = "Key",
+		objects = {
+			Key = {label = "Key", color = Color3.fromRGB(150, 150, 150)}
+		}
+	},
+	{
+		label = "Lighter",
+		objects = {
+			Lighter = {label = "Lighter", color = Color3.fromRGB(84, 220, 0)}
+		}
+	},
+	{
+		label = "Plate",
+		objects = {
+			Dish = {label = "Plate", color = Color3.fromRGB(255, 223, 178)}
+		}
+	},
+	{
+		label = "SafeCode",
+		objects = {
+			HintPaper = {label = "SafeCode", color = Color3.fromRGB(0,255,255)},
+			NoisePart = {label = "SafeCode", color = Color3.fromRGB(0,255,255)}
+		}
+	},
+	{
+		label = "Room (Stage 5)",
+		objects = {
+			["dirty sheet"] = {label = "Room", color = Color3.fromRGB(255,105,0)}
+		}
+	},
+	{
+		label = "Candle",
+		objects = {
+			KeyCandle1 = {label = "Candle1", color = Color3.fromRGB(179, 0, 56)},
+			KeyCandle2 = {label = "Candle2", color = Color3.fromRGB(179, 0, 56)},
+			KeyCandle3 = {label = "Candle3", color = Color3.fromRGB(179, 0, 56)},
+			Keycandle4 = {label = "Candle4", color = Color3.fromRGB(179, 0, 56)}
+		}
+	}
+}
+
+-- 🧱 Tạo Billboard ESP
+local function createESP(item, text, color)
+	if espObjects[item] then return end
+	local part = item:FindFirstChildWhichIsA("BasePart") or item.PrimaryPart
+	if not part then return end
+
+	local gui = Instance.new("BillboardGui")
+	gui.Name = "ItemESP"
+	gui.AlwaysOnTop = true
+	gui.Size = UDim2.new(0, 100, 0, 40)
+	gui.StudsOffset = Vector3.new(0, 2, 0)
+	gui.MaxDistance = 500
+	gui.Adornee = part
+	gui.Parent = item
+
+	local label = Instance.new("TextLabel", gui)
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.new(1, 0, 1, 0)
+	label.Text = text
+	label.TextColor3 = color
+	label.Font = Enum.Font.Bodoni
+	label.TextStrokeColor3 = Color3.new(0, 0, 0)
+	label.TextStrokeTransparency = 0
+	label.TextSize = 20
+
+	espObjects[item] = {gui = gui, label = label}
+end
+
+-- 🗑️ Xoá ESP
+local function removeESP(item)
+	local data = espObjects[item]
+	if data then
+		if data.gui then data.gui:Destroy() end
+		espObjects[item] = nil
+	end
+end
+
+-- 🔁 Cập nhật TextSize theo khoảng cách
+RunService.RenderStepped:Connect(function()
+	for item, data in pairs(espObjects) do
+		local valid = false
+		for _, group in ipairs(espGroups) do
+			local setting = group.objects[item.Name]
+			if activeESPList[group.label] and setting then
+				valid = true
+				local dist = (Camera.CFrame.Position - item:GetPivot().Position).Magnitude
+				data.label.TextSize = math.clamp(25 * (1 - dist / 200), 10, 25)
+				break
+			end
+		end
+		if not valid then removeESP(item) end
+	end
+end)
+
+-- 👁️ Theo dõi object mới được thêm
+Workspace.DescendantAdded:Connect(function(obj)
+	if not obj:IsA("Model") then return end
+	for _, group in ipairs(espGroups) do
+		local setting = group.objects[obj.Name]
+		if setting and activeESPList[group.label] then
+			task.wait(0.05)
+			createESP(obj, setting.label, setting.color)
+		end
+	end
+end)
+
+-- 🔘 Tạo toggle riêng cho từng nhóm
+for _, group in ipairs(espGroups) do
+	V2:CreateToggle({
+		Name = "ESP: " .. group.label,
+		CurrentValue = false,
+		Callback = function(state)
+			activeESPList[group.label] = state
+
+			if not state then
+				for obj in pairs(espObjects) do
+					if group.objects[obj.Name] then
+						removeESP(obj)
+					end
+				end
+			else
+				for _, obj in ipairs(Workspace:GetDescendants()) do
+					if obj:IsA("Model") and group.objects[obj.Name] and not espObjects[obj] then
+						createESP(obj, group.objects[obj.Name].label, group.objects[obj.Name].color)
+					end
+				end
+			end
+		end
+	})
+end
 
 
 
