@@ -179,6 +179,18 @@ end
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 -- Tạo bảng chứa tất cả element cần khóa
 local VacationST = {} -- Vacation ✈️ (Story) Elements
 
