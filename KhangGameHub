@@ -1115,25 +1115,17 @@ end)
 
 
 
-Mtab:CreateToggle({
-    Name = "No Cooldown",
+
+Mtab:CreateButton({
+    Name = "No cooldown",
     Info = {
-        Title = "No Cooldown",
-        Description = "work any game",
-    },
-    CurrentValue = false,
+            Title = 'No cooldown',
+            Description = 'Work any game',
+        },
     SectionParent = Mtab1,
-    Callback = function(state)
-        if state and not getgenv()._NOCD_HOOKED then
-            getgenv()._NOCD_HOOKED = true
-            g = hookfunction(wait, function(seconds)
-                return g(0)
-            end)
-        elseif not state and getgenv()._NOCD_HOOKED then
-            getgenv()._NOCD_HOOKED = nil
-            -- Khôi phục hook nếu cần (tùy cách dùng)
-            -- hoặc reload script nếu muốn an toàn
-        end
+    Interact = "Run",
+    Callback = function()
+        
     end
 })
 
