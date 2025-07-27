@@ -4815,7 +4815,7 @@ CMDs[#CMDs + 1] = {NAME = 'unlistento', DESC = 'Disables listento'}
 CMDs[#CMDs + 1] = {NAME = 'jerk', DESC = 'Makes you jork it'}
 CMDs[#CMDs + 1] = {NAME = 'unsuspendvc', DESC = 'Unsuspends you from voice chat'}
 CMDs[#CMDs + 1] = {NAME = '', DESC = 'set Section'}
-CMDs[#CMDs + 1] = {NAME = 'norotationcamera / nrcam', DESC = 'Prevents your screen from rotating when moving horizontally'}
+CMDs[#CMDs + 1] = {NAME = 'norotationcamera / nrcam', DESC = ''Prevents automatic horizontal camera rotation while moving. You can still rotate manually'}
 CMDs[#CMDs + 1] = {NAME = 'vflyandflybutton / vandflyb', DESC = 'Gives you 2 buttons, Fly and VFly suitable for mobile'}
 CMDs[#CMDs + 1] = {NAME = 'invisicam', DESC = 'set inviscam'}
 CMDs[#CMDs + 1] = {NAME = 'backsit [player]', DESC = 'Sit on a players back'}
@@ -4823,6 +4823,8 @@ CMDs[#CMDs + 1] = {NAME = 'walktogui', DESC = 'Give Walkto GUI'}
 CMDs[#CMDs + 1] = {NAME = 'gotogui', DESC = 'Give Goto GUI'}
 CMDs[#CMDs + 1] = {NAME = 'walktogui2', DESC = 'Give walktogui but using pathfind'}
 CMDs[#CMDs + 1] = {NAME = 'toolname', DESC = 'Give a label show tool equipping'}
+CMDs[#CMDs + 1] = {NAME = 'interacttoggle', DESC = 'Give a toggle auto interact'}
+CMDs[#CMDs + 1] = {NAME = 'deleteparttool', DESC = 'Give a tool click 2 time to delete part'}
 CMDs[#CMDs + 1] = {NAME = 'espnpcs', DESC = 'ESP all NPCs in workspace'}
 CMDs[#CMDs + 1] = {NAME = 'unespnpcs', DESC = 'UnNPC ESPs'}
 CMDs[#CMDs + 1] = {NAME = "espnpcs2", DESC = "ESP all NPCs in workspace"}
@@ -12996,6 +12998,14 @@ end)
 
 addcmd('toolname', {}, function(args, speaker)
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/ToolName"))()
+end)
+
+addcmd('interacttoggle', {}, function(args, speaker)
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/refs/heads/main/AutoInteractUniversal"))()
+end)
+
+addcmd('deleteparttool', {}, function(args, speaker)
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/refs/heads/main/deletetool"))()
 end)
 
 addcmd("espnpcs", {}, function(args, speaker)
