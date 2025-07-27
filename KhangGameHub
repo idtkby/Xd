@@ -1113,6 +1113,25 @@ end)
 
 
 
+
+
+Mtab:CreateToggle({
+    Name = "No Cooldown",
+    Description = "Remove cooldown (only works in some games)",
+    CurrentValue = false,
+    SectionParent = Mtab1,
+    Callback = function(state)
+        if state and not getgenv()._NOCD_HOOKED then
+            getgenv()._NOCD_HOOKED = true
+            g = hookfunction(wait, function(seconds)
+                return g(0)
+            end)
+        end
+    end
+})
+
+
+
 Mtab:CreateButton({
     Name = "Esp near part",
     SectionParent = Mtab1,
