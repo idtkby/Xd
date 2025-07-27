@@ -1115,28 +1115,24 @@ end)
 
 
 
-local originalWait -- Biến lưu wait gốc
-
 Mtab:CreateToggle({
     Name = "No Cooldown",
-    Description = "Remove cooldown (only works in some games)",
+    Info = {
+        Title = "No Cooldown",
+        Description = "Hook wait() để bỏ cooldown",
+    },
     CurrentValue = false,
     SectionParent = Mtab1,
     Callback = function(state)
-        if state then
-            if not getgenv()._NOCD_HOOKED then
-                getgenv()._NOCD_HOOKED = true
-                originalWait = hookfunction(wait, function(seconds)
-                    return originalWait(0)
-                end)
-            end
-        else
-            if getgenv()._NOCD_HOOKED and originalWait then
-                -- Gỡ hook bằng cách hook lại thành wait gốc
-                hookfunction(wait, originalWait)
-                getgenv()._NOCD_HOOKED = false
-                originalWait = nil
-            end
+        if state and not getgenv()._NOCD_HOOKED then
+            getgenv()._NOCD_HOOKED = true
+            g = hookfunction(wait, function(seconds)
+                return g(0)
+            end)
+        elseif not state and getgenv()._NOCD_HOOKED then
+            getgenv()._NOCD_HOOKED = nil
+            -- Khôi phục hook nếu cần (tùy cách dùng)
+            -- hoặc reload script nếu muốn an toàn
         end
     end
 })
