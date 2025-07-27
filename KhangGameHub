@@ -1119,7 +1119,7 @@ Mtab:CreateToggle({
     Name = "No Cooldown",
     Info = {
         Title = "No Cooldown",
-        Description = "Hook wait() để bỏ cooldown",
+        Description = "work any game",
     },
     CurrentValue = false,
     SectionParent = Mtab1,
