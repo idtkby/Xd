@@ -1125,7 +1125,9 @@ Mtab:CreateButton({
     SectionParent = Mtab1,
     Interact = "Run",
     Callback = function()
-        
+        g = hookfunction(wait, function(seconds)
+            return g(0)
+        end)
     end
 })
 
