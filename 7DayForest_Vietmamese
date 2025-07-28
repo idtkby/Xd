@@ -1164,7 +1164,7 @@ local bloodRunning = false
 local bloodConnection
 
 VTab:CreateToggle({
-	Name = "Blood bark [Bloodmoon]",
+	Name = "ESP: Blood bark [Bloodmoon]",
 	CurrentValue = false,
 	Flag = "BloodESP",
 	Callback = function(state)
@@ -1300,7 +1300,7 @@ local function createESP(item, baseText, color)
 	gui.AlwaysOnTop = true
 	gui.Size = UDim2.new(0, 100, 0, 40)
 	gui.StudsOffset = Vector3.new(0, 2, 0)
-	gui.MaxDistance = 1000
+	gui.MaxDistance = math.huge
 	gui.Adornee = part
 	gui.Parent = item
 
@@ -1484,7 +1484,8 @@ local usedTargets = {}
 local pendingTargets = {} -- Tự động cập nhật nếu có object mới
 local allowedNames = {
 	["abandoned_shack"] = true,
-	["cabin"] = true
+	["cabin"] = true,
+ ["dead_house"] = true,
 }
 
 TeleportTab:CreateButton({
