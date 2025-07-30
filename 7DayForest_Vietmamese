@@ -1057,7 +1057,7 @@ local itemSettings = {
 	cross = {label = "Cross", color = Color3.fromRGB(150, 75, 0)},
 	dead_house = {label = "House", color = Color3.fromRGB(150, 75, 0)},
 	stair = {label = "Stair", color = Color3.fromRGB(99, 95, 98)},
-	campsite1 = {label = "Campsite", color = Color3.fromRGB(255, 50, 0)},
+	campsite1 = {label = "Campsite [Working?]", color = Color3.fromRGB(255, 50, 0)},
 }
 
 --[[
@@ -1164,6 +1164,97 @@ local bloodRunning = false
 local bloodConnection
 
 VTab:CreateToggle({
+	Name = "ESP: Campsite [Fixed?]",
+	CurrentValue = false,
+	Flag = "BloodESP",
+	Callback = function(state)
+		bloodRunning = state
+
+		if bloodConnection then
+			bloodConnection:Disconnect()
+			bloodConnection = nil
+		end
+
+		local player = game:GetService("Players").LocalPlayer
+		local camera = workspace.CurrentCamera
+
+		-- Xoá ESP cũ nếu có
+		for _, v in ipairs(workspace:GetDescendants()) do
+			if v:FindFirstChild("BloodESP") then
+				v.BloodESP:Destroy()
+			end
+			if v:FindFirstChild("BloodHighlight") then
+				v.BloodHighlight:Destroy()
+			end
+		end
+
+		if not state then return end
+
+		local function createESP(item)
+			if item:FindFirstChild("BloodESP") then return end
+
+			local billboard = Instance.new("BillboardGui")
+			billboard.Name = "BloodESP"
+			billboard.AlwaysOnTop = true
+			billboard.Size = UDim2.new(0, 200, 0, 50)
+			billboard.StudsOffset = Vector3.new(0, 3, 0)
+			billboard.MaxDistance = math.huge
+			billboard.Parent = item
+
+			local textLabel = Instance.new("TextLabel")
+			textLabel.Parent = billboard
+			textLabel.Text = "Blood bark"
+			textLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+			textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+			textLabel.TextStrokeTransparency = 0
+			textLabel.BackgroundTransparency = 1
+			textLabel.Size = UDim2.new(1, 0, 1, 0)
+			textLabel.TextScaled = false
+			textLabel.Font = Enum.Font.Bodoni
+			textLabel.TextSize = 25
+
+			local highlight = Instance.new("Highlight")
+			highlight.Name = "BloodHighlight"
+			highlight.FillColor = Color3.fromRGB(180, 0, 0)
+			highlight.FillTransparency = 0.9
+			highlight.OutlineColor = Color3.fromRGB(100, 0, 0)
+			highlight.OutlineTransparency = 0
+			highlight.Parent = item
+
+			task.spawn(function()
+				while bloodRunning and billboard and billboard.Parent do
+					local distance = (camera.CFrame.Position - item:GetPivot().Position).Magnitude
+					local size = math.clamp(25 * (1 - distance / 200), 10, 25)
+					textLabel.TextSize = size
+					task.wait(0.2)
+				end
+			end)
+		end
+
+		local function checkForBloodBark()
+			for _, item in ipairs(workspace:GetDescendants()) do
+				if item:IsA("BasePart") and item.Name == "campsite1" then
+					createESP(item)
+				end
+			end
+		end
+
+		bloodConnection = workspace.DescendantAdded:Connect(function(descendant)
+			if descendant:IsA("BasePart") and descendant.Name == "campsite1" then
+				task.wait(0.1)
+				createESP(descendant)
+			end
+		end)
+
+		checkForBloodBark()
+	end
+})
+
+
+local bloodRunning = false
+local bloodConnection
+
+VTab:CreateToggle({
 	Name = "ESP: Blood bark [Bloodmoon]",
 	CurrentValue = false,
 	Flag = "BloodESP",
@@ -1265,13 +1356,15 @@ local espObjects = {} -- Key: DebugId -> Value: gui info
 local excludedNPCs = {
 	bear = true,
 	deer = true,
-	mammoth = true
+	mammoth = true,
+ spy = true
 }
 
 -- Cấu hình từng loại
 local itemSettings = {
 	deer = {label = "Deer", color = Color3.fromRGB(0, 255, 0)},
 	bear = {label = "Bear", color = Color3.fromRGB(255, 255, 0)},
+ spy = {label = "Spy", color = Color3.fromRGB(255,155,0)},
 	mammoth = {label = "Mammoth", color = Color3.fromRGB(155, 0, 0)},
 }
 
