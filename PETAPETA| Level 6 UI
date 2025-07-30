@@ -324,7 +324,7 @@ mainTab:CreateButton({
 	Name = "Esp SafeCode",
 	Callback = function()
 		autoESP(function(p)
-			return p:IsA("BasePart") and (p.Name == "HintPaper" or p.Name == "NoisePart")
+			return p:IsA("BasePart") and (p.Name == "HintPaper" or p.Name == "TelevisionW")
 		end, Color3.fromRGB(0, 255, 255), "SafeCode")
 	end,
 })
@@ -415,7 +415,7 @@ local espGroups = {
 		label = "SafeCode",
 		objects = {
 			HintPaper = {label = "SafeCode", color = Color3.fromRGB(0,255,255)},
-			NoisePart = {label = "SafeCode", color = Color3.fromRGB(0,255,255)}
+			TelevisionW = {label = "SafeCode", color = Color3.fromRGB(0,255,255)}
 		}
 	},
 	{
