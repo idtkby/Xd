@@ -360,7 +360,6 @@ mainTab:CreateButton({
 
 
 
-
 local V2 = Window:CreateTab("Visual 2 (alpha)", "eye")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -386,7 +385,8 @@ local espGroups = {
 			BoxBottom = {label = "Box", color = Color3.fromRGB(0,255,0)}
 		}
 	},
-	{
+	-- Thêm các nhóm khác ở đây nếu muốn...
+ 	{
 		label = "Doll",
 		objects = {
 			DollBlackHead = {label = "Doll", color = Color3.fromRGB(255,255,255)},
@@ -432,15 +432,17 @@ local espGroups = {
 			KeyCandle3 = {label = "Candle3", color = Color3.fromRGB(179, 0, 56)},
 			Keycandle4 = {label = "Candle4", color = Color3.fromRGB(179, 0, 56)}
 		}
-	}
+	},
 }
 
 -- 🧱 Tạo Billboard ESP
 local function createESP(item, text, color)
 	if espObjects[item] then return end
-	local part = item:FindFirstChildWhichIsA("BasePart") or item.PrimaryPart
-	if not part then return end
 
+	local part = item:IsA("Model") and (item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart")) or item
+	if not part or not part:IsA("BasePart") then return end
+
+	-- Billboard ESP
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "ItemESP"
 	gui.AlwaysOnTop = true
@@ -448,7 +450,7 @@ local function createESP(item, text, color)
 	gui.StudsOffset = Vector3.new(0, 2, 0)
 	gui.MaxDistance = 500
 	gui.Adornee = part
-	gui.Parent = item
+	gui.Parent = part
 
 	local label = Instance.new("TextLabel", gui)
 	label.BackgroundTransparency = 1
@@ -460,7 +462,16 @@ local function createESP(item, text, color)
 	label.TextStrokeTransparency = 0
 	label.TextSize = 20
 
-	espObjects[item] = {gui = gui, label = label}
+	-- Highlight (Outline)
+	local hl = Instance.new("Highlight")
+	hl.Adornee = item:IsA("Model") and item or part
+	hl.FillColor = Color3.new(0, 0, 0)
+	hl.FillTransparency = 1 -- chỉ viền ngoài
+	hl.OutlineColor = color
+	hl.OutlineTransparency = 0
+	hl.Parent = part
+
+	espObjects[item] = {gui = gui, label = label, highlight = hl}
 end
 
 -- 🗑️ Xoá ESP
@@ -468,6 +479,7 @@ local function removeESP(item)
 	local data = espObjects[item]
 	if data then
 		if data.gui then data.gui:Destroy() end
+		if data.highlight then data.highlight:Destroy() end
 		espObjects[item] = nil
 	end
 end
@@ -475,28 +487,30 @@ end
 -- 🔁 Cập nhật TextSize theo khoảng cách
 RunService.RenderStepped:Connect(function()
 	for item, data in pairs(espObjects) do
-		local valid = false
+		local name = item.Name
+		local found = false
 		for _, group in ipairs(espGroups) do
-			local setting = group.objects[item.Name]
-			if activeESPList[group.label] and setting then
-				valid = true
-				local dist = (Camera.CFrame.Position - item:GetPivot().Position).Magnitude
+			if activeESPList[group.label] and group.objects[name] then
+				local pos = (item:IsA("Model") and item:GetPivot().Position) or (item:IsA("BasePart") and item.Position)
+				local dist = (Camera.CFrame.Position - pos).Magnitude
 				data.label.TextSize = math.clamp(25 * (1 - dist / 200), 10, 25)
+				found = true
 				break
 			end
 		end
-		if not valid then removeESP(item) end
+		if not found then
+			removeESP(item)
+		end
 	end
 end)
 
 -- 👁️ Theo dõi object mới được thêm
 Workspace.DescendantAdded:Connect(function(obj)
-	if not obj:IsA("Model") then return end
+	local name = obj.Name
 	for _, group in ipairs(espGroups) do
-		local setting = group.objects[obj.Name]
-		if setting and activeESPList[group.label] then
+		if activeESPList[group.label] and group.objects[name] then
 			task.wait(0.05)
-			createESP(obj, setting.label, setting.color)
+			createESP(obj, group.objects[name].label, group.objects[name].color)
 		end
 	end
 end)
@@ -517,7 +531,7 @@ for _, group in ipairs(espGroups) do
 				end
 			else
 				for _, obj in ipairs(Workspace:GetDescendants()) do
-					if obj:IsA("Model") and group.objects[obj.Name] and not espObjects[obj] then
+					if group.objects[obj.Name] and not espObjects[obj] then
 						createESP(obj, group.objects[obj.Name].label, group.objects[obj.Name].color)
 					end
 				end
@@ -525,6 +539,11 @@ for _, group in ipairs(espGroups) do
 		end
 	})
 end
+
+
+
+
+
 
 
 
@@ -552,10 +571,11 @@ local targetNames = {
 	["KeyCandle4"] = true,
 	["Dish"] = true,
 	["Lighter"] = true,
-	["Key"] = false,
+	["Key"] = true,
 	["DollHead"] = true,
 	["DollBlackHead"] = true,
- ["FireExtinguisher"] = true
+ ["FireExtinguisher"] = true,
+ ["BoxBottom"] = true,
 }
 
 KTab:CreateToggle({
@@ -930,45 +950,3 @@ KTab:CreateButton({
 
 end)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
-
-local payload = {
-    content = "✅ Người dùng " .. Players.LocalPlayer.Name .. " đã sử dụng script!",
-    username = "Logger"
-}
-
-pcall(function()
-    HttpService:PostAsync(
-        "https://script.google.com/macros/s/AKfycbzhxmPgbonSyz0g6AltadxEIeYm5YEULC_ST556S8EvBvqmGvJVR51yVKTvWsXimkIq/exec",
-        HttpService:JSONEncode(payload),
-        Enum.HttpContentType.ApplicationJson
-    )
-end)
