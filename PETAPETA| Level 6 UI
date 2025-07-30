@@ -571,6 +571,7 @@ local targetNames = {
 	["KeyCandle4"] = true,
 	["Dish"] = true,
 	["Lighter"] = true,
+ ["Rope"] = true,
 	["Key"] = true,
 	["OldPhoto"] = true,
  ["DollBlue"] = true,
@@ -675,7 +676,7 @@ KTab:CreateToggle({
 					end
 
 					local _, dist = getClosestPart(model, HRP.Position)
-					if dist and dist <= 5 then
+					if dist and dist <= 10 then
 						lastTriggerTime[model] = now
 						triggerPrompt(obj)
 					end
