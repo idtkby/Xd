@@ -208,7 +208,7 @@ mainTab:CreateButton({
 	Name = "Esp Safe",
 	Callback = function()
 		autoESP(function(p)
-			return p:IsA("BasePart") and (p.Name == "Meshes/safe_Safe" or p.Name == "keymetal02")
+			return p:IsA("BasePart") and (p.Name == "Meshes/safe_Safe" or p.Name == "DialGimmick")
 		end, Color3.fromRGB(255, 255, 0), "Safe")
 	end,
 })
@@ -376,7 +376,7 @@ local espGroups = {
 		label = "Safe",
 		objects = {
 			["Meshes/safe_Safe"] = {label = "Safe", color = Color3.fromRGB(255, 255, 0)},
-			keymetal02 = {label = "Safe", color = Color3.fromRGB(255, 255, 0)}
+			DialGimmick = {label = "Safe", color = Color3.fromRGB(255, 255, 0)}
 		}
 	},
 	{
