@@ -572,10 +572,15 @@ local targetNames = {
 	["Dish"] = true,
 	["Lighter"] = true,
 	["Key"] = true,
-	["DollHead"] = true,
+	["OldPhoto"] = true,
+ ["DollBlue"] = true,
+ ["DollWhite"] = true,
+ ["DollYellow"] = true,
+ ["DollRed"] = true,
 	["DollBlackHead"] = true,
  ["FireExtinguisher"] = true,
  ["BoxBottom"] = true,
+ ["Ofuda"] = true,
 }
 
 KTab:CreateToggle({
