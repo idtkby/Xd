@@ -176,98 +176,88 @@ sound.Parent = SoundService
 sound:Play()
 
     task.spawn(function()
-    local StarterGui   = game:GetService("StarterGui")
-    local Workspace     = game:GetService("Workspace")
-    local SoundService  = game:GetService("SoundService")
+	local StarterGui = game:GetService("StarterGui")
+	local Workspace = game:GetService("Workspace")
+	local SoundService = game:GetService("SoundService")
 
-    -- tiny pause so coregui is ready to accept notifications
-    task.wait(0.5)
+	task.wait(0.5)
 
-    -- initial loading notice
-    pcall(function()
-        StarterGui:SetCore("SendNotification", {
-            Title    = "PETAPETA Notice",
-            Text     = "Loading…",
-            Duration = 5,
-            Icon     = "rbxassetid://83439791036389",
-        })
-    end)
+	pcall(function()
+		StarterGui:SetCore("SendNotification", {
+			Title = "PETAPETA Notice",
+			Text = "Loading…",
+			Duration = 5,
+			Icon = "rbxassetid://83439791036389",
+		})
+	end)
 
-    -- create the alert sound
-    local alertSound = Instance.new("Sound")
-    alertSound.Name     = "EnemyAlert"
-    alertSound.SoundId  = "rbxassetid://3165700530"
-    alertSound.Volume   = 1
-    alertSound.Parent   = SoundService
+	local alertSound = Instance.new("Sound")
+	alertSound.Name = "EnemyAlert"
+	alertSound.SoundId = "rbxassetid://3165700530"
+	alertSound.Volume = 1
+	alertSound.Parent = SoundService
 
-    local function sendNotice(text)
-        pcall(function()
-            StarterGui:SetCore("SendNotification", {
-                Title    = "Notice",
-                Text     = text,
-                Duration = 5,
-                Icon     = "rbxassetid://83439791036389",
-            })
-        end)
-    end
+	local function sendNotice(text)
+		pcall(function()
+			StarterGui:SetCore("SendNotification", {
+				Title = "Notice",
+				Text = text,
+				Duration = 5,
+				Icon = "rbxassetid://83439791036389",
+			})
+		end)
+	end
 
-    local currentEnemy
-local enemySeen = {}
-local notified = false
+	local enemyModels = {} -- Danh sách đang tồn tại
+	local enemyDetected = false
 
-local function monitorEnemy(enemyModel)
-	if enemySeen[enemyModel] then return end
-	enemySeen[enemyModel] = true
-
-	local totalEnemies = 0
-	for obj in pairs(enemySeen) do
-		if obj:IsDescendantOf(Workspace) then
-			totalEnemies += 1
+	local function countEnemies()
+		local count = 0
+		for obj in pairs(enemyModels) do
+			if obj:IsDescendantOf(Workspace) then
+				count += 1
+			end
 		end
+		return count
 	end
 
-	if totalEnemies >= 2 and not notified then
-		notified = true
-		alertSound:Play()
-		sendNotice("Hide, Run?")
-	end
+	local function monitorEnemy(model)
+		if enemyModels[model] then return end
+		enemyModels[model] = true
 
-	local conn
-	conn = enemyModel.AncestryChanged:Connect(function(_, parent)
-		if not parent then
-			enemySeen[enemyModel] = nil
+		if not enemyDetected then
+			enemyDetected = true
+			alertSound:Play()
+			sendNotice("Hide or die ?, Except Ofuda")
+		end
 
-			-- Nếu còn lại 1 hoặc không còn, reset cờ
-			local stillCount = 0
-			for obj in pairs(enemySeen) do
-				if obj:IsDescendantOf(Workspace) then
-					stillCount += 1
+		local conn
+		conn = model.AncestryChanged:Connect(function(_, parent)
+			if not parent then
+				enemyModels[model] = nil
+				conn:Disconnect()
+
+				if countEnemies() == 0 then
+					enemyDetected = false
+					sendNotice("PETAPETA-Sama disappeared")
 				end
 			end
-			if stillCount < 2 then
-				notified = false
-			end
+		end)
+	end
 
-			sendNotice("PETAPETA-Sama disappeared")
-			conn:Disconnect()
+	-- Quét ban đầu
+	for _, obj in ipairs(Workspace:GetDescendants()) do
+		if obj:IsA("Model") and obj.Name == "EnemyModel" then
+			monitorEnemy(obj)
+		end
+	end
+
+	-- Theo dõi spawn mới
+	Workspace.DescendantAdded:Connect(function(obj)
+		if obj:IsA("Model") and obj.Name == "EnemyModel" then
+			monitorEnemy(obj)
 		end
 	end)
-end
-
-    -- initial scan (no break)
-    for _, v in ipairs(Workspace:GetDescendants()) do
-        if v:IsA("Model") and v.Name == "EnemyModel" then
-            monitorEnemy(v)
-            -- don't break, in case there are multiples in the world
-        end
-    end
-
-    -- watch for new spawns
-    Workspace.DescendantAdded:Connect(function(obj)
-        if obj:IsA("Model") and obj.Name == "EnemyModel" then
-            monitorEnemy(obj)
-        end
-    end)
 end)
 end)
 	end,
