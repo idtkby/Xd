@@ -1,36 +1,248 @@
--- Khai báo các dịch vụ cần thiết
-local player = game.Players.LocalPlayer
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local camera = workspace.CurrentCamera
-
--- Tải và khởi tạo thư viện GUI Rayfield
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-
--- Tạo cửa sổ giao diện chính
-local Window = Rayfield:CreateWindow({
-    Name = "Script by IgnahK",
-    LoadingTitle = "Loading Script...",
-    LoadingSubtitle = "Please wait",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "MyHubFolder",
-        FileName = "MyHubConfig"
-    },
-    Discord = {
-        Enabled = false,
-        Invite = "",
-        RememberJoins = false
-    },
-    KeySystem = false,
-})
-
--- Thông báo đã tải
-Rayfield:Notify({
-    Title = "Welcome!",
-    Content = "Script Loaded",
-    Duration = 2
-})
-
--- Tạo Tab Teleport
-local InfoTab = Window:CreateTab("Info", 4483362458)
+task.spawn(function()  
+-- Khai báo các dịch vụ cần thiết  
+COREGUI = cloneref(game:GetService("CoreGui"))  
+Players = cloneref(game:GetService("Players"))  
+UserInputService = cloneref(game:GetService("UserInputService"))  
+TweenService = cloneref(game:GetService("TweenService"))  
+HttpService = cloneref(game:GetService("HttpService"))  
+MarketplaceService = cloneref(game:GetService("MarketplaceService"))  
+RunService = cloneref(game:GetService("RunService"))  
+TeleportService = cloneref(game:GetService("TeleportService"))  
+StarterGui = cloneref(game:GetService("StarterGui"))  
+GuiService = cloneref(game:GetService("GuiService"))  
+Lighting = cloneref(game:GetService("Lighting"))  
+ContextActionService = cloneref(game:GetService("ContextActionService"))  
+ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))  
+GroupService = cloneref(game:GetService("GroupService"))  
+PathService = cloneref(game:GetService("PathfindingService"))  
+SoundService = cloneref(game:GetService("SoundService"))  
+Teams = cloneref(game:GetService("Teams"))  
+StarterPlayer = cloneref(game:GetService("StarterPlayer"))  
+InsertService = cloneref(game:GetService("InsertService"))  
+ChatService = cloneref(game:GetService("Chat"))  
+ProximityPromptService = cloneref(game:GetService("ProximityPromptService"))  
+ContentProvider = cloneref(game:GetService("ContentProvider"))  
+StatsService = cloneref(game:GetService("Stats"))  
+MaterialService = cloneref(game:GetService("MaterialService"))  
+AvatarEditorService = cloneref(game:GetService("AvatarEditorService"))  
+TextService = cloneref(game:GetService("TextService"))  
+TextChatService = cloneref(game:GetService("TextChatService"))  
+CaptureService = cloneref(game:GetService("CaptureService"))  
+VoiceChatService = cloneref(game:GetService("VoiceChatService"))  
+  
+-- Tải và khởi tạo thư viện GUI Rayfield  
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()  
+  
+-- Tạo cửa sổ giao diện chính  
+local Window = Rayfield:CreateWindow({  
+    Name = "Script by IgnahK",  
+    LoadingTitle = "Loading Script...",  
+    LoadingSubtitle = "Please wait",  
+    ConfigurationSaving = {  
+        Enabled = true,  
+        FolderName = "MyHubFolder",  
+        FileName = "MyHubConfig"  
+    },  
+    Discord = {  
+        Enabled = false,  
+        Invite = "",  
+        RememberJoins = false  
+    },  
+    KeySystem = false,  
+})  
+  
+-- Thông báo đã tải  
+Rayfield:Notify({  
+    Title = "Welcome!",  
+    Content = "Script Loaded",  
+    Duration = 2  
+})  
+  
+-- Tạo Tab Teleport  
+local KTab = Window:CreateTab("Misc", 4483362458)  
+local UserInputService = game:GetService("UserInputService")  
+local Players = game:GetService("Players")  
+local speaker = Players.LocalPlayer  
+local flyjump  
+  
+KTab:CreateToggle({  
+	Name = "Inf Jump",  
+	CurrentValue = false,  
+	Flag = "InfJumpToggle",  
+	Callback = function(state)  
+		if flyjump then  
+			flyjump:Disconnect()  
+			flyjump = nil  
+		end  
+  
+		if state then  
+			flyjump = UserInputService.JumpRequest:Connect(function()  
+				local humanoid = speaker.Character and speaker.Character:FindFirstChildWhichIsA("Humanoid")  
+				if humanoid then  
+					humanoid:ChangeState(Enum.HumanoidStateType.Jumping)  
+				end  
+			end)  
+		end  
+	end  
+})  
+  
+-- Khai báo các dịch vụ cần thiết  
+local PromptService = game:GetService("ProximityPromptService")  
+local Workspace = game:GetService("Workspace")  
+  
+-- Tạo Toggle để kích hoạt và tắt chức năng Instant Prompt  
+local InstantPromptToggle = KTab:CreateToggle({  
+    Name = "Instant interact",  
+    CurrentValue = false,  -- Mặc định tắt  
+    Callback = function(enabled)  
+        if enabled then  
+            -- Khi toggle bật, thiết lập tất cả ProximityPrompt có HoldDuration = 0  
+            for _, v in ipairs(Workspace:GetDescendants()) do  
+                if v:IsA("ProximityPrompt") then  
+                    v.HoldDuration = 0  
+                end  
+            end  
+              
+            -- Tự động thiết lập HoldDuration = 0 khi có Prompt mới bắt đầu  
+            PromptService.PromptButtonHoldBegan:Connect(function(prompt)  
+                if prompt:IsA("ProximityPrompt") then  
+                    prompt.HoldDuration = 0  
+                end  
+            end)  
+  
+            Rayfield:Notify({  
+                Title = "Instant Prompt Enabled",  
+                Content = "All proximity prompts now require no hold duration.",  
+                Duration = 2  
+            })  
+        else  
+            -- Khi toggle tắt, không thay đổi gì  
+            Rayfield:Notify({  
+                Title = "Instant Prompt Disabled",  
+                Content = "Proximity prompts will use default hold duration.",  
+                Duration = 2  
+            })  
+        end  
+    end,  
+})  
+  
+local RunService = game:GetService("RunService")  
+local speaker = game.Players.LocalPlayer  
+local noclipConnection  
+local diedConnection  
+  
+KTab:CreateToggle({  
+	Name = "Noclip",  
+	Default = false,  
+	Flag = "NoclipToggle",  
+	Callback = function(state)  
+		if state then  
+			local char = speaker.Character or speaker.CharacterAdded:Wait()  
+			local humanoid = char:FindFirstChildOfClass("Humanoid")  
+  
+			-- Kích hoạt Noclip  
+			noclipConnection = RunService.Stepped:Connect(function()  
+				local c = speaker.Character  
+				if not c then return end  
+				for _, part in ipairs(c:GetDescendants()) do  
+					if part:IsA("BasePart") then  
+						part.CanCollide = false  
+					end  
+				end  
+			end)  
+  
+			-- Nếu chết thì tắt  
+			if humanoid then  
+				diedConnection = humanoid.Died:Connect(function()  
+					if noclipConnection then  
+						noclipConnection:Disconnect()  
+						noclipConnection = nil  
+					end  
+					if diedConnection then  
+						diedConnection:Disconnect()  
+						diedConnection = nil  
+					end  
+					-- Tắt nút  
+					KTab.Flags["NoclipToggle"] = false  
+				end)  
+			end  
+		else  
+			-- Hủy kết nối nếu đang bật  
+			if noclipConnection then  
+				noclipConnection:Disconnect()  
+				noclipConnection = nil  
+			end  
+			if diedConnection then  
+				diedConnection:Disconnect()  
+				diedConnection = nil  
+			end  
+		end  
+	end  
+})  
+  
+local Lighting = game:GetService("Lighting")  
+local RunService = game:GetService("RunService")  
+  
+local brightLoop = nil  
+local oldLighting = {}  
+  
+KTab:CreateToggle({  
+    Name = "Full Bright",  
+    CurrentValue = false,  
+    Callback = function(state)  
+        if state then  
+            -- 🌕 Lưu thông số gốc  
+            oldLighting = {  
+                Brightness = Lighting.Brightness,  
+                ClockTime = Lighting.ClockTime,  
+                FogEnd = Lighting.FogEnd,  
+                GlobalShadows = Lighting.GlobalShadows,  
+                OutdoorAmbient = Lighting.OutdoorAmbient,  
+            }  
+  
+            -- 🌞 Bật ánh sáng  
+            local function brightFunc()  
+                Lighting.Brightness = 2  
+                Lighting.ClockTime = 14  
+                Lighting.FogEnd = 100000  
+                Lighting.GlobalShadows = false  
+                Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)  
+            end  
+  
+            brightFunc()  
+            brightLoop = RunService.RenderStepped:Connect(brightFunc)  
+        else  
+            -- 🌑 Tắt ánh sáng và khôi phục lại  
+            if brightLoop then brightLoop:Disconnect() end  
+  
+            if oldLighting then  
+                pcall(function()  
+                    Lighting.Brightness = oldLighting.Brightness  
+                    Lighting.ClockTime = oldLighting.ClockTime  
+                    Lighting.FogEnd = oldLighting.FogEnd  
+                    Lighting.GlobalShadows = oldLighting.GlobalShadows  
+                    Lighting.OutdoorAmbient = oldLighting.OutdoorAmbient  
+                end)  
+            end  
+        end  
+    end  
+})  
+  
+  
+KTab:CreateSection("Other")  
+  
+KTab:CreateButton({  
+    Name = "interact aura",  
+    Callback = function()  
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/CollectAura"))()  
+    end,  
+})  
+  
+  KTab:CreateButton({  
+    Name = "Inf Yield Edit",  
+    Callback = function()  
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()  
+    end,  
+  })  
+  
+end)  
