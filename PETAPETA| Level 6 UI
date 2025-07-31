@@ -250,10 +250,7 @@ local espGroups = {
 		label = "Safe",
 		objects = {
 			["Meshes/safe_Safe"] = {label = "Safe", color = Color3.fromRGB(255, 255, 0)},
-			digits3 = {label = "Safe", color = Color3.fromRGB(240,240,240)},
-   digits4 = {label = "Safe", color = Color3.fromRGB(240,240,240)},
-			digits5 = {label = "Safe", color = Color3.fromRGB(240,240,240)},
-   digits6 = {label = "Safe", color = Color3.fromRGB(240,240,240)},
+			DialShelf = {label = "Safe", color = Color3.fromRGB(240,240,240)},
 		}
 	},
 	{
