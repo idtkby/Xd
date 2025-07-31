@@ -87,12 +87,22 @@ local function autoESP(filterFn, color, labelText)
 		end
 	end)
 end
+--[[
+mainTab:CreateButton({
+	Name = "Esp Box",
+	Callback = function()
+		autoESP(function(p)
+			return p:IsA("BasePart") and p.Name == "BoxBottom"
+		end, Color3.fromRGB(0, 255, 0), "Box")
+	end,
+})
+]]
 
 -- Tab chính
-local mainTab = Window:CreateTab("Visual", "eye")
+local V1 = Window:CreateTab("Visual [Chapter 1]", "eye")
 
 -- ESP Buttons
-mainTab:CreateButton({
+V1:CreateButton({
 	Name = "Esp PetaPeta",
 	Callback = function()
 	task.spawn(function()
@@ -107,7 +117,7 @@ mainTab:CreateButton({
 		billboard.Name = "EnemyESP"
 		billboard.AlwaysOnTop = true
 		billboard.Size = UDim2.new(0, 100, 0, 40)
-		billboard.StudsOffset = Vector3.new(0, 0, 0)
+		billboard.StudsOffset = Vector3.new(0, 2, 0)
 		billboard.MaxDistance = math.huge
 		billboard.Parent = item
 
@@ -154,213 +164,77 @@ mainTab:CreateButton({
 	checkExisting()
 end)
 task.spawn(function()
-local StarterGui = game:GetService("StarterGui")
+	local StarterGui = game:GetService("StarterGui")
+	local Workspace = game:GetService("Workspace")
+	local SoundService = game:GetService("SoundService")
 
-pcall(function()
-	StarterGui:SetCore("SendNotification", {
-		Title = "PETAPETA Notice",
-		Text = "Loading Sound...",
-		Duration = 5,
-		Icon = "rbxassetid://83439791036389"
-	})
-end)
--- Cảnh báo khi Enemy_Model xuất hiện
-local Workspace = game:GetService("Workspace")
-local SoundService = game:GetService("SoundService")
-local StarterGui = game:GetService("StarterGui")
+	-- Thông báo khởi động
+	pcall(function()
+		StarterGui:SetCore("SendNotification", {
+			Title = "PETAPETA Notice",
+			Text = "Loading ...",
+			Duration = 5,
+			Icon = "rbxassetid://83439791036389"
+		})
+	end)
 
--- Tạo âm thanh cảnh báo
-local alertSound = Instance.new("Sound")
-alertSound.Name = "EnemyAlert"
-alertSound.SoundId = "rbxassetid://9118823102"
-alertSound.Volume = 2
-alertSound.Parent = SoundService
+	-- Âm thanh cảnh báo khi xuất hiện
+	local alertSound = Instance.new("Sound")
+	alertSound.Name = "EnemyAlert"
+	alertSound.SoundId = "rbxassetid://9118823102"
+	alertSound.Volume = 2
+	alertSound.Looped = false
+	alertSound.Parent = SoundService
 
--- Theo dõi Enemy_Model (là BasePart) xuất hiện
-Workspace.DescendantAdded:Connect(function(obj)
-	if obj:IsA("BasePart") and obj.Name == "Enemy_Model" then
-		alertSound:Play()
-
+	local function sendNotice(text)
 		pcall(function()
 			StarterGui:SetCore("SendNotification", {
-				Title = "GURURU",
-				Text = "HuMan, DoN't HidE",
+				Title = "Notice",
+				Text = text,
 				Duration = 5,
-				Icon = "rbxassetid://83439791036389" -- Ảnh bạn cung cấp
+				Icon = "rbxassetid://83439791036389"
 			})
 		end)
 	end
-end)
-end)
-	end,
-})
 
-mainTab:CreateButton({
-	Name = "Esp Box",
-	Callback = function()
-		autoESP(function(p)
-			return p:IsA("BasePart") and p.Name == "BoxBottom"
-		end, Color3.fromRGB(0, 255, 0), "Box")
-	end,
-})
+	local currentEnemy -- Để theo dõi enemy hiện tại
 
-mainTab:CreateButton({
-	Name = "Esp Safe",
-	Callback = function()
-		autoESP(function(p)
-			return p:IsA("BasePart") and (p.Name == "Meshes/safe_Safe" or p.Name == "DialGimmick")
-		end, Color3.fromRGB(255, 255, 0), "Safe")
-	end,
-})
+	local function monitorEnemy(enemyModel)
+		if currentEnemy == enemyModel then return end
+		currentEnemy = enemyModel
 
-mainTab:CreateButton({
-	Name = "Esp Doll",
-	Callback = function()
-		autoESP(function(p)
-	return p:IsA("BasePart")
-		and (p.Name == "DollHead" or p.Name == "DollBlackHead")
-		and not (
-			string.find(p:GetFullName(), "outside_left")
-			or string.find(p:GetFullName(), "outside_right")
-			or string.find(p:GetFullName(), "Props")
-			or string.find(p:GetFullName(), "floor")
-		)
-end, Color3.fromRGB(255, 255, 255), "Doll")
-task.spawn(function()
-local foldersToClear = {
-	"outside_left",
-	"outside_right",
-	"Props",
-	"floor"
-}
+		alertSound:Play()
+		sendNotice("Hide, Run or Pvp")
 
-for _, folderName in ipairs(foldersToClear) do
-	local folder = workspace:FindFirstChild(folderName)
-	if folder and folder:IsA("Folder") then
-		for _, child in ipairs(folder:GetChildren()) do
-			child:Destroy()
+		local conn
+		conn = enemyModel.AncestryChanged:Connect(function(_, parent)
+			if not parent then
+				sendNotice("PETAPETA-Sama disappeared")
+				if conn then conn:Disconnect() end
+				currentEnemy = nil
+			end
+		end)
+	end
+
+	-- Kiểm tra tồn tại sẵn
+	for _, v in ipairs(Workspace:GetDescendants()) do
+		if v:IsA("Model") and v.Name == "Enemy_Model" then
+			monitorEnemy(v)
+			break
 		end
 	end
-end
-end)
-	end,
-})
 
-mainTab:CreateButton({
-	Name = "Esp Key",
-	Callback = function()
-		autoESP(function(p)
-			return p:IsA("BasePart") and p.Name == "Key"
-		end, Color3.fromRGB(150, 150, 150), "Key")
-	end,
-})
-
-mainTab:CreateButton({
-	Name = "Esp Lighter",
-	Callback = function()
-		task.spawn(function()
-	local espColor = Color3.fromRGB(84, 220, 0)
-local outlineColor = Color3.fromRGB(0, 0, 0) -- Viền chữ màu đen
-
--- Tạo ESP
-local function createESP(item)
-	local billboard = Instance.new("BillboardGui")
-	billboard.Name = "LighterESP"
-	billboard.AlwaysOnTop = true
-	billboard.Size = UDim2.new(0, 100, 0, 40)
-	billboard.StudsOffset = Vector3.new(0, 2, 0)
-	billboard.MaxDistance = math.huge
-	billboard.Parent = item
-
-	local textLabel = Instance.new("TextLabel")
-	textLabel.Parent = billboard
-	textLabel.Text = "Lighter"
-	textLabel.TextColor3 = espColor
-	textLabel.TextStrokeColor3 = outlineColor -- Viền đen
-	textLabel.TextStrokeTransparency = 0      -- Hiện viền rõ
-	textLabel.BackgroundTransparency = 1
-	textLabel.Size = UDim2.new(1, 0, 1, 0)
-	textLabel.Font = Enum.Font.Bodoni
-	textLabel.TextScaled = true
-
-	-- Tạo Outline mô hình
-	local highlight = Instance.new("Highlight")
-	highlight.Name = "LighterOutline"
-	highlight.FillTransparency = 1
-	highlight.OutlineColor = espColor
-	highlight.OutlineTransparency = 0
-	highlight.Parent = item
-end
-
-local function checkForLighters()
-	for _, item in ipairs(workspace:GetDescendants()) do
-		if item:IsA("Model") and item.Name == "Lighter" and not item:FindFirstChild("LighterESP") then
-			createESP(item)
+	-- Theo dõi spawn mới
+	Workspace.DescendantAdded:Connect(function(obj)
+		if obj:IsA("Model") and obj.Name == "Enemy_Model" then
+			monitorEnemy(obj)
 		end
-	end
-end
-
-workspace.DescendantAdded:Connect(function(descendant)
-	if descendant:IsA("Model") and descendant.Name == "Lighter" then
-		createESP(descendant)
-	end
-end)
-
-checkForLighters()
+	end)
 end)
 	end,
 })
 
-mainTab:CreateButton({
-	Name = "Esp Plate",
-	Callback = function()
-		autoESP(function(p)
-			return p:IsA("BasePart") and p.Name == "Dish"
-		end, Color3.fromRGB(255, 223, 178), "Plate")
-	end,
-})
 
-mainTab:CreateButton({
-	Name = "Esp SafeCode",
-	Callback = function()
-		autoESP(function(p)
-			return p:IsA("BasePart") and (p.Name == "HintPaper" or p.Name == "TelevisionW")
-		end, Color3.fromRGB(0, 255, 255), "SafeCode")
-	end,
-})
-
-mainTab:CreateButton({
-	Name = "Esp Room (Stage 5)",
-	Callback = function()
-		autoESP(function(p)
-			return p:IsA("BasePart") and p.Name == "dirty sheet"
-		end, Color3.fromRGB(255, 105, 0), "Room")
-	end,
-})
-
-mainTab:CreateButton({
-	Name = "Candle",
-	Callback = function()
-		autoESP(function(p)
-			return p:IsA("BasePart") and (p.Name == "KeyCandle1" or p.Name == "KeyCandle2" or p.Name == "KeyCandle3" or p.Name == "KeyCandle4")
-		end, Color3.fromRGB(179, 0, 56), "Candle")
-	end,
-})
-
-mainTab:CreateButton({
-    Name = "Esp Player",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/PlayerEsp"))()
-    end,
-})
-
-
-
-
-
-
-
-local V2 = Window:CreateTab("Visual 2 (alpha)", "eye")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -517,7 +391,7 @@ end)
 
 -- 🔘 Tạo toggle riêng cho từng nhóm
 for _, group in ipairs(espGroups) do
-	V2:CreateToggle({
+	V1:CreateToggle({
 		Name = "ESP: " .. group.label,
 		CurrentValue = false,
 		Callback = function(state)
@@ -539,6 +413,24 @@ for _, group in ipairs(espGroups) do
 		end
 	})
 end
+
+
+
+V1:CreateButton({
+    Name = "Esp Player",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/PlayerEsp"))()
+    end,
+})
+
+
+
+
+
+
+
+local V2 = Window:CreateTab("Visual [Chapter 2]", "eye")
+V2:CreateSection("Soon...")
 
 
 
