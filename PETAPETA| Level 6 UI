@@ -181,8 +181,8 @@ task.spawn(function()
 	-- Âm thanh cảnh báo khi xuất hiện
 	local alertSound = Instance.new("Sound")
 	alertSound.Name = "EnemyAlert"
-	alertSound.SoundId = "rbxassetid://9118823102"
-	alertSound.Volume = 2
+	alertSound.SoundId = "rbxassetid://3165700530"
+	alertSound.Volume = 1
 	alertSound.Looped = false
 	alertSound.Parent = SoundService
 
