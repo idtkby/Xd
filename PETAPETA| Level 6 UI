@@ -164,72 +164,78 @@ V1:CreateButton({
 	checkExisting()
 end)
 task.spawn(function()
-	local StarterGui = game:GetService("StarterGui")
-	local Workspace = game:GetService("Workspace")
-	local SoundService = game:GetService("SoundService")
+    local StarterGui   = game:GetService("StarterGui")
+    local Workspace     = game:GetService("Workspace")
+    local SoundService  = game:GetService("SoundService")
 
-	-- Thông báo khởi động
-	pcall(function()
-		StarterGui:SetCore("SendNotification", {
-			Title = "PETAPETA Notice",
-			Text = "Loading ...",
-			Duration = 5,
-			Icon = "rbxassetid://83439791036389"
-		})
-	end)
+    -- tiny pause so coregui is ready to accept notifications
+    task.wait(0.5)
 
-	-- Âm thanh cảnh báo khi xuất hiện
-	local alertSound = Instance.new("Sound")
-	alertSound.Name = "EnemyAlert"
-	alertSound.SoundId = "rbxassetid://3165700530"
-	alertSound.Volume = 1
-	alertSound.Looped = false
-	alertSound.Parent = SoundService
+    -- initial loading notice
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title    = "PETAPETA Notice",
+            Text     = "Loading…",
+            Duration = 5,
+            Icon     = "rbxassetid://83439791036389",
+        })
+    end)
 
-	local function sendNotice(text)
-		pcall(function()
-			StarterGui:SetCore("SendNotification", {
-				Title = "Notice",
-				Text = text,
-				Duration = 5,
-				Icon = "rbxassetid://83439791036389"
-			})
-		end)
-	end
+    -- create the alert sound
+    local alertSound = Instance.new("Sound")
+    alertSound.Name     = "EnemyAlert"
+    alertSound.SoundId  = "rbxassetid://3165700530"
+    alertSound.Volume   = 1
+    alertSound.Parent   = SoundService
 
-	local currentEnemy -- Để theo dõi enemy hiện tại
+    local function sendNotice(text)
+        pcall(function()
+            StarterGui:SetCore("SendNotification", {
+                Title    = "Notice",
+                Text     = text,
+                Duration = 5,
+                Icon     = "rbxassetid://83439791036389",
+            })
+        end)
+    end
 
-	local function monitorEnemy(enemyModel)
-		if currentEnemy == enemyModel then return end
-		currentEnemy = enemyModel
+    local currentEnemy
 
-		alertSound:Play()
-		sendNotice("Hide, Run or Pvp")
+    local function monitorEnemy(enemyModel)
+        if currentEnemy == enemyModel then
+            return
+        end
+        currentEnemy = enemyModel
 
-		local conn
-		conn = enemyModel.AncestryChanged:Connect(function(_, parent)
-			if not parent then
-				sendNotice("PETAPETA-Sama disappeared")
-				if conn then conn:Disconnect() end
-				currentEnemy = nil
-			end
-		end)
-	end
+        -- spawn notification + sound
+        alertSound:Play()
+        sendNotice("Hide, Run or PvP!")
 
-	-- Kiểm tra tồn tại sẵn
-	for _, v in ipairs(Workspace:GetDescendants()) do
-		if v:IsA("Model") and v.Name == "Enemy_Model" then
-			monitorEnemy(v)
-			break
-		end
-	end
+        -- watch for it being removed
+        local conn
+        conn = enemyModel.AncestryChanged:Connect(function(_, parent)
+            if not parent then
+                sendNotice("PETAPETA-Sama disappeared")
+                conn:Disconnect()
+                currentEnemy = nil
+            end
+        end)
+    end
 
-	-- Theo dõi spawn mới
-	Workspace.DescendantAdded:Connect(function(obj)
-		if obj:IsA("Model") and obj.Name == "Enemy_Model" then
-			monitorEnemy(obj)
-		end
-	end)
+    -- initial scan (no break)
+    for _, v in ipairs(Workspace:GetDescendants()) do
+        if v:IsA("Model") and v.Name == "Enemy_Model" then
+            monitorEnemy(v)
+            -- don't break, in case there are multiples in the world
+        end
+    end
+
+    -- watch for new spawns
+    Workspace.DescendantAdded:Connect(function(obj)
+        if obj:IsA("Model") and obj.Name == "Enemy_Model" then
+            monitorEnemy(obj)
+        end
+    end)
 end)
 	end,
 })
