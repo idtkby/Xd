@@ -260,7 +260,7 @@ end)
 
 -- Tạo toggle từng loại
 for objName, setting in pairs(itemSettings) do
-        VTab:CreateToggle({
+        mainTab:CreateToggle({
                 Name = "ESP: " .. setting.label,
                 CurrentValue = false,
                 Callback = function(state)
