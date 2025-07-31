@@ -239,7 +239,7 @@ sound:Play()
 
 	-- Quét ban đầu
 	for _, inst in ipairs(Workspace:GetDescendants()) do
-		if inst.Name == "Enemy_Model" then
+		if inst.Name == "EnemyModel" then
 			local rootModel = inst:IsA("Model") and inst or inst:FindFirstAncestorOfClass("Model")
 			if not isFakeRoot(rootModel) then
 				monitorEnemyInstance(inst)
@@ -249,7 +249,7 @@ sound:Play()
 
 	-- Theo dõi mới
 	Workspace.DescendantAdded:Connect(function(inst)
-		if inst.Name == "Enemy_Model" then
+		if inst.Name == "EnemyModel" then
 			local rootModel = inst:IsA("Model") and inst or inst:FindFirstAncestorOfClass("Model")
 			if not isFakeRoot(rootModel) then
 				monitorEnemyInstance(inst)
