@@ -60,7 +60,7 @@ InfoTab:CreateParagraph({
 
 InfoTab:CreateParagraph({
 	Title = "7 Day To Live",
-	Content = "[+] Update Tab\n °Craft\n    + Add some new items and builds\n    - Remove outdated items and builds\n °Visual\n    - Remove toggle Esp Items\n    + Add Section 'Esp Toggle'\n    + Add Section 'Esp Animal, SCPs'\n °Teleport\n    + Fix Go to 'River'\n  +   Add Go to 'Void'\n[+] Add Full Bright Toggle\n[+] Add Noclip Toggle\n-- Version 2.2.0 --",
+	Content = "[+] Update Visual Tab\n  + Add Esp new Enemy\n-- Version 2.2.1 --",
 })
 
 InfoTab:CreateParagraph({
@@ -75,7 +75,7 @@ InfoTab:CreateParagraph({
 
 InfoTab:CreateParagraph({
 	Title = "PETAPETA | level6",
-	Content = "[+] Added esp Candle\n [+] Added Auto pick up items\n  [+] Fix lag esp Doll\n-- Version 2.3.0 --",
+	Content = "[+] Update Visual Tab\n  + Replace buttons with separate Toggles\n  + Optimize rendering (reduce lag ~85% for weak devices)\n  + Add Visual Chapter2 [Soon]\n-- Version 2.4.0 --",
 })
 
 InfoTab:CreateSection("GameHub")
