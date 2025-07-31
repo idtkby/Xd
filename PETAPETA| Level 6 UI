@@ -250,7 +250,7 @@ local espGroups = {
 		label = "Safe",
 		objects = {
 			["Meshes/safe_Safe"] = {label = "Safe", color = Color3.fromRGB(255, 255, 0)},
-			DialGimmick = {label = "Safe", color = Color3.fromRGB(255, 255, 0)}
+			keybase = {label = "Safe", color = Color3.fromRGB(240,240,240)}
 		}
 	},
 	{
