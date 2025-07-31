@@ -175,79 +175,88 @@ sound.Parent = SoundService
 
 sound:Play()
 
-    local StarterGui  = game:GetService("StarterGui")
-    local Workspace    = game:GetService("Workspace")
-    local SoundService = game:GetService("SoundService")
+    task.spawn(function()
+	local StarterGui  = game:GetService("StarterGui")
+	local Workspace    = game:GetService("Workspace")
+	local SoundService = game:GetService("SoundService")
 
-    -- Give Roblox a moment to wire up SetCore
-    task.wait(0.5)
-    pcall(function()
-        StarterGui:SetCore("SendNotification", {
-            Title    = "PETAPETA Notice",
-            Text     = "Loading…",
-            Duration = 5,
-            Icon     = "rbxassetid://83439791036389",
-        })
-    end)
+	task.wait(0.5)
+	pcall(function()
+		StarterGui:SetCore("SendNotification", {
+			Title    = "PETAPETA Notice",
+			Text     = "Loading…",
+			Duration = 5,
+			Icon     = "rbxassetid://83439791036389",
+		})
+	end)
 
-    -- Prepare alert sound
-    local alertSound = Instance.new("Sound")
-    alertSound.Name    = "EnemyAlert"
-    alertSound.SoundId = "rbxassetid://3165700530"
-    alertSound.Volume  = 1
-    alertSound.Parent  = SoundService
+	local alertSound = Instance.new("Sound")
+	alertSound.SoundId = "rbxassetid://3165700530"
+	alertSound.Volume = 1
+	alertSound.Name = "EnemyAlert"
+	alertSound.Parent = SoundService
 
-    local function sendNotice(text)
-        pcall(function()
-            StarterGui:SetCore("SendNotification", {
-                Title    = "Notice",
-                Text     = text,
-                Duration = 5,
-                Icon     = "rbxassetid://83439791036389",
-            })
-        end)
-    end
+	local function sendNotice(text)
+		pcall(function()
+			StarterGui:SetCore("SendNotification", {
+				Title    = "Notice",
+				Text     = text,
+				Duration = 5,
+				Icon     = "rbxassetid://83439791036389",
+			})
+		end)
+	end
 
-    local currentEnemyModel
+	local monitoredModels = {}
 
-    local function monitorEnemyInstance(inst)
-        -- find the root Model
-        local model = inst
-        while model and not model:IsA("Model") do
-            model = model.Parent
-        end
-        if not model or model == currentEnemyModel then
-            return
-        end
+	local function monitorEnemyInstance(inst)
+		local model = inst
+		while model and not model:IsA("Model") do
+			model = model.Parent
+		end
 
-        currentEnemyModel = model
-        alertSound:Play()
-        sendNotice("Hide, Run or PvP!")
+		if not model or monitoredModels[model] then return end
 
-        -- when it leaves the world
-        local conn
-        conn = model.AncestryChanged:Connect(function(_, parent)
-            if not parent then
-                sendNotice("PETAPETA-Sama disappeared")
-                conn:Disconnect()
-                currentEnemyModel = nil
-            end
-        end)
-    end
+		monitoredModels[model] = true
+		alertSound:Play()
+		sendNotice("Hide, Run or PvP!")
 
-    -- initial scan for any instance named "Enemy_Model"
-    for _, inst in ipairs(Workspace:GetDescendants()) do
-        if inst.Name == "Enemy_Model" then
-            monitorEnemyInstance(inst)
-        end
-    end
+		local conn
+		conn = model.AncestryChanged:Connect(function(_, parent)
+			if not parent then
+				sendNotice("PETAPETA-Sama disappeared")
+				monitoredModels[model] = nil
+				conn:Disconnect()
+			end
+		end)
+	end
 
-    -- listen for new spawns (any class named "Enemy_Model")
-    Workspace.DescendantAdded:Connect(function(inst)
-        if inst.Name == "Enemy_Model" then
-            monitorEnemyInstance(inst)
-        end
-    end)
+	-- Bỏ qua gốc cố định nếu cần (ví dụ model gốc có thể là 'Enemy_Model' có các con là 'Enemy_Model')
+	local function isFakeRoot(model)
+		if not model:IsA("Model") then return false end
+		return #model:GetChildren() > 1 and not model:FindFirstChildWhichIsA("Humanoid")
+	end
+
+	-- Quét ban đầu
+	for _, inst in ipairs(Workspace:GetDescendants()) do
+		if inst.Name == "Enemy_Model" then
+			local rootModel = inst:IsA("Model") and inst or inst:FindFirstAncestorOfClass("Model")
+			if not isFakeRoot(rootModel) then
+				monitorEnemyInstance(inst)
+			end
+		end
+	end
+
+	-- Theo dõi mới
+	Workspace.DescendantAdded:Connect(function(inst)
+		if inst.Name == "Enemy_Model" then
+			local rootModel = inst:IsA("Model") and inst or inst:FindFirstAncestorOfClass("Model")
+			if not isFakeRoot(rootModel) then
+				monitorEnemyInstance(inst)
+			end
+		end
+	end)
+end)
 end)
 	end,
 })
