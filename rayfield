@@ -1,3 +1,25 @@
+--[[
+
+-- Kiểm tra ID game
+if game.PlaceId ~= <ID Game> then
+    return warn("Script only works in the specified game (ID: ""){"Game Name"}")
+end
+
+-- Thông báo khi đúng ID game
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "✓ Game Check Passed",
+    Text = "Script is now executing...",
+    Duration = 5
+})
+
+task.wait(1) -- Đợi 1s trước khi thực thi 
+
+task.spawn(function()
+print("----    ---- ----    ----    ------    ----    ---- ------------ ") print("****   ****  ****    ****   ********   *****   **** ************ ") print("----  ----   ----    ----  ----------  ------  ---- ----         ") print("*********    ************ ****    **** ************ ****  ****** ") print("---------    ------------ ------------ ------------ ----  ------ ") print("****  ****   ****    **** ************ ****  ****** ****    **** ") print("----   ----  ----    ---- ----    ---- ----   ----- ------------ ") print("****    **** ****    **** ****    **** ****    **** ************ ")                                                                  
+end)
+
+]]
+
 task.spawn(function()  
 -- Khai báo các dịch vụ cần thiết  
 COREGUI = cloneref(game:GetService("CoreGui"))  
