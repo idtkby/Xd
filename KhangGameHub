@@ -884,12 +884,11 @@ for _, food in ipairs(foodList) do
                 "PICKUP_ITEM",
                 food
             }
-             game:GetService("ReplicatedStorage"):WaitForChild("NetworkEvents"):WaitForChild("RemoteFunction"):InvokeServer(unpack(args))
-
+            game:GetService("ReplicatedStorage"):WaitForChild("NetworkEvents"):WaitForChild("RemoteFunction"):InvokeServer(unpack(args))
         end,
         SectionParent = T7T
     })
-    FtripZ[#FtripZ+1] = btn
+    FieldTripZ[#FieldTripZ+1] = btn
 end
 
 local Players = game:GetService("Players")
