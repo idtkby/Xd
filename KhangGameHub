@@ -871,6 +871,7 @@ end
 -- Field Trip Z
 local FieldTripZ = {}
 local T7T = Tab7:CreateSection("Need to pick up one item first to dupe", false)
+local T7T2 = Tab7:CreateSection("Dupe Toggles", false)
 
 -- Danh sách món
 local foodList = {"MedKit", "Bandage", "Donut"}
@@ -891,6 +892,32 @@ for _, food in ipairs(foodList) do
     FieldTripZ[#FieldTripZ+1] = btn
 end
 
+-- Tạo toggle
+for _, food in ipairs(foodList) do
+    local toggle = Tab7:CreateToggle({
+        Name = "Auto Dupe " .. food,
+        CurrentValue = false,
+        Callback = function(state)
+            FieldTripZ[food] = state
+
+            if state then
+                task.spawn(function()
+                    while FieldTripZ[food] and task.wait(0.2) do
+                        local remote = game:GetService("ReplicatedStorage"):WaitForChild("NetworkEvents"):WaitForChild("RemoteFunction")
+                        if remote then
+                            pcall(function()
+                                remote:InvokeServer("PICKUP_ITEM", food)
+                            end)
+                        end
+                    end
+                end)
+            end
+        end,
+        SectionParent = T7T2
+    })
+    FieldTripZ[#FieldTripZ+1] = toggle
+end
+
 -- Lock nếu không đúng PlaceId
 if game.PlaceId ~= 5096191125 then
     task.defer(function()
@@ -899,6 +926,23 @@ if game.PlaceId ~= 5096191125 then
         end
     end)
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
