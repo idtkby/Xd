@@ -892,6 +892,54 @@ for _, food in ipairs(foodList) do
     FtripZ[#FtripZ+1] = btn
 end
 
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
+local healToggle -- để hủy kết nối khi tắt
+local AutoHealRunning = false
+
+FtripZ[#FtripZ+1] = Tab7:CreateToggle({
+    Name = "Auto Heal",
+    Description = "Auto heal if lost hp",
+    CurrentValue = false,
+    SectionParent = T7T,
+    Callback = function(state)
+        AutoHealRunning = state
+
+        if state then
+            local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if not Humanoid then
+                LocalPlayer.CharacterAdded:Wait()
+                Humanoid = LocalPlayer.Character:WaitForChild("Humanoid")
+            end
+
+            healToggle = Humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+                if AutoHealRunning and Humanoid.Health < Humanoid.MaxHealth then
+                    local args = {
+                        "HEAL_PLAYER",
+                        LocalPlayer,
+                        100
+                    }
+
+                    pcall(function()
+                        ReplicatedStorage:WaitForChild("NetworkEvents")
+                            :WaitForChild("RemoteFunction")
+                            :InvokeServer(unpack(args))
+                    end)
+                end
+            end)
+        else
+            -- Tắt toggle: hủy kết nối và reset cờ
+            AutoHealRunning = false
+            if healToggle then
+                healToggle:Disconnect()
+                healToggle = nil
+            end
+        end
+    end
+})
+
 
 -- Lock nếu không đúng PlaceId
 if game.PlaceId ~= 5096191125 then
