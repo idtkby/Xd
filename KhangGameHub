@@ -898,7 +898,7 @@ local LocalPlayer = Players.LocalPlayer
 local healToggle -- để hủy kết nối khi tắt
 local AutoHealRunning = false
 
-FtripZ[#FtripZ+1] = Tab7:CreateToggle({
+FieldTripZ[#FieldTripZ+1] = Tab7:CreateToggle({
     Name = "Auto Heal",
     CurrentValue = false,
     SectionParent = T7T,
@@ -942,7 +942,7 @@ FtripZ[#FtripZ+1] = Tab7:CreateToggle({
 -- Lock nếu không đúng PlaceId
 if game.PlaceId ~= 5096191125 then
     task.defer(function()
-        for _, element in pairs(FtripZ) do
+        for _, element in pairs(FieldTripZ) do
             element:Lock("In Game only")
         end
     end)
