@@ -918,6 +918,63 @@ for _, food in ipairs(foodList) do
     FieldTripZ[#FieldTripZ+1] = toggle
 end
 
+
+FieldTripZ[#FieldTripZ+1] = Tab7:CreateToggle({
+	Name = "Auto Heal Players",
+	SectionParent = T7T3,
+	CurrentValue = false,
+	Callback = function(state)
+		getgenv()._AHP = state
+
+		task.spawn(function()
+			local Players = game:GetService("Players")
+			local ReplicatedStorage = game:GetService("ReplicatedStorage")
+			local Remote = ReplicatedStorage:WaitForChild("NetworkEvents"):WaitForChild("RemoteFunction")
+
+			while getgenv()._AHP do
+				for _, plr in ipairs(Players:GetPlayers()) do
+					if plr ~= Players.LocalPlayer and plr.Character and plr.Character:FindFirstChild("Humanoid") then
+						local hum = plr.Character.Humanoid
+						if hum.Health > 0 and hum.Health < hum.MaxHealth then
+							pcall(function()
+								Remote:InvokeServer("HEAL_PLAYER", plr, 500)
+							end)
+						end
+					end
+				end
+				task.wait(1)
+			end
+		end)
+	end
+})
+
+FieldTripZ[#FieldTripZ+1] = Tab7:CreateToggle({
+	Name = "Auto Heal Self",
+	SectionParent = T7T3,
+	CurrentValue = false,
+	Callback = function(state)
+		getgenv()._AutoHealSelf = state
+
+		task.spawn(function()
+			local Players = game:GetService("Players")
+			local LocalPlayer = Players.LocalPlayer
+			local ReplicatedStorage = game:GetService("ReplicatedStorage")
+			local Remote = ReplicatedStorage:WaitForChild("NetworkEvents"):WaitForChild("RemoteFunction")
+
+			while getgenv()._AutoHealSelf do
+				local char = LocalPlayer.Character
+				local hum = char and char:FindFirstChild("Humanoid")
+				if hum and hum.Health > 0 and hum.Health < hum.MaxHealth then
+					pcall(function()
+						Remote:InvokeServer("HEAL_PLAYER", LocalPlayer, 500)
+					end)
+				end
+				task.wait(1)
+			end
+		end)
+	end
+})
+
 -- Lock nếu không đúng PlaceId
 if game.PlaceId ~= 5096191125 then
     task.defer(function()
