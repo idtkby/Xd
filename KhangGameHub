@@ -98,6 +98,7 @@ local Tab3 = Window:CreateTab("The $1M Glass Bridge", 6034985497)
 local Tab4 = Window:CreateTab("Floppa: Tower Defense", 6034985497)
 local Tab5 = Window:CreateTab("Break In Simulator", 6034985497)
 local Tab6 = Window:CreateTab("Daycare 2 🎈 (Story)", 6034985497)
+local Tab7 = Window:CreateTab("Field Trip Z", 6034985497)
 local Mtab = Window:CreateTab("Misc")
 
 
@@ -851,6 +852,55 @@ if game.PlaceId ~= 5087158461 then
     end)
 end
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Field Trip Z
+local FieldTripZ = {}
+local T7T = Tab7:CreateSection("Need to pick up one item first to dupe", false)
+
+-- Danh sách món
+local foodList = {"MedKita", "Bandage", "Donut"}
+
+-- Tạo nút
+for _, food in ipairs(foodList) do
+    local btn = Tab6:CreateButton({
+        Name = "Dupe " .. food,
+        Callback = function()
+            local args = {
+                "PICKUP_ITEM",
+                food
+            }
+             game:GetService("ReplicatedStorage"):WaitForChild("NetworkEvents"):WaitForChild("RemoteFunction"):InvokeServer(unpack(args))
+
+        end,
+        SectionParent = T7T
+    })
+    FtripZ[#FtripZ+1] = btn
+end
+
+
+-- Lock nếu không đúng PlaceId
+if game.PlaceId ~= 5096191125 then
+    task.defer(function()
+        for _, element in pairs(FtripZ) do
+            element:Lock("In Game only")
+        end
+    end)
+end
 
 
 
