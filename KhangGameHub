@@ -872,6 +872,7 @@ end
 local FieldTripZ = {}
 local T7T = Tab7:CreateSection("Need to pick up one item first to dupe", false)
 local T7T2 = Tab7:CreateSection("Dupe Toggles", false)
+local T7T3 = Tab7:CreateSection("Misc", false)
 
 -- Danh sách món
 local foodList = {"MedKit", "Bandage", "Donut"}
