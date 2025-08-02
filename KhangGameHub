@@ -873,11 +873,11 @@ local FieldTripZ = {}
 local T7T = Tab7:CreateSection("Need to pick up one item first to dupe", false)
 
 -- Danh sách món
-local foodList = {"MedKita", "Bandage", "Donut"}
+local foodList = {"MedKit", "Bandage", "Donut"}
 
 -- Tạo nút
 for _, food in ipairs(foodList) do
-    local btn = Tab6:CreateButton({
+    local btn = Tab7:CreateButton({
         Name = "Dupe " .. food,
         Callback = function()
             local args = {
@@ -901,7 +901,6 @@ local AutoHealRunning = false
 
 FtripZ[#FtripZ+1] = Tab7:CreateToggle({
     Name = "Auto Heal",
-    Description = "Auto heal if lost hp",
     CurrentValue = false,
     SectionParent = T7T,
     Callback = function(state)
