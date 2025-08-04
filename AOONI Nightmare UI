@@ -179,7 +179,7 @@ local espObjects = {}
 -- Cấu hình
 local itemSettings = {
         Doll = {label = "Doll", color = Color3.fromRGB(255,223,178)},
-        oaksj = {label = "(Updating...)", color = Color3.fromRGB(255, 137, 64)},
+        Radio = {label = "Radio", color = Color3.fromRGB(255, 137, 64)},
         ["Meshes/flask"] = {label = "Flask", color = Color3.fromRGB(255,255,255)},
         Safe = {label = "Safe", color = Color3.fromRGB(255,255,0)},
 }
@@ -354,7 +354,7 @@ createTeleportButton(mainTab, "Safe", "Go to Safe")
 
 
 mainTab:CreateButton({
-        Name = "Go to SafeRoom (alpha)",
+        Name = "Go to SafeRoom (Class1)",
         Callback = function()
             local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
             if hrp then
@@ -364,6 +364,26 @@ mainTab:CreateButton({
     })
 
 
+mainTab:CreateButton({
+        Name = "Go to Safe (Class2)",
+        Callback = function()
+            local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = CFrame.new(-389, 34, -456)
+            end
+        end
+    })
+
+
+mainTab:CreateButton({
+        Name = "Go to BookRoom (Class3)",
+        Callback = function()
+            local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = CFrame.new(-89, 4, 217)
+            end
+        end
+    })
 
 
 
