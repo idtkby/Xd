@@ -179,7 +179,7 @@ local espObjects = {}
 -- Cấu hình
 local itemSettings = {
         Doll = {label = "Doll", color = Color3.fromRGB(255,223,178)},
-        Book = {label = "Book", color = Color3.fromRGB(255, 137, 64)},
+        oaksj = {label = "(Updating...)", color = Color3.fromRGB(255, 137, 64)},
         ["Meshes/flask"] = {label = "Flask", color = Color3.fromRGB(255,255,255)},
         Safe = {label = "Safe", color = Color3.fromRGB(255,255,0)},
 }
@@ -283,6 +283,84 @@ for objName, setting in pairs(itemSettings) do
                 end
         })
 end
+
+mainTab:CreateSection("Teleport")
+
+local function createTeleportButton(mainTab, targetName, buttonName)
+	mainTab:CreateButton({
+		Name = buttonName or ("Go to nearest " .. targetName),
+		Callback = function()
+			local Players = game:GetService("Players")
+			local RunService = game:GetService("RunService")
+			local LocalPlayer = Players.LocalPlayer
+
+			local function getHRP()
+				local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+				return char:FindFirstChild("HumanoidRootPart")
+			end
+
+			local function getNearestTarget()
+				local nearest, minDist = nil, math.huge
+				local hrp = getHRP()
+				if not hrp then return end
+
+				for _, obj in ipairs(workspace:GetDescendants()) do
+					if (obj:IsA("Model") and obj.Name == targetName) or (obj:IsA("BasePart") and obj.Name == targetName) then
+						local part = obj:IsA("Model") and obj:FindFirstChildWhichIsA("BasePart") or obj
+						if part then
+							local dist = (hrp.Position - part.Position).Magnitude
+							if dist < minDist then
+								minDist = dist
+								nearest = part
+							end
+						end
+					end
+				end
+				return nearest, minDist
+			end
+
+			local function safeTeleport(targetCFrame)
+				local hrp = getHRP()
+				if not hrp then return end
+
+				for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
+					if v:IsA("BasePart") then
+						v.CanCollide = false
+						v.Velocity = Vector3.zero
+						v.RotVelocity = Vector3.zero
+					end
+				end
+
+				task.wait()
+				hrp.Anchored = true
+				hrp.CFrame = targetCFrame * CFrame.new(0, 2, 0)
+				task.wait(0.1)
+				hrp.Anchored = false
+			end
+
+			local target, dist = getNearestTarget()
+			if target then
+				safeTeleport(target.CFrame)
+				print("Teleport successful", targetName, "| Dist:", math.floor(dist))
+			else
+				warn("Not found " .. targetName)
+			end
+		end
+	})
+end
+createTeleportButton(mainTab, "Meshes/flask", "Go to nearest Flask")
+createTeleportButton(mainTab, "Doll", "Go to nearest Doll")
+createTeleportButton(mainTab, "Safe", "Go to Safe")
+
+
+
+
+
+
+
+
+
+
 
 
 
