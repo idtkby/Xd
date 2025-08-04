@@ -353,7 +353,15 @@ createTeleportButton(mainTab, "Doll", "Go to nearest Doll")
 createTeleportButton(mainTab, "Safe", "Go to Safe")
 
 
-
+mainTab:CreateButton({
+        Name = "Go to SafeRoom (alpha)",
+        Callback = function()
+            local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = CFrame.new(-343, 20, 55)
+            end
+        end
+    })
 
 
 
