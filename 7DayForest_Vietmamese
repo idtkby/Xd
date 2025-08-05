@@ -1987,6 +1987,12 @@ task.spawn(function()
 if setclipboard then
     setclipboard("wietXomar_Hub") -- thay bằng nội dung cần copy
     print("Copied Key: wietXomar_Hub!")
+game:GetService("StarterGui"):
+SetCore("SendNotification", {
+    Title = "Bypass Key",
+    Text = "Key copied",
+    Duration = 5 
+})
 else
     warn("Executor not supported setclipboard")
 end
