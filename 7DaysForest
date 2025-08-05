@@ -28,7 +28,7 @@ end
 local OSTime = os.time()
 local Time = os.date('!*t', OSTime)
 
-local Content = '# **🛡️ Discord webhook via | IgnahK**'
+local Content = '# **🛡️ 7 Days To Live Using| IgnahK**'
 
 local Embed = {
     title = '🔔 IgnahK | Execution Log',
