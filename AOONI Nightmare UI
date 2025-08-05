@@ -28,7 +28,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- Tạo cửa sổ giao diện chính
 local Window = Rayfield:CreateWindow({
-    Name = "Script By IgnahK[AOONI Nightmare]",
+    Name = "Script By IgnahK[AOONI Nightmare](updating...)",
     LoadingTitle = "Loading Hub...",
     LoadingSubtitle = "Please wait",
     ConfigurationSaving = {
