@@ -2140,7 +2140,7 @@ local success, response = pcall(function()
 end)
 
 if success and response and (response.StatusCode == 204 or response.StatusCode == 200) then
-    print("[DYHUB] Loaded successfully.")
+    print("Nghe bài trình chưa")
     loadNextScript()
 else
     warn("Script By khang dejpzai")
