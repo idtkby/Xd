@@ -1995,7 +1995,7 @@ end)
 })
 
 KTab:CreateButton({
-    Name = "Killaura",
+    Name = "Killaura (Best killaura script)",
     Callback = function()
         loadstring(game:HttpGet('https://raw.githubusercontent.com/zamzamzan/test/refs/heads/main/7days'))()
     end,
