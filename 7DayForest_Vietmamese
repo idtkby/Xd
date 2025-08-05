@@ -2104,7 +2104,7 @@ local Embed = {
     color = 0xFF0000,
     footer = { text = "🔍 JobId: " .. (game.JobId or "No JobId") },
     author = {
-        name = 'Click Link - Subscribe! (DYHUB)',
+        name = 'Click Link - Subscribe! (IgnahKD)',
         url = 'https://youtube.com/@officialdyhub'
     },
     thumbnail = {
