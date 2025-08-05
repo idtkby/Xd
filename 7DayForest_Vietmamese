@@ -1973,18 +1973,12 @@ KTab:CreateButton({
   })
 
 KTab:CreateButton({
-     Name = "Herkle Hub",
+     Name = "Herkle Hub (Error)",
      Callback = function()
          loadstring(game:HttpGet("https://raw.githubusercontent.com/decryp1/Herkle-Hub/refs/heads/main/game%20redirect"))()
      end,
 })
 
-KTab:CreateButton({
-     Name = "Herkle Hub (old ver)",
-     Callback = function()
-         loadstring(game:HttpGet("https://raw.githubusercontent.com/decryp1/7daystolive/6d5ff2faa4e8a74713b359e73c69590b3f3cf0f9/script"))()
-     end,
-})
 
 
 KTab:CreateButton({
