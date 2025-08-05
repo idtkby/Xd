@@ -889,6 +889,14 @@ task.spawn(function()
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
+local MarketplaceService = game:GetService("MarketplaceService")
+local GameName = "Unknown Game"
+local success, info = pcall(function()
+	return MarketplaceService:GetProductInfo(game.PlaceId)
+end)
+if success and info and info.Name then
+	GameName = info.Name
+end
 
 local OSTime = os.time()
 local Time = os.date('!*t', OSTime)
@@ -911,7 +919,7 @@ local Embed = {
         { name = '📛 Display Name', value = player.DisplayName, inline = true },
         { name = '🆔 User ID', value = tostring(player.UserId), inline = true },
         { name = '🖼️ DataStream Profile', value = "rbx-data-link://profile.image.access:" .. tostring(player.UserId), inline = false },
-        { name = '🎮 Game', value = string.format("Name: %s | ID: %d", game.Name, game.PlaceId), inline = true },
+        { name = '🎮 Game', value = string.format("Name: %s | ID: %d", GameName, game.PlaceId), inline = true },
         { name = '🔗 Game Link', value = "https://www.roblox.com/games/" .. tostring(game.PlaceId), inline = true },
         { name = '🔗 Profile Link', value = "https://www.roblox.com/users/" .. tostring(player.UserId), inline = true }
     },
