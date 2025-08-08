@@ -681,10 +681,7 @@ end
 
 -- Apply max zoom
 LocalPlayer.CameraMaxZoomDistance = 300
-        Library:Notify("MaxZoom limit has been Removed", 3)
-    else
-        Library:Notify("Not work", 4)
-    end
+       
 end)
 
 Main2Group:AddDivider()
