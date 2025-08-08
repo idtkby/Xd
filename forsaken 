@@ -763,7 +763,9 @@ end)
 Main2Group:AddButton("Load Walkto Gui", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/walkto"))()  
 end)
-
+Main2Group:AddButton("Load Auto Block", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Forsaken/main/autoblockguest"))()
+end)
 
 
 
