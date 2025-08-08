@@ -132,6 +132,11 @@ Main1Group:AddToggle("AutoSlash", {
                 return char:FindFirstChild("Humanoid")
             end
 
+            local function IsLocalPlayerKiller()
+                local killers = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+                return killers and killers:FindFirstChild(LocalPlayer.Name) ~= nil
+            end
+
             local function GetNearestKiller()
                 local nearest, minDist = nil, math.huge
                 local hrp = GetHRP()
@@ -139,12 +144,14 @@ Main1Group:AddToggle("AutoSlash", {
                 for _, v in pairs(workspace.Players:GetChildren()) do
                     if v.Name == "Killers" then
                         for _, killer in pairs(v:GetChildren()) do
-                            local hrp2 = killer:FindFirstChild("HumanoidRootPart")
-                            if hrp2 then
-                                local dist = (hrp.Position - hrp2.Position).Magnitude
-                                if dist < minDist and dist <= 20 then
-                                    nearest = hrp2
-                                    minDist = dist
+                            if killer ~= LocalPlayer.Character then
+                                local hrp2 = killer:FindFirstChild("HumanoidRootPart")
+                                if hrp2 then
+                                    local dist = (hrp.Position - hrp2.Position).Magnitude
+                                    if dist < minDist and dist <= 20 then
+                                        nearest = hrp2
+                                        minDist = dist
+                                    end
                                 end
                             end
                         end
@@ -154,27 +161,30 @@ Main1Group:AddToggle("AutoSlash", {
             end
 
             while _G.AutoSlash do
+                if IsLocalPlayerKiller() then
+                    warn("You are killer, no Slash")
+                    break
+                end
+
                 local humanoid = GetHumanoid()
                 local hrp = GetHRP()
                 if humanoid and humanoid.WalkSpeed < 20 and hrp then
                     local target = GetNearestKiller()
                     if target then
-                        -- Slash trước
-                        local args = {"UseActorAbility", "Slash"}
-                        Remote:FireServer(unpack(args))
+                        -- Slash
+                        Remote:FireServer({"UseActorAbility", "Slash"})
 
                         -- Xoay liên tục trong 3s
-                        -- Xoay liên tục trong 3s
-local startTime = tick()
-while tick() - startTime < 3 and _G.AutoSlash do
-	if not target.Parent then break end
-	local dir = (target.Position - hrp.Position).Unit
-	local lookCFrame = CFrame.new(hrp.Position, hrp.Position + Vector3.new(dir.X, 0, dir.Z))
-	hrp.CFrame = lookCFrame
-	task.wait()
-end
+                        local startTime = tick()
+                        while tick() - startTime < 3 and _G.AutoSlash do
+                            if not target.Parent then break end
+                            local dir = (target.Position - hrp.Position).Unit
+                            local look = CFrame.new(hrp.Position, hrp.Position + Vector3.new(dir.X, 0, dir.Z))
+                            hrp.CFrame = look
+                            task.wait()
+                        end
 
-                        -- Cooldown
+                        -- Cooldown 38s
                         task.wait(38)
                     end
                 end
