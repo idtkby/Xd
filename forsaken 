@@ -48,7 +48,6 @@ local Window = Library:CreateWindow({
 
 Tabs = {
 	Tab = Window:AddTab("Game", "rbxassetid://7734053426"),
- misc = Window:AddTab("Misc", "rbxassetid://7734053426"),
 	["UI Settings"] = Window:AddTab("UI Settings", "rbxassetid://7733955511")
 }
 
@@ -576,23 +575,11 @@ _G.EspGuiTextColor = Value
      end
 })
 
-Main2Group:AddSlider("Text Size", {
-    Text = "Text Size [ General ]",
-    Default = 15,
-    Min = 1,
-    Max = 50,
-    Rounding = 0,
-    Compact = false,
-    Callback = function(Value)
-_G.EspGuiTextSize = Value
-    end
-})
-
-Main2Group:AddDivider()
+Main2Group:AddLabel("EspGui Function", true)
 
 _G.EspName = false
-Main2Group:AddToggle("Esp Name", {
-    Text = "Esp Name",
+Main2Group:AddToggle("Show Name", {
+    Text = "Show Name",
     Default = false, 
     Callback = function(Value) 
 _G.EspName = Value
@@ -600,8 +587,8 @@ _G.EspName = Value
 })
 
 _G.EspDistance = false
-Main2Group:AddToggle("Esp Distance", {
-    Text = "Esp Distance",
+Main2Group:AddToggle("Show Distance", {
+    Text = "Show Distance",
     Default = false, 
     Callback = function(Value) 
 _G.EspDistance = Value
@@ -609,8 +596,8 @@ _G.EspDistance = Value
 })
 
 _G.EspHealth = false
-Main2Group:AddToggle("Esp Health", {
-    Text = "Esp Health",
+Main2Group:AddToggle("Show Health", {
+    Text = "Show Health",
     Default = false, 
     Callback = function(Value) 
 _G.EspHealth = Value
@@ -620,6 +607,7 @@ _G.EspHealth = Value
 Main2Group:AddDivider()
 
 Main2Group:AddLabel("Misc", true)
+
 Main2Group:AddToggle("FullBright", {
     Text = "Full Bright",
     Default = false,
@@ -640,20 +628,26 @@ Main2Group:AddToggle("FullBright", {
         end
 
         if _G.FullBright then
-            -- Bật chế độ FullBright
-            Lighting.Brightness = 2
-            Lighting.Ambient = Color3.new(1, 1, 1)
-            Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
-            Lighting.FogEnd = 100000
-            Lighting.FogStart = 0
-            Lighting.GlobalShadows = false
+            task.spawn(function()
+                while _G.FullBright do
+                    -- Set ánh sáng
+                    Lighting.Brightness = 2
+                    Lighting.Ambient = Color3.new(1, 1, 1)
+                    Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
+                    Lighting.FogEnd = 100000
+                    Lighting.FogStart = 0
+                    Lighting.GlobalShadows = false
 
-            -- Xoá các fog dynamic nếu có
-            for _, v in ipairs(Lighting:GetChildren()) do
-                if v:IsA("Atmosphere") or v:IsA("BloomEffect") or v:IsA("ColorCorrectionEffect") then
-                    v:Destroy()
+                    -- Xoá hiệu ứng gây mờ tối nếu có
+                    for _, v in ipairs(Lighting:GetChildren()) do
+                        if v:IsA("Atmosphere") or v:IsA("BloomEffect") or v:IsA("ColorCorrectionEffect") then
+                            v:Destroy()
+                        end
+                    end
+
+                    task.wait(10) -- Lặp lại mỗi 10s
                 end
-            end
+            end)
         else
             -- Khôi phục Lighting gốc
             if _G._LightingSaved then
@@ -668,11 +662,20 @@ Main2Group:AddToggle("FullBright", {
     end
 })
 
+Main2Group:AddButton("Remove MaxZoom Limit", function()
+    local player = game:GetService("Players").LocalPlayer
+    if player and player:FindFirstChild("CameraMaxZoomDistance") then
+        player.CameraMaxZoomDistance = 300
+        Library:Notify("MaxZoom limit has been Removed", 3)
+    else
+        Library:Notify("Not work", 4)
+    end
+end)
 
-
-
-
-
+Main2Group:AddDivider()
+Main2Group:AddButton("Load InfYield Edit", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()  
+end)
 
 
 
