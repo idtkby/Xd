@@ -1,5 +1,7 @@
 task.spawn(function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/forsakenhitbox"))()
+wait(2)
+getgenv().RV = 0
 end)
 
 
@@ -195,7 +197,35 @@ Remote:FireServer(unpack(args))
         end)
     end
 })
+Main1Group:AddDivider()
 
+
+Main1Group:AddLabel("Hitbox", true)
+_G.RV_Value = 0
+
+Main1Group:AddInput("Set dist", {
+    Default = "0",
+    Numeric = true,
+    Text = "0 - 1000",
+    Placeholder = "Enter a number...",
+    Callback = function(value)
+        local num = tonumber(value)
+        if num then
+            if num >= 0 and num <= 1000 then
+                _G.RV_Value = num
+            else
+                Library:Notify("Value must be between 0 and 1000", 5)
+            end
+        else
+            Library:Notify("Invalid number", 5)
+        end
+    end
+})
+
+Main1Group:AddButton("Apply", function()
+    getgenv().RV = _G.RV_Value
+    Library:Notify("RV set to: " .. tostring(_G.RV_Value))
+end)
 
 
 
@@ -584,8 +614,8 @@ _G.EspHealth = Value
 
 Main2Group:AddDivider()
 
-Main1Group:AddLabel("Misc", true)
-Main1Group:AddToggle("FullBright", {
+Main2Group:AddLabel("Misc", true)
+Main2Group:AddToggle("FullBright", {
     Text = "Full Bright",
     Default = false,
     Callback = function(Value)
