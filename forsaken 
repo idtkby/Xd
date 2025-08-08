@@ -89,8 +89,7 @@ _G.InfStamina = Value
 while _G.InfStamina do
 local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
 if staminaModule then
-    staminaModule.MaxStamina = 696969
-    staminaModule.Stamina = 696969
+    staminaModule.Stamina = 100
     staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
 end
 task.wait()
@@ -281,6 +280,7 @@ Main2Group:AddToggle("EspMedkit", {
     end
 })
 
+-- helper to apply ESP GUI to a single character model
 function Esp_Player(characterModel)
     -- destroy any existing highlight
     if characterModel:FindFirstChild("Esp_Highlight") then
@@ -294,6 +294,7 @@ function Esp_Player(characterModel)
         end
     end
 
+    -- only run if Esp_Gui is enabled
     if not _G.EspGui then return end
 
     local head = characterModel:FindFirstChild("Head")
@@ -308,30 +309,32 @@ function Esp_Player(characterModel)
     gui.StudsOffset = Vector3.new(0, 3, 0)
     gui.Parent = head
 
+    -- create text
     local lbl = Instance.new("TextLabel", gui)
     lbl.BackgroundTransparency = 1
     lbl.Size = UDim2.new(1, 0, 1, 0)
     lbl.Font = Enum.Font.Code
-    lbl.TextColor3 = Color3.new(1, 1, 1)
-    lbl.TextStrokeTransparency = 0.5
+    lbl.TextSize = _G.EspGuiTextSize or 15
+    lbl.TextStrokeColor3 = Color3.new(0, 0, 0) -- viền màu đen
+    lbl.TextStrokeTransparency = 0 -- 0 = hiện rõ hoàn toàn
 
+    -- color red if killer
     local isKiller = (characterModel.Parent.Name == "Killers")
-    lbl.TextColor3 = isKiller and Color3.fromRGB(255, 0, 0) or (_G.EspGuiTextColor or Color3.new(1, 1, 1))
+    lbl.TextColor3 = isKiller and Color3.fromRGB(255, 0, 0) or (_G.EspGuiTextColor or Color3.new(1,1,1))
 
+    -- build the label text
     local parts = {}
-    local distance = 0
-
     if _G.EspName then
         table.insert(parts, characterModel.Name)
     end
-
-    local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    local otherHRP = characterModel:FindFirstChild("HumanoidRootPart")
-    if hrp and otherHRP and _G.EspDistance then
-        distance = (hrp.Position - otherHRP.Position).Magnitude
-        table.insert(parts, ("Dist: %.1f"):format(distance))
+    if _G.EspDistance then
+        local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local otherHRP = characterModel:FindFirstChild("HumanoidRootPart")
+        if hrp and otherHRP then
+            local d = (hrp.Position - otherHRP.Position).Magnitude
+            table.insert(parts, ("Dist: %.1f"):format(d))
+        end
     end
-
     if _G.EspHealth then
         local hum = characterModel:FindFirstChildOfClass("Humanoid")
         if hum then
@@ -340,19 +343,6 @@ function Esp_Player(characterModel)
     end
 
     lbl.Text = table.concat(parts, "\n")
-
-    -- Auto adjust text size based on distance (min 5, max 18)
-    local function getTextSizeFromDistance(dist)
-        local maxDist = 350
-        local minSize = 10
-        local maxSize = _G.EspGuiTextSize or 25
-
-        if dist >= maxDist then return minSize end
-        local factor = 1 - (dist / maxDist)
-        return math.clamp(math.floor(maxSize * factor), minSize, maxSize)
-    end
-
-    lbl.TextSize = getTextSizeFromDistance(distance)
 end
 
 Main2Group:AddDropdown("EspPlayer", {
