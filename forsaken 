@@ -152,7 +152,7 @@ Main1Group:AddToggle("AutoSlash", {
 					local hum = killer:FindFirstChildOfClass("Humanoid")
 					if hrp2 and hum and hum.Health > 0 then
 						local dist = (hrp.Position - hrp2.Position).Magnitude
-						if dist <= 25 then
+						if dist <= 20 then
 							local directionToLocal = (hrp.Position - hrp2.Position).Unit
 							local killerLook = hrp2.CFrame.LookVector.Unit
 							local dotLook = killerLook:Dot(directionToLocal)
@@ -200,7 +200,7 @@ Remote:FireServer(unpack(args))
                         end
 
                         -- Cooldown 38s
-                        task.wait(38)
+                        task.wait(35)
                     end
                 end
                 task.wait(0.25)
