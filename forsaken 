@@ -676,6 +676,9 @@ Main2Group:AddDivider()
 Main2Group:AddButton("Load InfYield Edit", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()  
 end)
+Main2Group:AddButton("Load c00lgh0st", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Forsaken/main/c00lgh0st"))()  
+end)
 
 
 
