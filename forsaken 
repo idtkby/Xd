@@ -199,8 +199,8 @@ Remote:FireServer(unpack(args))
                             task.wait()
                         end
 
-                        -- Cooldown 38s
-                        task.wait(35)
+                        -- Cooldown 
+                        task.wait(30)
                     end
                 end
                 task.wait(0.25)
@@ -335,104 +335,99 @@ end
     end
 })
 
--- after your Esp_Player section, add:
-
 -- helper to create ESP on a single model
-local function CreateItemESP(model: Model, color: Color3, labelText: string)
-    if model:FindFirstChild("ItemESP_Box") then return end
+local function CreateItemESP(model, color, labelText)
+	if model:FindFirstChild("ItemESP_Gui") then return end
 
-    -- Box outline
-    local box = Instance.new("BoxHandleAdornment")
-    box.Name = "ItemESP_Box"
-    box.Adornee = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
-    box.Size = model:GetExtentsSize() + Vector3.new(0.5, 0.5, 0.5)
-    box.AlwaysOnTop = true
-    box.ZIndex = 10
-    box.Color3 = color
-    box.Transparency = 1
-    box.Parent = model
+	local head = model:FindFirstChildWhichIsA("BasePart")
+	if not head then return end
 
-    -- Label
-    local head = model:FindFirstChildWhichIsA("BasePart")
-    if head then
-        local gui = Instance.new("BillboardGui", head)
-        gui.Name = "ItemESP_Gui"
-        gui.Adornee = head
-        gui.Size = UDim2.new(0, 100, 0, 40)
-        gui.StudsOffset = Vector3.new(0, 2, 0)
-        gui.AlwaysOnTop = true
+	local gui = Instance.new("BillboardGui")
+	gui.Name = "ItemESP_Gui"
+	gui.Adornee = head
+	gui.Size = UDim2.new(0, 100, 0, 40)
+	gui.StudsOffset = Vector3.new(0, 2, 0)
+	gui.AlwaysOnTop = true
+	gui.Parent = head
 
-        local lbl = Instance.new("TextLabel", gui)
-        lbl.Size = UDim2.new(1, 0, 1, 0)
-        lbl.BackgroundTransparency = 1
-        lbl.Font = Enum.Font.Code
-        lbl.TextSize = 14
-        lbl.TextColor3 = color
-        lbl.Text = labelText
-        -- optional stroke:
-        local stroke = Instance.new("UIStroke", lbl)
-        stroke.Color = Color3.new(0, 0, 0)
-        stroke.Thickness = 1
-    end
+	local lbl = Instance.new("TextLabel")
+	lbl.Size = UDim2.new(1, 0, 1, 0)
+	lbl.BackgroundTransparency = 1
+	lbl.Font = Enum.Font.Code
+	lbl.TextSize = 14
+	lbl.TextColor3 = color
+	lbl.Text = labelText
+	lbl.TextStrokeTransparency = 0.5
+	lbl.TextStrokeColor3 = Color3.new(0, 0, 0)
+	lbl.Parent = gui
 end
 
--- helper to clear ESP from a model
-local function ClearItemESP(model: Model)
-    if model:FindFirstChild("ItemESP_Box") then
-        model.ItemESP_Box:Destroy()
-    end
-    if model.PrimaryPart then
-        local gui = model.PrimaryPart:FindFirstChild("ItemESP_Gui", true)
-        if gui then gui:Destroy() end
-    end
+local function ClearItemESP(model)
+	for _, v in ipairs(model:GetDescendants()) do
+		if v:IsA("BillboardGui") and v.Name == "ItemESP_Gui" then
+			v:Destroy()
+		end
+	end
 end
 
--- BloxyCola toggle
+local function HandleESP(itemName, color, labelText, enabledFlag)
+	local RunService = game:GetService("RunService")
+	local workspace = game:GetService("Workspace")
+	local existing = {}
+
+	-- Quét hiện tại
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("Model") and obj.Name == itemName then
+			CreateItemESP(obj, color, labelText)
+			table.insert(existing, obj)
+		end
+	end
+
+	-- Theo dõi model mới thêm
+	local con
+	con = workspace.DescendantAdded:Connect(function(obj)
+		if obj:IsA("Model") and obj.Name == itemName and _G[enabledFlag] then
+			task.wait(0.1)
+			CreateItemESP(obj, color, labelText)
+			table.insert(existing, obj)
+		end
+	end)
+
+	-- Dọn khi tắt
+	repeat task.wait(0.5) until not _G[enabledFlag]
+	con:Disconnect()
+	for _, obj in ipairs(existing) do
+		ClearItemESP(obj)
+	end
+	table.clear(existing)
+end
+
+-- Toggle BloxyCola
 Main2Group:AddToggle("EspBloxyCola", {
-    Text = "ESP BloxyCola",
-    Default = false,
-    Callback = function(on)
-        spawn(function()
-            while on do
-                for _, mdl in ipairs(workspace:GetDescendants()) do
-                    if mdl:IsA("Model") and mdl.Name == "BloxyCola" then
-                        CreateItemESP(mdl, Color3.fromRGB(0, 170, 255), "BloxyCola")
-                    end
-                end
-                wait(1)
-            end
-            -- clear when off
-            for _, mdl in ipairs(workspace:GetDescendants()) do
-                if mdl:IsA("Model") and mdl.Name == "BloxyCola" then
-                    ClearItemESP(mdl)
-                end
-            end
-        end)
-    end
+	Text = "ESP BloxyCola",
+	Default = false,
+	Callback = function(v)
+		_G.EspBloxyCola = v
+		if v then
+			task.spawn(function()
+				HandleESP("BloxyCola", Color3.fromRGB(255, 255, 0), "BloxyCola", "EspBloxyCola")
+			end)
+		end
+	end
 })
 
--- Medkit toggle
+-- Toggle Medkit
 Main2Group:AddToggle("EspMedkit", {
-    Text = "ESP Medkit",
-    Default = false,
-    Callback = function(on)
-        spawn(function()
-            while on do
-                for _, mdl in ipairs(workspace:GetDescendants()) do
-                    if mdl:IsA("Model") and mdl.Name == "Medkit" then
-                        CreateItemESP(mdl, Color3.fromRGB(0, 170, 255), "Medkit")
-                    end
-                end
-                wait(1)
-            end
-            -- clear when off
-            for _, mdl in ipairs(workspace:GetDescendants()) do
-                if mdl:IsA("Model") and mdl.Name == "Medkit" then
-                    ClearItemESP(mdl)
-                end
-            end
-        end)
-    end
+	Text = "ESP Medkit",
+	Default = false,
+	Callback = function(v)
+		_G.EspMedkit = v
+		if v then
+			task.spawn(function()
+				HandleESP("Medkit", Color3.fromRGB(255, 255, 0), "Medkit", "EspMedkit")
+			end)
+		end
+	end
 })
 
 -- helper to apply ESP GUI to a single character model
@@ -676,9 +671,17 @@ Main2Group:AddToggle("FullBright", {
 })
 
 Main2Group:AddButton("Remove MaxZoom Limit", function()
-    local player = game:GetService("Players").LocalPlayer
-    if player and player:FindFirstChild("CameraMaxZoomDistance") then
-        player.CameraMaxZoomDistance = 300
+    -- Simple script to set the player’s max camera zoom distance to 300
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Ensure the Character loads
+if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+    LocalPlayer.CharacterAdded:Wait()
+end
+
+-- Apply max zoom
+LocalPlayer.CameraMaxZoomDistance = 300
         Library:Notify("MaxZoom limit has been Removed", 3)
     else
         Library:Notify("Not work", 4)
