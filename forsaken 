@@ -204,9 +204,9 @@ Main1Group:AddLabel("Hitbox", true)
 _G.RV_Value = 0
 
 Main1Group:AddInput("Set dist", {
-    Default = "0",
+    Default = "0 ~ 1000",
     Numeric = true,
-    Text = "0 - 1000",
+    Text = "Hitbox Dist",
     Placeholder = "Enter a number...",
     Callback = function(value)
         local num = tonumber(value)
@@ -224,8 +224,12 @@ Main1Group:AddInput("Set dist", {
 
 Main1Group:AddButton("Apply", function()
     getgenv().RV = _G.RV_Value
-    Library:Notify("RV set to: " .. tostring(_G.RV_Value))
+    Library:Notify("Dist set to: " .. tostring(_G.RV_Value))
 end)
+
+Main1Group:AddLabel("Survivors: 0 ~ 15", true)
+Main1Group:AddLabel("Killers: 10 ~ 35", true)
+
 
 
 
