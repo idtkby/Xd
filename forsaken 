@@ -695,7 +695,9 @@ end)
 Main2Group:AddButton("Load YOXI Hub", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Yomkaa/forsaken-YOXI-HUB/refs/heads/main/forsaken%20YOXI%20HUB",true))()
 end)
-
+Main2Group:AddButton("Load Walkto Gui", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/walkto"))()  
+end)
 
 
 
