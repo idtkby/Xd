@@ -113,7 +113,7 @@ Main1Group:AddDivider()
 
 
 Main1Group:AddLabel("Shedletsky", true)
-Main1Group:AddToggle("AutoSlash", {
+Main1Group:AddToggle("AutoSlash (Passive)", {
     Text = "Auto Slash",
     Default = false,
     Callback = function(Value)
@@ -161,7 +161,7 @@ Main1Group:AddToggle("AutoSlash", {
 							local dotMove = killerVelocity:Dot(directionToLocal)
 
 							-- Phải hướng mặt về LocalPlayer và đang tiến về phía LocalPlayer
-							if dotLook > 0.7 and dotMove > 0.4 and dist < minDist then
+							if dotLook > 0.9 and dotMove > 0.6 and dist < minDist then
 								minDist = dist
 								nearest = hrp2
 							end
