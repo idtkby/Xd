@@ -98,6 +98,86 @@ end
 })
 
 
+Main1Group:AddDivider()
+
+
+Main1Group:AddLabel("Shedletsky", true)
+Main1Group:AddToggle("AutoSlash", {
+    Text = "Auto Slash",
+    Default = false,
+    Callback = function(Value)
+        _G.AutoSlash = Value
+        task.spawn(function()
+            local TweenService = game:GetService("TweenService")
+            local Players = game:GetService("Players")
+            local LocalPlayer = Players.LocalPlayer
+            local ReplicatedStorage = game:GetService("ReplicatedStorage")
+            local Remote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
+
+            local function GetHRP()
+                local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                return char:FindFirstChild("HumanoidRootPart")
+            end
+
+            local function GetHumanoid()
+                local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                return char:FindFirstChild("Humanoid")
+            end
+
+            local function GetNearestKiller()
+                local nearest, minDist = nil, math.huge
+                local hrp = GetHRP()
+                if not hrp then return end
+                for _, v in pairs(workspace.Players:GetChildren()) do
+                    if v.Name == "Killers" then
+                        for _, killer in pairs(v:GetChildren()) do
+                            local hrp2 = killer:FindFirstChild("HumanoidRootPart")
+                            if hrp2 then
+                                local dist = (hrp.Position - hrp2.Position).Magnitude
+                                if dist < minDist and dist <= 10 then
+                                    nearest = hrp2
+                                    minDist = dist
+                                end
+                            end
+                        end
+                    end
+                end
+                return nearest
+            end
+
+            while _G.AutoSlash do
+                local humanoid = GetHumanoid()
+                if humanoid and humanoid.WalkSpeed < 20 then
+                    local target = GetNearestKiller()
+                    if target then
+                        local hrp = GetHRP()
+                        if hrp then
+                            local tween = TweenService:Create(hrp, TweenInfo.new(0.2), {CFrame = CFrame.new(target.Position)})
+                            tween:Play()
+                            tween.Completed:Wait()
+
+                            local args = {"UseActorAbility", "Slash"}
+                            Remote:FireServer(unpack(args))
+                            task.wait(38)
+                        end
+                    end
+                end
+                task.wait(0.3)
+            end
+        end)
+    end
+})
+
+
+
+
+
+
+
+
+
+
+
 local Main2Group = Tabs.Tab:AddRightGroupbox("Esp")
 
 Main2Group:AddToggle("General", {
@@ -535,26 +615,10 @@ MenuGroup:AddToggle("KeybindMenuOpen", {Default = false, Text = "Open Keybind Me
 MenuGroup:AddToggle("ShowCustomCursor", {Text = "Custom Cursor", Default = true, Callback = function(Value) Library.ShowCustomCursor = Value end})
 MenuGroup:AddDivider()
 MenuGroup:AddLabel("Menu bind"):AddKeyPicker("MenuKeybind", {Default = "RightShift", NoUI = true, Text = "Menu keybind"})
-_G.LinkJoin = loadstring(game:HttpGet("https://pastefy.app/Ml1XV4J3/raw?part="))()
-MenuGroup:AddButton("Copy Link Discord", function()
-    if setclipboard then
-        setclipboard(_G.LinkJoin["Discord"])
-        Library:Notify("Copied discord link to clipboard!")
-    else
-        Library:Notify("Discord link: ".._G.LinkJoin["Discord"], 10)
-    end
-end):AddButton("Copy Link DYHUB SERVER", function()
-    if setclipboard then
-        setclipboard(_G.LinkJoin["DYHUB"])
-        Library:Notify("Copied DYHUB link to clipboard!")
-    else
-        Library:Notify("DYHUB link: ".._G.LinkJoin["DYHUB"], 10)
-    end
-end)
+
 MenuGroup:AddButton("Unload", function() Library:Unload() end)
-CreditsGroup:AddLabel("DYHUB LOADER - Python / Dex / Script", true)
-CreditsGroup:AddLabel("DYHUB TEAM - Script / Dex", true)
-CreditsGroup:AddLabel("@DYUMRA - Script / Dex", true)
+
+CreditsGroup:AddLabel("@IgnahKD - Script", true)
 
 Info:AddLabel("Counter [ "..game:GetService("LocalizationService"):GetCountryRegionForPlayerAsync(game.Players.LocalPlayer).." ]", true)
 Info:AddLabel("Executor [ "..identifyexecutor().." ]", true)
