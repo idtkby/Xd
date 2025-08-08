@@ -335,7 +335,6 @@ end
     end
 })
 
--- helper to create ESP on a single model
 local function CreateItemESP(model, color, labelText)
 	if model:FindFirstChild("ItemESP_Gui") then return end
 
@@ -410,7 +409,7 @@ Main2Group:AddToggle("EspBloxyCola", {
 		_G.EspBloxyCola = v
 		if v then
 			task.spawn(function()
-				HandleESP("BloxyCola", Color3.fromRGB(255, 255, 0), "BloxyCola", "EspBloxyCola")
+				HandleESP("Bloxy", Color3.fromRGB(255, 255, 0), "BloxyCola", "EspBloxyCola")
 			end)
 		end
 	end
