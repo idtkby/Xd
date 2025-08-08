@@ -172,7 +172,8 @@ Main1Group:AddToggle("AutoSlash", {
                     local target = GetNearestKiller()
                     if target then
                         -- Slash
-                        Remote:FireServer({"UseActorAbility", "Slash"})
+                        local args = { "UseActorAbility", "Slash" }
+Remote:FireServer(unpack(args))
 
                         -- Xoay liên tục trong 3s
                         local startTime = tick()
@@ -519,16 +520,6 @@ end
 task.wait()
 end
     end
-}):AddColorPicker("Color Esp1", {
-     Default = Color3.new(255, 0, 0),
-     Callback = function(Value)
-_G.ColorLightKill = Value
-     end
-}):AddColorPicker("Color Esp2", {
-     Default = Color3.new(0, 255, 0),
-     Callback = function(Value)
-_G.ColorLightSurvivors= Value
-     end
 })
 
 Main2Group:AddDivider()
@@ -589,6 +580,72 @@ Main2Group:AddToggle("Esp Health", {
 _G.EspHealth = Value
     end
 })
+
+Main2Group:AddDivider()
+
+Main1Group:AddLabel("Misc", true)
+Main1Group:AddToggle("FullBright", {
+    Text = "Full Bright",
+    Default = false,
+    Callback = function(Value)
+        _G.FullBright = Value
+        local Lighting = game:GetService("Lighting")
+
+        -- Lưu giá trị gốc để khôi phục khi tắt
+        if not _G._LightingSaved then
+            _G._LightingSaved = {
+                Brightness = Lighting.Brightness,
+                Ambient = Lighting.Ambient,
+                OutdoorAmbient = Lighting.OutdoorAmbient,
+                FogEnd = Lighting.FogEnd,
+                FogStart = Lighting.FogStart,
+                GlobalShadows = Lighting.GlobalShadows
+            }
+        end
+
+        if _G.FullBright then
+            -- Bật chế độ FullBright
+            Lighting.Brightness = 2
+            Lighting.Ambient = Color3.new(1, 1, 1)
+            Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
+            Lighting.FogEnd = 100000
+            Lighting.FogStart = 0
+            Lighting.GlobalShadows = false
+
+            -- Xoá các fog dynamic nếu có
+            for _, v in ipairs(Lighting:GetChildren()) do
+                if v:IsA("Atmosphere") or v:IsA("BloomEffect") or v:IsA("ColorCorrectionEffect") then
+                    v:Destroy()
+                end
+            end
+        else
+            -- Khôi phục Lighting gốc
+            if _G._LightingSaved then
+                Lighting.Brightness = _G._LightingSaved.Brightness
+                Lighting.Ambient = _G._LightingSaved.Ambient
+                Lighting.OutdoorAmbient = _G._LightingSaved.OutdoorAmbient
+                Lighting.FogEnd = _G._LightingSaved.FogEnd
+                Lighting.FogStart = _G._LightingSaved.FogStart
+                Lighting.GlobalShadows = _G._LightingSaved.GlobalShadows
+            end
+        end
+    end
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ------------------------------------------------------------------------
 local MenuGroup = Tabs["UI Settings"]:AddLeftGroupbox("Menu")
