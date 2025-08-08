@@ -692,7 +692,9 @@ end)
 Main2Group:AddButton("Load c00lgh0st", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Forsaken/main/c00lgh0st"))()  
 end)
-
+Main2Group:AddButton("Load YOXI Hub", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Yomkaa/forsaken-YOXI-HUB/refs/heads/main/forsaken%20YOXI%20HUB",true))()
+end)
 
 
 
