@@ -22,11 +22,11 @@ if _G.NotificationSound then
 Library:SetDPIScale(85)
 
 local Window = Library:CreateWindow({
-    Title = "DYHUB | Forsaken",
+    Title = "IgnahK | Forsaken",
     Center = true,
     AutoShow = true,
     Resizable = true,
-    Footer = "DYHUB | Version: v187",
+    Footer = "Script by IganhK",
 	Icon = 0,
 	AutoLock = false,
     ShowCustomCursor = true,
