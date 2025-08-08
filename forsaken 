@@ -141,27 +141,38 @@ Main1Group:AddToggle("AutoSlash", {
             end
 
             local function GetNearestKiller()
-                local nearest, minDist = nil, math.huge
-                local hrp = GetHRP()
-                if not hrp then return end
-                for _, v in pairs(workspace.Players:GetChildren()) do
-                    if v.Name == "Killers" then
-                        for _, killer in pairs(v:GetChildren()) do
-                            if killer ~= LocalPlayer.Character then
-                                local hrp2 = killer:FindFirstChild("HumanoidRootPart")
-                                if hrp2 then
-                                    local dist = (hrp.Position - hrp2.Position).Magnitude
-                                    if dist < minDist and dist <= 20 then
-                                        nearest = hrp2
-                                        minDist = dist
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-                return nearest
-            end
+	local nearest, minDist = nil, math.huge
+	local hrp = GetHRP()
+	if not hrp then return end
+	for _, v in pairs(workspace.Players:GetChildren()) do
+		if v.Name == "Killers" then
+			for _, killer in pairs(v:GetChildren()) do
+				if killer ~= LocalPlayer.Character then
+					local hrp2 = killer:FindFirstChild("HumanoidRootPart")
+					local hum = killer:FindFirstChildOfClass("Humanoid")
+					if hrp2 and hum and hum.Health > 0 then
+						local dist = (hrp.Position - hrp2.Position).Magnitude
+						if dist <= 25 then
+							local directionToLocal = (hrp.Position - hrp2.Position).Unit
+							local killerLook = hrp2.CFrame.LookVector.Unit
+							local dotLook = killerLook:Dot(directionToLocal)
+
+							local killerVelocity = hrp2.Velocity.Unit
+							local dotMove = killerVelocity:Dot(directionToLocal)
+
+							-- Phải hướng mặt về LocalPlayer và đang tiến về phía LocalPlayer
+							if dotLook > 0.7 and dotMove > 0.4 and dist < minDist then
+								minDist = dist
+								nearest = hrp2
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+	return nearest
+end
 
             while _G.AutoSlash do
                 if IsLocalPlayerKiller() then
@@ -197,6 +208,8 @@ Remote:FireServer(unpack(args))
         end)
     end
 })
+
+
 Main1Group:AddDivider()
 
 
