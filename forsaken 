@@ -134,7 +134,7 @@ Main1Group:AddToggle("AutoSlash", {
                             local hrp2 = killer:FindFirstChild("HumanoidRootPart")
                             if hrp2 then
                                 local dist = (hrp.Position - hrp2.Position).Magnitude
-                                if dist < minDist and dist <= 18 then
+                                if dist < minDist and dist <= 25 then
                                     nearest = hrp2
                                     minDist = dist
                                 end
@@ -151,19 +151,21 @@ Main1Group:AddToggle("AutoSlash", {
                 if humanoid and humanoid.WalkSpeed < 20 and hrp then
                     local target = GetNearestKiller()
                     if target then
-                        -- Tính hướng nhìn về killer
-                        local lookVector = (target.Position - hrp.Position).Unit
-                        local targetCFrame = CFrame.new(hrp.Position, hrp.Position + lookVector)
-
-                        -- Tween xoay người (giữ nguyên vị trí)
-                        local tween = TweenService:Create(hrp, TweenInfo.new(0.2), {CFrame = targetCFrame})
-                        tween:Play()
-                        tween.Completed:Wait()
-
-                        -- Sử dụng Slash
+                        -- Slash trước
                         local args = {"UseActorAbility", "Slash"}
                         Remote:FireServer(unpack(args))
 
+                        -- Xoay liên tục trong 3s
+                        local startTime = tick()
+                        while tick() - startTime < 3 and _G.AutoSlash do
+                            if not target.Parent then break end
+                            local dir = (target.Position - hrp.Position).Unit
+                            local cf = CFrame.new(hrp.Position, hrp.Position + dir)
+                            hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, cf.LookVector:Angle(Vector3.new(0, 0, -1)), 0)
+                            task.wait()
+                        end
+
+                        -- Cooldown
                         task.wait(38)
                     end
                 end
