@@ -112,7 +112,7 @@ end
 Main1Group:AddDivider()
 
 
-Main1Group:AddLabel("Shedletsky", true)
+Main1Group:AddLabel("Shedletsky", true) 
 Main1Group:AddToggle("AutoSlash (Passive)", {
     Text = "Auto Slash (Passive)",
     Default = false,
@@ -135,59 +135,61 @@ Main1Group:AddToggle("AutoSlash (Passive)", {
                 return char:FindFirstChild("Humanoid")
             end
 
-            local function IsLocalPlayerKiller()
-                local killers = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
-                return killers and killers:FindFirstChild(LocalPlayer.Name) ~= nil
+            -- 🔁 MỚI: Chỉ cho phép khi LocalPlayer là Shedletsky Survivor
+            local function IsShedletskySurvivor()
+                local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                return character and character.Name == "Shedletsky"
             end
 
             local function GetNearestKiller()
-	local nearest, minDist = nil, math.huge
-	local hrp = GetHRP()
-	if not hrp then return end
-	for _, v in pairs(workspace.Players:GetChildren()) do
-		if v.Name == "Killers" then
-			for _, killer in pairs(v:GetChildren()) do
-				if killer ~= LocalPlayer.Character then
-					local hrp2 = killer:FindFirstChild("HumanoidRootPart")
-					local hum = killer:FindFirstChildOfClass("Humanoid")
-					if hrp2 and hum and hum.Health > 0 then
-						local dist = (hrp.Position - hrp2.Position).Magnitude
-						if dist <= 20 then
-							local directionToLocal = (hrp.Position - hrp2.Position).Unit
-							local killerLook = hrp2.CFrame.LookVector.Unit
-							local dotLook = killerLook:Dot(directionToLocal)
+                local nearest, minDist = nil, math.huge
+                local hrp = GetHRP()
+                if not hrp then return end
+                for _, v in pairs(workspace.Players:GetChildren()) do
+                    if v.Name == "Killers" then
+                        for _, killer in pairs(v:GetChildren()) do
+                            if killer ~= LocalPlayer.Character then
+                                local hrp2 = killer:FindFirstChild("HumanoidRootPart")
+                                local hum = killer:FindFirstChildOfClass("Humanoid")
+                                if hrp2 and hum and hum.Health > 0 then
+                                    local dist = (hrp.Position - hrp2.Position).Magnitude
+                                    if dist <= 20 then
+                                        local directionToLocal = (hrp.Position - hrp2.Position).Unit
+                                        local killerLook = hrp2.CFrame.LookVector.Unit
+                                        local dotLook = killerLook:Dot(directionToLocal)
 
-							local killerVelocity = hrp2.Velocity.Unit
-							local dotMove = killerVelocity:Dot(directionToLocal)
+                                        local killerVelocity = hrp2.Velocity.Unit
+                                        local dotMove = killerVelocity:Dot(directionToLocal)
 
-							-- Phải hướng mặt về LocalPlayer và đang tiến về phía LocalPlayer
-							if dotLook > 0.11 and dotMove > 0.8 and dist < minDist then
-								minDist = dist
-								nearest = hrp2
-							end
-						end
-					end
-				end
-			end
-		end
-	end
-	return nearest
-end
+                                        -- Killer phải nhìn và đi về phía LocalPlayer
+                                        if dotLook > 0.11 and dotMove > 0.8 and dist < minDist then
+                                            minDist = dist
+                                            nearest = hrp2
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+                return nearest
+            end
 
             while _G.AutoSlash do
-                if IsLocalPlayerKiller() then
-                    warn("You are killer, no Slash")
-                    break
+                -- ❌ Nếu không phải Shedletsky thì không hoạt động
+                if not IsShedletskySurvivor() then
+                    task.wait(1)
+                    continue
                 end
 
                 local humanoid = GetHumanoid()
                 local hrp = GetHRP()
-                if humanoid and humanoid.WalkSpeed < 50 and hrp then
+                if humanoid and humanoid.WalkSpeed < 26 and hrp then
                     local target = GetNearestKiller()
                     if target then
                         -- Slash
                         local args = { "UseActorAbility", "Slash" }
-Remote:FireServer(unpack(args))
+                        Remote:FireServer(unpack(args))
 
                         -- Xoay liên tục trong 3s
                         local startTime = tick()
@@ -199,8 +201,7 @@ Remote:FireServer(unpack(args))
                             task.wait()
                         end
 
-                        -- Cooldown 
-                        task.wait(30)
+                        task.wait(33)
                     end
                 end
                 task.wait(0.25)
