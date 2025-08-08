@@ -42,21 +42,42 @@ Tabs = {
 
 local Main1Group = Tabs.Tab:AddLeftGroupbox("Main")
 
+-- first, set a default global delay
+_G.AutoGeneralDelay = 1.8
+
+-- add a slider to tweak the delay
+Main1Group:AddSlider("GeneralDelay", {
+    Text = "General Delay (s)",
+    Min = 1,
+    Max = 10,
+    Default = _G.AutoGeneralDelay,
+    Rounding = 1,
+    Callback = function(val)
+        _G.AutoGeneralDelay = val
+    end
+})
+
+-- then your toggle, using that delay
 Main1Group:AddToggle("AutoGeneral", {
     Text = "Auto General",
-    Default = false, 
-    Callback = function(Value) 
-_G.AutoGeneral = Value
-while _G.AutoGeneral do
-if workspace.Map.Ingame:FindFirstChild("Map") then
-for i, v in ipairs(workspace.Map.Ingame:FindFirstChild("Map"):GetChildren()) do
-if v.Name == "Generator" and v:FindFirstChild("Remotes") and v.Remotes:FindFirstChild("RE") then
-v.Remotes:FindFirstChild("RE"):FireServer()
-end
-end
-end
-task.wait(1.8)
-end
+    Default = false,
+    Callback = function(Value)
+        _G.AutoGeneral = Value
+        -- spawn a new loop task whenever toggled on
+        task.spawn(function()
+            while _G.AutoGeneral do
+                if workspace.Map.Ingame:FindFirstChild("Map") then
+                    for _, v in ipairs(workspace.Map.Ingame.Map:GetChildren()) do
+                        if v.Name == "Generator"
+                        and v:FindFirstChild("Remotes")
+                        and v.Remotes:FindFirstChild("RE") then
+                            v.Remotes.RE:FireServer()
+                        end
+                    end
+                end
+                task.wait(_G.AutoGeneralDelay)
+            end
+        end)
     end
 })
 
@@ -174,7 +195,7 @@ local function CreateItemESP(model: Model, color: Color3, labelText: string)
     box.AlwaysOnTop = true
     box.ZIndex = 10
     box.Color3 = color
-    box.Transparency = 0.5
+    box.Transparency = 1
     box.Parent = model
 
     -- Label
@@ -260,7 +281,6 @@ Main2Group:AddToggle("EspMedkit", {
     end
 })
 
--- helper to apply ESP GUI to a single character model
 function Esp_Player(characterModel)
     -- destroy any existing highlight
     if characterModel:FindFirstChild("Esp_Highlight") then
@@ -274,7 +294,6 @@ function Esp_Player(characterModel)
         end
     end
 
-    -- only run if Esp_Gui is enabled
     if not _G.EspGui then return end
 
     local head = characterModel:FindFirstChild("Head")
@@ -289,30 +308,30 @@ function Esp_Player(characterModel)
     gui.StudsOffset = Vector3.new(0, 3, 0)
     gui.Parent = head
 
-    -- create text
     local lbl = Instance.new("TextLabel", gui)
     lbl.BackgroundTransparency = 1
     lbl.Size = UDim2.new(1, 0, 1, 0)
     lbl.Font = Enum.Font.Code
-    lbl.TextSize = _G.EspGuiTextSize or 15
+    lbl.TextColor3 = Color3.new(1, 1, 1)
+    lbl.TextStrokeTransparency = 0.5
 
-    -- color red if killer
     local isKiller = (characterModel.Parent.Name == "Killers")
-    lbl.TextColor3 = isKiller and Color3.fromRGB(255, 0, 0) or (_G.EspGuiTextColor or Color3.new(1,1,1))
+    lbl.TextColor3 = isKiller and Color3.fromRGB(255, 0, 0) or (_G.EspGuiTextColor or Color3.new(1, 1, 1))
 
-    -- build the label text
     local parts = {}
+    local distance = 0
+
     if _G.EspName then
         table.insert(parts, characterModel.Name)
     end
-    if _G.EspDistance then
-        local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        local otherHRP = characterModel:FindFirstChild("HumanoidRootPart")
-        if hrp and otherHRP then
-            local d = (hrp.Position - otherHRP.Position).Magnitude
-            table.insert(parts, ("Dist: %.1f"):format(d))
-        end
+
+    local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    local otherHRP = characterModel:FindFirstChild("HumanoidRootPart")
+    if hrp and otherHRP and _G.EspDistance then
+        distance = (hrp.Position - otherHRP.Position).Magnitude
+        table.insert(parts, ("Dist: %.1f"):format(distance))
     end
+
     if _G.EspHealth then
         local hum = characterModel:FindFirstChildOfClass("Humanoid")
         if hum then
@@ -321,6 +340,19 @@ function Esp_Player(characterModel)
     end
 
     lbl.Text = table.concat(parts, "\n")
+
+    -- Auto adjust text size based on distance (min 5, max 18)
+    local function getTextSizeFromDistance(dist)
+        local maxDist = 350
+        local minSize = 10
+        local maxSize = _G.EspGuiTextSize or 25
+
+        if dist >= maxDist then return minSize end
+        local factor = 1 - (dist / maxDist)
+        return math.clamp(math.floor(maxSize * factor), minSize, maxSize)
+    end
+
+    lbl.TextSize = getTextSizeFromDistance(distance)
 end
 
 Main2Group:AddDropdown("EspPlayer", {
@@ -411,8 +443,8 @@ _G.EspGuiTextColor = Value
 })
 
 Main2Group:AddSlider("Text Size", {
-    Text = "Text Size [ Gui ]",
-    Default = 5,
+    Text = "Text Size [ General ]",
+    Default = 15,
     Min = 1,
     Max = 50,
     Rounding = 0,
