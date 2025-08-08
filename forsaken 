@@ -260,71 +260,67 @@ Main2Group:AddToggle("EspMedkit", {
     end
 })
 
--- Replace the Esp_Player function with this updated version:
-
-function Esp_Player(v, Colorlight)
-    -- first remove any old highlight/box
-    if v:FindFirstChild("Esp_Box") then
-        v.Esp_Box:Destroy()
+-- helper to apply ESP GUI to a single character model
+function Esp_Player(characterModel)
+    -- destroy any existing highlight
+    if characterModel:FindFirstChild("Esp_Highlight") then
+        characterModel.Esp_Highlight:Destroy()
     end
 
-    -- create a BoxHandleAdornment instead of Highlight
-    local box = Instance.new("BoxHandleAdornment")
-    box.Name = "Esp_Box"
-    box.Adornee = v
-    box.Size = v:GetExtentsSize() + Vector3.new(0.5, 0.5, 0.5)
-    box.AlwaysOnTop = true
-    box.ZIndex = 10
-    box.Color3 = Colorlight or Color3.fromRGB(255,255,255)
-    box.Transparency = 0.5
-    box.Parent = v
+    -- remove any old GUI
+    for _, gui in ipairs(characterModel:GetDescendants()) do
+        if gui.Name == "Esp_Gui" then
+            gui:Destroy()
+        end
+    end
 
-    -- update or create the ESP GUI
-    local head = v:FindFirstChild("Head")
+    -- only run if Esp_Gui is enabled
+    if not _G.EspGui then return end
+
+    local head = characterModel:FindFirstChild("Head")
     if not head then return end
 
-    if head:FindFirstChild("Esp_Gui") then
-        head.Esp_Gui:Destroy()
-    end
-
-    local gui = Instance.new("BillboardGui", head)
+    -- create new BillboardGui
+    local gui = Instance.new("BillboardGui")
     gui.Name = "Esp_Gui"
     gui.Adornee = head
-    gui.Size = UDim2.new(0, 100, 0, 50)
     gui.AlwaysOnTop = true
-    gui.StudsOffset = Vector3.new(0, 2, 0)
+    gui.Size = UDim2.new(0, 100, 0, 40)
+    gui.StudsOffset = Vector3.new(0, 3, 0)
+    gui.Parent = head
 
-    local label = Instance.new("TextLabel", gui)
-    label.Size = UDim2.new(1, 0, 1, 0)
-    label.BackgroundTransparency = 1
-    label.Font = Enum.Font.Code
-    label.TextSize = 14
+    -- create text
+    local lbl = Instance.new("TextLabel", gui)
+    lbl.BackgroundTransparency = 1
+    lbl.Size = UDim2.new(1, 0, 1, 0)
+    lbl.Font = Enum.Font.Code
+    lbl.TextSize = _G.EspGuiTextSize or 15
 
-    -- force killer text red
-    if Options.EspPlayer.Value["Killers"] and v:IsDescendantOf(workspace.Players.Killers) then
-        label.TextColor3 = Color3.fromRGB(255, 0, 0)
-    else
-        label.TextColor3 = _G.EspGuiTextColor or Color3.new(1, 1, 1)
-    end
+    -- color red if killer
+    local isKiller = (characterModel.Parent.Name == "Killers")
+    lbl.TextColor3 = isKiller and Color3.fromRGB(255, 0, 0) or (_G.EspGuiTextColor or Color3.new(1,1,1))
 
-    -- build text
+    -- build the label text
     local parts = {}
     if _G.EspName then
-        table.insert(parts, v.Name)
+        table.insert(parts, characterModel.Name)
     end
     if _G.EspDistance then
-        local dist = (LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude
-        table.insert(parts, string.format("[%.1f]", dist))
+        local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local otherHRP = characterModel:FindFirstChild("HumanoidRootPart")
+        if hrp and otherHRP then
+            local d = (hrp.Position - otherHRP.Position).Magnitude
+            table.insert(parts, ("Dist: %.1f"):format(d))
+        end
     end
     if _G.EspHealth then
-        table.insert(parts, string.format("HP: %.0f", v.Humanoid.Health))
+        local hum = characterModel:FindFirstChildOfClass("Humanoid")
+        if hum then
+            table.insert(parts, ("HP: %.0f"):format(hum.Health))
+        end
     end
-    label.Text = table.concat(parts, " ")
 
-    -- outline
-    local stroke = Instance.new("UIStroke", label)
-    stroke.Color = Color3.new(0,0,0)
-    stroke.Thickness = 1
+    lbl.Text = table.concat(parts, "\n")
 end
 
 Main2Group:AddDropdown("EspPlayer", {
@@ -398,19 +394,7 @@ _G.ColorLightSurvivors= Value
 
 Main2Group:AddDivider()
 
-_G.EspHighlight = false
-Main2Group:AddToggle("Esp Hight Light", {
-    Text = "Esp Hight Light",
-    Default = false, 
-    Callback = function(Value) 
-_G.EspHighlight = Value
-    end
-}):AddColorPicker("Color Esp", {
-     Default = Color3.new(255,255,255),
-     Callback = function(Value)
-_G.ColorLight = Value
-     end
-})
+
 
 _G.EspGui = false
 Main2Group:AddToggle("Esp Gui", {
