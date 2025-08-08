@@ -1,3 +1,11 @@
+
+
+
+
+
+
+
+
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Articles-Hub/ROBLOXScript/refs/heads/main/Library/LinoriaLib/Test.lua"))()
 local ThemeManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Articles-Hub/ROBLOXScript/refs/heads/main/Library/LinoriaLib/addons/ThemeManagerCopy.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Articles-Hub/ROBLOXScript/refs/heads/main/Library/LinoriaLib/addons/SaveManagerCopy.lua"))()
@@ -134,7 +142,7 @@ Main1Group:AddToggle("AutoSlash", {
                             local hrp2 = killer:FindFirstChild("HumanoidRootPart")
                             if hrp2 then
                                 local dist = (hrp.Position - hrp2.Position).Magnitude
-                                if dist < minDist and dist <= 25 then
+                                if dist < minDist and dist <= 20 then
                                     nearest = hrp2
                                     minDist = dist
                                 end
@@ -156,14 +164,15 @@ Main1Group:AddToggle("AutoSlash", {
                         Remote:FireServer(unpack(args))
 
                         -- Xoay liên tục trong 3s
-                        local startTime = tick()
-                        while tick() - startTime < 3 and _G.AutoSlash do
-                            if not target.Parent then break end
-                            local dir = (target.Position - hrp.Position).Unit
-                            local cf = CFrame.new(hrp.Position, hrp.Position + dir)
-                            hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, cf.LookVector:Angle(Vector3.new(0, 0, -1)), 0)
-                            task.wait()
-                        end
+                        -- Xoay liên tục trong 3s
+local startTime = tick()
+while tick() - startTime < 3 and _G.AutoSlash do
+	if not target.Parent then break end
+	local dir = (target.Position - hrp.Position).Unit
+	local lookCFrame = CFrame.new(hrp.Position, hrp.Position + Vector3.new(dir.X, 0, dir.Z))
+	hrp.CFrame = lookCFrame
+	task.wait()
+end
 
                         -- Cooldown
                         task.wait(38)
