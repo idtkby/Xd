@@ -103,8 +103,73 @@ if staminaModule then
     staminaModule.Stamina = 100
     staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
 end
-task.wait()
+task.wait(2)
 end
+    end
+})
+
+Main1Group:AddToggle("ToggleRestoreGUI", {
+    Text = "Rest0re Stamina GUI",
+    Default = false,
+    Callback = function(state)
+        local player = game.Players.LocalPlayer
+        local gui = player:WaitForChild("PlayerGui"):FindFirstChild("RestoreStaminaGui")
+
+        -- Nếu chưa tồn tại GUI thì tạo mới
+        if not gui then
+            gui = Instance.new("ScreenGui")
+            gui.Name = "RestoreStaminaGui"
+            gui.ResetOnSpawn = false
+            gui.Parent = player:WaitForChild("PlayerGui")
+
+            local mainFrame = Instance.new("Frame")
+            mainFrame.Size = UDim2.new(0, 260, 0, 120)
+            mainFrame.Position = UDim2.new(0.5, -130, 1, -150)
+            mainFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+            mainFrame.BorderColor3 = Color3.new(1, 0, 0)
+            mainFrame.BorderSizePixel = 1
+            mainFrame.Active = true
+            mainFrame.Draggable = true
+            mainFrame.Parent = gui
+
+            local title = Instance.new("TextLabel")
+            title.Size = UDim2.new(1, 0, 0, 30)
+            title.BackgroundTransparency = 1
+            title.Text = "RestOre Stamina"
+            title.TextColor3 = Color3.new(1, 0, 0)
+            title.TextScaled = true
+            title.Font = Enum.Font.Code
+            title.Parent = mainFrame
+
+            local button = Instance.new("TextButton")
+            button.Size = UDim2.new(1, -20, 0, 50)
+            button.Position = UDim2.new(0, 10, 0, 50)
+            button.BackgroundColor3 = Color3.new(0, 0, 0)
+            button.BorderColor3 = Color3.new(1, 0, 0)
+            button.BorderSizePixel = 1
+            button.Text = "Activate"
+            button.TextColor3 = Color3.new(1, 0, 0)
+            button.TextScaled = true
+            button.Font = Enum.Font.Code
+            button.Parent = mainFrame
+
+            button.MouseButton1Click:Connect(function()
+                _G.InfStamina = true
+                local suc, err = pcall(function()
+                    local sprinting = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
+                    if sprinting then
+                        sprinting.Stamina = 101
+                        sprinting.__staminaChangedEvent:Fire(sprinting.Stamina)
+                    end
+                end)
+                if not suc then
+                    warn("InfStamina Error:", err)
+                end
+            end)
+        end
+
+        -- Bật/Tắt GUI
+        gui.Enabled = state
     end
 })
 
