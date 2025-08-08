@@ -294,6 +294,12 @@ function Esp_Player(characterModel)
         end
     end
 
+    -- if ESP is disabled, ensure any lingering GUI is removed
+    if _G.EspGui == false then
+        -- nothing to create, just return
+        return
+    end
+
     -- only run if Esp_Gui is enabled
     if not _G.EspGui then return end
 
@@ -311,12 +317,17 @@ function Esp_Player(characterModel)
 
     -- create text
     local lbl = Instance.new("TextLabel", gui)
+    lbl.Name = "Esp_Text"
     lbl.BackgroundTransparency = 1
     lbl.Size = UDim2.new(1, 0, 1, 0)
     lbl.Font = Enum.Font.Code
     lbl.TextSize = _G.EspGuiTextSize or 15
-    lbl.TextStrokeColor3 = Color3.new(0, 0, 0) -- viền màu đen
-    lbl.TextStrokeTransparency = 0 -- 0 = hiện rõ hoàn toàn
+    lbl.TextStrokeTransparency = 0 -- keep Roblox stroke off, since we're using UIStroke
+
+    -- add a black UIStroke outline
+    local stroke = Instance.new("UIStroke", lbl)
+    stroke.Color = Color3.new(0, 0, 0)
+    stroke.Thickness = 1.5
 
     -- color red if killer
     local isKiller = (characterModel.Parent.Name == "Killers")
