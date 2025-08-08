@@ -475,7 +475,7 @@ Main2Group:AddToggle("EspBloxyCola", {
 		_G.EspBloxyCola = v
 		if v then
 			task.spawn(function()
-				HandleESP("Bloxy", Color3.fromRGB(255, 255, 0), "BloxyCola", "EspBloxyCola")
+				HandleESP("BloxyCola", Color3.fromRGB(255, 255, 0), "Bloxy", "EspBloxyCola")
 			end)
 		end
 	end
