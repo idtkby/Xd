@@ -134,7 +134,7 @@ Main1Group:AddToggle("AutoSlash", {
                             local hrp2 = killer:FindFirstChild("HumanoidRootPart")
                             if hrp2 then
                                 local dist = (hrp.Position - hrp2.Position).Magnitude
-                                if dist < minDist and dist <= 10 then
+                                if dist < minDist and dist <= 18 then
                                     nearest = hrp2
                                     minDist = dist
                                 end
@@ -147,22 +147,27 @@ Main1Group:AddToggle("AutoSlash", {
 
             while _G.AutoSlash do
                 local humanoid = GetHumanoid()
-                if humanoid and humanoid.WalkSpeed < 20 then
+                local hrp = GetHRP()
+                if humanoid and humanoid.WalkSpeed < 20 and hrp then
                     local target = GetNearestKiller()
                     if target then
-                        local hrp = GetHRP()
-                        if hrp then
-                            local tween = TweenService:Create(hrp, TweenInfo.new(0.2), {CFrame = CFrame.new(target.Position)})
-                            tween:Play()
-                            tween.Completed:Wait()
+                        -- Tính hướng nhìn về killer
+                        local lookVector = (target.Position - hrp.Position).Unit
+                        local targetCFrame = CFrame.new(hrp.Position, hrp.Position + lookVector)
 
-                            local args = {"UseActorAbility", "Slash"}
-                            Remote:FireServer(unpack(args))
-                            task.wait(38)
-                        end
+                        -- Tween xoay người (giữ nguyên vị trí)
+                        local tween = TweenService:Create(hrp, TweenInfo.new(0.2), {CFrame = targetCFrame})
+                        tween:Play()
+                        tween.Completed:Wait()
+
+                        -- Sử dụng Slash
+                        local args = {"UseActorAbility", "Slash"}
+                        Remote:FireServer(unpack(args))
+
+                        task.wait(38)
                     end
                 end
-                task.wait(0.3)
+                task.wait(0.25)
             end
         end)
     end
