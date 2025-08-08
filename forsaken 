@@ -168,7 +168,7 @@ Main1Group:AddToggle("AutoSlash", {
 
                 local humanoid = GetHumanoid()
                 local hrp = GetHRP()
-                if humanoid and humanoid.WalkSpeed < 20 and hrp then
+                if humanoid and humanoid.WalkSpeed < 50 and hrp then
                     local target = GetNearestKiller()
                     if target then
                         -- Slash
@@ -317,7 +317,7 @@ local function CreateItemESP(model: Model, color: Color3, labelText: string)
         local lbl = Instance.new("TextLabel", gui)
         lbl.Size = UDim2.new(1, 0, 1, 0)
         lbl.BackgroundTransparency = 1
-        lbl.Font = Enum.Font.Bodoni
+        lbl.Font = Enum.Font.Code
         lbl.TextSize = 14
         lbl.TextColor3 = color
         lbl.Text = labelText
