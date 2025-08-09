@@ -218,7 +218,7 @@ Main1Group:AddToggle("AutoSlash (Passive)", {
                                 local hum = killer:FindFirstChildOfClass("Humanoid")
                                 if hrp2 and hum and hum.Health > 0 then
                                     local dist = (hrp.Position - hrp2.Position).Magnitude
-                                    if dist <= 22.5 then
+                                    if dist <= 20 then
                                         local directionToLocal = (hrp.Position - hrp2.Position).Unit
                                         local killerLook = hrp2.CFrame.LookVector.Unit
                                         local dotLook = killerLook:Dot(directionToLocal)
@@ -266,7 +266,7 @@ Main1Group:AddToggle("AutoSlash (Passive)", {
                             task.wait()
                         end
 
-                        task.wait(33)
+                        task.wait(37)
                     end
                 end
                 task.wait(0.25)
