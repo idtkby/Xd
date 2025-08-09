@@ -1,5 +1,6 @@
 task.spawn(function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Forsaken/refs/heads/main/Hitboxfunction"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Forsaken/main/Hitboxfunction"))()
+
 wait(2)
 getgenv().RV = 0
 end)
