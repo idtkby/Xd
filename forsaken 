@@ -526,13 +526,6 @@ end)
 
 
 
-
-
-
-
-
-
-
 Main1Group:AddDivider()
 
 
@@ -607,9 +600,22 @@ Main1Group:AddToggle("ApplyStamina", {
                     task.wait(3)
                 end
             end)
+        else
+            local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
+            if staminaModule then
+                staminaModule.MaxStamina = 110
+                staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
+            end
+            Library:Notify("Die, Wise, Cry", 5)
         end
     end
 })
+
+
+
+
+
+
 
 
 
