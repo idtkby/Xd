@@ -750,6 +750,83 @@ LocalPlayer.CameraMaxZoomDistance = 300
        
 end)
 
+Main2Group:AddToggle("ShowPing", {
+    Text = "Show YOUR Ping",
+    Default = false,
+    Callback = function(Value)
+        local Players = game:GetService("Players")
+        local player = Players.LocalPlayer
+        local Stats = game:GetService("Stats")
+        local RunService = game:GetService("RunService")
+        local UserInputService = game:GetService("UserInputService")
+
+        -- Lưu kết nối để ngắt khi tắt
+        if not _G.PingConnections then
+            _G.PingConnections = {}
+        end
+
+        if Value then
+            -- Nếu chưa có GUI thì tạo
+            if not game.CoreGui:FindFirstChild("PingGui") then
+                local ScreenGui = Instance.new("ScreenGui")
+                ScreenGui.Name = "PingGui"
+                ScreenGui.ResetOnSpawn = false
+                ScreenGui.Parent = game.CoreGui
+
+                local Frame = Instance.new("Frame")
+                Frame.Size = UDim2.new(0, 200, 0, 50)
+                Frame.Position = UDim2.new(0.05, 0, 0.05, 0)
+                Frame.BackgroundColor3 = Color3.new(0, 0, 0)
+                Frame.BackgroundTransparency = 0.5
+                Frame.BorderSizePixel = 0
+                Frame.Active = true
+                Frame.Draggable = false -- sẽ dùng drag mobile
+                Frame.Parent = ScreenGui
+
+                local PingLabel = Instance.new("TextLabel")
+                PingLabel.Size = UDim2.new(1, 0, 1, 0)
+                PingLabel.Position = UDim2.new(0, 0, 0, 0)
+                PingLabel.BackgroundTransparency = 1
+                PingLabel.TextColor3 = Color3.new(1, 1, 1)
+                PingLabel.TextScaled = true
+                PingLabel.Text = "Ping: 0 ms"
+                PingLabel.Font = Enum.Font.Code
+                PingLabel.Parent = Frame
+
+
+                -- Cập nhật ping
+                table.insert(_G.PingConnections, RunService.RenderStepped:Connect(function()
+                    if not ScreenGui.Enabled then return end
+                    local ping = Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+                    PingLabel.Text = "Ping: " .. math.floor(ping) .. " ms"
+                end))
+
+                -- Không mất khi chết
+                table.insert(_G.PingConnections, player.CharacterAdded:Connect(function()
+                    ScreenGui.Parent = game.CoreGui
+                end))
+            else
+                game.CoreGui.PingGui.Enabled = true
+                -- Kết nối lại
+                for _, conn in ipairs(_G.PingReconnect or {}) do
+                    table.insert(_G.PingConnections, conn)
+                end
+            end
+        else
+            -- Tắt GUI & ngắt toàn bộ kết nối
+            if game.CoreGui:FindFirstChild("PingGui") then
+                game.CoreGui.PingGui.Enabled = false
+            end
+            for _, conn in ipairs(_G.PingConnections) do
+                if conn and conn.Disconnect then
+                    conn:Disconnect()
+                end
+            end
+            _G.PingConnections = {}
+        end
+    end
+})
+
 Main2Group:AddDivider()
 Main2Group:AddButton("Load InfYield Edit", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()  
