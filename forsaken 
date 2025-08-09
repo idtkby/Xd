@@ -323,38 +323,27 @@ if not getgenv().AutoAimHooked then
             local a1, a2 = args[1], args[2]
 
             -- Trường hợp Chance
-            -- Thay block "Trường hợp Chance" trong hookmetamethod thành:
-
-if getgenv().AutoAimChance
-    and type(a1) == "string"
-    and a1 == (LocalPlayer.Name .. "ChanceFireShot")
-    and LocalPlayer.Team
+            if getgenv().AutoAimChance 
+    and type(a1) == "string" 
+    and tostring(a1):match("ChanceFireShot$") 
+    and LocalPlayer.Team 
     and LocalPlayer.Team.Name == "Survivors" then
 
-    print("[AutoAim] Chance hook:", a1, a2) -- debug vector
-
-    -- Xoay ngay trước khi bắn
-    local hrp, target = GetHRP(), GetNearestKiller()
-    if hrp and target then
-        local tgtPos = Vector3.new(target.Position.X, hrp.Position.Y, target.Position.Z)
-        hrp.CFrame = CFrame.new(hrp.Position, tgtPos)
-    end
+    print("[AutoAim] Chance hook:", a1) -- debug
 
     local result = oldNamecall(self, ...)
 
-    -- Tiếp tục giữ aim 1.5s sau khi bắn
     task.spawn(function()
         local start = tick()
         while tick() - start <= 1.5 and getgenv().AutoAimChance do
-            local hrp2, target2 = GetHRP(), GetNearestKiller()
-            if hrp2 and target2 then
-                local tgtPos = Vector3.new(target2.Position.X, hrp2.Position.Y, target2.Position.Z)
-                hrp2.CFrame = CFrame.new(hrp2.Position, tgtPos)
+            local hrp, target = GetHRP(), GetNearestKiller()
+            if hrp and target then
+                local tgtPos = Vector3.new(target.Position.X, hrp.Position.Y, target.Position.Z)
+                hrp.CFrame = CFrame.new(hrp.Position, tgtPos)
             end
             task.wait()
         end
     end)
-
     return result
 end
 
