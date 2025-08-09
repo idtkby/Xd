@@ -364,6 +364,143 @@ Main1Group:AddToggle("AutoAimShed", {
 })
 
 
+Main1Group:AddDivider()
+
+
+Main1Group:AddLabel("Chance", true)
+--// Auto Aim Chance (ObsidianLib)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local Workspace = game:GetService("Workspace")
+
+-- Config
+local aimDuration = 1.7
+local trackedAnimations = {
+    ["103601716322988"] = true,
+    ["133491532453922"] = true,
+    ["86371356500204"] = true,
+    ["76649505662612"] = true,
+    ["81698196845041"] = true
+}
+
+-- State
+local Humanoid, HRP = nil, nil
+local lastTriggerTime = 0
+local aiming = false
+local originalWS, originalJP, originalAutoRotate = nil, nil, nil
+
+-- Hàm lấy killer gần nhất
+local function GetNearestKiller()
+    if not HRP then return nil end
+    local killersFolder = Workspace:FindFirstChild("Players") and Workspace.Players:FindFirstChild("Killers")
+    if not killersFolder then return nil end
+    local nearest, minDist
+    for _, killer in pairs(killersFolder:GetChildren()) do
+        if killer ~= LocalPlayer.Character then
+            local hrp2 = killer:FindFirstChild("HumanoidRootPart")
+            local hum = killer:FindFirstChildOfClass("Humanoid")
+            if hrp2 and hum and hum.Health > 0 then
+                local dist = (HRP.Position - hrp2.Position).Magnitude
+                if not minDist or dist < minDist then
+                    minDist = dist
+                    nearest = hrp2
+                end
+            end
+        end
+    end
+    return nearest
+end
+
+-- Hàm lấy animation đang chơi
+local function GetPlayingAnimationIds()
+    local ids = {}
+    if Humanoid then
+        for _, track in ipairs(Humanoid:GetPlayingAnimationTracks()) do
+            if track.Animation and track.Animation.AnimationId then
+                local id = track.Animation.AnimationId:match("%d+")
+                if id then ids[id] = true end
+            end
+        end
+    end
+    return ids
+end
+
+-- Setup khi spawn
+local function SetupChar(char)
+    Humanoid = char:WaitForChild("Humanoid")
+    HRP = char:WaitForChild("HumanoidRootPart")
+end
+if LocalPlayer.Character then
+    SetupChar(LocalPlayer.Character)
+end
+LocalPlayer.CharacterAdded:Connect(SetupChar)
+
+-- Tạo toggle trong ObsidianLib
+Main1Group:AddToggle("AutoAimChance", {
+    Text = "Auto Aim",
+    Default = false,
+    Callback = function(Value)
+        getgenv().AutoAimChance = Value
+    end
+})
+
+-- Loop aim
+RunService.RenderStepped:Connect(function()
+    if not getgenv().AutoAimChance or not Humanoid or not HRP then return end
+
+    -- Phát hiện animation Chance
+    local playing = GetPlayingAnimationIds()
+    local triggered = false
+    for id in pairs(trackedAnimations) do
+        if playing[id] then
+            triggered = true
+            break
+        end
+    end
+
+    if triggered then
+        lastTriggerTime = tick()
+        aiming = true
+    end
+
+    -- Aim trong 1.7s sau khi phát hiện animation
+    if aiming and tick() - lastTriggerTime <= aimDuration then
+        if not originalWS then
+            originalWS = Humanoid.WalkSpeed
+            originalJP = Humanoid.JumpPower
+            originalAutoRotate = Humanoid.AutoRotate
+        end
+        Humanoid.AutoRotate = false
+        HRP.AssemblyAngularVelocity = Vector3.zero
+
+        local targetHRP = GetNearestKiller()
+        if targetHRP then
+            local predictedPos = targetHRP.Position
+            local direction = (predictedPos - HRP.Position).Unit
+            local yRot = math.atan2(-direction.X, -direction.Z)
+            HRP.CFrame = CFrame.new(HRP.Position) * CFrame.Angles(0, yRot, 0)
+        end
+    elseif aiming then
+        aiming = false
+        if originalWS and originalJP and originalAutoRotate ~= nil then
+            Humanoid.WalkSpeed = originalWS
+            Humanoid.JumpPower = originalJP
+            Humanoid.AutoRotate = originalAutoRotate
+            originalWS, originalJP, originalAutoRotate = nil, nil, nil
+        end
+    end
+end)
+
+
+
+
+
+
+
+
+
 
 Main1Group:AddDivider()
 
