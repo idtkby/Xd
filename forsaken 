@@ -324,27 +324,28 @@ if not getgenv().AutoAimHooked then
 
             -- Trường hợp Chance
             if getgenv().AutoAimChance 
-                and type(a1) == "string" 
-                and a1:find("ChanceFireShot") 
-                and LocalPlayer.Team and LocalPlayer.Team.Name == "Survivors" then
+    and type(a1) == "string" 
+    and a1 == (LocalPlayer.Name .. "ChanceFireShot") 
+    and LocalPlayer.Team 
+    and LocalPlayer.Team.Name == "Survivors" then
 
-                -- Gửi remote gốc NGAY trước khi aim
-                local result = oldNamecall(self, ...)
-                
-                -- Aim song song (không block)
-                task.spawn(function()
-                    local start = tick()
-                    while tick() - start <= 1.5 and getgenv().AutoAimChance do
-                        local hrp, target = GetHRP(), GetNearestKiller()
-                        if hrp and target then
-                            local tgtPos = Vector3.new(target.Position.X, hrp.Position.Y, target.Position.Z)
-                            hrp.CFrame = CFrame.new(hrp.Position, tgtPos)
-                        end
-                        task.wait()
-                    end
-                end)
-                return result
+    print("[AutoAim] Chance hook:", a1) -- debug
+
+    local result = oldNamecall(self, ...)
+
+    task.spawn(function()
+        local start = tick()
+        while tick() - start <= 1.5 and getgenv().AutoAimChance do
+            local hrp, target = GetHRP(), GetNearestKiller()
+            if hrp and target then
+                local tgtPos = Vector3.new(target.Position.X, hrp.Position.Y, target.Position.Z)
+                hrp.CFrame = CFrame.new(hrp.Position, tgtPos)
             end
+            task.wait()
+        end
+    end)
+    return result
+end
 
             -- Trường hợp Shedletsky
             if getgenv().AutoAimShed 
@@ -371,6 +372,8 @@ if not getgenv().AutoAimHooked then
         return oldNamecall(self, ...)
     end)
 end
+
+
 
 
 
