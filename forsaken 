@@ -275,7 +275,112 @@ Main1Group:AddToggle("AutoSlash (Passive)", {
     end
 })
 
+-- Hook 1 lần
+if not getgenv().AutoAimHooked then
+    getgenv().AutoAimHooked = true
+    getgenv().AutoAimShed = false
+    getgenv().AutoAimChance = false
 
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local Workspace = game:GetService("Workspace")
+
+    -- Wait remote chắc chắn tồn tại
+    local Remote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
+
+    local function GetHRP()
+        local char = LocalPlayer.Character
+        return char and char:FindFirstChild("HumanoidRootPart") or nil
+    end
+
+    local function GetNearestKiller()
+        local hrp = GetHRP()
+        if not hrp then return nil end
+        local killersFolder = Workspace:FindFirstChild("Players") and Workspace.Players:FindFirstChild("Killers")
+        if not killersFolder then return nil end
+        local nearest, minDist
+        for _, killer in pairs(killersFolder:GetChildren()) do
+            if killer ~= LocalPlayer.Character then
+                local hrp2 = killer:FindFirstChild("HumanoidRootPart")
+                local hum = killer:FindFirstChildOfClass("Humanoid")
+                if hrp2 and hum and hum.Health > 0 then
+                    local dist = (hrp.Position - hrp2.Position).Magnitude
+                    if not minDist or dist < minDist then
+                        minDist = dist
+                        nearest = hrp2
+                    end
+                end
+            end
+        end
+        return nearest
+    end
+
+    -- Hook FireServer
+    local oldNamecall
+    oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+        local args = {...}
+        local method = getnamecallmethod()
+
+        if not checkcaller() and method == "FireServer" and self == Remote then
+            local a1, a2 = args[1], args[2]
+
+            -- Auto Aim Chance
+            if getgenv().AutoAimChance 
+                and type(a1) == "string" 
+                and a1:find("ChanceFireShot") 
+                and LocalPlayer.Team and LocalPlayer.Team.Name == "Survivors" then
+                local start = tick()
+                while tick() - start <= 1.5 and getgenv().AutoAimChance do
+                    local hrp, target = GetHRP(), GetNearestKiller()
+                    if hrp and target then
+                        local tgtPos = Vector3.new(target.Position.X, hrp.Position.Y, target.Position.Z)
+                        hrp.CFrame = CFrame.new(hrp.Position, tgtPos)
+                    end
+                    task.wait()
+                end
+            end
+
+            -- Auto Aim Shedletsky
+            if getgenv().AutoAimShed 
+                and a1 == "UseActorAbility" 
+                and a2 == "Slash" then
+                local start = tick()
+                while tick() - start <= 1.5 and getgenv().AutoAimShed do
+                    local hrp, target = GetHRP(), GetNearestKiller()
+                    if hrp and target then
+                        local tgtPos = Vector3.new(target.Position.X, hrp.Position.Y, target.Position.Z)
+                        hrp.CFrame = CFrame.new(hrp.Position, tgtPos)
+                    end
+                    task.wait()
+                end
+            end
+        end
+
+        return oldNamecall(self, ...)
+    end)
+end
+
+
+Main1Group:AddToggle("Auto Aim Shedletsky", {
+    Text = "Auto Aim",
+    Default = false,
+    Callback = function(Value)
+        getgenv().AutoAimShed = Value
+    end
+})
+
+-- Obsidian Lib Toggle
+Main1Group:AddDivider()
+Main1Group:AddLabel("Chance", true)
+
+Main1Group:AddToggle("Auto Aim Chance", {
+    Text = "Auto Aim",
+    Default = false,
+    Callback = function(Value)
+        getgenv().AutoAimChance = Value
+    end
+})
 
 
 Main1Group:AddDivider()
