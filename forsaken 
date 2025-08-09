@@ -5,6 +5,37 @@ wait(2)
 getgenv().RV = 0
 end)
 
+task.spawn(function()
+-- Break maxstamina Loop (standalone version)
+local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems")
+    :WaitForChild("Character")
+    :WaitForChild("Game")
+    :WaitForChild("Sprinting"))
+
+if staminaModule then
+    -- Hook thuộc tính MaxStamina để không thể bị thay đổi
+    local mt = getrawmetatable(staminaModule)
+    setreadonly(mt, false)
+    local oldIndex = mt.__newindex
+    mt.__newindex = function(t, k, v)
+        if k == "MaxStamina" then
+            warn("[BlockInfStamina] Prevented setting MaxStamina:", v)
+            return
+        end
+        return oldIndex(t, k, v)
+    end
+    setreadonly(mt, true)
+    
+    -- Hook __staminaChangedEvent:Fire để không cho script khác gọi
+    if staminaModule.__staminaChangedEvent then
+        staminaModule.__staminaChangedEvent.Fire = function() end
+    end
+
+    print("[BlockInfStamina] Hooked and blocked loop changes.")
+else
+    warn("[BlockInfStamina] staminaModule not found.")
+end
+end)
 
 
 
