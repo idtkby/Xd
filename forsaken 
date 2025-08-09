@@ -567,6 +567,60 @@ Main1Group:AddLabel("Survivors: 0 ~ 15", true)
 Main1Group:AddLabel("Killers: 10 ~ 35", true)
 
 
+-- Giá trị mặc định
+_G.MaxStaminaValue = 100
+_G.ApplyStamina = false
+
+Main1Group:AddDivider()
+
+Main1Group:AddLabel("Max Stamina", true)
+
+Main1Group:AddInput("StaminaValue", {
+    Default = tostring(_G.MaxStaminaValue),
+    Numeric = true, -- chỉ nhập số
+    Finished = true, -- chỉ gọi callback khi bấm Enter hoặc thoát input
+    Text = "Enter Stamina (10 ~ 1000)",
+    Callback = function(val)
+        local num = tonumber(val)
+        if num and num >= 10 and num <= 1000 then
+            _G.MaxStaminaValue = num
+            Library:Notify("Value must be between 0 and 1000", 5)
+        else
+            Library:Notify("Invalid number", 5)
+        end
+    end
+})
+
+Main1Group:AddToggle("ApplyStamina", {
+    Text = "Apply",
+    Default = false,
+    Callback = function(Value)
+        _G.ApplyStamina = Value
+        if Value then
+            task.spawn(function()
+                while _G.ApplyStamina do
+                    local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
+                    if staminaModule then
+                        staminaModule.MaxStamina = _G.MaxStaminaValue
+                        staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
+                    end
+                    task.wait(3)
+                end
+            end)
+        end
+    end
+})
+
+
+
+
+
+
+
+
+
+
+
 
 
 
