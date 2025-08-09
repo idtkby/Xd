@@ -559,91 +559,125 @@ end)
 Main1Group:AddLabel("Survivors: 0 ~ 15", true)
 Main1Group:AddLabel("Killers: 10 ~ 35", true)
 
-_G.MaxStaminaValue = 200
-_G.SurvivorSpeed = 26
-_G.KillerSpeed = 26
-_G.ApplyStaminaSpeed = false
-
--- Max Stamina
+--// Obsidian UI - Main1Group
 Main1Group:AddDivider()
-Main1Group:AddLabel("Stamina", true)
-Main1Group:AddInput("MaxStaminaInput", {
-    Default = tostring(_G.MaxStaminaValue),
+Main1Group:AddLabel("Player", true)
+
+-- Input stamina
+Main1Group:AddInput("MaxStaminaValue", {
+    Default = "130",
     Numeric = true,
     Finished = true,
-    Text = "Max Stamina (10-1000)",
-    Callback = function(val)
-        local num = tonumber(val)
+    Text = "Enter Max Stamina (10-1000)",
+    Placeholder = "130",
+    Callback = function(Value)
+        local num = tonumber(Value)
         if num and num >= 10 and num <= 1000 then
             _G.MaxStaminaValue = num
         else
-            warn("[Stamina] ❌ Phải từ 10-1000")
+            Library:Notify("Die, Wise, Cry", 5)
         end
     end
 })
 
--- Sprint Speed
-Main1Group:AddDivider()
-Main1Group:AddLabel("Sprint Speed", true)
-
-Main1Group:AddInput("SurvivorSpeedInput", {
-    Default = tostring(_G.SurvivorSpeed),
-    Numeric = true,
-    Finished = true,
-    Text = "Survivor Speed (26 ~ 50)",
-    Callback = function(val)
-        local num = tonumber(val)
-        if num and num >= 26 and num <= 50 and num ~= 35 and num ~= 45 then
-            _G.SurvivorSpeed = num
-        else
-            Library:Notify("You may be forsaken ban", 5)
-        end
-    end
-})
-
-Main1Group:AddInput("KillerSpeedInput", {
-    Default = tostring(_G.KillerSpeed),
-    Numeric = true,
-    Finished = true,
-    Text = "Killer Speed (27 ~ 50)",
-    Callback = function(val)
-        local num = tonumber(val)
-        if num and num >= 27 and num <= 50 and num ~= 35 and num ~= 45 then
-            _G.KillerSpeed = num
-        else
-            Library:Notify("You may be forsaken ban", 5)
-        end
-    end
-})
-
--- Toggle Apply
-Main1Group:AddToggle("ApplyStaminaSpeed", {
-    Text = "Apply",
+-- Toggle Apply Stamina
+Main1Group:AddToggle("ApplyStamina", {
+    Text = "Apply Stamina",
     Default = false,
-    Callback = function(state)
-        _G.ApplyStaminaSpeed = state
-        if not state then
-            local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
-            if staminaModule then
-                staminaModule.MaxStamina = 110
-                staminaModule.SprintSpeed = 27
-                staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
-            end
-            return
-        end
+    Callback = function(Value)
+        _G.ApplyStamina = Value
         task.spawn(function()
-            while _G.ApplyStaminaSpeed do
+            while _G.ApplyStamina do
                 local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
                 if staminaModule then
-                    staminaModule.MaxStamina = _G.MaxStaminaValue
-                    if game.Players.LocalPlayer.Team and game.Players.LocalPlayer.Team.Name == "Survivors" then
-                        staminaModule.SprintSpeed = _G.SurvivorSpeed
-                    else
-                        staminaModule.SprintSpeed = _G.KillerSpeed
-                    end
+                    staminaModule.MaxStamina = _G.MaxStaminaValue or 110
+                    staminaModule.Stamina = staminaModule.MaxStamina
                     staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
                 end
                 task.wait(3)
+            end
+            -- Khi tắt thì set về 110
+            if not _G.ApplyStamina then
+                local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
+                if staminaModule then
+                    staminaModule.MaxStamina = 110
+                    staminaModule.Stamina = 110
+                    staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
+                end
+            end
+        end)
+    end
+})
+
+Main1Group:AddLabel("Sprint Speed", true)
+
+-- Input Survivor Speed
+Main1Group:AddInput("SurvivorSpeed", {
+    Default = "26",
+    Numeric = true,
+    Finished = true,
+    Text = "Survivor Speed (26-50)",
+    Placeholder = "26",
+    Callback = function(Value)
+        local num = tonumber(Value)
+        if num and num >= 26 and num <= 50 and num ~= 35 and num ~= 45 then
+            _G.SurvivorSpeed = num
+        else
+            Library:Notify("Die, Wise, Cry", 5)
+        end
+    end
+})
+
+-- Input Killer Speed
+Main1Group:AddInput("KillerSpeed", {
+    Default = "27.5",
+    Numeric = true,
+    Finished = true,
+    Text = "Killer Speed (27.5-50)",
+    Placeholder = "27.5",
+    Callback = function(Value)
+        local num = tonumber(Value)
+        if num and num >= 27.5 and num <= 50 and num ~= 35 and num ~= 45 then
+            _G.KillerSpeed = num
+        else
+            Library:Notify("Die, Wise, Cry", 5)
+        end
+    end
+})
+
+-- Toggle Apply Sprint Speed
+Main1Group:AddToggle("ApplySprintSpeed", {
+    Text = "Apply Sprint Speed",
+    Default = false,
+    Callback = function(Value)
+        _G.ApplySprintSpeed = Value
+        task.spawn(function()
+            while _G.ApplySprintSpeed do
+                local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
+                if staminaModule and game.Players.LocalPlayer.Team then
+                    local teamName = game.Players.LocalPlayer.Team.Name
+                    if teamName == "Survivors" then
+                        if _G.SurvivorSpeed and _G.SurvivorSpeed ~= 35 and _G.SurvivorSpeed ~= 45 then
+                            staminaModule.SprintSpeed = _G.SurvivorSpeed
+                        end
+                    elseif teamName == "Killers" then
+                        if _G.KillerSpeed and _G.KillerSpeed ~= 35 and _G.KillerSpeed ~= 45 then
+                            staminaModule.SprintSpeed = _G.KillerSpeed
+                        end
+                    end
+                end
+                task.wait(3)
+            end
+            -- Khi tắt set về default
+            if not _G.ApplySprintSpeed then
+                local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
+                if staminaModule then
+                    if game.Players.LocalPlayer.Team and game.Players.LocalPlayer.Team.Name == "Survivors" then
+                        staminaModule.SprintSpeed = 26 -- default survivor
+                    else
+                        staminaModule.SprintSpeed = 27.5 -- default killer
+                    end
+                end
             end
         end)
     end
