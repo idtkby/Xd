@@ -275,6 +275,75 @@ Main1Group:AddToggle("AutoSlash (Passive)", {
     end
 })
 
+Main1Group:AddToggle("AutoAimShedletsky", {
+    Text = "Auto Aim",
+    Default = false,
+    Callback = function(Value)
+        _G.AutoAimShedletsky = Value
+
+        task.spawn(function()
+            local Players = game:GetService("Players")
+            local LocalPlayer = Players.LocalPlayer
+            local ReplicatedStorage = game:GetService("ReplicatedStorage")
+            local Remote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
+
+            local function GetHRP()
+                local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                return char:FindFirstChild("HumanoidRootPart")
+            end
+
+            local function IsSurvivorShedletsky()
+                local survivors = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Survivors")
+                return survivors and survivors:FindFirstChild(LocalPlayer.Name) and LocalPlayer.Name == "Shedletsky"
+            end
+
+            local function GetNearestKiller()
+                local nearest, minDist = nil, math.huge
+                local hrp = GetHRP()
+                if not hrp then return end
+                for _, v in pairs(workspace.Players:GetChildren()) do
+                    if v.Name == "Killers" then
+                        for _, killer in pairs(v:GetChildren()) do
+                            if killer ~= LocalPlayer.Character then
+                                local hrp2 = killer:FindFirstChild("HumanoidRootPart")
+                                local hum = killer:FindFirstChildOfClass("Humanoid")
+                                if hrp2 and hum and hum.Health > 0 then
+                                    local dist = (hrp.Position - hrp2.Position).Magnitude
+                                    if dist < minDist then
+                                        minDist = dist
+                                        nearest = hrp2
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+                return nearest
+            end
+
+            -- Hook RemoteEvent để phát hiện khi Slash được gửi
+            local oldFire = Remote.FireServer
+            Remote.FireServer = function(self, ...)
+                local args = {...}
+                if _G.AutoAimShedletsky and IsSurvivorShedletsky() and args[1] == "UseActorAbility" and args[2] == "Slash" then
+                    local hrp = GetHRP()
+                    if hrp then
+                        local startTime = tick()
+                        while tick() - startTime <= 1.5 and _G.AutoAimShedletsky do
+                            local target = GetNearestKiller()
+                            if target then
+                                hrp.CFrame = CFrame.new(hrp.Position, target.Position)
+                            end
+                            task.wait()
+                        end
+                    end
+                end
+                return oldFire(self, ...)
+            end
+        end)
+    end
+})
+
 Main1Group:AddDivider()
 
 
