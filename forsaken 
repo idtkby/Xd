@@ -568,7 +568,7 @@ Main1Group:AddInput("MaxStaminaValue", {
     Default = "",
     Numeric = true,
     Finished = true,
-    Text = "Enter Max Stamina (10-1000)",
+    Text = "Max Stamina (10-1000)",
     Placeholder = "Enter",
     Callback = function(Value)
         local num = tonumber(Value)
@@ -591,7 +591,6 @@ Main1Group:AddToggle("ApplyStamina", {
                 local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
                 if staminaModule then
                     staminaModule.MaxStamina = _G.MaxStaminaValue or 110
-                    staminaModule.Stamina = staminaModule.MaxStamina
                     staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
                 end
                 task.wait(3)
@@ -601,7 +600,6 @@ Main1Group:AddToggle("ApplyStamina", {
                 local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
                 if staminaModule then
                     staminaModule.MaxStamina = 110
-                    staminaModule.Stamina = 110
                     staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
                 end
             end
