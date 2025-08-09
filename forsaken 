@@ -565,11 +565,11 @@ Main1Group:AddLabel("Player", true)
 
 -- Input stamina
 Main1Group:AddInput("MaxStaminaValue", {
-    Default = "130",
+    Default = "",
     Numeric = true,
     Finished = true,
     Text = "Enter Max Stamina (10-1000)",
-    Placeholder = "130",
+    Placeholder = "Enter",
     Callback = function(Value)
         local num = tonumber(Value)
         if num and num >= 10 and num <= 1000 then
@@ -613,11 +613,11 @@ Main1Group:AddLabel("Sprint Speed", true)
 
 -- Input Survivor Speed
 Main1Group:AddInput("SurvivorSpeed", {
-    Default = "26",
+    Default = "",
     Numeric = true,
     Finished = true,
     Text = "Survivor Speed (26-50)",
-    Placeholder = "26",
+    Placeholder = "Enter",
     Callback = function(Value)
         local num = tonumber(Value)
         if num and num >= 26 and num <= 50 and num ~= 35 and num ~= 45 then
@@ -630,11 +630,11 @@ Main1Group:AddInput("SurvivorSpeed", {
 
 -- Input Killer Speed
 Main1Group:AddInput("KillerSpeed", {
-    Default = "27.5",
+    Default = "",
     Numeric = true,
     Finished = true,
     Text = "Killer Speed (27.5-50)",
-    Placeholder = "27.5",
+    Placeholder = "Enter",
     Callback = function(Value)
         local num = tonumber(Value)
         if num and num >= 27.5 and num <= 50 and num ~= 35 and num ~= 45 then
