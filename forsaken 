@@ -660,14 +660,14 @@ function Esp_Player(characterModel)
 end
 
 Main2Group:AddDropdown("EspPlayer", {
-    Text = "Esp Player",
+    Text = "Section",
     Values = {"Killers", "Survivors"},
     Default = "",
     Multi = true
 })
 
 Main2Group:AddToggle("Player", {
-    Text = "Esp Player",
+    Text = "Enable Esp",
     Default = false, 
     Callback = function(Value) 
 _G.EspPlayer = Value
@@ -724,7 +724,7 @@ Main2Group:AddDivider()
 
 _G.EspGui = false
 Main2Group:AddToggle("Esp Gui", {
-    Text = "Esp Gui",
+    Text = "Enable Gui",
     Default = false, 
     Callback = function(Value) 
 _G.EspGui = Value
@@ -1038,3 +1038,8 @@ SaveManager:IgnoreThemeSettings()
 SaveManager:BuildConfigSection(Tabs["UI Settings"])
 ThemeManager:ApplyToTab(Tabs["UI Settings"])
 SaveManager:LoadAutoloadConfig() 
+
+
+
+
+
