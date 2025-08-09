@@ -60,7 +60,7 @@ _G.AutoGeneralDelay = 1.8
 -- add a slider to tweak the delay
 Main1Group:AddSlider("GeneralDelay", {
     Text = "General Delay (s)",
-    Min = 1,
+    Min = 1.8,
     Max = 10,
     Default = _G.AutoGeneralDelay,
     Rounding = 1,
