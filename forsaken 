@@ -275,165 +275,101 @@ Main1Group:AddToggle("AutoSlash (Passive)", {
     end
 })
 
---== Auto Aim Shedletsky ==--
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Shedletsky trước Divider
 Main1Group:AddToggle("AutoAimShedletsky", {
     Text = "Auto Aim",
     Default = false,
-    Callback = function(Value)
-        _G.AutoAimShed = Value
-
-        local Players = game:GetService("Players")
-        local LocalPlayer = Players.LocalPlayer
-
-        local function IsSurvivorShed()
-            return LocalPlayer.Team and LocalPlayer.Team.Name == "Survivors" and LocalPlayer.Name == "Shedletsky"
-        end
-
-        local function GetHRP()
-            local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-            return char:FindFirstChild("HumanoidRootPart")
-        end
-
-        local function GetNearestKiller()
-            local nearest, minDist = nil, math.huge
-            local hrp = GetHRP()
-            if not hrp then return end
-            for _, v in pairs(workspace.Players:GetChildren()) do
-                if v.Name == "Killers" then
-                    for _, killer in pairs(v:GetChildren()) do
-                        if killer ~= LocalPlayer.Character then
-                            local hrp2 = killer:FindFirstChild("HumanoidRootPart")
-                            local hum = killer:FindFirstChildOfClass("Humanoid")
-                            if hrp2 and hum and hum.Health > 0 then
-                                local dist = (hrp.Position - hrp2.Position).Magnitude
-                                if dist < minDist then
-                                    minDist = dist
-                                    nearest = hrp2
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-            return nearest
-        end
-
-        if not getgenv().AutoAimHookedShed then
-            getgenv().AutoAimHookedShed = true
-            local oldNamecall
-            oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
-                local args = {...}
-                local method = getnamecallmethod()
-
-                if not checkcaller() 
-                and _G.AutoAimShed
-                and method == "FireServer"
-                and self.Name == "RemoteEvent"
-                and typeof(args[1]) == "string"
-                and args[1] == "UseActorAbility"
-                and args[2] == "Slash"
-                and IsSurvivorShed() then
-
-                    local hrp = GetHRP()
-                    if hrp then
-                        local startTime = tick()
-                        while tick() - startTime <= 1.5 and _G.AutoAimShed do
-                            local target = GetNearestKiller()
-                            if target then
-                                hrp.CFrame = CFrame.new(hrp.Position, target.Position)
-                            end
-                            task.wait()
-                        end
-                    end
-                end
-
-                return oldNamecall(self, ...)
-            end)
-        end
+    Callback = function(state)
+        _G.AutoAimShed = state
     end
 })
 
+-- Thêm Divider và Label
 Main1Group:AddDivider()
+Main1Group:AddLabel("Chance", true)
 
-
-Main1Group:AddLabel("Chance", true) 
-
---== Auto Aim Chance ==--
+-- Chance sau Divider
 Main1Group:AddToggle("AutoAimChance", {
     Text = "Auto Aim",
     Default = false,
-    Callback = function(Value)
-        _G.AutoAimChance = Value
-
-        local Players = game:GetService("Players")
-        local LocalPlayer = Players.LocalPlayer
-
-        local function IsSurvivorChance()
-            return LocalPlayer.Team and LocalPlayer.Team.Name == "Survivors" and LocalPlayer.Name == "Chance"
-        end
-
-        local function GetHRP()
-            local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-            return char:FindFirstChild("HumanoidRootPart")
-        end
-
-        local function GetNearestKiller()
-            local nearest, minDist = nil, math.huge
-            local hrp = GetHRP()
-            if not hrp then return end
-            for _, v in pairs(workspace.Players:GetChildren()) do
-                if v.Name == "Killers" then
-                    for _, killer in pairs(v:GetChildren()) do
-                        if killer ~= LocalPlayer.Character then
-                            local hrp2 = killer:FindFirstChild("HumanoidRootPart")
-                            local hum = killer:FindFirstChildOfClass("Humanoid")
-                            if hrp2 and hum and hum.Health > 0 then
-                                local dist = (hrp.Position - hrp2.Position).Magnitude
-                                if dist < minDist then
-                                    minDist = dist
-                                    nearest = hrp2
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-            return nearest
-        end
-
-        if not getgenv().AutoAimHookedChance then
-            getgenv().AutoAimHookedChance = true
-            local oldNamecall
-            oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
-                local args = {...}
-                local method = getnamecallmethod()
-
-                if not checkcaller() 
-                and _G.AutoAimChance 
-                and method == "FireServer" 
-                and self.Name == "RemoteEvent"
-                and typeof(args[1]) == "string"
-                and args[1] == LocalPlayer.Name .. "ChanceFireShot"
-                and IsSurvivorChance() then
-
-                    local hrp = GetHRP()
-                    if hrp then
-                        local startTime = tick()
-                        while tick() - startTime <= 1.5 and _G.AutoAimChance do
-                            local target = GetNearestKiller()
-                            if target then
-                                hrp.CFrame = CFrame.new(hrp.Position, target.Position)
-                            end
-                            task.wait()
-                        end
-                    end
-                end
-
-                return oldNamecall(self, ...)
-            end)
-        end
+    Callback = function(state)
+        _G.AutoAimChance = state
     end
 })
+
+-- Hàm lấy HRP
+local function GetHRP()
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    return char:FindFirstChild("HumanoidRootPart")
+end
+
+-- Hàm tìm killer gần nhất
+local function GetNearestKiller()
+    local hrp = GetHRP()
+    if not hrp then return end
+    local nearest, minDist = nil, math.huge
+
+    for _, killer in pairs(workspace.Players.Killers:GetChildren()) do
+        if killer ~= LocalPlayer.Character then
+            local hrp2 = killer:FindFirstChild("HumanoidRootPart")
+            local hum = killer:FindFirstChildOfClass("Humanoid")
+            if hrp2 and hum and hum.Health > 0 then
+                local dist = (hrp.Position - hrp2.Position).Magnitude
+                if dist < minDist then
+                    minDist = dist
+                    nearest = hrp2
+                end
+            end
+        end
+    end
+    return nearest
+end
+
+-- Chỉ hook 1 lần
+if not getgenv().AutoAimHooked then
+    getgenv().AutoAimHooked = true
+    local oldNamecall
+    oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+        local args = {...}
+        local method = getnamecallmethod()
+
+        if not checkcaller() and method == "FireServer" and self == ReplicatedStorage.Modules.Network.RemoteEvent then
+            local arg1, arg2 = args[1], args[2]
+
+            -- Chance
+            if _G.AutoAimChance and type(arg1) == "string" and arg1:find("ChanceFireShot") and LocalPlayer.Team and LocalPlayer.Team.Name == "Survivors" then
+                local startTime = tick()
+                while tick() - startTime <= 1.5 and _G.AutoAimChance do
+                    local target = GetNearestKiller()
+                    local hrp = GetHRP()
+                    if hrp and target then
+                        hrp.CFrame = CFrame.new(hrp.Position, target.Position)
+                    end
+                    task.wait()
+                end
+            end
+
+            -- Shedletsky
+            if _G.AutoAimShed and type(arg1) == "string" and arg1 == "UseActorAbility" and arg2 == "Slash" and LocalPlayer.Team and LocalPlayer.Team.Name == "Survivors" then
+                local startTime = tick()
+                while tick() - startTime <= 1.5 and _G.AutoAimShed do
+                    local target = GetNearestKiller()
+                    local hrp = GetHRP()
+                    if hrp and target then
+                        hrp.CFrame = CFrame.new(hrp.Position, target.Position)
+                    end
+                    task.wait()
+                end
+            end
+        end
+
+        return oldNamecall(self, ...)
+    end)
+end
 
 
 
