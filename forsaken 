@@ -275,6 +275,83 @@ Main1Group:AddToggle("AutoSlash (Passive)", {
     end
 })
 
+Main1Group:AddDivider()
+
+
+Main1Group:AddLabel("Chance", true) 
+Main1Group:AddToggle("AutoAimChance", {
+    Text = "Auto Aim",
+    Default = false,
+    Callback = function(Value)
+        _G.AutoAimChance = Value
+
+        task.spawn(function()
+            local Players = game:GetService("Players")
+            local LocalPlayer = Players.LocalPlayer
+            local ReplicatedStorage = game:GetService("ReplicatedStorage")
+            local Remote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
+
+            local function GetHRP()
+                local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                return char:FindFirstChild("HumanoidRootPart")
+            end
+
+            local function IsSurvivorChance()
+                local survivors = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Survivors")
+                if survivors and survivors:FindFirstChild(LocalPlayer.Name) and LocalPlayer.Name == "Chance" then
+                    return true
+                end
+                return false
+            end
+
+            local function GetNearestKiller()
+                local nearest, minDist = nil, math.huge
+                local hrp = GetHRP()
+                if not hrp then return end
+                for _, v in pairs(workspace.Players:GetChildren()) do
+                    if v.Name == "Killers" then
+                        for _, killer in pairs(v:GetChildren()) do
+                            if killer ~= LocalPlayer.Character then
+                                local hrp2 = killer:FindFirstChild("HumanoidRootPart")
+                                local hum = killer:FindFirstChildOfClass("Humanoid")
+                                if hrp2 and hum and hum.Health > 0 then
+                                    local dist = (hrp.Position - hrp2.Position).Magnitude
+                                    if dist <= 50 and dist < minDist then
+                                        minDist = dist
+                                        nearest = hrp2
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+                return nearest
+            end
+
+            -- Hook vào RemoteEvent
+            Remote.OnClientEvent:Connect(function(...)
+                if not _G.AutoAimChance then return end
+                if not IsSurvivorChance() then return end
+
+                local args = {...}
+                if tostring(args[1]) == LocalPlayer.Name .. "ChanceFireShot" then
+                    local hrp = GetHRP()
+                    local target = GetNearestKiller()
+                    if hrp and target then
+                        local startTime = tick()
+                        while tick() - startTime < 1.5 and _G.AutoAimChance do
+                            if not target.Parent then break end
+                            local dir = (target.Position - hrp.Position).Unit
+                            local look = CFrame.new(hrp.Position, hrp.Position + Vector3.new(dir.X, 0, dir.Z))
+                            hrp.CFrame = look
+                            task.wait()
+                        end
+                    end
+                end
+            end)
+        end)
+    end
+})
 
 Main1Group:AddDivider()
 
