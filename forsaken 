@@ -209,7 +209,7 @@ Main1Group:AddToggle("ToggleRestoreGUI", {
 Main1Group:AddDivider()
 
 
-Main1Group:AddLabel("Shedletsky", true) 
+Main1Group:AddLabel("--== Shedletsky ==--", true) 
 Main1Group:AddToggle("AutoSlash (Passive)", {
     Text = "Auto Slash (Passive)",
     Default = false,
@@ -398,7 +398,7 @@ Main1Group:AddToggle("AutoAimShed", {
 Main1Group:AddDivider()
 
 
-Main1Group:AddLabel("Chance", true)
+Main1Group:AddLabel("--== Chance ==--", true)
 --// Auto Aim Chance (ObsidianLib)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -526,7 +526,7 @@ end)
 
 -- Divider + Label
 Main1Group:AddDivider()
-Main1Group:AddLabel("Guest 1337", true)
+Main1Group:AddLabel("--== Guest 1337 ==--", true)
 
 -- Biến
 local Players = game:GetService("Players")
@@ -576,7 +576,7 @@ end
 
 -- Toggle Auto Block + Punch
 Main1Group:AddToggle("AutoBlockPunch", {
-    Text = "Auto Block + Punch",
+    Text = "Auto Block",
     Default = false,
     Callback = function(Value)
         toggleOn = Value
@@ -634,7 +634,7 @@ end)
 Main1Group:AddDivider()
 
 
-Main1Group:AddLabel("Hitbox", true)
+Main1Group:AddLabel("--== Hitbox ==--", true)
 _G.RV_Survivor = 0
 _G.RV_Killer = 0
 
@@ -670,35 +670,40 @@ Main1Group:AddInput("Set dist Killer", {
     end
 })
 
--- Hàm áp dụng dựa trên team
+-- Hàm áp dụng dựa trên thư mục Parent của nhân vật
 local function applyHitboxDist()
     local lp = game.Players.LocalPlayer
-    if lp.Team and lp.Team.Name == "Survivors" then
+    local char = lp.Character
+    if not char then return end
+
+    if char.Parent and char.Parent.Name == "Survivors" then
         getgenv().RV = _G.RV_Survivor
-        Library:Notify("Auto-set Survivor Dist: " .. tostring(_G.RV_Survivor))
-    elseif lp.Team and lp.Team.Name == "Killers" then
+        Library:Notify("Survivor Dist: " .. tostring(_G.RV_Survivor))
+    elseif char.Parent and char.Parent.Name == "Killers" then
         getgenv().RV = _G.RV_Killer
-        Library:Notify("Auto-set Killer Dist: " .. tostring(_G.RV_Killer))
+        Library:Notify("Killer Dist: " .. tostring(_G.RV_Killer))
     end
 end
 
--- Lắng nghe khi đổi team
+-- Theo dõi khi nhân vật đổi vai trò (Parent đổi)
 local lp = game.Players.LocalPlayer
-lp:GetPropertyChangedSignal("Team"):Connect(applyHitboxDist)
-
--- Khi respawn hoặc vào trận mới
-lp.CharacterAdded:Connect(function()
-    task.wait(1)
+lp.CharacterAdded:Connect(function(char)
+    char.AncestryChanged:Connect(function(_, parent)
+        if parent and (parent.Name == "Survivors" or parent.Name == "Killers") then
+            applyHitboxDist()
+        end
+    end)
+    task.wait(0.5)
     applyHitboxDist()
 end)
 
--- Nút Apply thủ công (nếu cần)
+-- Nút Apply thủ công
 Main1Group:AddButton("Apply Hitbox Dist", function()
     applyHitboxDist()
 end)
 
--- Áp dụng ngay khi load script
-task.wait(1)
+-- Chạy ngay khi load script
+task.wait(0.5)
 applyHitboxDist()
 
 Main1Group:AddLabel("Survivors: 0 ~ 15", true)
@@ -706,7 +711,7 @@ Main1Group:AddLabel("Killers: 10 ~ 35", true)
 
 --// Obsidian UI - Main1Group
 Main1Group:AddDivider()
-Main1Group:AddLabel("Player", true)
+Main1Group:AddLabel("--== Player ==--", true)
 
 -- Input stamina
 Main1Group:AddInput("MaxStaminaValue", {
@@ -752,7 +757,7 @@ Main1Group:AddToggle("ApplyStamina", {
     end
 })
 
-Main1Group:AddLabel("Sprint Speed", true)
+Main1Group:AddLabel("-= Sprint Speed =-", true)
 
 -- Input Survivor Speed
 Main1Group:AddInput("SurvivorSpeed", {
@@ -1184,7 +1189,7 @@ _G.EspGuiTextColor = Value
      end
 })
 
-Main2Group:AddLabel("EspGui Function", true)
+Main2Group:AddLabel("-= EspGui Function =-", true)
 
 _G.EspName = false
 Main2Group:AddToggle("Show Name", {
@@ -1215,7 +1220,7 @@ _G.EspHealth = Value
 
 Main2Group:AddDivider()
 
-Main2Group:AddLabel("Misc", true)
+Main2Group:AddLabel("--== Misc ==--", true)
 
 Main2Group:AddToggle("FullBright", {
     Text = "Full Bright",
