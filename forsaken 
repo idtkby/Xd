@@ -1414,49 +1414,55 @@ local daggerRemote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net
 -- Folder Killers
 local killersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
 
--- Biến
-local enabled = false
-local cooldown = false
-local lastTarget = nil
-local range = 4
-local mode = "Behind"
+-- Main3Group: Backstab Aim
+_G.AimBackstab_Enabled = false
+_G.AimBackstab_Mode = "Behind" -- hoặc "Around"
+_G.AimBackstab_Range = 4
 
--- Tạo UI trong Main3Group
-Main3Group:AddToggle("BackstabAim", {
-    Text = "Backstab Aim (TwoTime Survivor)",
+Main3Group:AddToggle("AimBackstabToggle", {
+    Text = "Auto Aim Backstab",
     Default = false,
     Callback = function(v)
-        enabled = v
+        _G.AimBackstab_Enabled = v
     end
 })
 
-Main3Group:AddSlider("BackstabRange", {
-    Text = "Backstab Range",
-    Default = 4,
-    Min = 1,
-    Max = 10,
-    Callback = function(val)
-        range = val
-    end
-})
-
-Main3Group:AddDropdown("BackstabMode", {
-    Values = { "Behind", "Around" },
-    Default = "Behind",
+Main3Group:AddDropdown("AimBackstabMode", {
+    Values = {"Behind", "Around"},
+    Default = 1,
+    Multi = false,
     Text = "Aim Mode",
-    Callback = function(val)
-        mode = val
+    Callback = function(v)
+        _G.AimBackstab_Mode = v
     end
 })
 
--- Hàm kiểm tra hướng
+Main3Group:AddInput("AimBackstabRange", {
+    Default = tostring(_G.AimBackstab_Range),
+    Numeric = true,
+    Text = "Backstab Range",
+    Placeholder = "1 ~ 10",
+    Callback = function(value)
+        local num = tonumber(value)
+        if num and num >= 1 and num <= 10 then
+            _G.AimBackstab_Range = num
+        else
+            Library:Notify("Invalid range (1-10)", 5)
+        end
+    end
+})
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local lp = Players.LocalPlayer
+
 local function isBehindTarget(hrp, targetHRP)
     local distance = (hrp.Position - targetHRP.Position).Magnitude
-    if distance > range then
+    if distance > _G.AimBackstab_Range then
         return false
     end
 
-    if mode == "Around" then
+    if _G.AimBackstab_Mode == "Around" then
         return true
     else
         local direction = -targetHRP.CFrame.LookVector
@@ -1465,57 +1471,29 @@ local function isBehindTarget(hrp, targetHRP)
     end
 end
 
--- Hàm xoay HRP
-local function aimAt(hrp, targetHRP)
-    hrp.CFrame = CFrame.new(hrp.Position, targetHRP.Position)
-end
-
--- Vòng lặp chính
 RunService.Heartbeat:Connect(function()
-    if not enabled or cooldown then return end
+    if not _G.AimBackstab_Enabled then return end
 
-    local char = lp.Character
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    -- Chỉ hoạt động nếu localplayer là survivor TwoTime
+    if not lp.Character or lp.Character.Name ~= "TwoTime" then return end
+
+    local hrp = lp.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
 
-    -- Chỉ hoạt động khi là survivor TwoTime
-    local teamFolder = char.Parent and char.Parent.Name
-    local classTag = char:FindFirstChild("Class") and char.Class.Value
-    if teamFolder ~= "Survivors" or classTag ~= "TwoTime" then return end
+    local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+    if not killersFolder then return end
 
-    -- Quét tất cả killer
     for _, killer in ipairs(killersFolder:GetChildren()) do
-        if killer:FindFirstChild("HumanoidRootPart") then
-            local kHRP = killer.HumanoidRootPart
-
-            if isBehindTarget(hrp, kHRP) and killer ~= lastTarget then
-                cooldown = true
-                lastTarget = killer
-
-                -- Aim liên tục trong 0.5s
-                local start = tick()
-                local aimConn
-                aimConn = RunService.Heartbeat:Connect(function()
-                    if tick() - start >= 0.5 or not kHRP or not kHRP.Parent then
-                        if aimConn then aimConn:Disconnect() end
-                        return
-                    end
-                    aimAt(hrp, kHRP)
-                end)
-
-                -- Gửi remote Dagger ngay
-                daggerRemote:FireServer("UseActorAbility", "Dagger")
-
-                -- Reset cooldown khi ra khỏi range
-                task.delay(2, function()
-                    while isBehindTarget(hrp, kHRP) do
-                        RunService.Heartbeat:Wait()
-                    end
-                    lastTarget = nil
-                    cooldown = false
-                end)
-
-                break
+        local kHRP = killer:FindFirstChild("HumanoidRootPart")
+        if kHRP and isBehindTarget(hrp, kHRP) then
+            -- Aim liên tục 1 giây
+            local startTime = tick()
+            while tick() - startTime < 1 do
+                if not hrp or not kHRP or not kHRP.Parent then break end
+                local direction = (kHRP.Position - hrp.Position).Unit
+                local yRot = math.atan2(-direction.X, -direction.Z)
+                hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
+                RunService.Heartbeat:Wait()
             end
         end
     end
