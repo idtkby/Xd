@@ -561,22 +561,12 @@ local function isGuestSurvivor()
     return lp.Character.Parent and lp.Character.Parent.Name ~= "Killers"
 end
 
--- Hàm bấm nút block
-local function clickBlockButton()
-    local gui = lp:FindFirstChild("PlayerGui")
-    if not gui then return end
-    local mainUI = gui:FindFirstChild("MainUI")
-    local container = mainUI and mainUI:FindFirstChild("AbilityContainer")
-    local blockButton = container and container:FindFirstChild("Block")
-    if blockButton and blockButton:IsA("ImageButton") and blockButton.Visible then
-        for _, conn in ipairs(getconnections(blockButton.MouseButton1Click)) do
-            pcall(function() conn:Fire() end)
-        end
-        pcall(function() blockButton:Activate() end)
-    end
+-- Gửi remote block
+local function remoteBlock()
+    NetworkEvent:FireServer("UseActorAbility", "Block")
 end
 
--- Hàm punch + aim liên tục
+-- Gửi remote punch + aim
 local function remotePunchAndAim(targetRoot)
     local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
     if not (hrp and targetRoot) then return end
@@ -639,7 +629,7 @@ RunService.Heartbeat:Connect(function()
                     local id = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")
                     if id and animationIds[id] and not clickedTracks[track] then
                         clickedTracks[track] = true
-                        clickBlockButton()
+                        remoteBlock()
                         remotePunchAndAim(root)
                         task.spawn(function()
                             track.Stopped:Wait()
