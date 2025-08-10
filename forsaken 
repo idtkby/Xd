@@ -642,6 +642,102 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
+--// Auto Aim (Charge) cho Guest1337 Survivor
+getgenv().AutoAimCharge = false
+
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+
+local Remote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
+
+local lastAimTime = 0 -- Cooldown 40s
+
+local function GetHRP()
+    local char = lp.Character
+    return char and char:FindFirstChild("HumanoidRootPart") or nil
+end
+
+local function GetNearestKiller()
+    local hrp = GetHRP()
+    if not hrp then return nil end
+    local killersFolder = Workspace:FindFirstChild("Players") and Workspace.Players:FindFirstChild("Killers")
+    if not killersFolder then return nil end
+    local nearest, minDist
+    for _, killer in pairs(killersFolder:GetChildren()) do
+        if killer ~= lp.Character then
+            local hrp2 = killer:FindFirstChild("HumanoidRootPart")
+            local hum = killer:FindFirstChildOfClass("Humanoid")
+            if hrp2 and hum and hum.Health > 0 then
+                local dist = (hrp.Position - hrp2.Position).Magnitude
+                if not minDist or dist < minDist then
+                    minDist = dist
+                    nearest = hrp2
+                end
+            end
+        end
+    end
+    return nearest
+end
+
+local function isGuestSurvivor()
+    if not lp.Character or lp.Character.Name ~= "Guest1337" then
+        return false
+    end
+    return lp.Character.Parent and lp.Character.Parent.Name ~= "Killers"
+end
+
+if not getgenv().AutoAimChargeHooked then
+    getgenv().AutoAimChargeHooked = true
+
+    local oldNamecall
+    oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+        local args = {...}
+        local method = getnamecallmethod()
+
+        if not checkcaller() and method == "FireServer" and self == Remote then
+            local a1, a2 = args[1], args[2]
+
+            if getgenv().AutoAimCharge and a1 == "UseActorAbility" and a2 == "Charge" and isGuestSurvivor() then
+                -- Cooldown 40s
+                if tick() - lastAimTime < 40 then
+                    return oldNamecall(self, ...)
+                end
+                lastAimTime = tick()
+
+                local result = oldNamecall(self, ...)
+
+                -- Aim liên tục 1.0s vào Killer gần nhất
+                task.spawn(function()
+                    local start = tick()
+                    while tick() - start <= 1 and getgenv().AutoAimCharge do
+                        local hrp, target = GetHRP(), GetNearestKiller()
+                        if hrp and target then
+                            local tgtPos = Vector3.new(target.Position.X, hrp.Position.Y, target.Position.Z)
+                            hrp.CFrame = CFrame.new(hrp.Position, tgtPos)
+                        end
+                        task.wait()
+                    end
+                end)
+
+                return result
+            end
+        end
+
+        return oldNamecall(self, ...)
+    end)
+end
+
+-- Toggle Obsidian Lib
+Main1Group:AddToggle("AutoAimCharge", {
+    Text = "Auto Aim (Charge)",
+    Default = false,
+    Callback = function(v)
+        getgenv().AutoAimCharge = v
+    end
+})
+
 
 Main1Group:AddDivider()
 
