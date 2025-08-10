@@ -1397,10 +1397,129 @@ end)
 
 
 
-local Main3Group = Tabs.Tab2:AddLeftGroupbox("")
+local Main3Group = Tabs.Tab2:AddLeftGroupbox("Main (2)")
+Main3Group:AddDivider()
 
 
+Main3Group:AddLabel("--== TwoTime ==--", true) 
 
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local lp = Players.LocalPlayer
+
+-- Remote
+local daggerRemote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
+
+-- Folder Killers
+local killersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
+
+-- Biến
+local enabled = false
+local cooldown = false
+local lastTarget = nil
+local range = 4
+local mode = "Behind"
+
+-- Tạo UI trong Main3Group
+Main3Group:AddToggle("BackstabAim", {
+    Text = "Backstab Aim (TwoTime Survivor)",
+    Default = false,
+    Callback = function(v)
+        enabled = v
+    end
+})
+
+Main3Group:AddSlider("BackstabRange", {
+    Text = "Backstab Range",
+    Default = 4,
+    Min = 1,
+    Max = 10,
+    Callback = function(val)
+        range = val
+    end
+})
+
+Main3Group:AddDropdown("BackstabMode", {
+    Values = { "Behind", "Around" },
+    Default = "Behind",
+    Text = "Aim Mode",
+    Callback = function(val)
+        mode = val
+    end
+})
+
+-- Hàm kiểm tra hướng
+local function isBehindTarget(hrp, targetHRP)
+    local distance = (hrp.Position - targetHRP.Position).Magnitude
+    if distance > range then
+        return false
+    end
+
+    if mode == "Around" then
+        return true
+    else
+        local direction = -targetHRP.CFrame.LookVector
+        local toPlayer = (hrp.Position - targetHRP.Position)
+        return toPlayer:Dot(direction) > 0.5
+    end
+end
+
+-- Hàm xoay HRP
+local function aimAt(hrp, targetHRP)
+    hrp.CFrame = CFrame.new(hrp.Position, targetHRP.Position)
+end
+
+-- Vòng lặp chính
+RunService.Heartbeat:Connect(function()
+    if not enabled or cooldown then return end
+
+    local char = lp.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    -- Chỉ hoạt động khi là survivor TwoTime
+    local teamFolder = char.Parent and char.Parent.Name
+    local classTag = char:FindFirstChild("Class") and char.Class.Value
+    if teamFolder ~= "Survivors" or classTag ~= "TwoTime" then return end
+
+    -- Quét tất cả killer
+    for _, killer in ipairs(killersFolder:GetChildren()) do
+        if killer:FindFirstChild("HumanoidRootPart") then
+            local kHRP = killer.HumanoidRootPart
+
+            if isBehindTarget(hrp, kHRP) and killer ~= lastTarget then
+                cooldown = true
+                lastTarget = killer
+
+                -- Aim liên tục trong 0.5s
+                local start = tick()
+                local aimConn
+                aimConn = RunService.Heartbeat:Connect(function()
+                    if tick() - start >= 0.5 or not kHRP or not kHRP.Parent then
+                        if aimConn then aimConn:Disconnect() end
+                        return
+                    end
+                    aimAt(hrp, kHRP)
+                end)
+
+                -- Gửi remote Dagger ngay
+                daggerRemote:FireServer("UseActorAbility", "Dagger")
+
+                -- Reset cooldown khi ra khỏi range
+                task.delay(2, function()
+                    while isBehindTarget(hrp, kHRP) do
+                        RunService.Heartbeat:Wait()
+                    end
+                    lastTarget = nil
+                    cooldown = false
+                end)
+
+                break
+            end
+        end
+    end
+end)
 
 
 
