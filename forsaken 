@@ -31,7 +31,7 @@ if staminaModule then
         staminaModule.__staminaChangedEvent.Fire = function() end
     end
 
-    print("[BlockInfStamina] Hooked and blocked loop changes.")
+    print("[Forsaken] Are you kidding me?")
 else
     warn("[BlockInfStamina] staminaModule not found.")
 end
