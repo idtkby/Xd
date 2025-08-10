@@ -529,18 +529,21 @@ end)
 Main1Group:AddDivider()
 Main1Group:AddLabel("--== Guest 1337 ==--", true)
 
--- Biến
+--// Auto Block + Punch cho Guest1337 Survivor (Obsidian Lib)
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
-local localPlayer = Players.LocalPlayer
+local lp = Players.LocalPlayer
+
+-- Remote
 local NetworkEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
 
-local toggleOn = false
-local detectionRange = 18
-local clickedTracks = {}
+-- Biến
+_G.AutoBlockPunch_Enabled = false
+_G.AutoBlockPunch_Range = 18
 
+local clickedTracks = {}
 local animationIds = {
     ["126830014841198"] = true, ["126355327951215"] = true, ["121086746534252"] = true,
     ["18885909645"] = true, ["98456918873918"] = true, ["105458270463374"] = true,
@@ -550,16 +553,17 @@ local animationIds = {
     ["126896426760253"] = true,
 }
 
--- Hàm kiểm tra LocalPlayer là survivor Guest1337 (Forsaken)
+-- Kiểm tra localplayer là Guest1337 survivor (không ở team Killers)
 local function isGuestSurvivor()
-    if localPlayer.Name ~= "Guest1337" then return false end
-    local char = localPlayer.Character
-    return char and char.Parent and char.Parent.Name == "Survivors"
+    if not lp.Character or lp.Character.Name ~= "Guest1337" then
+        return false
+    end
+    return lp.Character.Parent and lp.Character.Parent.Name ~= "Killers"
 end
 
--- Hàm block
+-- Hàm bấm nút block
 local function clickBlockButton()
-    local gui = localPlayer:FindFirstChild("PlayerGui")
+    local gui = lp:FindFirstChild("PlayerGui")
     if not gui then return end
     local mainUI = gui:FindFirstChild("MainUI")
     local container = mainUI and mainUI:FindFirstChild("AbilityContainer")
@@ -572,13 +576,11 @@ local function clickBlockButton()
     end
 end
 
--- Hàm punch dùng remote + aim liên tục
+-- Hàm punch + aim liên tục
 local function remotePunchAndAim(targetRoot)
-    local char = localPlayer.Character
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
     if not (hrp and targetRoot) then return end
 
-    -- Aim liên tục 1 giây
     local startTime = tick()
     local aimConn
     aimConn = RunService.Heartbeat:Connect(function()
@@ -589,39 +591,38 @@ local function remotePunchAndAim(targetRoot)
         hrp.CFrame = CFrame.new(hrp.Position, targetRoot.Position)
     end)
 
-    -- Gửi remote Punch
     NetworkEvent:FireServer("UseActorAbility", "Punch")
 end
 
--- Toggle Auto Block + Punch
-Main1Group:AddToggle("AutoBlockPunch", {
-    Text = "Auto Block and Punch",
+-- Obsidian Lib UI
+Main1Group:AddToggle("AutoBlockPunchToggle", {
+    Text = "Auto Block + Punch",
     Default = false,
-    Callback = function(Value)
-        toggleOn = Value
+    Callback = function(v)
+        _G.AutoBlockPunch_Enabled = v
     end
 })
 
--- Input Detection Range
-Main1Group:AddInput("DetectionRange", {
-    Text = "Detection Range",
-    Default = tostring(detectionRange),
+Main1Group:AddInput("AutoBlockPunchRange", {
+    Default = tostring(_G.AutoBlockPunch_Range),
     Numeric = true,
-    Finished = true,
-    Callback = function(Value)
-        local num = tonumber(Value)
-        if num then
-            detectionRange = math.clamp(num, 5, 50)
+    Text = "Detection Range",
+    Placeholder = "5 ~ 50",
+    Callback = function(value)
+        local num = tonumber(value)
+        if num and num >= 5 and num <= 50 then
+            _G.AutoBlockPunch_Range = num
+        else
+            Library:Notify("Invalid range (5-50)", 5)
         end
     end
 })
 
--- Vòng lặp chính
+-- Loop chính
 RunService.Heartbeat:Connect(function()
-    if not toggleOn or not isGuestSurvivor() then return end
+    if not _G.AutoBlockPunch_Enabled or not isGuestSurvivor() then return end
 
-    local myChar = localPlayer.Character
-    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
     if not myRoot then return end
 
     local killersFolder = Workspace:FindFirstChild("Players") and Workspace.Players:FindFirstChild("Killers")
@@ -632,7 +633,7 @@ RunService.Heartbeat:Connect(function()
         local humanoid = killer:FindFirstChildOfClass("Humanoid")
         if root and humanoid and humanoid.Health > 0 then
             local dist = (root.Position - myRoot.Position).Magnitude
-            if dist <= detectionRange then
+            if dist <= _G.AutoBlockPunch_Range then
                 for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
                     local anim = track.Animation
                     local id = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")
