@@ -80,7 +80,7 @@ local Window = Library:CreateWindow({
 
 Tabs = {
 	Tab = Window:AddTab("Game", "rbxassetid://7734053426"),
-	Tab2 = Window:AddTab(" ", "rbxassetid://7734053426"),
+	Tab2 = Window:AddTab("  - = 2=-", "rbxassetid://7734053426"),
 	["UI Settings"] = Window:AddTab("UI Settings", "rbxassetid://7733955511")
 }
 
