@@ -635,31 +635,71 @@ Main1Group:AddDivider()
 
 
 Main1Group:AddLabel("Hitbox", true)
-_G.RV_Value = 0
+_G.RV_Survivor = 0
+_G.RV_Killer = 0
 
-Main1Group:AddInput("Set dist", {
+-- Input Survivor
+Main1Group:AddInput("Set dist Survivor", {
     Default = "0 ~ 1000",
     Numeric = true,
-    Text = "Hitbox Dist",
+    Text = "Hitbox Dist (Survivor)",
     Placeholder = "Enter a number...",
     Callback = function(value)
         local num = tonumber(value)
-        if num then
-            if num >= 0 and num <= 1000 then
-                _G.RV_Value = num
-            else
-                Library:Notify("Value must be between 0 and 1000", 5)
-            end
+        if num and num >= 0 and num <= 1000 then
+            _G.RV_Survivor = num
         else
-            Library:Notify("Invalid number", 5)
+            Library:Notify("Invalid value (0-1000)", 5)
         end
     end
 })
 
-Main1Group:AddButton("Apply", function()
-    getgenv().RV = _G.RV_Value
-    Library:Notify("Dist set to: " .. tostring(_G.RV_Value))
+-- Input Killer
+Main1Group:AddInput("Set dist Killer", {
+    Default = "0 ~ 1000",
+    Numeric = true,
+    Text = "Hitbox Dist (Killer)",
+    Placeholder = "Enter a number...",
+    Callback = function(value)
+        local num = tonumber(value)
+        if num and num >= 0 and num <= 1000 then
+            _G.RV_Killer = num
+        else
+            Library:Notify("Invalid value (0-1000)", 5)
+        end
+    end
+})
+
+-- Hàm áp dụng dựa trên team
+local function applyHitboxDist()
+    local lp = game.Players.LocalPlayer
+    if lp.Team and lp.Team.Name == "Survivors" then
+        getgenv().RV = _G.RV_Survivor
+        Library:Notify("Auto-set Survivor Dist: " .. tostring(_G.RV_Survivor))
+    elseif lp.Team and lp.Team.Name == "Killers" then
+        getgenv().RV = _G.RV_Killer
+        Library:Notify("Auto-set Killer Dist: " .. tostring(_G.RV_Killer))
+    end
+end
+
+-- Lắng nghe khi đổi team
+local lp = game.Players.LocalPlayer
+lp:GetPropertyChangedSignal("Team"):Connect(applyHitboxDist)
+
+-- Khi respawn hoặc vào trận mới
+lp.CharacterAdded:Connect(function()
+    task.wait(1)
+    applyHitboxDist()
 end)
+
+-- Nút Apply thủ công (nếu cần)
+Main1Group:AddButton("Apply Hitbox Dist", function()
+    applyHitboxDist()
+end)
+
+-- Áp dụng ngay khi load script
+task.wait(1)
+applyHitboxDist()
 
 Main1Group:AddLabel("Survivors: 0 ~ 15", true)
 Main1Group:AddLabel("Killers: 10 ~ 35", true)
@@ -914,9 +954,13 @@ local function CreateItemESP(model, color, labelText)
 	lbl.TextSize = 14
 	lbl.TextColor3 = color
 	lbl.Text = labelText
-	lbl.TextStrokeTransparency = 0.5
-	lbl.TextStrokeColor3 = Color3.new(0, 0, 0)
 	lbl.Parent = gui
+
+	-- Thêm viền chữ
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.new(0, 0, 0) -- viền đen
+	stroke.Thickness = 1.5
+	stroke.Parent = lbl
 end
 
 local function ClearItemESP(model)
@@ -967,7 +1011,7 @@ Main2Group:AddToggle("EspBloxyCola", {
 		_G.EspBloxyCola = v
 		if v then
 			task.spawn(function()
-				HandleESP("BloxyCola", Color3.fromRGB(255, 255, 0), "Bloxy", "EspBloxyCola")
+				HandleESP("BloxyCola", Color3.fromRGB(0, 255, 255), "Bloxy", "EspBloxyCola")
 			end)
 		end
 	end
