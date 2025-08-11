@@ -1526,9 +1526,10 @@ local killersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
 _G.AimBackstab_Enabled = false
 _G.AimBackstab_Mode = "Behind" -- hoặc "Around"
 _G.AimBackstab_Range = 4
+_G.AimBackstab_Action = "Aim" -- hoặc "TP"
 
 Main3Group:AddToggle("AimBackstabToggle", {
-    Text = "Auto Aim Backstab",
+    Text = "Auto Aim/TP Backstab",
     Default = false,
     Callback = function(v)
         _G.AimBackstab_Enabled = v
@@ -1560,9 +1561,15 @@ Main3Group:AddInput("AimBackstabRange", {
     end
 })
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local lp = Players.LocalPlayer
+Main3Group:AddDropdown("AimBackstabAction", {
+    Values = {"Aim", "TP"},
+    Default = 1,
+    Multi = false,
+    Text = "Action Mode",
+    Callback = function(v)
+        _G.AimBackstab_Action = v
+    end
+})
 
 local function isBehindTarget(hrp, targetHRP)
     local distance = (hrp.Position - targetHRP.Position).Magnitude
@@ -1594,14 +1601,20 @@ RunService.Heartbeat:Connect(function()
     for _, killer in ipairs(killersFolder:GetChildren()) do
         local kHRP = killer:FindFirstChild("HumanoidRootPart")
         if kHRP and isBehindTarget(hrp, kHRP) then
-            -- Aim liên tục 1 giây
-            local startTime = tick()
-            while tick() - startTime < 1 do
-                if not hrp or not kHRP or not kHRP.Parent then break end
-                local direction = (kHRP.Position - hrp.Position).Unit
-                local yRot = math.atan2(-direction.X, -direction.Z)
-                hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
-                RunService.Heartbeat:Wait()
+            if _G.AimBackstab_Action == "Aim" then
+                -- Aim liên tục 1 giây
+                local startTime = tick()
+                while tick() - startTime < 1 do
+                    if not hrp or not kHRP or not kHRP.Parent then break end
+                    local direction = (kHRP.Position - hrp.Position).Unit
+                    local yRot = math.atan2(-direction.X, -direction.Z)
+                    hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
+                    RunService.Heartbeat:Wait()
+                end
+            elseif _G.AimBackstab_Action == "TP" then
+                -- Dịch chuyển ra sau mục tiêu
+                local backPos = kHRP.CFrame * CFrame.new(0, 0, _G.AimBackstab_Range * -0.5)
+                hrp.CFrame = CFrame.new(backPos.Position, kHRP.Position)
             end
         end
     end
