@@ -42,7 +42,7 @@ task.spawn(function()
 local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
 
 if staminaModule then
-    staminaModule.StaminaGain = 50
+    staminaModule.StaminaGain = 100
     staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
     print("[KOO.. THE NAO CAN. DUOC MA GE MINHHH")
 else
