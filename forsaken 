@@ -38,6 +38,17 @@ end
 end)
 
 task.spawn(function()
+-- Tăng MaxStamina lên 200
+local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
+
+if staminaModule then
+    staminaModule.StaminaGain = 50
+    staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
+    print("[KOO.. THE NAO CAN. DUOC MA GE MINHHH")
+else
+    warn("[Stamina] Không tìm thấy module Sprinting")
+end
+
 
 end)
 
