@@ -544,8 +544,8 @@ local NetworkEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net
 -- Biến
 _G.AutoBlockPunch_Enabled = false
 _G.AutoBlockPunch_Range = 18
-_G.AutoBlockPunch_Aim = true -- toggle aim khi punch
-local lastActionTime = 0 -- cooldown cho toàn script
+local cooldown = 25 -- thời gian cooldown (giây)
+local lastActionTime = 0
 
 local clickedTracks = {}
 local animationIds = {
@@ -575,17 +575,15 @@ local function remotePunchAndAim(targetRoot)
     local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
     if not (hrp and targetRoot) then return end
 
-    if _G.AutoBlockPunch_Aim then
-        local startTime = tick()
-        local aimConn
-        aimConn = RunService.Heartbeat:Connect(function()
-            if tick() - startTime > 1 or not targetRoot.Parent then
-                if aimConn then aimConn:Disconnect() end
-                return
-            end
-            hrp.CFrame = CFrame.new(hrp.Position, targetRoot.Position)
-        end)
-    end
+    local startTime = tick()
+    local aimConn
+    aimConn = RunService.Heartbeat:Connect(function()
+        if tick() - startTime > 1 or not targetRoot.Parent then
+            if aimConn then aimConn:Disconnect() end
+            return
+        end
+        hrp.CFrame = CFrame.new(hrp.Position, targetRoot.Position)
+    end)
 
     NetworkEvent:FireServer("UseActorAbility", "Punch")
 end
@@ -596,14 +594,6 @@ Main1Group:AddToggle("AutoBlockPunchToggle", {
     Default = false,
     Callback = function(v)
         _G.AutoBlockPunch_Enabled = v
-    end
-})
-
-Main1Group:AddToggle("AutoBlockPunchAimToggle", {
-    Text = "Aim Punch",
-    Default = true,
-    Callback = function(v)
-        _G.AutoBlockPunch_Aim = v
     end
 })
 
@@ -625,7 +615,6 @@ Main1Group:AddInput("AutoBlockPunchRange", {
 -- Loop chính
 RunService.Heartbeat:Connect(function()
     if not _G.AutoBlockPunch_Enabled or not isGuestSurvivor() then return end
-    if tick() - lastActionTime < 22 then return end -- Cooldown 22s cho script
 
     local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
     if not myRoot then return end
@@ -643,15 +632,17 @@ RunService.Heartbeat:Connect(function()
                     local anim = track.Animation
                     local id = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")
                     if id and animationIds[id] and not clickedTracks[track] then
-                        clickedTracks[track] = true
-                        lastActionTime = tick() -- bắt đầu cooldown
-                        remoteBlock()
-                        remotePunchAndAim(root)
-                        task.spawn(function()
-                            track.Stopped:Wait()
-                            clickedTracks[track] = nil
-                        end)
-                        return -- ngưng vòng lặp để đảm bảo cooldown
+                        -- kiểm tra cooldown
+                        if tick() - lastActionTime >= cooldown then
+                            lastActionTime = tick() -- cập nhật thời điểm hành động
+                            clickedTracks[track] = true
+                            remoteBlock()
+                            remotePunchAndAim(root)
+                            task.spawn(function()
+                                track.Stopped:Wait()
+                                clickedTracks[track] = nil
+                            end)
+                        end
                     end
                 end
             end
@@ -659,13 +650,14 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
---// Auto Aim (Charge) cho Guest1337 Survivor
+--// Auto Aim (Charge) cho Guest1337 Survivor + Aim Camera
 getgenv().AutoAimCharge = false
 
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
+local Camera = Workspace.CurrentCamera
 
 local Remote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
 
@@ -725,14 +717,17 @@ if not getgenv().AutoAimChargeHooked then
 
                 local result = oldNamecall(self, ...)
 
-                -- Aim liên tục 1.0s vào Killer gần nhất
+                -- Aim liên tục 1.0s vào Killer gần nhất + xoay camera
                 task.spawn(function()
                     local start = tick()
                     while tick() - start <= 1 and getgenv().AutoAimCharge do
                         local hrp, target = GetHRP(), GetNearestKiller()
                         if hrp and target then
                             local tgtPos = Vector3.new(target.Position.X, hrp.Position.Y, target.Position.Z)
+                            -- Xoay nhân vật
                             hrp.CFrame = CFrame.new(hrp.Position, tgtPos)
+                            -- Xoay camera theo hướng mục tiêu
+                            Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Position)
                         end
                         task.wait()
                     end
@@ -1536,14 +1531,14 @@ local lp = Players.LocalPlayer
 -- Remote
 local daggerRemote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
 
--- Folder Killers
-local killersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
-
 -- Main3Group: Backstab Aim
 _G.AimBackstab_Enabled = false
 _G.AimBackstab_Mode = "Behind" -- hoặc "Around"
 _G.AimBackstab_Range = 4
 _G.AimBackstab_Action = "Aim" -- hoặc "TP"
+
+-- Danh sách lưu để TP 1 lần
+local tpCooldown = {}
 
 Main3Group:AddToggle("AimBackstabToggle", {
     Text = "Auto Aim/TP Backstab",
@@ -1629,10 +1624,16 @@ RunService.Heartbeat:Connect(function()
                     RunService.Heartbeat:Wait()
                 end
             elseif _G.AimBackstab_Action == "TP" then
-                -- Dịch chuyển ra sau mục tiêu
-                local backPos = kHRP.CFrame * CFrame.new(0, 0, _G.AimBackstab_Range * -0.5)
-                hrp.CFrame = CFrame.new(backPos.Position, kHRP.Position)
+                -- Chỉ TP 1 lần mỗi khi vào range
+                if not tpCooldown[killer] then
+                    local backPos = kHRP.CFrame * CFrame.new(0, 0, _G.AimBackstab_Range * -0.5)
+                    hrp.CFrame = CFrame.new(backPos.Position, kHRP.Position)
+                    tpCooldown[killer] = true
+                end
             end
+        else
+            -- Reset cooldown khi killer ra khỏi range
+            tpCooldown[killer] = nil
         end
     end
 end)
