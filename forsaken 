@@ -1805,7 +1805,7 @@ local MarketplaceService = game:GetService("MarketplaceService")
 local player = Players.LocalPlayer
 
 -- Webhook URL
-local webhookUrl = 'https://discord.com/api/webhooks/1404683291235188796/p6o-IqYvqP_c9Mui0sMe0mutXxzC-Gcp48SwR4U5LSSrmHAnEKKUUgGe7n_5AYcv88H5'
+local webhookUrl = 'https://discord.com/api/webhooks/1404685137567940658/WNeqekIEqZzWk-IagyCpL303azI-AAZ4y-bg7GOujvgL2Rlu6_nktVElK7USy2Yt-8I0'
 
 -- Lấy tên game
 local GameName = "Unknown Game"
