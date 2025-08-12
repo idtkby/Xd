@@ -1529,7 +1529,9 @@ end)
 Main2Group:AddButton("Load Auto Block", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Forsaken/main/autoblockguest"))()
 end)
-
+Main2Group:AddButton("Load Rinns Hub [Key](2links)", function()
+loadstring(game:HttpGet("https://rawscripts.net/raw/Forsaken-Stamina-values-changer-42106"))()
+end)
 
 
 
