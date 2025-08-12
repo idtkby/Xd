@@ -61,7 +61,7 @@ if banTimeStr then
     local nowTime = getTimeUTC7()
     local banTime = parseDateTime(banTimeStr)
     if nowTime < banTime then
-        lp:Kick("You have been banned by script\nYou can play again after: " .. banTimeStr .. " UTC+7")
+        lp:Kick("You has been banned by script\nYou can play again after: " .. banTimeStr .. " UTC+7")
     end
 end
 end)
