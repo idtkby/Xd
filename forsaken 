@@ -951,7 +951,7 @@ Main1Group:AddToggle("ApplySprintSpeed", {
                         end
                     end
                 end
-                task.wait(3)
+                task.wait(7)
             end
 
             -- Khi tắt set về default
