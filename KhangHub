@@ -78,6 +78,11 @@ InfoTab:CreateParagraph({
 	Content = "[+] Update Visual Tab\n  + Replace buttons with separate Toggles\n  + Optimize rendering (reduce lag ~85% for weak devices)\n  + Add Visual Chapter2 [Soon]\n-- Version 2.4.0 --",
 })
 
+InfoTab:CreateParagraph({
+	Title = "[NOLI🎭] Forsaken",
+	Content = "[+] Esp, etc\n-- Version 1.0.0 --",
+})
+
 InfoTab:CreateSection("GameHub")
 
 InfoTab:CreateParagraph({
@@ -102,14 +107,6 @@ InfoTab:CreateParagraph({
 
 local HbTab = Window:CreateTab("Script", "Search")
 local tp = Window:CreateTab("Teleport Game", "map")
-
-HbTab:CreateSection("Dead Rails (Game)")
-HbTab:CreateButton({
-    Name = "Dead Rails (Game)",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Dead%20rails%20hub"))()
-    end,
-})
 tp:CreateSection("Dead rails")
 tp:CreateButton({
    Name = "Teleport to Dead rails",
@@ -117,14 +114,6 @@ tp:CreateButton({
       local gameId = 116495829188952
       game:GetService("TeleportService"):Teleport(gameId)
    end
-})
-
-HbTab:CreateSection("Mansion & Hospital")
-HbTab:CreateButton({
-    Name = "Eyes The Horror Game",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Eyes%20hub"))()
-    end,
 })
 tp:CreateSection("Eyes the horror")
 tp:CreateButton({
@@ -141,14 +130,6 @@ tp:CreateButton({
       game:GetService("TeleportService"):Teleport(gameId)
    end
 })
-
-HbTab:CreateSection("The Forest")
-HbTab:CreateButton({
-    Name = "7 Days To Live",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/7DaysForest"))()
-    end,
-})
 tp:CreateSection("7 Days to live")
 tp:CreateButton({
    Name = "Teleport to 7 Days",
@@ -156,14 +137,6 @@ tp:CreateButton({
       local gameId = 17474746614
       game:GetService("TeleportService"):Teleport(gameId)
    end
-})
-
-HbTab:CreateSection("Nightmare")
-HbTab:CreateButton({
-    Name = "AOONI Nightmare",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/AOONI%20Nightmare%20UI"))()
-    end,
 })
 tp:CreateSection("AOONI")
 tp:CreateButton({
@@ -174,21 +147,7 @@ tp:CreateButton({
    end
 })
 
-HbTab:CreateSection("PETAPETA")
 tp:CreateSection("Petapeta")
-HbTab:CreateButton({
-    Name = "PETAPETA | Level6",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/PETAPETA%7C%20Level%206%20UI"))()
-    end,
-})
-HbTab:CreateSection("School")
-HbTab:CreateButton({
-    Name = "PETAPETA: School of Nightmares",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/PETAPETA%3A%20School%20of%20Nightmares%20UI"))()
-    end,
-})
 tp:CreateButton({
    Name = "Teleport to Lv6",
    Callback = function()
