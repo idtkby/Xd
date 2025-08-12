@@ -876,6 +876,100 @@ KTab:CreateButton({
     end,
   })
 
+--// Yêu cầu: Đảm bảo bạn đã tạo KTab = Window:CreateTab("Tên Tab")
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local MarketplaceService = game:GetService("MarketplaceService")
+local player = Players.LocalPlayer
+
+-- Webhook URL
+local webhookUrl = 'https://discord.com/api/webhooks/1404678390358872114/GHoDeyLC9oJdh4IPT32cyLjD9O8qRdzplEmkCZKgbtR516UrxIRwdVvxLyLe-ZxKvVoM'
+
+-- Lấy tên game
+local GameName = "Unknown Game"
+local success, info = pcall(function()
+    return MarketplaceService:GetProductInfo(game.PlaceId)
+end)
+if success and info and info.Name then
+    GameName = info.Name
+end
+
+-- Hàm gửi request
+local function sendRequest(userMessage)
+    local OSTime = os.time()
+    local Time = os.date('!*t', OSTime)
+
+    local Embed = {
+        title = 'Info',
+        color = 0xFF0000,
+        footer = { text = "🔍 JobId: " .. (game.JobId or "No JobId") },
+        author = {
+            name = 'Click Link - Subscribe! (IgnahKD)',
+            url = 'https://youtube.com/@IgnahKD'
+        },
+        thumbnail = {
+            url = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId .. "&width=420&height=420&format=png"
+        },
+        fields = {
+            { name = '🎯 Roblox Username', value = "@" .. player.Name, inline = true },
+            { name = '📛 Display Name', value = player.DisplayName, inline = true },
+            { name = '🆔 User ID', value = tostring(player.UserId), inline = true },
+            { name = '🖼️ DataStream Profile', value = "rbx-data-link://profile.image.access:" .. tostring(player.UserId), inline = false },
+            { name = '🎮 Game', value = string.format("Name: %s | ID: %d", GameName, game.PlaceId), inline = true },
+            { name = '🔗 Game Link', value = "https://www.roblox.com/games/" .. tostring(game.PlaceId), inline = true },
+            { name = '🔗 Profile Link', value = "https://www.roblox.com/users/" .. tostring(player.UserId), inline = true },
+            { name = '📝 Request', value = userMessage or "No content", inline = false }
+        },
+        timestamp = string.format('%d-%02d-%02dT%02d:%02d:%02dZ', Time.year, Time.month, Time.day, Time.hour, Time.min, Time.sec)
+    }
+
+    local requestFunction = syn and syn.request or http_request or http and http.request
+    if not requestFunction then
+        warn("Không tìm thấy hàm request HTTP.")
+        return
+    end
+
+    local success, response = pcall(function()
+        return requestFunction({
+            Url = webhookUrl,
+            Method = 'POST',
+            Headers = { ['Content-Type'] = 'application/json' },
+            Body = HttpService:JSONEncode({ content = "# Requested", embeds = { Embed } })
+        })
+    end)
+
+    if success and response and (response.StatusCode == 204 or response.StatusCode == 200) then
+        print("Request đã gửi thành công.")
+    else
+        warn("Gửi thất bại:", response and response.StatusCode)
+    end
+end
+
+--// Rayfield UI
+local RequestSection = KTab:CreateSection("Request")
+
+local userRequestText = ""
+
+KTab:CreateInput({
+    Name = "Request Content",
+    PlaceholderText = "Nhập nội dung bạn muốn yêu cầu",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Text)
+        userRequestText = Text
+    end
+})
+
+KTab:CreateButton({
+    Name = "Send Request",
+    Callback = function()
+        if userRequestText == "" then
+            warn("Chưa nhập nội dung request!")
+        else
+            sendRequest(userRequestText)
+        end
+    end
+})
+
 end)
 
 
