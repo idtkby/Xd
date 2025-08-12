@@ -1,3 +1,21 @@
+-- Kiểm tra ID game
+if game.PlaceId ~= 116387287343653 then
+    return warn("Script only works in the specified game (ID: 18687417158){[NOLI🎭] Forsaken}")
+end
+
+-- Thông báo khi đúng ID game
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "✓ Game Check Passed",
+    Text = "Script is now executing...",
+    Duration = 5
+})
+
+task.wait(1) -- Đợi 1s trước khi thực thi 
+
+
+
+
+
 task.spawn(function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Forsaken/main/Hitboxfunction"))()
 setclipboard("")
@@ -37,20 +55,6 @@ else
 end
 end)
 
-task.spawn(function()
--- Tăng MaxStamina lên 200
-local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
-
-if staminaModule then
-    staminaModule.StaminaGain = 100
-    staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
-    print("[KOO.. THE NAO CAN. DUOC MA GE MINHHH")
-else
-    warn("[Stamina] Không tìm thấy module Sprinting")
-end
-
-
-end)
 
 
 
@@ -78,7 +82,7 @@ if _G.NotificationSound then
 Library:SetDPIScale(85)
 
 local Window = Library:CreateWindow({
-    Title = "IgnahK | Forsaken",
+    Title = "IgnahK | [NOLI🎭] Forsaken",
     Center = true,
     AutoShow = true,
     Resizable = true,
@@ -934,13 +938,14 @@ Main1Group:AddToggle("ApplySprintSpeed", {
         task.spawn(function()
             while _G.ApplySprintSpeed do
                 local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
-                if staminaModule and game.Players.LocalPlayer.Team then
-                    local teamName = game.Players.LocalPlayer.Team.Name
-                    if teamName == "Survivors" then
+                local char = game.Players.LocalPlayer.Character
+                if staminaModule and char and char.Parent then
+                    local parentName = char.Parent.Name -- "Survivors" hoặc "Killers"
+                    if parentName == "Survivors" then
                         if _G.SurvivorSpeed and _G.SurvivorSpeed ~= 35 and _G.SurvivorSpeed ~= 45 then
                             staminaModule.SprintSpeed = _G.SurvivorSpeed
                         end
-                    elseif teamName == "Killers" then
+                    elseif parentName == "Killers" then
                         if _G.KillerSpeed and _G.KillerSpeed ~= 35 and _G.KillerSpeed ~= 45 then
                             staminaModule.SprintSpeed = _G.KillerSpeed
                         end
@@ -948,13 +953,16 @@ Main1Group:AddToggle("ApplySprintSpeed", {
                 end
                 task.wait(3)
             end
+
             -- Khi tắt set về default
             if not _G.ApplySprintSpeed then
                 local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
-                if staminaModule then
-                    if game.Players.LocalPlayer.Team and game.Players.LocalPlayer.Team.Name == "Survivors" then
+                local char = game.Players.LocalPlayer.Character
+                if staminaModule and char and char.Parent then
+                    local parentName = char.Parent.Name
+                    if parentName == "Survivors" then
                         staminaModule.SprintSpeed = 26 -- default survivor
-                    else
+                    elseif parentName == "Killers" then
                         staminaModule.SprintSpeed = 27.5 -- default killer
                     end
                 end
@@ -1834,6 +1842,20 @@ ThemeManager:ApplyToTab(Tabs["UI Settings"])
 SaveManager:LoadAutoloadConfig() 
 
 
+task.spawn(function()
+-- Tăng MaxStamina lên 200
+local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
+
+if staminaModule then
+    staminaModule.StaminaGain = 100
+    staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
+    print("[KOO.. THE NAO CAN. DUOC MA GE MINHHH")
+else
+    warn("[Stamina] Không tìm thấy module Sprinting")
+end
+
+
+end)
 
 
 
