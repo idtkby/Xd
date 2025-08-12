@@ -925,7 +925,7 @@ local function sendRequest(userMessage)
 
     local requestFunction = syn and syn.request or http_request or http and http.request
     if not requestFunction then
-        warn("Không tìm thấy hàm request HTTP.")
+        warn("HTTP request function not found.")
         return
     end
 
@@ -939,9 +939,9 @@ local function sendRequest(userMessage)
     end)
 
     if success and response and (response.StatusCode == 204 or response.StatusCode == 200) then
-        print("Request đã gửi thành công.")
+        print("Request sent successfully.")
     else
-        warn("Gửi thất bại:", response and response.StatusCode)
+        warn("Send failed:", response and response.StatusCode)
     end
 end
 
@@ -952,7 +952,7 @@ local userRequestText = ""
 
 KTab:CreateInput({
     Name = "Request Content",
-    PlaceholderText = "Nhập nội dung bạn muốn yêu cầu",
+    PlaceholderText = "Enter the content you want to request",
     RemoveTextAfterFocusLost = false,
     Callback = function(Text)
         userRequestText = Text
@@ -963,7 +963,7 @@ KTab:CreateButton({
     Name = "Send Request",
     Callback = function()
         if userRequestText == "" then
-            warn("Chưa nhập nội dung request!")
+            warn("Request content not entered!")
         else
             sendRequest(userRequestText)
         end
