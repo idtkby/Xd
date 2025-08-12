@@ -17,7 +17,7 @@ local Players = game:GetService("Players")
 
 -- Danh sách user bị ban
 local bannedUsers = {
-    [1763386177] = "21:05 UTC+7",
+    [1763386177] = "13/8/2025, 21:05 UTC+7",
 }
 
 --[[
@@ -29,7 +29,7 @@ local lp = Players.LocalPlayer
 local banTime = bannedUsers[lp.UserId]
 
 if banTime then
-    lp:Kick("You have been banned by script\nPlease come back tomorrow " .. banTime)
+    lp:Kick("You have been banned by script\nYou can play again after: " .. banTime)
 end
 end)
 
