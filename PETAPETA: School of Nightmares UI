@@ -1771,12 +1771,6 @@ KTab:CreateButton({
     end,
   })
 
-KTab:CreateButton({
-Name = "discord",
-    Callback = function()
-        setclipboard("https://discord.gg/wBatSesGHZ")
-    end,
-})
 
 --// Yêu cầu: Đảm bảo bạn đã tạo KTab = Window:CreateTab("Tên Tab")
 local HttpService = game:GetService("HttpService")
@@ -1872,7 +1866,7 @@ KTab:CreateButton({
     end
 })
 
-
+KTab:CreateSection("You can get banned for 1 day for trolling,etc")
 local evt = Window:CreateTab("Event", "eye")
 
 
