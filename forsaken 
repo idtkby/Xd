@@ -82,7 +82,7 @@ if _G.NotificationSound then
 Library:SetDPIScale(85)
 
 local Window = Library:CreateWindow({
-    Title = "IgnahK | [NOLI🎭] Forsaken",
+    Title = "[NOLI🎭] Forsaken",
     Center = true,
     AutoShow = true,
     Resizable = true,
