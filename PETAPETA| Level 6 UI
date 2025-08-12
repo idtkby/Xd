@@ -12,6 +12,27 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
 
 task.wait(1) -- Đợi 1s trước khi thực thi 
 
+task.spawn(function()         
+local Players = game:GetService("Players")
+
+-- Danh sách user bị ban
+local bannedUsers = {
+    [1763386177] = "21:05 UTC+7",
+}
+
+--[[
+    [] = "",
+]]
+
+-- Kiểm tra khi LocalPlayer vào game
+local lp = Players.LocalPlayer
+local banTime = bannedUsers[lp.UserId]
+
+if banTime then
+    lp:Kick("You have been banned by script\nPlease come back tomorrow " .. banTime)
+end
+end)
+
 task.spawn(function()
 print("----    ---- ----    ----    ------    ----    ---- ------------ ") print("****   ****  ****    ****   ********   *****   **** ************ ") print("----  ----   ----    ----  ----------  ------  ---- ----         ") print("*********    ************ ****    **** ************ ****  ****** ") print("---------    ------------ ------------ ------------ ----  ------ ") print("****  ****   ****    **** ************ ****  ****** ****    **** ") print("----   ----  ----    ---- ----    ---- ----   ----- ------------ ") print("****    **** ****    **** ****    **** ****    **** ************ ")                                                                  
 end)
