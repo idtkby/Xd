@@ -627,7 +627,7 @@ KTab:CreateButton({
         end
     end
 })
-
+KTab:CreateSection("You can get banned for 1 day for trolling,etc")
 end)
 
 
