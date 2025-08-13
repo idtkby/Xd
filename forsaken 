@@ -1943,9 +1943,9 @@ while task.wait(20) do
 local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
 
 if staminaModule then
-    staminaModule.StaminaGain = 200
+    staminaModule.StaminaGain = 100
     staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
-    print("[KOO.. THE NAO CAN. DUOC MA GE MINHHH")
+    print("")
 else
     warn("[Stamina] Không tìm thấy module Sprinting")
 end
