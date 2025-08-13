@@ -146,15 +146,15 @@ Main1Group:AddToggle("Inf Stamina", {
     Text = "Inf Stamina",
     Default = false, 
     Callback = function(Value) 
-_G.InfStamina = Value
-while _G.InfStamina do
-local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
-if staminaModule then
-    staminaModule.Stamina = 1001
-    staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
-end
-task.wait(2)
-end
+        _G.InfStamina = Value
+        local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems")
+            :WaitForChild("Character")
+            :WaitForChild("Game")
+            :WaitForChild("Sprinting"))
+
+        if staminaModule and staminaModule.DefaultConfig then
+            staminaModule.DefaultConfig.StaminaLossDisabled = Value
+        end
     end
 })
 
