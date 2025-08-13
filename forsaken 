@@ -88,7 +88,7 @@ local Window = Library:CreateWindow({
     AutoShow = true,
     Resizable = true,
     Footer = "Script by IganhK",
-	   Icon = "rbxassetid://82204364945595", -- ID logo bạn muốn
+	   Icon = 82204364945595, -- ID logo bạn muốn
 
     AutoLock = false,
     ShowCustomCursor = true,
@@ -1533,6 +1533,9 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Forsaken/main/
 end)
 Main2Group:AddButton("Load Rinns Hub [Key](2links)", function()
 loadstring(game:HttpGet("https://rawscripts.net/raw/Forsaken-Stamina-values-changer-42106"))()
+end)
+Main2Group:AddButton("Load NOL script", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Syndromehsh/-/refs/heads/ISIS-%E8%A2%AB%E9%81%97%E5%BC%83/%E4%B8%8D%E8%A6%81%E5%91%8A%E8%AF%89%E4%BB%BB%E4%BD%95%E4%BA%BA%E5%93%9F%5B/%E5%B8%8C%E7%9A%AE%E7%AC%91%E8%84%B8%5D"))()
 end)
 
 
