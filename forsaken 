@@ -974,9 +974,6 @@ Main1Group:AddToggle("ApplySprintSpeed", {
 })
 
 
-local Tab1 = Main1Group:AddTab('Tab 1')
-local Tab2 = Main1Group:AddTab('Tab 2')
-
 
 
 
