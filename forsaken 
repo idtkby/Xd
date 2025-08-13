@@ -87,8 +87,9 @@ local Window = Library:CreateWindow({
     AutoShow = true,
     Resizable = true,
     Footer = "Script by IganhK",
-	Icon = 0,
-	AutoLock = false,
+	   Icon = "rbxassetid://82204364945595", -- ID logo bạn muốn
+
+    AutoLock = false,
     ShowCustomCursor = true,
     NotifySide = "Right",
     TabPadding = 2,
