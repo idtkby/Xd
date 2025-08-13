@@ -144,7 +144,7 @@ Main1Group:AddToggle("AutoGeneral", {
 
 Main1Group:AddToggle("Inf Stamina", {
     Text = "Inf Stamina",
-    Default = false, 
+    Default = true, 
     Callback = function(Value) 
         _G.InfStamina = Value
         local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems")
