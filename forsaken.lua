@@ -1451,11 +1451,67 @@ _G.EspHealth = Value
     end
 })
 
-Main2Group:AddDivider()
+local Main2o5Group = Tabs.Tab:AddRightTabbox() -- hoặc :AddLeftTabbox()
 
-Main2Group:AddLabel("--== Misc ==--", true)
+local M205One = Main2o5Group:AddTab("--== Mi")
 
-Main2Group:AddToggle("FullBright", {
+M205One:AddDivider()
+
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local VIM = game:GetService("VirtualInputManager")
+
+-- GUI chứa popup
+local tempUI = LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("TemporaryUI")
+
+-- Trạng thái toggle
+_G.Do1x1PopupsLoop = false
+_G.PopupDelay = 0.2 -- mặc định
+
+-- Hàm click popup
+local function clickPopup(gui)
+    if gui:IsA("GuiObject") and gui.Name == "1x1x1x1Popup" then
+        task.wait(_G.PopupDelay) -- delay tùy chỉnh
+        local cx = gui.AbsolutePosition.X + (gui.AbsoluteSize.X / 2)
+        local cy = gui.AbsolutePosition.Y + (gui.AbsoluteSize.Y / 2) + 50
+        VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, true, LocalPlayer.PlayerGui, 1)
+        VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, false, LocalPlayer.PlayerGui, 1)
+    end
+end
+
+-- Theo dõi khi popup được thêm
+tempUI.ChildAdded:Connect(function(child)
+    if _G.Do1x1PopupsLoop then
+        clickPopup(child)
+    end
+end)
+
+-- Toggle Obsidian
+M205One:AddToggle("Anti1xPopups", {
+    Text = "Anti 1x Popups",
+    Default = false,
+    Callback = function(Value)
+        _G.Do1x1PopupsLoop = Value
+    end
+})
+
+-- Slider chỉnh delay
+M205One:AddSlider("PopupDelaySlider", {
+    Text = "Popup Delay",
+    Default = 0.2,
+    Min = 0.05,
+    Max = 1,
+    Rounding = 2,
+    Callback = function(Value)
+        _G.PopupDelay = Value
+    end
+})
+
+
+M205One:AddDivider()
+
+M205One:AddToggle("FullBright", {
     Text = "Full Bright",
     Default = false,
     Callback = function(Value)
@@ -1509,22 +1565,9 @@ Main2Group:AddToggle("FullBright", {
     end
 })
 
-Main2Group:AddButton("Remove MaxZoom Limit", function()
-    -- Simple script to set the player’s max camera zoom distance to 300
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
 
--- Ensure the Character loads
-if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-    LocalPlayer.CharacterAdded:Wait()
-end
 
--- Apply max zoom
-LocalPlayer.CameraMaxZoomDistance = 300
-       
-end)
-
-Main2Group:AddToggle("ShowPing", {
+M205One:AddToggle("ShowPing", {
     Text = "Show YOUR Ping",
     Default = false,
     Callback = function(Value)
@@ -1606,35 +1649,60 @@ Main2Group:AddToggle("ShowPing", {
     end
 })
 
-Main2Group:AddDivider()
-Main2Group:AddButton("Load InfYield Edit", function()
+M205One:AddButton("Remove MaxZoom Limit", function()
+    -- Simple script to set the player’s max camera zoom distance to 300
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Ensure the Character loads
+if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+    LocalPlayer.CharacterAdded:Wait()
+end
+
+-- Apply max zoom
+LocalPlayer.CameraMaxZoomDistance = 300
+end)
+
+
+
+
+
+
+
+
+
+local M205Two = Main2o5Group:AddTab("sc ==--")
+
+M205Two:AddDivider()
+
+M205Two:AddButton("Load InfYield Edit", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()  
 end)
-Main2Group:AddButton("Load c00lgh0st", function()
+M205Two:AddButton("Load c00lgh0st", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Forsaken/main/c00lgh0st"))()  
 end)
-Main2Group:AddButton("Load YOXI Hub", function()
+M205Two:AddButton("Load YOXI Hub", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Yomkaa/forsaken-YOXI-HUB/refs/heads/main/forsaken%20YOXI%20HUB",true))()
 end)
-Main2Group:AddButton("Load Walkto Gui", function()
+M205Two:AddButton("Load Walkto Gui", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/walkto"))()  
 end)
-Main2Group:AddButton("Load Auto Block", function()
+M205Two:AddButton("Load Auto Block", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Forsaken/main/autoblockguest"))()
 end)
-Main2Group:AddButton("Load Rinns Hub [Key](2links)", function()
+M205Two:AddButton("Load Rinns Hub [Key](2links)", function()
 loadstring(game:HttpGet("https://rawscripts.net/raw/Forsaken-Stamina-values-changer-42106"))()
 end)
-Main2Group:AddButton("Load NOL script", function()
+M205Two:AddButton("Load NOL script", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Syndromehsh/-/refs/heads/ISIS-%E8%A2%AB%E9%81%97%E5%BC%83/%E4%B8%8D%E8%A6%81%E5%91%8A%E8%AF%89%E4%BB%BB%E4%BD%95%E4%BA%BA%E5%93%9F%5B/%E5%B8%8C%E7%9A%AE%E7%AC%91%E8%84%B8%5D"))()
 end)
-Main2Group:AddDivider()
-Main2Group:AddButton("Load Sigmasaken [Key in discord]", function()
+M205Two:AddDivider()
+M205Two:AddButton("Load Sigmasaken [Key in discord]", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/sigmaboy-sigma-boy/Stamina-Settings-and-ESP/refs/heads/main/SigmasakenLoader"))()
 task.wait(3)
 setclipboard("ESPREWRITED")
 end)
-Main2Group:AddButton("Load Fartsaken [Key]", function()
+M205Two:AddButton("Load Fartsaken [Key]", function()
 if getgenv then
     getgenv().BloxtrapRPC = "true"
     getgenv().DebugNotifications = "false"
@@ -1643,6 +1711,66 @@ end
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ivannetta/ShitScripts/main/forsaken.lua"))()
 end)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
