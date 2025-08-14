@@ -973,8 +973,13 @@ Main1Group:AddToggle("ApplySprintSpeed", {
     end
 })
 
-local M1t1 = Tab:AddTab('Tab 1')
-local M1t2 = Tab:AddTab('Tab 2')
+
+local TabBox = Tabs.Tab:AddLeftTabbox() -- hoặc :AddLeftTabbox()
+
+local M105 = TabBox:AddTab("Tab 1")
+Tab1:AddToggle("Tab1Toggle", { Text = "Tab1 Toggle" })
+local M105 = TabBox:AddTab("Tab 2")
+Tab2:AddToggle("Tab2Toggle", { Text = "Tab2 Toggle" })
 
 
 
