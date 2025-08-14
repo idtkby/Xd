@@ -1999,9 +1999,8 @@ end)
 
 
 
-local Main4Group = Tabs.Tab2:AddLeftGroupbox("-=-=-=-=-=-")
+local Main4Group = Tabs.Tab2:AddRightGroupbox("")
 
-Main4Group:AddDivider()
 
 Main4Group:AddLabel("-== anti ==-", true)
 
