@@ -157,7 +157,7 @@ Main1Group:AddToggle("Inf Stamina", {
                 :WaitForChild("Sprinting"))
 
             if staminaModule and staminaModule.DefaultConfig then
-                staminaModule.DefaultConfig.StaminaLossDisabled = true
+                staminaModule.DefaultConfig.StaminaLossDisabled = false
             end
 
             task.wait(1) -- giữ tần suất hợp lý để tránh lag
@@ -169,7 +169,7 @@ Main1Group:AddToggle("Inf Stamina", {
             :WaitForChild("Game")
             :WaitForChild("Sprinting"))
         if staminaModule and staminaModule.DefaultConfig then
-            staminaModule.DefaultConfig.StaminaLossDisabled = false
+            staminaModule.DefaultConfig.StaminaLossDisabled = true
         end
     end
 })
