@@ -37,7 +37,7 @@ if staminaModule then
     local oldIndex = mt.__newindex
     mt.__newindex = function(t, k, v)
         if k == "MaxStamina" then
-            warn("[BlockInfStamina] Prevented setting MaxStamina:", v)
+            warn("[BlockFunction] Prevented setting MSN:", v)
             return
         end
         return oldIndex(t, k, v)
@@ -55,7 +55,7 @@ else
 end
 end)
 
-
+task.wait(1)
 
 
 local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
