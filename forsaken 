@@ -146,16 +146,30 @@ Main1Group:AddToggle("AutoGeneral", {
 
 Main1Group:AddToggle("Inf Stamina", {
     Text = "Inf Stamina",
-    Default = true, 
+    Default = false, 
     Callback = function(Value) 
         _G.InfStamina = Value
+
+        while _G.InfStamina do
+            local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems")
+                :WaitForChild("Character")
+                :WaitForChild("Game")
+                :WaitForChild("Sprinting"))
+
+            if staminaModule and staminaModule.DefaultConfig then
+                staminaModule.DefaultConfig.StaminaLossDisabled = true
+            end
+
+            task.wait(1) -- giữ tần suất hợp lý để tránh lag
+        end
+
+        -- Khi tắt
         local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems")
             :WaitForChild("Character")
             :WaitForChild("Game")
             :WaitForChild("Sprinting"))
-
         if staminaModule and staminaModule.DefaultConfig then
-            staminaModule.DefaultConfig.StaminaLossDisabled = Value
+            staminaModule.DefaultConfig.StaminaLossDisabled = false
         end
     end
 })
@@ -206,18 +220,23 @@ Main1Group:AddToggle("ToggleRestoreGUI", {
             button.Parent = mainFrame
 
             button.MouseButton1Click:Connect(function()
-                _G.InfStamina = true
-                local suc, err = pcall(function()
-                    local sprinting = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
-                    if sprinting then
-                        sprinting.Stamina = 1001
-                        sprinting.__staminaChangedEvent:Fire(sprinting.Stamina)
-                    end
-                end)
-                if not suc then
-                    warn("InfStamina Error:", err)
-                end
-            end)
+    _G.InfStamina = true
+    local suc, err = pcall(function()
+        local sprinting = require(game.ReplicatedStorage:WaitForChild("Systems")
+            :WaitForChild("Character")
+            :WaitForChild("Game")
+            :WaitForChild("Sprinting"))
+        
+        if sprinting and sprinting.DefaultConfig then
+            local maxStamina = sprinting.DefaultConfig.MaxStamina or 100 -- lấy MaxStamina, fallback = 100
+            sprinting.Stamina = maxStamina
+            sprinting.__staminaChangedEvent:Fire(sprinting.Stamina)
+        end
+    end)
+    if not suc then
+        warn("InfStamina Error:", err)
+    end
+end)
         end
 
         -- Bật/Tắt GUI
@@ -768,15 +787,175 @@ Main1Group:AddToggle("AutoAimCharge", {
 })
 
 
-Main1Group:AddDivider()
 
 
-Main1Group:AddLabel("--== Hitbox ==--", true)
+
+local Main1o5Group = Tabs.Tab:AddLeftTabbox() -- hoặc :AddLeftTabbox()
+
+local M105One = Main1o5Group:AddTab("--== Player ==--")
+
+--// Obsidian UI - M105One
+M105One:AddDivider()
+
+-- Input stamina
+M105One:AddInput("MaxStaminaValue", {
+    Default = "",
+    Numeric = true,
+    Finished = true,
+    Text = "Max Stamina (10-1000)",
+    Placeholder = "Enter",
+    Callback = function(Value)
+        local num = tonumber(Value)
+        if num and num >= 10 and num <= 1000 then
+            _G.MaxStaminaValue = num
+        else
+            Library:Notify("Die, Wise, Cry", 5)
+        end
+    end
+})
+
+-- Toggle Apply Stamina
+M105One:AddToggle("ApplyStamina", {
+    Text = "Apply Stamina",
+    Default = false,
+    Callback = function(Value)
+        _G.ApplyStamina = Value
+        task.spawn(function()
+            while _G.ApplyStamina do
+                local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
+                if staminaModule then
+                    staminaModule.MaxStamina = _G.MaxStaminaValue or 110
+                    staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
+                end
+                task.wait(3)
+            end
+            -- Khi tắt thì set về 110
+            if not _G.ApplyStamina then
+                local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
+                if staminaModule then
+                    staminaModule.MaxStamina = 110
+                    staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
+                end
+            end
+        end)
+    end
+})
+
+M105One:AddLabel("-= Sprint Speed =-", true)
+
+-- Input Survivor Speed
+M105One:AddInput("SurvivorSpeed", {
+    Default = "",
+    Numeric = true,
+    Finished = true,
+    Text = "Survivor Speed (26-50)",
+    Placeholder = "Enter",
+    Callback = function(Value)
+        local num = tonumber(Value)
+        if num and num >= 26 and num <= 50 and num ~= 35 and num ~= 45 then
+            _G.SurvivorSpeed = num
+        else
+            Library:Notify("Die, Wise, Cry", 5)
+        end
+    end
+})
+
+-- Input Killer Speed
+M105One:AddInput("KillerSpeed", {
+    Default = "",
+    Numeric = true,
+    Finished = true,
+    Text = "Killer Speed (27.5-50)",
+    Placeholder = "Enter",
+    Callback = function(Value)
+        local num = tonumber(Value)
+        if num and num >= 27.5 and num <= 50 and num ~= 35 and num ~= 45 then
+            _G.KillerSpeed = num
+        else
+            Library:Notify("Die, Wise, Cry", 5)
+        end
+    end
+})
+
+-- Toggle Apply Sprint Speed
+M105One:AddToggle("ApplySprintSpeed", {
+    Text = "Apply Sprint Speed",
+    Default = false,
+    Callback = function(Value)
+        _G.ApplySprintSpeed = Value
+        task.spawn(function()
+            while _G.ApplySprintSpeed do
+                local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
+                local char = game.Players.LocalPlayer.Character
+                if staminaModule and char and char.Parent then
+                    local parentName = char.Parent.Name -- "Survivors" hoặc "Killers"
+                    if parentName == "Survivors" then
+                        if _G.SurvivorSpeed and _G.SurvivorSpeed ~= 35 and _G.SurvivorSpeed ~= 45 then
+                            staminaModule.SprintSpeed = _G.SurvivorSpeed
+                        end
+                    elseif parentName == "Killers" then
+                        if _G.KillerSpeed and _G.KillerSpeed ~= 35 and _G.KillerSpeed ~= 45 then
+                            staminaModule.SprintSpeed = _G.KillerSpeed
+                        end
+                    end
+                end
+                task.wait(7)
+            end
+
+            -- Khi tắt set về default
+            if not _G.ApplySprintSpeed then
+                local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
+                local char = game.Players.LocalPlayer.Character
+                if staminaModule and char and char.Parent then
+                    local parentName = char.Parent.Name
+                    if parentName == "Survivors" then
+                        staminaModule.SprintSpeed = 26 -- default survivor
+                    elseif parentName == "Killers" then
+                        staminaModule.SprintSpeed = 27.5 -- default killer
+                    end
+                end
+            end
+        end)
+    end
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local M105Two = Main1o5Group:AddTab("--== Hitbox ==--")
+
+M105Two:AddDivider()
+
+
 _G.RV_Survivor = 0
 _G.RV_Killer = 0
 
 -- Input Survivor
-Main1Group:AddInput("Set dist Survivor", {
+M105Two:AddInput("Set dist Survivor", {
     Default = "0 ~ 1000",
     Numeric = true,
     Text = "Hitbox Dist (Survivor)",
@@ -792,7 +971,7 @@ Main1Group:AddInput("Set dist Survivor", {
 })
 
 -- Input Killer
-Main1Group:AddInput("Set dist Killer", {
+M105Two:AddInput("Set dist Killer", {
     Default = "0 ~ 1000",
     Numeric = true,
     Text = "Hitbox Dist (Killer)",
@@ -835,7 +1014,7 @@ lp.CharacterAdded:Connect(function(char)
 end)
 
 -- Nút Apply thủ công
-Main1Group:AddButton("Apply Hitbox Dist", function()
+M105Two:AddButton("Apply Hitbox Dist", function()
     applyHitboxDist()
 end)
 
@@ -843,142 +1022,48 @@ end)
 task.wait(0.5)
 applyHitboxDist()
 
-Main1Group:AddLabel("You want to be hard to detect", true)
-Main1Group:AddLabel("Survivors: 0 ~ 15", true)
-Main1Group:AddLabel("Killers: 10 ~ 30", true)
-
---// Obsidian UI - Main1Group
-Main1Group:AddDivider()
-Main1Group:AddLabel("--== Player ==--", true)
-
--- Input stamina
-Main1Group:AddInput("MaxStaminaValue", {
-    Default = "",
-    Numeric = true,
-    Finished = true,
-    Text = "Max Stamina (10-1000)",
-    Placeholder = "Enter",
-    Callback = function(Value)
-        local num = tonumber(Value)
-        if num and num >= 10 and num <= 1000 then
-            _G.MaxStaminaValue = num
-        else
-            Library:Notify("Die, Wise, Cry", 5)
-        end
-    end
-})
-
--- Toggle Apply Stamina
-Main1Group:AddToggle("ApplyStamina", {
-    Text = "Apply Stamina",
-    Default = false,
-    Callback = function(Value)
-        _G.ApplyStamina = Value
-        task.spawn(function()
-            while _G.ApplyStamina do
-                local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
-                if staminaModule then
-                    staminaModule.MaxStamina = _G.MaxStaminaValue or 110
-                    staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
-                end
-                task.wait(3)
-            end
-            -- Khi tắt thì set về 110
-            if not _G.ApplyStamina then
-                local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
-                if staminaModule then
-                    staminaModule.MaxStamina = 110
-                    staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
-                end
-            end
-        end)
-    end
-})
-
-Main1Group:AddLabel("-= Sprint Speed =-", true)
-
--- Input Survivor Speed
-Main1Group:AddInput("SurvivorSpeed", {
-    Default = "",
-    Numeric = true,
-    Finished = true,
-    Text = "Survivor Speed (26-50)",
-    Placeholder = "Enter",
-    Callback = function(Value)
-        local num = tonumber(Value)
-        if num and num >= 26 and num <= 50 and num ~= 35 and num ~= 45 then
-            _G.SurvivorSpeed = num
-        else
-            Library:Notify("Die, Wise, Cry", 5)
-        end
-    end
-})
-
--- Input Killer Speed
-Main1Group:AddInput("KillerSpeed", {
-    Default = "",
-    Numeric = true,
-    Finished = true,
-    Text = "Killer Speed (27.5-50)",
-    Placeholder = "Enter",
-    Callback = function(Value)
-        local num = tonumber(Value)
-        if num and num >= 27.5 and num <= 50 and num ~= 35 and num ~= 45 then
-            _G.KillerSpeed = num
-        else
-            Library:Notify("Die, Wise, Cry", 5)
-        end
-    end
-})
-
--- Toggle Apply Sprint Speed
-Main1Group:AddToggle("ApplySprintSpeed", {
-    Text = "Apply Sprint Speed",
-    Default = false,
-    Callback = function(Value)
-        _G.ApplySprintSpeed = Value
-        task.spawn(function()
-            while _G.ApplySprintSpeed do
-                local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
-                local char = game.Players.LocalPlayer.Character
-                if staminaModule and char and char.Parent then
-                    local parentName = char.Parent.Name -- "Survivors" hoặc "Killers"
-                    if parentName == "Survivors" then
-                        if _G.SurvivorSpeed and _G.SurvivorSpeed ~= 35 and _G.SurvivorSpeed ~= 45 then
-                            staminaModule.SprintSpeed = _G.SurvivorSpeed
-                        end
-                    elseif parentName == "Killers" then
-                        if _G.KillerSpeed and _G.KillerSpeed ~= 35 and _G.KillerSpeed ~= 45 then
-                            staminaModule.SprintSpeed = _G.KillerSpeed
-                        end
-                    end
-                end
-                task.wait(7)
-            end
-
-            -- Khi tắt set về default
-            if not _G.ApplySprintSpeed then
-                local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
-                local char = game.Players.LocalPlayer.Character
-                if staminaModule and char and char.Parent then
-                    local parentName = char.Parent.Name
-                    if parentName == "Survivors" then
-                        staminaModule.SprintSpeed = 26 -- default survivor
-                    elseif parentName == "Killers" then
-                        staminaModule.SprintSpeed = 27.5 -- default killer
-                    end
-                end
-            end
-        end)
-    end
-})
+M105Two:AddDivider()
+M105Two:AddLabel("You want to be hard to detect", true)
+M105Two:AddLabel("Survivors: 0 ~ 15", true)
+M105Two:AddLabel("Killers: 10 ~ 30", true)
 
 
-local Main1o5Group = Tabs.Tab:AddLeftTabbox() -- hoặc :AddLeftTabbox()
 
-local M105One = Main1o5Group:AddTab("Tab 1")
 
-local M105Two = Main1o5Group:AddTab("Tab 2")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
