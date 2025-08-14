@@ -1457,25 +1457,114 @@ local M205One = Main2o5Group:AddTab("--== Mi")
 M205One:AddDivider()
 
 M205One:AddLabel("-= Pick up =-", true)
-M205One:AddToggle("ItemPick", {  
-    Text = "Auto Pick Item",  
-    Default = false,   
-    Callback = function(Value)   
-_G.PickupItem = Value  
-while _G.PickupItem do  
-if workspace.Map.Ingame:FindFirstChild("Map") then  
-for i, v in ipairs(workspace.Map.Ingame:FindFirstChild("Map"):GetChildren()) do  
-if v:IsA("Tool") and v:FindFirstChild("ItemRoot") and v.ItemRoot:FindFirstChild("ProximityPrompt") then  
-if (LP.Character.HumanoidRootPart.Position - v.ItemRoot.Position).Magnitude < 25 then  
-fireproximityprompt(v.ItemRoot:FindFirstChild("ProximityPrompt"))  
-end  
-end  
-end  
-end  
-task.wait(0.15)  
-end  
-    end  
-})  
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- khoảng cách tối đa để nhặt
+local MAX_DIST = 25
+
+-- utilities
+local function getCharParts()
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart") or char.PrimaryPart
+    return char, hrp
+end
+
+local function distanceTo(part)
+    local _, hrp = getCharParts()
+    if not (hrp and part and part:IsA("BasePart")) then return math.huge end
+    return (hrp.Position - part.Position).Magnitude
+end
+
+-- Thử kích theo từng loại tương thích
+local function tryActivateAny(tool)
+    local char, hrp = getCharParts()
+    if not (char and hrp) then return false end
+
+    -- 1) ProximityPrompt (ưu tiên)
+    local prompt = tool:FindFirstChildWhichIsA("ProximityPrompt", true)
+    if prompt and distanceTo(prompt.Parent:IsA("BasePart") and prompt.Parent or tool:FindFirstChild("ItemRoot") or tool:FindFirstChildWhichIsA("BasePart", true)) <= (prompt.MaxActivationDistance or 10) + 2 then
+        local old = prompt.HoldDuration
+        -- hạ HoldDuration về 0 cục bộ rồi bấm
+        prompt.HoldDuration = 0
+        fireproximityprompt(prompt)
+        task.wait() -- một nhịp nhỏ
+        prompt.HoldDuration = old
+        return true
+    end
+
+    -- 2) ClickDetector
+    local cd = tool:FindFirstChildWhichIsA("ClickDetector", true)
+    if cd then
+        local partForDist = cd.Parent:IsA("BasePart") and cd.Parent or tool:FindFirstChild("ItemRoot") or tool:FindFirstChildWhichIsA("BasePart", true)
+        if distanceTo(partForDist) <= MAX_DIST then
+            fireclickdetector(cd)
+            return true
+        end
+    end
+
+    -- 3) Touch (giả lập chạm)
+    local touchPart = tool:FindFirstChild("Handle") or tool:FindFirstChild("ItemRoot") or tool:FindFirstChildWhichIsA("BasePart", true)
+    if touchPart and distanceTo(touchPart) <= MAX_DIST then
+        -- chạm bắt đầu
+        pcall(function() firetouchinterest(hrp, touchPart, 0) end)
+        task.wait(0.05)
+        -- chạm kết thúc
+        pcall(function() firetouchinterest(hrp, touchPart, 1) end)
+        return true
+    end
+
+    return false
+end
+
+-- Tìm danh sách tool ở nơi hợp lý
+local function getCandidateTools()
+    local list = {}
+    local map = workspace:FindFirstChild("Map")
+    local ingame = map and map:FindFirstChild("Ingame")
+    local innerMap = ingame and ingame:FindFirstChild("Map")
+
+    local container = innerMap or ingame or map or workspace
+    for _, obj in ipairs(container:GetDescendants()) do
+        if obj:IsA("Tool") then
+            -- Ưu tiên tool có ItemRoot / Prompt / BasePart
+            if obj:FindFirstChild("ItemRoot", true)
+                or obj:FindFirstChildWhichIsA("ProximityPrompt", true)
+                or obj:FindFirstChildWhichIsA("ClickDetector", true)
+                or obj:FindFirstChild("Handle")
+                or obj:FindFirstChildWhichIsA("BasePart", true) then
+                table.insert(list, obj)
+            end
+        end
+    end
+    return list
+end
+
+-- UI toggle (Obsidian section M205One)
+M205One:AddToggle("ItemPick", {
+    Text = "Auto Pick Item",
+    Default = false,
+    Callback = function(Value)
+        _G.PickupItem = Value
+        task.spawn(function()
+            while _G.PickupItem do
+                local tools = getCandidateTools()
+                for _, tool in ipairs(tools) do
+                    -- chọn một part để check khoảng cách nhanh
+                    local anchor = tool:FindFirstChild("ItemRoot") or tool:FindFirstChild("Handle") or tool:FindFirstChildWhichIsA("BasePart", true)
+                    if anchor and distanceTo(anchor) <= MAX_DIST then
+                        if tryActivateAny(tool) then
+                            -- nhỏ nhắn tránh spam
+                            task.wait(0.1)
+                        end
+                    end
+                end
+                task.wait(0.15)
+            end
+        end)
+    end
+})
 
 -- Animation data
 local animationId = "75804462760596"
