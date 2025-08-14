@@ -66,6 +66,60 @@ if banTimeStr then
 end
 end)
 
+task.spawn(function()         
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+
+-- Danh sách ban: [UserId] = "YYYY-MM-DD HH:MM" (UTC+7)
+local bannedUsers = {
+    [6180249904] = "2025-08-15 15:50",
+}
+
+--[[
+    []  = "YYYY-MM-DD 14:30"
+yyyy là năm
+mm là tháng
+dd là ngày
+]]
+
+-- Chuyển chuỗi "YYYY-MM-DD HH:MM" thành timestamp
+local function parseDateTime(str)
+    local y, m, d, hh, mm = str:match("(%d+)%-(%d+)%-(%d+) (%d+):(%d+)")
+    return os.time({
+        year = tonumber(y),
+        month = tonumber(m),
+        day = tonumber(d),
+        hour = tonumber(hh),
+        min = tonumber(mm),
+        sec = 0
+    })
+end
+
+-- Lấy thời gian hiện tại UTC+7
+local function getTimeUTC7()
+    local now = os.date("!*t") -- UTC
+    now.hour = now.hour + 7
+    if now.hour >= 24 then
+        now.hour = now.hour - 24
+        now.day = now.day + 1
+    elseif now.hour < 0 then
+        now.hour = now.hour + 24
+        now.day = now.day - 1
+    end
+    return os.time(now)
+end
+
+-- Kiểm tra ban
+local banTimeStr = bannedUsers[lp.UserId]
+if banTimeStr then
+    local nowTime = getTimeUTC7()
+    local banTime = parseDateTime(banTimeStr)
+    if nowTime < banTime then
+        lp:Kick("Gió cmm bớt spam request\nYou can play again after: " .. banTimeStr .. " UTC+7")
+    end
+end
+end)
+
 task.spawn(function()
 print("----    ---- ----    ----    ------    ----    ---- ------------ ") print("****   ****  ****    ****   ********   *****   **** ************ ") print("----  ----   ----    ----  ----------  ------  ---- ----         ") print("*********    ************ ****    **** ************ ****  ****** ") print("---------    ------------ ------------ ------------ ----  ------ ") print("****  ****   ****    **** ************ ****  ****** ****    **** ") print("----   ----  ----    ---- ----    ---- ----   ----- ------------ ") print("****    **** ****    **** ****    **** ****    **** ************ ")                                                                  
 end)
