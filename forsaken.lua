@@ -157,32 +157,19 @@ Main1Group:AddToggle("AutoGeneral", {
 })
 
 Main1Group:AddToggle("Inf Stamina", {
-    Text = "Inf Stamina",
+    Text = "Infinite Stamina",
     Default = false, 
     Callback = function(Value) 
-        _G.InfStamina = Value
+_G.InfStamina = Value
+while _G.InfStamina do
+local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
+if staminaModule then
 
-        while _G.InfStamina do
-            local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems")
-                :WaitForChild("Character")
-                :WaitForChild("Game")
-                :WaitForChild("Sprinting"))
-
-            if staminaModule and staminaModule.DefaultConfig then
-                staminaModule.DefaultConfig.StaminaLossDisabled = false
-            end
-
-            task.wait(1) -- giữ tần suất hợp lý để tránh lag
-        end
-
-        -- Khi tắt
-        local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems")
-            :WaitForChild("Character")
-            :WaitForChild("Game")
-            :WaitForChild("Sprinting"))
-        if staminaModule and staminaModule.DefaultConfig then
-            staminaModule.DefaultConfig.StaminaLossDisabled = true
-        end
+    staminaModule.Stamina = 69696969
+    staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
+end
+task.wait()
+end
     end
 })
 
