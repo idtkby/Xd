@@ -10,6 +10,19 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
     Duration = 5
 })
 
+-- Lưu lại hàm gốc
+local oldSetClipboard = setclipboard
+
+-- Ghi đè
+setclipboard = function(text)
+    if text == "https://discord.gg/ZRTkpWuK" then
+        warn("hookes test", text)
+        return -- không làm gì
+    end
+    -- Nếu không bị chặn, gọi hàm gốc
+    return oldSetClipboard(text)
+end
+
 task.wait(1) -- Đợi 1s trước khi thực thi 
 
 
@@ -18,7 +31,6 @@ task.wait(1) -- Đợi 1s trước khi thực thi
 
 task.spawn(function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Forsaken/main/Hitboxfunction"))()
-setclipboard("")
 wait(2)
 getgenv().RV = 0
 end)
