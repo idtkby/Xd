@@ -1497,7 +1497,7 @@ M205One:AddToggle("Anti1xPopups", {
 
 -- Slider chỉnh delay
 M205One:AddSlider("PopupDelaySlider", {
-    Text = "Popup Delay",
+    Text = "Delay",
     Default = 0.2,
     Min = 0.05,
     Max = 1,
@@ -1507,6 +1507,88 @@ M205One:AddSlider("PopupDelaySlider", {
     end
 })
 
+
+M205One:AddDivider()
+
+Main2Group:AddLabel("-= Pick up =-", true)
+M205One:AddToggle("ItemPick", {  
+    Text = "Auto Pick Item",  
+    Default = false,   
+    Callback = function(Value)   
+_G.PickupItem = Value  
+while _G.PickupItem do  
+if workspace.Map.Ingame:FindFirstChild("Map") then  
+for i, v in ipairs(workspace.Map.Ingame:FindFirstChild("Map"):GetChildren()) do  
+if v:IsA("Tool") and v:FindFirstChild("ItemRoot") and v.ItemRoot:FindFirstChild("ProximityPrompt") then  
+if (LP.Character.HumanoidRootPart.Position - v.ItemRoot.Position).Magnitude < 25 then  
+fireproximityprompt(v.ItemRoot:FindFirstChild("ProximityPrompt"))  
+end  
+end  
+end  
+end  
+task.wait(0.15)  
+end  
+    end  
+})  
+
+-- Animation data
+local animationId = "75804462760596"
+local animationSpeed = 0
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Hàm chạy animation invisibility 1s
+local function PlayInvisibilityOnce()
+    local speaker = LocalPlayer
+    if not speaker or not speaker.Character then return end
+
+    local humanoid = speaker.Character:FindFirstChildOfClass("Humanoid")
+    if not humanoid or humanoid.RigType ~= Enum.HumanoidRigType.R6 then
+        Library:Notify("R6 Required - This only works with R6 rig!", 5)
+        return
+    end
+
+    local anim = Instance.new("Animation")
+    anim.AnimationId = "rbxassetid://" .. animationId
+    local loadedAnim = humanoid:LoadAnimation(anim)
+    loadedAnim.Looped = false
+    loadedAnim:Play()
+    loadedAnim:AdjustSpeed(animationSpeed)
+
+    -- Tự stop sau 1s
+    task.delay(1, function()
+        loadedAnim:Stop()
+        local animateScript = speaker.Character:FindFirstChild("Animate")
+        if animateScript then
+            animateScript.Disabled = true
+            animateScript.Disabled = false
+        end
+    end)
+end
+
+-- Nút Pick Up Item
+M205One:AddButton("Pick Item", function()
+    if workspace.Map.Ingame:FindFirstChild("Map") then
+        local OldCFrame = LocalPlayer.Character.HumanoidRootPart.CFrame
+
+        for _, v in ipairs(workspace.Map.Ingame.Map:GetChildren()) do
+            if v:IsA("Tool") and v:FindFirstChild("ItemRoot") and v.ItemRoot:FindFirstChild("ProximityPrompt") then
+                -- Chạy invisibility animation trong 1 giây
+                PlayInvisibilityOnce()
+
+                -- Teleport & nhặt
+                LocalPlayer.Character.HumanoidRootPart.CFrame = v.ItemRoot.CFrame
+                task.wait(0.3)
+                fireproximityprompt(v.ItemRoot.ProximityPrompt)
+                task.wait(0.4)
+
+                -- Về vị trí ban đầu
+                LocalPlayer.Character.HumanoidRootPart.CFrame = OldCFrame
+                break
+            end
+        end
+    end
+end)
 
 M205One:AddDivider()
 
