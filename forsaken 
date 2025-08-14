@@ -974,11 +974,11 @@ Main1Group:AddToggle("ApplySprintSpeed", {
 })
 
 
-local Main1.5Group = Tabs.Tab:AddLeftTabbox() -- hoặc :AddLeftTabbox()
+local Main1o5Group = Tabs.Tab:AddLeftTabbox() -- hoặc :AddLeftTabbox()
 
-local M105One = Main1.5Group:AddTab("Tab 1")
+local M105One = Main1o5Group:AddTab("Tab 1")
 
-local M105Two = Main1.5Group:AddTab("Tab 2")
+local M105Two = Main1o5Group:AddTab("Tab 2")
 
 
 
