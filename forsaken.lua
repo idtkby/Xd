@@ -1523,6 +1523,69 @@ M205One:AddSlider("PopupDelaySlider", {
 
 M205One:AddDivider()
 
+-- === Animation Loop ===
+local animationId = "75804462760596"
+local animationSpeed = 0
+local loopRunning = false
+local loopThread
+local currentAnim = nil
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+M205One:AddToggle("Invisibility", {
+    Text = "Invisibility",
+    Default = false,
+    Callback = function(Value)
+        loopRunning = Value
+
+        local speaker = LocalPlayer
+        if not speaker or not speaker.Character then return end
+
+        local humanoid = speaker.Character:FindFirstChildOfClass("Humanoid")
+        if not humanoid or humanoid.RigType ~= Enum.HumanoidRigType.R6 then
+            Library:Notify("R6 Required - This only works with R6 rig!", 5)
+            return
+        end
+
+        if Value then
+            loopThread = task.spawn(function()
+                while loopRunning do
+                    local anim = Instance.new("Animation")
+                    anim.AnimationId = "rbxassetid://" .. animationId
+                    local loadedAnim = humanoid:LoadAnimation(anim)
+                    currentAnim = loadedAnim
+                    loadedAnim.Looped = false
+                    loadedAnim:Play()
+                    loadedAnim:AdjustSpeed(animationSpeed)
+                    task.wait(0.000001)
+                end
+            end)
+        else
+            if loopThread then
+                loopRunning = false
+                task.cancel(loopThread)
+            end
+            if currentAnim then
+                currentAnim:Stop()
+                currentAnim = nil
+            end
+            local Humanoid = speaker.Character:FindFirstChildOfClass("Humanoid") or speaker.Character:FindFirstChildOfClass("AnimationController")
+            if Humanoid then
+                for _, v in pairs(Humanoid:GetPlayingAnimationTracks()) do
+                    v:AdjustSpeed(100000)
+                end
+            end
+            local animateScript = speaker.Character:FindFirstChild("Animate")
+            if animateScript then
+                animateScript.Disabled = true
+                animateScript.Disabled = false
+            end
+        end
+    end
+})
+
+M205One:AddDivider()
+
 M205One:AddToggle("FullBright", {
     Text = "Full Bright",
     Default = false,
@@ -1673,6 +1736,10 @@ end
 
 -- Apply max zoom
 LocalPlayer.CameraMaxZoomDistance = 300
+end)
+
+M205One:AddButton("no disable chat", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/enable%20chat"))()
 end)
 
 
