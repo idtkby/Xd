@@ -1456,61 +1456,7 @@ local M205One = Main2o5Group:AddTab("--== Mi")
 
 M205One:AddDivider()
 
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local VIM = game:GetService("VirtualInputManager")
-
--- GUI chứa popup
-local tempUI = LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("TemporaryUI")
-
--- Trạng thái toggle
-_G.Do1x1PopupsLoop = false
-_G.PopupDelay = 0.2 -- mặc định
-
--- Hàm click popup
-local function clickPopup(gui)
-    if gui:IsA("GuiObject") and gui.Name == "1x1x1x1Popup" then
-        task.wait(_G.PopupDelay) -- delay tùy chỉnh
-        local cx = gui.AbsolutePosition.X + (gui.AbsoluteSize.X / 2)
-        local cy = gui.AbsolutePosition.Y + (gui.AbsoluteSize.Y / 2) + 50
-        VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, true, LocalPlayer.PlayerGui, 1)
-        VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, false, LocalPlayer.PlayerGui, 1)
-    end
-end
-
--- Theo dõi khi popup được thêm
-tempUI.ChildAdded:Connect(function(child)
-    if _G.Do1x1PopupsLoop then
-        clickPopup(child)
-    end
-end)
-
--- Toggle Obsidian
-M205One:AddToggle("Anti1xPopups", {
-    Text = "Anti 1x Popups",
-    Default = false,
-    Callback = function(Value)
-        _G.Do1x1PopupsLoop = Value
-    end
-})
-
--- Slider chỉnh delay
-M205One:AddSlider("PopupDelaySlider", {
-    Text = "Delay",
-    Default = 0.2,
-    Min = 0.05,
-    Max = 1,
-    Rounding = 2,
-    Callback = function(Value)
-        _G.PopupDelay = Value
-    end
-})
-
-
-M205One:AddDivider()
-
-Main2Group:AddLabel("-= Pick up =-", true)
+M205One:AddLabel("-= Pick up =-", true)
 M205One:AddToggle("ItemPick", {  
     Text = "Auto Pick Item",  
     Default = false,   
@@ -2053,10 +1999,74 @@ end)
 
 
 
+local Main4Group = Tabs.Tab2:AddLeftGroupbox("-=-=-=-=-=-")
 
+Main4Group:AddDivider()
 
+Main4Group:AddLabel("-== anti ==-", true)
 
+Main4Group:AddDivider()
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local VIM = game:GetService("VirtualInputManager")
+
+_G.Do1x1PopupsLoop = false
+_G.PopupDelay = 0.2 -- mặc định
+
+-- Hàm click popup
+local function clickPopup(gui)
+    if gui:IsA("GuiObject") and gui.Name == "1x1x1x1Popup" then
+        task.wait(_G.PopupDelay)
+        local cx = gui.AbsolutePosition.X + (gui.AbsoluteSize.X / 2)
+        local cy = gui.AbsolutePosition.Y + (gui.AbsoluteSize.Y / 2) + 50
+        VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, true, LocalPlayer.PlayerGui, 1)
+        VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, false, LocalPlayer.PlayerGui, 1)
+    end
+end
+
+-- Hàm gắn listener vào TemporaryUI
+local function hookTemporaryUI(tempUI)
+    tempUI.ChildAdded:Connect(function(child)
+        if _G.Do1x1PopupsLoop then
+            clickPopup(child)
+        end
+    end)
+end
+
+-- Nếu TemporaryUI đã tồn tại
+local tempUI = LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("TemporaryUI")
+if tempUI then
+    hookTemporaryUI(tempUI)
+end
+
+-- Theo dõi khi TemporaryUI được tạo lại
+LocalPlayer.PlayerGui.ChildAdded:Connect(function(child)
+    if child.Name == "TemporaryUI" then
+        hookTemporaryUI(child)
+    end
+end)
+
+-- Toggle Obsidian
+Main4Group:AddToggle("Anti1xPopups", {
+    Text = "Auto 1x Popups",
+    Default = false,
+    Callback = function(Value)
+        _G.Do1x1PopupsLoop = Value
+    end
+})
+
+-- Slider chỉnh delay
+Main4Group:AddSlider("PopupDelaySlider", {
+    Text = "Delay",
+    Default = 0.1,
+    Min = 0.05,
+    Max = 1,
+    Rounding = 2,
+    Callback = function(Value)
+        _G.PopupDelay = Value
+    end
+})
 
 
 
