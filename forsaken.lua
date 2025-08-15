@@ -2257,9 +2257,6 @@ end)
 M205Two:AddButton("Load YOXI Hub", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Yomkaa/forsaken-YOXI-HUB/refs/heads/main/forsaken%20YOXI%20HUB",true))()
 end)
-M205Two:AddButton("Load Walkto Gui", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/walkto"))()  
-end)
 M205Two:AddButton("Load Auto Block", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Forsaken/main/autoblockguest"))()
 end)
@@ -2488,7 +2485,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 _G.Do1x1PopupsLoop = false
-_G.PopupDelay = 0.1 -- mặc định
+_G.PopupDelay = 0.3 -- mặc định
 
 -- Hàm click popup (dùng getconnections)
 local function clickPopup(gui)
@@ -2543,7 +2540,7 @@ Main4Group:AddToggle("Anti1xPopups", {
 -- Slider chỉnh delay
 Main4Group:AddSlider("PopupDelaySlider", {
     Text = "Delay",
-    Default = 0.1,
+    Default = 0.3,
     Min = 0.05,
     Max = 1,
     Rounding = 2,
@@ -2681,6 +2678,10 @@ MenuGroup:AddDivider()
 MenuGroup:AddLabel("Menu bind"):AddKeyPicker("MenuKeybind", {Default = "RightShift", NoUI = true, Text = "Menu keybind"})
 
 MenuGroup:AddButton("Unload", function() Library:Unload() end)
+
+MenuGroup:AddButton("", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/walkto"))()  
+end)
 
 CreditsGroup:AddLabel("@IgnahKD - Script", true)
 CreditsGroup:AddDivider()
