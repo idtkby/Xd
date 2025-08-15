@@ -1628,14 +1628,14 @@ local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 
 _G.ESP_Skill = false
-local skillESPObjects = {}
+local espSkillObjects = {}
 
--- Tạo ESP cho skill
-local function createSkillESP(skill)
-    if skillESPObjects[skill] then return end
-    if not (skill.Name == "Swords" or skill.Name == "shockwave") then return end
+-- Hàm tạo ESP skill
+local function createSkillESP(obj)
+    if espSkillObjects[obj] then return end
+    if obj.Name ~= "Swords" and obj.Name ~= "shockwave" then return end
 
-    local adorneePart = skill:IsA("BasePart") and skill or skill:FindFirstChildWhichIsA("BasePart")
+    local adorneePart = obj:IsA("BasePart") and obj or obj:FindFirstChildWhichIsA("BasePart")
     if not adorneePart then return end
 
     -- Billboard
@@ -1644,7 +1644,7 @@ local function createSkillESP(skill)
     billboard.Adornee = adorneePart
     billboard.AlwaysOnTop = true
     billboard.Size = UDim2.new(0, 200, 0, 50)
-    billboard.StudsOffset = Vector3.new(0, 2, 0)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
     billboard.Parent = game.CoreGui
 
     -- Label
@@ -1655,7 +1655,7 @@ local function createSkillESP(skill)
     label.Font = Enum.Font.Code
     label.TextSize = 14
     label.TextStrokeTransparency = 0
-    label.Text = skill.Name == "Swords" and "Entanglement" or "Mass Infection"
+    label.Text = (obj.Name == "Swords" and "Entanglement" or "Mass Infection") .. "\nDist: 0.0"
     label.Parent = billboard
 
     -- Viền chữ
@@ -1664,27 +1664,53 @@ local function createSkillESP(skill)
     uiStroke.Thickness = 1.5
     uiStroke.Parent = label
 
-    -- Outline
+    -- Outline object
     local highlight = Instance.new("Highlight")
     highlight.Name = "SkillHighlight"
     highlight.FillTransparency = 1
     highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
     highlight.OutlineTransparency = 0
-    highlight.Parent = skill
+    highlight.Parent = obj
 
-    skillESPObjects[skill] = {billboard = billboard, highlight = highlight}
+    espSkillObjects[obj] = {billboard = billboard, label = label, highlight = highlight}
 end
 
 -- Xóa ESP
-local function removeSkillESP(skill)
-    if skillESPObjects[skill] then
-        skillESPObjects[skill].billboard:Destroy()
-        if skillESPObjects[skill].highlight then
-            skillESPObjects[skill].highlight:Destroy()
+local function removeSkillESP(obj)
+    if espSkillObjects[obj] then
+        espSkillObjects[obj].billboard:Destroy()
+        if espSkillObjects[obj].highlight then
+            espSkillObjects[obj].highlight:Destroy()
         end
-        skillESPObjects[skill] = nil
+        espSkillObjects[obj] = nil
     end
 end
+
+-- Update khoảng cách
+RunService.RenderStepped:Connect(function()
+    if not _G.ESP_Skill then
+        for _, v in pairs(espSkillObjects) do
+            v.billboard.Enabled = false
+            if v.highlight then v.highlight.Enabled = false end
+        end
+        return
+    end
+
+    for obj, data in pairs(espSkillObjects) do
+        if obj and obj.Parent then
+            local part = obj:IsA("BasePart") and obj or obj:FindFirstChildWhichIsA("BasePart")
+            if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local dist = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                local nameText = (obj.Name == "Swords" and "Entanglement" or "Mass Infection")
+                data.label.Text = string.format("%s\nDist: %.1f", nameText, dist)
+                data.billboard.Enabled = true
+                if data.highlight then data.highlight.Enabled = true end
+            end
+        else
+            removeSkillESP(obj)
+        end
+    end
+end)
 
 -- Toggle trong Main2Group
 Main2Group:AddToggle("ESPSkill", {
@@ -1693,23 +1719,20 @@ Main2Group:AddToggle("ESPSkill", {
     Callback = function(Value)
         _G.ESP_Skill = Value
         if Value then
-            local map = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
-            if map then
-                for _, obj in ipairs(map:GetChildren()) do
-                    createSkillESP(obj)
-                end
-                map.ChildAdded:Connect(function(child)
-                    if _G.ESP_Skill then
-                        createSkillESP(child)
-                    end
-                end)
-                map.ChildRemoved:Connect(function(child)
-                    removeSkillESP(child)
-                end)
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                createSkillESP(obj)
             end
+            workspace.DescendantAdded:Connect(function(child)
+                if _G.ESP_Skill then
+                    createSkillESP(child)
+                end
+            end)
+            workspace.DescendantRemoving:Connect(function(child)
+                removeSkillESP(child)
+            end)
         else
-            for skill in pairs(skillESPObjects) do
-                removeSkillESP(skill)
+            for obj in pairs(espSkillObjects) do
+                removeSkillESP(obj)
             end
         end
     end
