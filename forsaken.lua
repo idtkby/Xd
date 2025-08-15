@@ -1376,6 +1376,126 @@ Main2Group:AddToggle("EspMedkit", {
 	end
 })
 
+Main2Group:AddDivider()
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+
+_G.ESP_Minion = false
+local espObjects = {}
+
+-- Hàm tạo ESP
+local function createESP(target)
+    if espObjects[target] then return end
+    local adorneePart = target:FindFirstChild("HumanoidRootPart") or target:FindFirstChildWhichIsA("BasePart")
+    if not adorneePart then return end
+
+    -- Billboard
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "MinionESP"
+    billboard.Adornee = adorneePart
+    billboard.AlwaysOnTop = true
+    billboard.Size = UDim2.new(0, 200, 0, 50)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.Parent = game.CoreGui
+
+    -- Label
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 0, 40)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.fromRGB(255, 140, 0) -- cam
+    label.Font = Enum.Font.Code
+    label.TextSize = 14
+    label.TextStrokeTransparency = 0
+    label.Text = "Minion\nDist: 0.0"
+    label.Parent = billboard
+local UIStroke = Instance.new("UIStroke")
+	UIStroke.Color = Color3.new(0, 0, 0)
+	UIStroke.Thickness = 1.5
+	UIStroke.Parent = label
+
+    -- Outline
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "ESPHighlight"
+    highlight.FillTransparency = 1
+    highlight.OutlineColor = Color3.fromRGB(255, 140, 0)
+    highlight.OutlineTransparency = 0
+    highlight.Parent = target
+
+    espObjects[target] = {billboard = billboard, label = label, highlight = highlight}
+end
+
+-- Xóa ESP
+local function removeESP(target)
+    if espObjects[target] then
+        espObjects[target].billboard:Destroy()
+        if espObjects[target].highlight then
+            espObjects[target].highlight:Destroy()
+        end
+        espObjects[target] = nil
+    end
+end
+
+-- Update text khoảng cách
+RunService.RenderStepped:Connect(function()
+    if not _G.ESP_Minion then
+        for _, v in pairs(espObjects) do
+            v.billboard.Enabled = false
+            if v.highlight then v.highlight.Enabled = false end
+        end
+        return
+    end
+
+    for target, data in pairs(espObjects) do
+        if target and target.Parent then
+            local hrp = target:FindFirstChild("HumanoidRootPart") or target:FindFirstChildWhichIsA("BasePart")
+            if hrp and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local dist = (hrp.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                data.label.Text = string.format("Minion\nDist: %.1f", dist)
+                data.billboard.Enabled = true
+                if data.highlight then data.highlight.Enabled = true end
+            end
+        else
+            removeESP(target)
+        end
+    end
+end)
+
+-- Toggle trong Main2Group
+Main2Group:AddToggle("ESPMinion", {
+    Text = "ESP đệ tử của thằng nghịch tử",
+    Default = false,
+    Callback = function(Value)
+        _G.ESP_Minion = Value
+        if Value then
+            local map = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
+            if map then
+                for _, obj in ipairs(map:GetChildren()) do
+                    createESP(obj)
+                end
+                map.ChildAdded:Connect(function(child)
+                    if _G.ESP_Minion then
+                        createESP(child)
+                    end
+                end)
+                map.ChildRemoved:Connect(function(child)
+                    removeESP(child)
+                end)
+            end
+        else
+            for target in pairs(espObjects) do
+                removeESP(target)
+            end
+        end
+    end
+})
+
+
+
+
+
+
 -- helper to apply ESP GUI to a single character model
 function Esp_Player(characterModel)
     -- destroy any existing highlight
