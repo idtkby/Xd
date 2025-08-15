@@ -841,144 +841,170 @@ KTab:CreateToggle({
 	end
 })
 
+-- Toggle Rayfield: Auto Safelock (SafeLockUI + PuzzleLockUI)
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
 
-local safeToggle = false
+local AutoSafeLock = false
+local SafeLoop
+
+-- Bảng mã ký tự -> số
 local codeMap = {
-    ["ル"] = 11, ["ヌ"] = 10, ["ホ"] = 5, ["ヲ"] = 12, ["ハ"] = 3,
-    ["リ"] = 9,  ["チ"] = 8,  ["ヘ"] = 6, ["ト"] = 7,  ["ニ"] = 4,
-    ["ロ"] = 2,  ["イ"] = 1
+    ["ル"] = 11, ["ヌ"] = 10, ["ホ"] = 5,  ["ヲ"] = 12,
+    ["ハ"] = 3,  ["リ"] = 9,  ["チ"] = 8,  ["ヘ"] = 6,
+    ["ト"] = 7,  ["ニ"] = 4,  ["ロ"] = 2,  ["イ"] = 1
 }
 
--- Hàm click button bằng MouseButton1Click
-local function clickBtn(btn)
-    if btn and btn:IsA("GuiButton") then
-        local done = false
-        for _, conn in ipairs(getconnections(btn.MouseButton1Click)) do
-            pcall(function()
-                conn:Fire()
-                done = true
-            end)
-        end
-        if not done then
-            pcall(function()
-                btn:Activate()
-            end)
-        end
-    end
-end
-
--- Hàm lấy code từ Memo
+-- Lấy code từ ParamLabel
 local function getSafeCode()
-    local memoFolder = LocalPlayer.PlayerGui:FindFirstChild("GameUI")
-    memoFolder = memoFolder and memoFolder:FindFirstChild("MissionMemo") and memoFolder.MissionMemo:FindFirstChild("MemoFolder")
+    local gui = LocalPlayer:FindFirstChild("PlayerGui")
+    if not gui then return nil end
+    local memoFolder = gui:FindFirstChild("GameUI") and gui.GameUI:FindFirstChild("MissionMemo") and gui.GameUI.MissionMemo:FindFirstChild("MemoFolder")
     if not memoFolder then return nil end
 
-    local codeObj = memoFolder:FindFirstChild("0FindCode") or memoFolder:FindFirstChild("0OpenSafeHoleCode")
-    codeObj = codeObj and codeObj:FindFirstChild("Folder") and codeObj.Folder:FindFirstChild("ParamLabel")
-    if codeObj and codeObj:IsA("TextLabel") then
-        local text = codeObj.Text
-        if #text == 3 and not text:find("[vひ]") then
-            return text
+    local sources = {
+        memoFolder:FindFirstChild("0FindCode"),
+        memoFolder:FindFirstChild("0OpenSafeHoleCode")
+    }
+
+    for _, src in ipairs(sources) do
+        if src and src:FindFirstChild("Folder") and src.Folder:FindFirstChild("ParamLabel") then
+            local text = src.Folder.ParamLabel.Text
+            if text and #text == 3 then
+                return text
+            end
         end
     end
     return nil
 end
 
--- Hàm xử lý SafeLockUI
-local function solveSafeLockUI(code)
-    local ui = LocalPlayer.PlayerGui.GameUI:FindFirstChild("SafeLockUI")
-    if not ui then return end
-    local numbers = {}
-    for i = 1, 3 do
-        numbers[i] = codeMap[code:sub(i,i)]
+-- Click vào vòng
+local function clickCircle(uiName, circleNum, direction)
+    local gui = LocalPlayer:FindFirstChild("PlayerGui")
+    if not gui then return end
+    local btn = gui:FindFirstChild("GameUI")
+    if not btn then return end
+    btn = btn:FindFirstChild(uiName)
+    if not btn then return end
+    btn = btn:FindFirstChild("Circle"..circleNum)
+    if not btn then return end
+    btn = btn:FindFirstChild(direction)
+    if btn and btn:IsA("TextButton") then
+        btn.MouseButton1Click:Fire()
     end
+end
+
+-- Điều chỉnh vòng
+local function adjustCircles(uiName, targetNumbers)
+    local uiFrame = LocalPlayer.PlayerGui.GameUI:FindFirstChild(uiName)
+    if not uiFrame then return false end
 
     for i = 1, 3 do
-        local circle = ui:FindFirstChild("Circle"..i)
-        if circle then
-            local rightBtn = circle:FindFirstChild("Right")
-            local leftBtn = circle:FindFirstChild("Left")
-            -- Giả định bắt đầu từ 1
-            local curVal = 1
-            while curVal ~= numbers[i] and safeToggle do
-                if ((numbers[i] - curVal) % 12) <= 6 then
-                    clickBtn(leftBtn)
-                    curVal = (curVal % 12) + 1
+        local circle = uiFrame:FindFirstChild("Circle"..i)
+        if circle and circle:FindFirstChild("TextLabel") then
+            local currentVal = tonumber(circle.TextLabel.Text)
+            local targetVal = targetNumbers[i]
+            if not currentVal or not targetVal then return false end
+
+            -- Click cho tới khi khớp
+            while currentVal ~= targetVal do
+                local diffRight = (currentVal - targetVal) % 12
+                local diffLeft  = (targetVal - currentVal) % 12
+                if diffRight <= diffLeft then
+                    clickCircle(uiName, i, "Right")
+                    currentVal = (currentVal - 2) % 12 + 1
                 else
-                    clickBtn(rightBtn)
-                    curVal = (curVal - 2) % 12 + 1
+                    clickCircle(uiName, i, "Left")
+                    currentVal = currentVal % 12 + 1
                 end
                 task.wait(0.05)
             end
         end
     end
+    return true
 end
 
--- Hàm xử lý PuzzleLockUI (xoay về 1,1,1)
-local function solvePuzzleLockUI()
-    local ui = LocalPlayer.PlayerGui.GameUI:FindFirstChild("PuzzleLockUI")
-    if not ui then return end
-    for i = 1, 3 do
-        local circle = ui:FindFirstChild("Circle"..i)
-        if circle then
-            local rightBtn = circle:FindFirstChild("Right")
-            local leftBtn = circle:FindFirstChild("Left")
-            local curVal = math.random(1,12) -- ko biết nên giả định random
-            while curVal ~= 1 and safeToggle do
-                if ((1 - curVal) % 12) <= 6 then
-                    clickBtn(leftBtn)
-                    curVal = (curVal % 12) + 1
-                else
-                    clickBtn(rightBtn)
-                    curVal = (curVal - 2) % 12 + 1
+-- Kích hoạt prompt gần nhất
+local function triggerNearestPrompt()
+    local char = LocalPlayer.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    local HRP = char.HumanoidRootPart
+    local nearestPrompt, minDist = nil, 15
+
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(char) then
+            local part = obj.Parent
+            if part and part:IsA("BasePart") then
+                local dist = (HRP.Position - part.Position).Magnitude
+                if dist < minDist then
+                    minDist = dist
+                    nearestPrompt = obj
                 end
-                task.wait(0.05)
             end
         end
     end
+
+    if nearestPrompt then
+        pcall(function()
+            if nearestPrompt:IsA("ProximityPrompt") then
+                fireproximityprompt(nearestPrompt, math.huge)
+            elseif nearestPrompt:IsA("ClickDetector") then
+                fireclickdetector(nearestPrompt)
+            elseif nearestPrompt:IsA("TouchTransmitter") or nearestPrompt.Name == "TouchInterest" then
+                firetouchinterest(HRP, nearestPrompt.Parent, 0)
+                task.wait()
+                firetouchinterest(HRP, nearestPrompt.Parent, 1)
+            end
+        end)
+    end
 end
 
--- Lắng nghe click Close để dừng
-local function hookCloseButton()
-    local safeUI = LocalPlayer.PlayerGui.GameUI:FindFirstChild("SafeUI")
-    if safeUI and safeUI:FindFirstChild("Close") and safeUI.Close:FindFirstChild("Button") then
-        for _, conn in ipairs(getconnections(safeUI.Close.Button.MouseButton1Click)) do
-            pcall(function()
-                conn:Fire()
-                safeToggle = false
-            end)
+-- Chạy Auto SafeLock
+local function doAutoSafe()
+    local codeText = getSafeCode()
+    if not codeText then return end
+
+    local targetNums = {}
+    for i = 1, #codeText do
+        local char = codeText:sub(i, i)
+        if not codeMap[char] then return end
+        table.insert(targetNums, codeMap[char])
+    end
+
+    -- Ưu tiên SafeLockUI, nếu không có thì thử PuzzleLockUI
+    if LocalPlayer.PlayerGui.GameUI:FindFirstChild("SafeLockUI") then
+        if adjustCircles("SafeLockUI", targetNums) then
+            triggerNearestPrompt()
+        end
+    elseif LocalPlayer.PlayerGui.GameUI:FindFirstChild("PuzzleLockUI") then
+        if adjustCircles("PuzzleLockUI", targetNums) then
+            triggerNearestPrompt()
         end
     end
 end
 
--- Toggle Rayfield
+-- Tạo toggle Rayfield
 KTab:CreateToggle({
-    Name = "Auto Safelock (alpha)[Not sup stage 5]",
+    Name = "Auto Safelock (alpha) (not sup stage 5)",
     CurrentValue = false,
-    Callback = function(val)
-        safeToggle = val
-        if val then
-            task.spawn(function()
-                while safeToggle do
-                    local code = getSafeCode()
-                    if code then
-                        local focusRemote = ReplicatedStorage:FindFirstChild("PlayerInFocusRemoteEvent")
-                        if focusRemote then
-                            solveSafeLockUI(code)
-                        else
-                            solvePuzzleLockUI()
-                        end
-                        hookCloseButton()
-                    end
-                    task.wait(0.3)
-                end
+    Callback = function(state)
+        AutoSafeLock = state
+        if state then
+            SafeLoop = RunService.Heartbeat:Connect(function()
+                doAutoSafe()
             end)
+        else
+            if SafeLoop then
+                SafeLoop:Disconnect()
+                SafeLoop = nil
+            end
         end
     end
 })
+
 
 
 KTab:CreateSection("Player")
