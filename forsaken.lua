@@ -595,7 +595,7 @@ Main1Group:AddToggle("AutoCoinFlip", {
             task.spawn(function()
                 while _G.AutoCoinFlip do
                     -- Chỉ chạy nếu đang là Survivor
-                    if LocalPlayer.Character and LocalPlayer.Character.Parent.Name == "Survivors" then
+                    if LocalPlayer.Character == "Chance" and LocalPlayer.Character.Parent.Name == "Survivors" then
                         local charges = getRerollCharges()
                         if charges and charges < 3 then
                             remote:FireServer("UseActorAbility", "CoinFlip")
