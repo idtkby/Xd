@@ -1655,7 +1655,7 @@ local function createSkillESP(skill)
     label.Font = Enum.Font.Code
     label.TextSize = 14
     label.TextStrokeTransparency = 0
-    label.Text = skill.Name == "Swords" and "Swords = 10DMG + Stun" or "shockwave = 35DMG + Glitch"
+    label.Text = skill.Name == "Swords" and "Entanglement" or "Mass Infection"
     label.Parent = billboard
 
     -- Viền chữ
