@@ -1688,6 +1688,62 @@ M205One:AddToggle("Invisibility", {
     end
 })
 
+local LocalPlayer = game:GetService("Players").LocalPlayer
+
+--== Anti Slowness ==--
+_G.AntiSlow = false
+
+local function checkAndSetSlowStatus()
+    local character = LocalPlayer.Character
+    if not character then return end
+
+    local speedMultipliers = character:FindFirstChild("SpeedMultipliers")
+    local fovMultipliers = character:FindFirstChild("FOVMultipliers")
+
+    if speedMultipliers then
+        local slowed = speedMultipliers:FindFirstChild("SlowedStatus")
+        if slowed and slowed:IsA("NumberValue") then
+            slowed.Value = 1
+        end
+    end
+
+    if fovMultipliers then
+        local slowedFOV = fovMultipliers:FindFirstChild("SlowedStatus")
+        if slowedFOV and slowedFOV:IsA("NumberValue") then
+            slowedFOV.Value = 1
+        end
+    end
+
+    local mainUI = LocalPlayer.PlayerGui:FindFirstChild("MainUI")
+    if mainUI then
+        local statusContainer = mainUI:FindFirstChild("StatusContainer")
+        if statusContainer then
+            local slownessUI = statusContainer:FindFirstChild("Slowness")
+            if slownessUI then
+                slownessUI.Visible = false
+            end
+        end
+    end
+end
+
+-- Loop
+task.spawn(function()
+    while task.wait(0.1) do
+        if _G.AntiSlow then
+            checkAndSetSlowStatus()
+        end
+    end
+end)
+
+-- Toggle Obsidian
+M205One:AddToggle("AntiSlowness", {
+    Text = "no Slowness",
+    Default = false,
+    Callback = function(Value)
+        _G.AntiSlow = Value
+    end
+})
+
 M205One:AddDivider()
 
 M205One:AddToggle("FullBright", {
