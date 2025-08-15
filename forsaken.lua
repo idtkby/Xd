@@ -1984,6 +1984,39 @@ end)
 
 M205One:AddDivider()
 
+local targetName = "LastSurvivor"
+local targetId = "rbxassetid://130101085745481"
+
+_G.LastSoundLoop = false
+
+M205One:AddToggle("LastSound", {
+    Text = "diva vs ghoul lms",
+    Default = false,
+    Callback = function(Value)
+        _G.LastSoundLoop = Value
+        if Value then
+            task.spawn(function()
+                while _G.LastSoundLoop do
+                    for _, snd in ipairs(workspace:GetDescendants()) do
+                        if snd:IsA("Sound") and snd.Name == targetName then
+                            if snd.SoundId ~= targetId then
+                                local wasPlaying = snd.IsPlaying
+                                local timePos = snd.TimePosition
+                                snd.SoundId = targetId
+                                snd.TimePosition = timePos -- giữ vị trí phát
+                                if wasPlaying then
+                                    snd:Play()
+                                end
+                            end
+                        end
+                    end
+                    task.wait(0.3)
+                end
+            end)
+        end
+    end
+})
+
 -- === Animation Loop ===
 local animationId = "75804462760596"
 local animationSpeed = 0
