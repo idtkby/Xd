@@ -436,6 +436,20 @@ local espGroups = {
 			["dirty sheet"] = {label = "Room", color = Color3.fromRGB(255,105,0)}
 		}
 	},
+{
+		label = "Chase end (Stage 6)",
+		objects = {
+			["FallingLight"] = {label = "", color = Color3.fromRGB(255,255,255)},
+			["FallingTansu"] = {label = "", color = Color3.fromRGB(255,255,255)},
+			["MoveTable"] = {label = "", color = Color3.fromRGB(255,255,255)},
+			["1st_1"] = {label = "", color = Color3.fromRGB(255,255,255)},
+			["1st_2"] = {label = "", color = Color3.fromRGB(255,255,255)},
+			["1st_3"] = {label = "", color = Color3.fromRGB(255,255,255)},
+			["1st_4"] = {label = "", color = Color3.fromRGB(255,255,255)},
+			["1st_5"] = {label = "", color = Color3.fromRGB(255,255,255)},
+			["1st_6"] = {label = "", color = Color3.fromRGB(255,255,255)},
+		}
+	},
 	{
 		label = "Candle",
 		objects = {
