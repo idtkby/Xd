@@ -2688,19 +2688,6 @@ MenuGroup:AddLabel("Menu bind"):AddKeyPicker("MenuKeybind", {Default = "RightShi
 
 MenuGroup:AddButton("Unload", function() Library:Unload() end)
 
-MenuGroup:AddButton("Dev Test Script", function()
-local allowedId = 8608467180
-local player = game:GetService("Players").LocalPlayer
-
-if player.UserId ~= allowedId then
-    Library:Notify("You do not have permission to use this function", 5)
-    return -- Dừng script ở đây
-end
-
-Library:Notify("Checked User ✓", 5)
-loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/walkto"))()
-end)
-
 CreditsGroup:AddLabel("@IgnahKD - Script", true)
 CreditsGroup:AddDivider()
 CreditsGroup:AddLabel("-== Request ==-", true)
@@ -2840,6 +2827,41 @@ SaveManager:IgnoreThemeSettings()
 SaveManager:BuildConfigSection(Tabs["UI Settings"])
 ThemeManager:ApplyToTab(Tabs["UI Settings"])
 SaveManager:LoadAutoloadConfig() 
+
+local DevOnlyGroup = Tabs["UI Settings"]:AddLeftTabbox() -- hoặc :AddLeftTabbox()
+
+local Dotab = DevOnlyGroup:AddTab("=-= Dev Only =-=")
+
+Dotab:AddButton("Test Script [1]", function()
+local allowedId = 8608467180
+local player = game:GetService("Players").LocalPlayer
+
+if player.UserId ~= allowedId then
+    Library:Notify("You do not have permission to use this function", 5)
+    return -- Dừng script ở đây
+end
+
+Library:Notify("Checked User ✓", 5)
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/walkto"))()
+end)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 task.spawn(function()
