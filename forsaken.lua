@@ -2023,6 +2023,28 @@ M205One:AddDivider()
 local targetName = "LastSurvivor"
 local targetId = "rbxassetid://130101085745481"
 
+M205One:AddButton({
+    Text = "diva vs ghoul lms",
+    Func = function()
+        for _, snd in ipairs(workspace:GetDescendants()) do
+            if snd:IsA("Sound") and snd.Name == targetName then
+                if snd.SoundId ~= targetId then
+                    local wasPlaying = snd.IsPlaying
+                    local timePos = snd.TimePosition
+                    snd.SoundId = targetId
+                    snd.TimePosition = timePos -- giữ nguyên thời điểm phát
+                    if wasPlaying then
+                        snd:Play()
+                    end
+                end
+            end
+        end
+    end
+})
+
+local targetName = "LastSurvivor"
+local targetId = "rbxassetid://130101085745481"
+
 _G.LastSoundLoop = false
 
 M205One:AddToggle("LastSound", {
