@@ -1394,7 +1394,9 @@ end
 local function createESP(target)
     -- Chỉ ESP NPC và loại trừ tên
     if not isNPC(target) then return end
-    if target.Name == "1x1x1x1Zombie" or target.Name == "007n7" then return end
+    local name = target.Name
+    if name == "1x1x1x1Zombie" or name == "007n7" or name == "SubspaceTripmine" then return end
+    if string.find(name, "TaphTripwire") then return end
     if espObjects[target] then return end
 
     local adorneePart = target:FindFirstChild("HumanoidRootPart") or target:FindFirstChildWhichIsA("BasePart")
@@ -1475,7 +1477,7 @@ end)
 
 -- Toggle trong Main2Group
 Main2Group:AddToggle("ESPMinion", {
-    Text = "ESP Minion",
+    Text = "ESP Đệ của nghịch tử (c00lkidd minion)",
     Default = false,
     Callback = function(Value)
         _G.ESP_Minion = Value
@@ -1621,8 +1623,100 @@ Main2Group:AddToggle("ESPZombie", {
 
 Main2Group:AddDivider()
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+
+_G.ESP_Skill = false
+local skillESPObjects = {}
+
+-- Tạo ESP cho skill
+local function createSkillESP(skill)
+    if skillESPObjects[skill] then return end
+    if not (skill.Name == "Swords" or skill.Name == "shockwave") then return end
+
+    local adorneePart = skill:IsA("BasePart") and skill or skill:FindFirstChildWhichIsA("BasePart")
+    if not adorneePart then return end
+
+    -- Billboard
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "SkillESP"
+    billboard.Adornee = adorneePart
+    billboard.AlwaysOnTop = true
+    billboard.Size = UDim2.new(0, 200, 0, 50)
+    billboard.StudsOffset = Vector3.new(0, 2, 0)
+    billboard.Parent = game.CoreGui
+
+    -- Label
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 0, 40)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.fromRGB(0, 255, 0) -- xanh lá
+    label.Font = Enum.Font.Code
+    label.TextSize = 14
+    label.TextStrokeTransparency = 0
+    label.Text = skill.Name == "Swords" and "Swords = 10DMG + Stun" or "shockwave = 35DMG + Glitch"
+    label.Parent = billboard
+
+    -- Viền chữ
+    local uiStroke = Instance.new("UIStroke")
+    uiStroke.Color = Color3.new(0, 0, 0)
+    uiStroke.Thickness = 1.5
+    uiStroke.Parent = label
+
+    -- Outline
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "SkillHighlight"
+    highlight.FillTransparency = 1
+    highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+    highlight.OutlineTransparency = 0
+    highlight.Parent = skill
+
+    skillESPObjects[skill] = {billboard = billboard, highlight = highlight}
+end
+
+-- Xóa ESP
+local function removeSkillESP(skill)
+    if skillESPObjects[skill] then
+        skillESPObjects[skill].billboard:Destroy()
+        if skillESPObjects[skill].highlight then
+            skillESPObjects[skill].highlight:Destroy()
+        end
+        skillESPObjects[skill] = nil
+    end
+end
+
+-- Toggle trong Main2Group
+Main2Group:AddToggle("ESPSkill", {
+    Text = "ESP 1x Skill",
+    Default = false,
+    Callback = function(Value)
+        _G.ESP_Skill = Value
+        if Value then
+            local map = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
+            if map then
+                for _, obj in ipairs(map:GetChildren()) do
+                    createSkillESP(obj)
+                end
+                map.ChildAdded:Connect(function(child)
+                    if _G.ESP_Skill then
+                        createSkillESP(child)
+                    end
+                end)
+                map.ChildRemoved:Connect(function(child)
+                    removeSkillESP(child)
+                end)
+            end
+        else
+            for skill in pairs(skillESPObjects) do
+                removeSkillESP(skill)
+            end
+        end
+    end
+})
 
 
+Main2Group:AddDivider()
 
 
 -- helper to apply ESP GUI to a single character model
