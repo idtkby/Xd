@@ -2252,32 +2252,38 @@ end)
 
 
 
-local Main4Group = Tabs.Tab2:AddRightGroupbox("")
+local Main4Group = Tabs.Tab2:AddRightGroupbox("--== Anti ==--")
 
 
-Main4Group:AddLabel("-== anti ==-", true)
 
 Main4Group:AddDivider()
-
+ 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local VIM = game:GetService("VirtualInputManager")
 
 _G.Do1x1PopupsLoop = false
-_G.PopupDelay = 0.2 -- mặc định
+_G.PopupDelay = 0.1 -- mặc định
 
--- Hàm click popup
+-- Hàm click popup (dùng getconnections)
 local function clickPopup(gui)
-    if gui:IsA("GuiObject") and gui.Name == "1x1x1x1Popup" then
-        task.wait(_G.PopupDelay)
-        local cx = gui.AbsolutePosition.X + (gui.AbsoluteSize.X / 2)
-        local cy = gui.AbsolutePosition.Y + (gui.AbsoluteSize.Y / 2) + 50
-        VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, true, LocalPlayer.PlayerGui, 1)
-        VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, false, LocalPlayer.PlayerGui, 1)
+    if gui:IsA("GuiButton") and gui.Name == "1x1x1x1Popup" then
+        task.wait(_G.PopupDelay) -- delay tùy chỉnh
+        local success = false
+        for _, conn in ipairs(getconnections(gui.MouseButton1Click)) do
+            pcall(function()
+                conn:Fire()
+                success = true
+            end)
+        end
+        if not success then
+            pcall(function()
+                gui:Activate()
+            end)
+        end
     end
 end
 
--- Hàm gắn listener vào TemporaryUI
+-- Gắn listener vào TemporaryUI
 local function hookTemporaryUI(tempUI)
     tempUI.ChildAdded:Connect(function(child)
         if _G.Do1x1PopupsLoop then
