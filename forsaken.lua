@@ -589,7 +589,7 @@ end
 
 -- Toggle
 Main1Group:AddToggle("ToggleCoinFlip", {
-    Text = "Auto CoinFlip",
+    Text = "Auto CoinFlip (3)",
     Default = false,
     Callback = function(v)
         AutoCoinFlip = v
@@ -608,6 +608,60 @@ task.spawn(function()
                 
                 local charges = getRerollCharges()
                 if not charges or charges < 3 then
+                    remote:FireServer("UseActorAbility", "CoinFlip")
+                end
+            end
+        end
+        task.wait(delayTime)
+    end
+end)
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+-- RemoteEvent
+local remote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
+
+-- Trạng thái toggle
+local AutoCoinFlip = false
+local delayTime = 0.6
+
+-- Lấy số Charges của Reroll
+local function getRerollCharges()
+    local mainUI = LocalPlayer.PlayerGui:FindFirstChild("MainUI")
+    if not mainUI then return nil end
+    local abilityContainer = mainUI:FindFirstChild("AbilityContainer")
+    if not abilityContainer then return nil end
+    local reroll = abilityContainer:FindFirstChild("Reroll")
+    if reroll and reroll:FindFirstChild("Charges") and reroll.Charges:IsA("TextLabel") then
+        return tonumber(reroll.Charges.Text)
+    end
+    return nil
+end
+
+-- Toggle
+Main1Group:AddToggle("ToggleCoinFlip2", {
+    Text = "Auto CoinFlip (1)",
+    Default = false,
+    Callback = function(v)
+        AutoCoinFlip = v
+    end
+})
+
+-- Loop
+task.spawn(function()
+    while true do
+        if AutoCoinFlip then
+            local char = LocalPlayer.Character
+            if char 
+            and char.Parent 
+            and char.Parent.Name == "Survivors" 
+            and char.Name == "Chance" then
+                
+                local charges = getRerollCharges()
+                if not charges or charges < 1 then
                     remote:FireServer("UseActorAbility", "CoinFlip")
                 end
             end
