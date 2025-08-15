@@ -562,6 +562,53 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local function isSurvivorWithChance()
+    if not lp.Character or lp.Character.Name ~= "Chance" then
+        return false
+    end
+    return lp.Character.Parent and lp.Character.Parent.Name ~= "Killers"
+end
+
+local function getRerollCharges()
+    local mainUI = LocalPlayer.PlayerGui:FindFirstChild("MainUI")
+    if not mainUI then return nil end
+    local abilityContainer = mainUI:FindFirstChild("AbilityContainer")
+    if not abilityContainer then return nil end
+    local reroll = abilityContainer:FindFirstChild("Reroll")
+    if not reroll then return nil end
+    local charges = reroll:FindFirstChild("Charges")
+    if charges and charges:IsA("TextLabel") then
+        return charges.Text
+    end
+    return nil
+end
+
+Main1Group:AddToggle("CoinFlipLoop", {
+    Text = "Auto CoinFlip",
+    Default = false,
+    Callback = function(Value)
+        _G.DoCoinFlipLoop = Value
+        task.spawn(function()
+            while _G.DoCoinFlipLoop do
+                if isSurvivorWithChance() then
+                    local chargesText = getRerollCharges()
+                    if chargesText == "3" then
+                        _G.DoCoinFlipLoop = false
+                        break
+                    end
+                    local args = { "UseActorAbility", "CoinFlip" }
+                    ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+                end
+                task.wait(0.6)
+            end
+        end)
+    end
+})
+
 -- Divider + Label
 Main1Group:AddDivider()
 Main1Group:AddLabel("--== Guest 1337 ==--", true)
