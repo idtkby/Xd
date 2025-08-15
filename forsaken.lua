@@ -563,49 +563,48 @@ RunService.RenderStepped:Connect(function()
 end)
 
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
 
-local function isSurvivorWithChance()
-    if not lp.Character or lp.Character.Name ~= "Chance" then
-        return false
-    end
-    return lp.Character.Parent and lp.Character.Parent.Name ~= "Killers"
-end
+local remote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
 
+_G.AutoCoinFlip = false
+_G.CoinFlipDelay = 0.6
+
+-- Hàm lấy số Charges của Reroll
 local function getRerollCharges()
     local mainUI = LocalPlayer.PlayerGui:FindFirstChild("MainUI")
     if not mainUI then return nil end
     local abilityContainer = mainUI:FindFirstChild("AbilityContainer")
     if not abilityContainer then return nil end
     local reroll = abilityContainer:FindFirstChild("Reroll")
-    if not reroll then return nil end
-    local charges = reroll:FindFirstChild("Charges")
-    if charges and charges:IsA("TextLabel") then
-        return charges.Text
+    if reroll and reroll:FindFirstChild("Charges") and reroll.Charges:IsA("TextLabel") then
+        return tonumber(reroll.Charges.Text)
     end
     return nil
 end
 
-Main1Group:AddToggle("CoinFlipLoop", {
+Main1Group:AddToggle("AutoCoinFlip", {
     Text = "Auto CoinFlip",
     Default = false,
     Callback = function(Value)
-        _G.DoCoinFlipLoop = Value
-        task.spawn(function()
-            while _G.DoCoinFlipLoop do
-                if isSurvivorWithChance() then
-                    local chargesText = getRerollCharges()
-                    if chargesText == "3" then
-                        _G.DoCoinFlipLoop = false
-                        break
+        _G.AutoCoinFlip = Value
+
+        if Value then
+            task.spawn(function()
+                while _G.AutoCoinFlip do
+                    -- Chỉ chạy nếu đang là Survivor
+                    if LocalPlayer.Character and LocalPlayer.Character.Parent.Name == "Survivors" then
+                        local charges = getRerollCharges()
+                        if charges and charges < 3 then
+                            remote:FireServer("UseActorAbility", "CoinFlip")
+                        end
                     end
-                    local args = { "UseActorAbility", "CoinFlip" }
-                    ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+                    task.wait(_G.CoinFlipDelay)
                 end
-                task.wait(0.6)
-            end
-        end)
+            end)
+        end
     end
 })
 
