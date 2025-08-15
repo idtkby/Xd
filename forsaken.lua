@@ -437,7 +437,6 @@ Main1Group:AddDivider()
 
 
 Main1Group:AddLabel("--== Chance ==--", true)
---// Auto Aim Chance (ObsidianLib)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
@@ -459,6 +458,7 @@ local Humanoid, HRP = nil, nil
 local lastTriggerTime = 0
 local aiming = false
 local originalWS, originalJP, originalAutoRotate = nil, nil, nil
+local predictionFactor = 1 -- slider value
 
 -- Hàm lấy killer gần nhất
 local function GetNearestKiller()
@@ -496,6 +496,15 @@ local function GetPlayingAnimationIds()
     return ids
 end
 
+-- Xác định hướng di chuyển của killer
+local function IsMovingSideways(targetHRP)
+    local relDir = (targetHRP.Position - HRP.Position).Unit
+    local vel = targetHRP.Velocity
+    -- Tính thành phần ngang so với hướng nhìn LocalPlayer
+    local sideComponent = vel.X * relDir.Z - vel.Z * relDir.X
+    return math.abs(sideComponent) > 1 -- nếu gần 0 → đi thẳng/đứng yên
+end
+
 -- Setup khi spawn
 local function SetupChar(char)
     Humanoid = char:WaitForChild("Humanoid")
@@ -512,6 +521,17 @@ Main1Group:AddToggle("AutoAimChance", {
     Default = false,
     Callback = function(Value)
         getgenv().AutoAimChance = Value
+    end
+})
+
+-- Slider chỉnh dự đoán
+Main1Group:AddSlider("PredictionSlider", {
+    Text = "Prediction Factor",
+    Min = 0,
+    Max = 10,
+    Default = 1,
+    Callback = function(Value)
+        predictionFactor = Value
     end
 })
 
@@ -534,7 +554,7 @@ RunService.RenderStepped:Connect(function()
         aiming = true
     end
 
-    -- Aim trong 1.7s sau khi phát hiện animation
+    -- Aim trong aimDuration
     if aiming and tick() - lastTriggerTime <= aimDuration then
         if not originalWS then
             originalWS = Humanoid.WalkSpeed
@@ -546,7 +566,14 @@ RunService.RenderStepped:Connect(function()
 
         local targetHRP = GetNearestKiller()
         if targetHRP then
-            local predictedPos = targetHRP.Position
+            local predictedPos
+            if IsMovingSideways(targetHRP) then
+                -- Dự đoán nếu đi ngang
+                predictedPos = targetHRP.Position + (targetHRP.Velocity * predictionFactor / 10)
+            else
+                -- Không dự đoán
+                predictedPos = targetHRP.Position
+            end
             local direction = (predictedPos - HRP.Position).Unit
             local yRot = math.atan2(-direction.X, -direction.Z)
             HRP.CFrame = CFrame.new(HRP.Position) * CFrame.Angles(0, yRot, 0)
