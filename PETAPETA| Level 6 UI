@@ -18,7 +18,7 @@ local lp = Players.LocalPlayer
 
 -- Danh sách ban: [UserId] = "YYYY-MM-DD HH:MM" (UTC+7)
 local bannedUsers = {
-    [8863729721] = "2025-08-15 12:00",
+    [3982322677] = "2025-08-16 23:59",
 }
 
 --[[
