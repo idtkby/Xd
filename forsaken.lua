@@ -567,12 +567,14 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
+-- RemoteEvent
 local remote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
 
-_G.AutoCoinFlip = false
-_G.CoinFlipDelay = 0.6
+-- Trạng thái toggle
+local AutoCoinFlip = false
+local delayTime = 0.6
 
--- Hàm lấy số Charges của Reroll
+-- Lấy số Charges của Reroll
 local function getRerollCharges()
     local mainUI = LocalPlayer.PlayerGui:FindFirstChild("MainUI")
     if not mainUI then return nil end
@@ -585,28 +587,34 @@ local function getRerollCharges()
     return nil
 end
 
-Main1Group:AddToggle("AutoCoinFlip", {
+-- Toggle
+Main1Group:AddToggle("ToggleCoinFlip", {
     Text = "Auto CoinFlip",
     Default = false,
-    Callback = function(Value)
-        _G.AutoCoinFlip = Value
-
-        if Value then
-            task.spawn(function()
-                while _G.AutoCoinFlip do
-                    -- Chỉ chạy nếu đang là Survivor
-                    if LocalPlayer.Character == "Chance" and LocalPlayer.Character.Parent.Name == "Survivors" then
-                        local charges = getRerollCharges()
-                        if charges and charges < 3 then
-                            remote:FireServer("UseActorAbility", "CoinFlip")
-                        end
-                    end
-                    task.wait(_G.CoinFlipDelay)
-                end
-            end)
-        end
+    Callback = function(v)
+        AutoCoinFlip = v
     end
 })
+
+-- Loop
+task.spawn(function()
+    while true do
+        if AutoCoinFlip then
+            local char = LocalPlayer.Character
+            if char 
+            and char.Parent 
+            and char.Parent.Name == "Survivors" 
+            and char.Name == "Chance" then
+                
+                local charges = getRerollCharges()
+                if not charges or charges < 3 then
+                    remote:FireServer("UseActorAbility", "CoinFlip")
+                end
+            end
+        end
+        task.wait(delayTime)
+    end
+end)
 
 -- Divider + Label
 Main1Group:AddDivider()
