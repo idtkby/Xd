@@ -1387,7 +1387,10 @@ local espObjects = {}
 
 -- Hàm tạo ESP
 local function createESP(target)
+    -- Loại trừ NPC 1x1x1x1Zombie
+    if target.Name == "1x1x1x1Zombie" then return end
     if espObjects[target] then return end
+
     local adorneePart = target:FindFirstChild("HumanoidRootPart") or target:FindFirstChildWhichIsA("BasePart")
     if not adorneePart then return end
 
@@ -1410,12 +1413,14 @@ local function createESP(target)
     label.TextStrokeTransparency = 0
     label.Text = "Minion\nDist: 0.0"
     label.Parent = billboard
-local UIStroke = Instance.new("UIStroke")
-	UIStroke.Color = Color3.new(0, 0, 0)
-	UIStroke.Thickness = 1.5
-	UIStroke.Parent = label
 
-    -- Outline
+    -- Viền chữ
+    local uiStroke = Instance.new("UIStroke")
+    uiStroke.Color = Color3.new(0, 0, 0)
+    uiStroke.Thickness = 1.5
+    uiStroke.Parent = label
+
+    -- Outline object
     local highlight = Instance.new("Highlight")
     highlight.Name = "ESPHighlight"
     highlight.FillTransparency = 1
@@ -1464,7 +1469,7 @@ end)
 
 -- Toggle trong Main2Group
 Main2Group:AddToggle("ESPMinion", {
-    Text = "ESP đệ tử của thằng nghịch tử",
+    Text = "ESP đệ nghịch tử",
     Default = false,
     Callback = function(Value)
         _G.ESP_Minion = Value
@@ -1491,6 +1496,124 @@ Main2Group:AddToggle("ESPMinion", {
     end
 })
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+
+_G.ESP_Zombie = false
+local espObjectsZombie = {}
+
+-- Tạo ESP Zombie
+local function createZombieESP(target)
+    if target.Name ~= "1x1x1x1Zombie" then return end
+    if espObjectsZombie[target] then return end
+
+    local adorneePart = target:FindFirstChild("HumanoidRootPart") or target:FindFirstChildWhichIsA("BasePart")
+    if not adorneePart then return end
+
+    -- Billboard
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "ZombieESP"
+    billboard.Adornee = adorneePart
+    billboard.AlwaysOnTop = true
+    billboard.Size = UDim2.new(0, 200, 0, 50)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.Parent = game.CoreGui
+
+    -- Label
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 0, 40)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.fromRGB(0, 255, 0) -- xanh lá đậm
+    label.Font = Enum.Font.Code
+    label.TextSize = 14
+    label.TextStrokeTransparency = 0
+    label.Text = "Zombie\nDist: 0.0"
+    label.Parent = billboard
+
+    -- Viền chữ
+    local uiStroke = Instance.new("UIStroke")
+    uiStroke.Color = Color3.new(0, 0, 0)
+    uiStroke.Thickness = 1.5
+    uiStroke.Parent = label
+
+    -- Outline object
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "ZombieHighlight"
+    highlight.FillTransparency = 1
+    highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+    highlight.OutlineTransparency = 0
+    highlight.Parent = target
+
+    espObjectsZombie[target] = {billboard = billboard, label = label, highlight = highlight}
+end
+
+-- Xóa ESP
+local function removeZombieESP(target)
+    if espObjectsZombie[target] then
+        espObjectsZombie[target].billboard:Destroy()
+        if espObjectsZombie[target].highlight then
+            espObjectsZombie[target].highlight:Destroy()
+        end
+        espObjectsZombie[target] = nil
+    end
+end
+
+-- Update text khoảng cách
+RunService.RenderStepped:Connect(function()
+    if not _G.ESP_Zombie then
+        for _, v in pairs(espObjectsZombie) do
+            v.billboard.Enabled = false
+            if v.highlight then v.highlight.Enabled = false end
+        end
+        return
+    end
+
+    for target, data in pairs(espObjectsZombie) do
+        if target and target.Parent then
+            local hrp = target:FindFirstChild("HumanoidRootPart") or target:FindFirstChildWhichIsA("BasePart")
+            if hrp and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local dist = (hrp.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                data.label.Text = string.format("Zombie\nDist: %.1f", dist)
+                data.billboard.Enabled = true
+                if data.highlight then data.highlight.Enabled = true end
+            end
+        else
+            removeZombieESP(target)
+        end
+    end
+end)
+
+-- Toggle trong Main2Group
+Main2Group:AddToggle("ESPZombie", {
+    Text = "ESP 1x Zombie",
+    Default = false,
+    Callback = function(Value)
+        _G.ESP_Zombie = Value
+        if Value then
+            local map = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
+            if map then
+                for _, obj in ipairs(map:GetChildren()) do
+                    createZombieESP(obj)
+                end
+                map.ChildAdded:Connect(function(child)
+                    if _G.ESP_Zombie then
+                        createZombieESP(child)
+                    end
+                end)
+                map.ChildRemoved:Connect(function(child)
+                    removeZombieESP(child)
+                end)
+            end
+        else
+            for target in pairs(espObjectsZombie) do
+                removeZombieESP(target)
+            end
+        end
+    end
+})
+
+Main2Group:AddDivider()
 
 
 
