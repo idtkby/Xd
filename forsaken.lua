@@ -100,7 +100,7 @@ local Window = Library:CreateWindow({
     AutoShow = true,
     Resizable = true,
     Footer = "Script by IganhK",
-	   Icon = 82204364945595, -- ID logo
+	   Icon = 125804514797156, -- ID logo
 
     AutoLock = false,
     ShowCustomCursor = true,
