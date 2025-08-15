@@ -1385,10 +1385,16 @@ local RunService = game:GetService("RunService")
 _G.ESP_Minion = false
 local espObjects = {}
 
+-- Hàm kiểm tra NPC
+local function isNPC(target)
+    return target:FindFirstChildOfClass("Humanoid") ~= nil
+end
+
 -- Hàm tạo ESP
 local function createESP(target)
-    -- Loại trừ NPC 1x1x1x1Zombie
-    if target.Name == "1x1x1x1Zombie" then return end
+    -- Chỉ ESP NPC và loại trừ tên
+    if not isNPC(target) then return end
+    if target.Name == "1x1x1x1Zombie" or target.Name == "007n7" then return end
     if espObjects[target] then return end
 
     local adorneePart = target:FindFirstChild("HumanoidRootPart") or target:FindFirstChildWhichIsA("BasePart")
@@ -1469,7 +1475,7 @@ end)
 
 -- Toggle trong Main2Group
 Main2Group:AddToggle("ESPMinion", {
-    Text = "ESP đệ nghịch tử",
+    Text = "ESP Minion",
     Default = false,
     Callback = function(Value)
         _G.ESP_Minion = Value
@@ -2036,62 +2042,6 @@ M205One:AddToggle("Invisibility", {
                 animateScript.Disabled = false
             end
         end
-    end
-})
-
-local LocalPlayer = game:GetService("Players").LocalPlayer
-
---== Anti Slowness ==--
-_G.AntiSlow = false
-
-local function checkAndSetSlowStatus()
-    local character = LocalPlayer.Character
-    if not character then return end
-
-    local speedMultipliers = character:FindFirstChild("SpeedMultipliers")
-    local fovMultipliers = character:FindFirstChild("FOVMultipliers")
-
-    if speedMultipliers then
-        local slowed = speedMultipliers:FindFirstChild("SlowedStatus")
-        if slowed and slowed:IsA("NumberValue") then
-            slowed.Value = 1
-        end
-    end
-
-    if fovMultipliers then
-        local slowedFOV = fovMultipliers:FindFirstChild("SlowedStatus")
-        if slowedFOV and slowedFOV:IsA("NumberValue") then
-            slowedFOV.Value = 1
-        end
-    end
-
-    local mainUI = LocalPlayer.PlayerGui:FindFirstChild("MainUI")
-    if mainUI then
-        local statusContainer = mainUI:FindFirstChild("StatusContainer")
-        if statusContainer then
-            local slownessUI = statusContainer:FindFirstChild("Slowness")
-            if slownessUI then
-                slownessUI.Visible = false
-            end
-        end
-    end
-end
-
--- Loop
-task.spawn(function()
-    while task.wait(0.1) do
-        if _G.AntiSlow then
-            checkAndSetSlowStatus()
-        end
-    end
-end)
-
--- Toggle Obsidian
-M205One:AddToggle("AntiSlowness", {
-    Text = "no Slowness",
-    Default = false,
-    Callback = function(Value)
-        _G.AntiSlow = Value
     end
 })
 
