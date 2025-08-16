@@ -95,7 +95,7 @@ if _G.NotificationSound then
 Library:SetDPIScale(85)
 
 local Window = Library:CreateWindow({
-    Title = "[NOLI🎭] Forsaken",
+    Title = "        [NOLI🎭] Forsaken",
     Center = true,
     AutoShow = true,
     Resizable = true,
@@ -115,7 +115,7 @@ Tabs = {
 	["UI Settings"] = Window:AddTab("UI Settings", "rbxassetid://7733955511")
 }
 
-local Main1Group = Tabs.Tab:AddLeftGroupbox("Main")
+local Main1Group = Tabs.Tab:AddLeftGroupbox("-=< Main >=-")
 
 -- first, set a default global delay
 _G.AutoGeneralDelay = 1.8
@@ -1223,7 +1223,7 @@ M105Two:AddLabel("Killers: 10 ~ 30", true)
 
 
 
-local Main2Group = Tabs.Tab:AddRightGroupbox("Other")
+local Main2Group = Tabs.Tab:AddRightGroupbox("-=< Visual >=-")
 
 Main2Group:AddToggle("General", {
     Text = "Esp General",
@@ -2410,7 +2410,7 @@ end)
 
 
 
-local Main3Group = Tabs.Tab2:AddLeftGroupbox("Main (2)")
+local Main3Group = Tabs.Tab2:AddLeftGroupbox("-=< Main 02 >=-")
 Main3Group:AddDivider()
 
 
@@ -2533,7 +2533,7 @@ end)
 
 
 
-local Main4Group = Tabs.Tab2:AddRightGroupbox("--== Anti ==--")
+local Main4Group = Tabs.Tab2:AddRightGroupbox("-=< Anti >=-")
 
 
 
