@@ -526,7 +526,7 @@ Main1Group:AddToggle("AutoAimChance", {
 
 -- Slider chỉnh dự đoán
 Main1Group:AddSlider("PredictionSlider", {
-    Text = "Prediction Factor",
+    Text = "Prediction Factor [Beta]",
     Min = 0,
     Max = 10,
     Default = 1,
@@ -1360,14 +1360,14 @@ local function HandleESP(itemName, color, labelText, enabledFlag)
 	local con
 	con = workspace.DescendantAdded:Connect(function(obj)
 		if obj:IsA("Model") and obj.Name == itemName and _G[enabledFlag] then
-			task.wait(0.1)
+			task.wait(5(
 			CreateItemESP(obj, color, labelText)
 			table.insert(existing, obj)
 		end
 	end)
 
 	-- Dọn khi tắt
-	repeat task.wait(0.5) until not _G[enabledFlag]
+	repeat task.wait(1) until not _G[enabledFlag]
 	con:Disconnect()
 	for _, obj in ipairs(existing) do
 		ClearItemESP(obj)
@@ -2543,7 +2543,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 _G.Do1x1PopupsLoop = false
-_G.PopupDelay = 0.3 -- mặc định
+_G.PopupDelay = 0.5 -- mặc định
 
 -- Hàm click popup (dùng getconnections)
 local function clickPopup(gui)
@@ -2588,7 +2588,7 @@ end)
 
 -- Toggle Obsidian
 Main4Group:AddToggle("Anti1xPopups", {
-    Text = "Auto 1x Popups",
+    Text = "Anti 1x Popups",
     Default = false,
     Callback = function(Value)
         _G.Do1x1PopupsLoop = Value
@@ -2598,8 +2598,8 @@ Main4Group:AddToggle("Anti1xPopups", {
 -- Slider chỉnh delay
 Main4Group:AddSlider("PopupDelaySlider", {
     Text = "Delay",
-    Default = 0.3,
-    Min = 0.05,
+    Default = 0.5,
+    Min = 0.1,
     Max = 1,
     Rounding = 2,
     Callback = function(Value)
