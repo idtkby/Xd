@@ -1403,6 +1403,19 @@ Main2Group:AddToggle("EspMedkit", {
 	end
 })
 
+Main2Group:AddToggle("EspSubSpaceTaph", {
+	Text = "ESP Taph mine",
+	Default = false,
+	Callback = function(v)
+		_G.EspMedkit = v
+		if v then
+			task.spawn(function()
+				HandleESP("SubspaceTripmine", Color3.fromRGB(175,0,255), "SubspaceTripmine", "EspSubSpaceTaph")
+			end)
+		end
+	end
+})
+
 Main2Group:AddDivider()
 
 local Players = game:GetService("Players")
