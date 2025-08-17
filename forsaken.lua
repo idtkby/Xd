@@ -1439,6 +1439,32 @@ Main2Group:AddToggle("EspSubSpaceTaph", {
 	end
 })
 
+Main2Group:AddToggle("EspBuildermanDispenser", {
+	Text = "ESP builderman dispenser",
+	Default = false,
+	Callback = function(v)
+		_G.EspSubSpaceTaph = v
+		if v then
+			task.spawn(function()
+				HandleESP("BuildermanDispenser", Color3.fromRGB(155,255,0), "Dispenser", "EspBuildermanDispenser")
+			end)
+		end
+	end
+})
+
+Main2Group:AddToggle("EspBuildermanSentry", {
+	Text = "ESP builderman sentry",
+	Default = false,
+	Callback = function(v)
+		_G.EspSubSpaceTaph = v
+		if v then
+			task.spawn(function()
+				HandleESP("BuildermanSentry", Color3.fromRGB(155,255,0), "Sentry", "EspBuildermanSentry")
+			end)
+		end
+	end
+})
+
 Main2Group:AddDivider()
 
 local Players = game:GetService("Players")
@@ -1458,7 +1484,7 @@ local function createESP(target)
     -- Chỉ ESP NPC và loại trừ tên
     if not isNPC(target) then return end
     local name = target.Name
-    if name == "1x1x1x1Zombie" or name == "007n7" or name == "SubspaceTripmine" then return end
+    if name == "1x1x1x1Zombie" or name == "007n7" or name == "BuildermanSentry" or name == "BuildermanDispenser" or name == "SubspaceTripmine" then return end
     if string.find(name, "TaphTripwire") then return end
     if espObjects[target] then return end
 
