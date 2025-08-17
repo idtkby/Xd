@@ -1360,7 +1360,7 @@ local function HandleESP(itemName, color, labelText, enabledFlag)
 	local con
 	con = workspace.DescendantAdded:Connect(function(obj)
 		if obj:IsA("Model") and obj.Name == itemName and _G[enabledFlag] then
-			task.wait(5(
+			task.wait(5)
 			CreateItemESP(obj, color, labelText)
 			table.insert(existing, obj)
 		end
