@@ -3,6 +3,7 @@ local localPlayer = Players.LocalPlayer
 local playerData = localPlayer:WaitForChild("PlayerData")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local LocalPlayer = game:GetService("Players").LocalPlayer
 local MarketplaceService = game:GetService("MarketplaceService")
 local RemoteEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
 local TweenService = game:GetService("TweenService")
@@ -302,9 +303,9 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
    Name = "Nyansaken Hub",
-   Icon = 87406762099998,
+   Icon = 81031301564433,
    LoadingTitle = "Loading Nyansaken Hub...",
-   LoadingSubtitle = "by Nyan Elliot (pkdll)",
+   LoadingSubtitle = "by PKDLL",
    ShowText = "Nyansaken",
    Theme = "Default",
    ToggleUIKeybind = "K",
@@ -317,8 +318,18 @@ local Window = Rayfield:CreateWindow({
    },
    Discord = {
       Enabled = false,
-      Invite = "noinvitelink",
-      RememberJoins = false
+      Invite = "dsc.gg/nyansaken-hub",
+      RememberJoins = true
+   },
+   KeySystem = false, -- Set this to true to use our key system
+   KeySettings = {
+      Title = "Nyan-System",
+      Subtitle = "Key System",
+      Note = "(dsc.gg/nyansaken-hub) - Join our discord right now", -- Use this to tell the user how to get a key
+      FileName = "nyansakenkey", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+      Key = {"THEBESTSKINELLIOT", "PKDLLIsC00L", "YANCTHEBEST", "CORRUPTNATURE", "FMSWELCOME", "KEYISKEY"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
    }
 })
 
@@ -354,27 +365,30 @@ local ESP = Window:CreateTab("ESP", "scan-eye")
 local StaminaSet = Window:CreateTab("Stamina Settings", "footprints")
 local Aimbot = Window:CreateTab("Aimbot", "crosshair")
 local Miscs = Window:CreateTab("Misc", "circle-ellipsis")
+local AntiSlows = Window:CreateTab("Anti Slow", "accessibility")
 local AchieveTab = Window:CreateTab("Achievements", "medal")
 
+-- == Variables ==
 local genEnabled = false
-local genInterval = 2
+local genInterval = 1.25
 local re = true
 local Check = false
 local lt = 0
 
-Generators:CreateToggle({
+-- == UI Elements ==
+local autoGenToggle = Generators:CreateToggle({
 	Name = "Auto Do Generator",
-	CurrentValue = false,
+	CurrentValue = genEnabled,
 	Flag = "AutoGenToggle",
 	Callback = function(Value)
 		genEnabled = Value
 	end,
 })
 
-Generators:CreateSlider({
+local genIntervalSlider = Generators:CreateSlider({
 	Name = "Do Generator Interval (Seconds)",
 	Range = {1, 15},
-	Increment = 0.5,
+	Increment = 0.25,
 	Suffix = "s",
 	CurrentValue = genInterval,
 	Flag = "GenIntervalSlider",
@@ -383,7 +397,7 @@ Generators:CreateSlider({
 	end,
 })
 
--- 🪝 Hook RF/RE để detect vào/ra gen + cooldown
+-- == Hook RF/RE để detect vào/ra gen + cooldown ==
 local Old
 Old = hookmetamethod(game, "__namecall", function(Self, ...)
 	local Args = { ... }
@@ -404,13 +418,13 @@ Old = hookmetamethod(game, "__namecall", function(Self, ...)
 	return Old(Self, unpack(Args))
 end)
 
--- 🔁 Auto Generator Loop
+-- == Auto Generator Loop ==
 game:GetService("RunService").Stepped:Connect(function()
 	if genEnabled and Check and re and os.clock() - lt >= genInterval then
 		re = false
 		task.spawn(function()
 			for _, gen in ipairs(workspace.Map.Ingame:WaitForChild("Map"):GetChildren()) do
-				if gen.Name == "Generator" then
+				if gen.Name == "Generator" and gen:FindFirstChild("Remotes") then
 					gen.Remotes.RE:FireServer()
 				end
 			end
@@ -1612,7 +1626,88 @@ Players.LocalPlayer.CharacterAdded:Connect(function(v)
 	char = v
 end)
 
-local autoPickupEnabled = false
+Miscs:CreateSection("FOV")
+Miscs:CreateInput({
+    Name = "Input FOV",
+    PlaceholderText = "80", -- text gợi ý mặc định
+    RemoveTextAfterFocusLost = false,
+    Flag = "FOVInput",
+    Callback = function(thefoxtext)
+        -- chuyển chuỗi nhập thành số
+        local fovvalueinput = tonumber(thefoxtext)
+        if fovvalueinput then
+            game:GetService("ReplicatedStorage")
+                :WaitForChild("Modules")
+                :WaitForChild("Network")
+                :WaitForChild("RemoteEvent")
+                :FireServer(
+                    "UpdateSettings",
+                    game:GetService("Players").LocalPlayer
+                        :WaitForChild("PlayerData")
+                        :WaitForChild("Settings")
+                        :WaitForChild("Game")
+                        :WaitForChild("FieldOfView"),
+                    fovvalueinput
+                )
+        end
+    end,
+})
+
+Miscs:CreateSection("Items")
+
+local RoundTimer = ReplicatedStorage:WaitForChild("RoundTimer")
+local autoPickupEnabled = true
+
+-- Check còn sống
+local function isAlive(char)
+	return char and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0
+end
+
+-- Khi TimeLeft = 0
+local hasDropped = false
+RoundTimer:GetAttributeChangedSignal("TimeLeft"):Connect(function()
+	if not autoPickupEnabled or hasDropped then return end
+
+	local timeLeft = RoundTimer:GetAttribute("TimeLeft")
+	if timeLeft and timeLeft <= 0.2 then
+		local char = LocalPlayer.Character
+		if not char then return end
+
+		-- Equip tất cả tool từ Backpack
+		for _, v in pairs(LocalPlayer.Backpack:GetChildren()) do
+			if v:IsA("Tool") then
+				v.Parent = char
+			end
+		end
+		task.wait()
+
+		-- Drop tool ra workspace
+		for _, v in pairs(char:GetChildren()) do
+			if v:IsA("Tool") then
+				v.Parent = workspace
+			end
+		end
+
+		hasDropped = true
+	end
+end)
+
+-- Auto Pickup Tool khi còn sống
+task.spawn(function()
+	while task.wait(1) do
+		local char = LocalPlayer.Character
+		if autoPickupEnabled and isAlive(char) then
+			local mapIngame = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
+			if mapIngame then
+				for _, tool in ipairs(mapIngame:GetChildren()) do
+					if tool:IsA("Tool") then
+						char.Humanoid:EquipTool(tool)
+					end
+				end
+			end
+		end
+	end
+end)
 
 Miscs:CreateToggle({
 	Name = "Auto Pickup Drop Items (Working Ingame/Lobby)",
@@ -1623,17 +1718,9 @@ Miscs:CreateToggle({
 	end,
 })
 
-task.spawn(function()
-	while task.wait(1) do
-		if autoPickupEnabled and char and char:FindFirstChild("Humanoid") then
-			for _, tool in ipairs(workspace.Map.Ingame:GetChildren()) do
-				if tool:IsA("Tool") then
-					char.Humanoid:EquipTool(tool)
-				end
-			end
-		end
-	end
-end)
+-- === Section Creation ===
+Miscs:CreateSection("Invisibility")
+
 
 -- === Animation Loop ===
 local animationId = "75804462760596"
@@ -1699,94 +1786,122 @@ Miscs:CreateToggle({
    end,
 })
 
---== Services ==--
-local RunService = game:GetService("RunService")
-local LocalPlayer = game:GetService("Players").LocalPlayer
-local VIM = game:GetService("VirtualInputManager")
+local Survivors = workspace:WaitForChild("Players"):WaitForChild("Survivors")
 
---== Anti Slowness ==--
-local AntiSlow = false
+-- Cấu hình các loại Anti-Slow
+local AntiSlowConfigs = {
+    Slowness = {Values = {"SlowedStatus"}, Connection = nil, Enabled = false},
+    Skills = {Values = {"StunningKiller", "EatFriedChicken", "GuestBlocking", "PunchAbility", "SubspaceTripmine",
+                        "TaphTripwire", "PlasmaBeam", "SpawnProtection", "c00lgui", "ShootingGun", 
+                        "TwoTimeStab", "TwoTimeCrouching", "DrinkingCola", "DrinkingSlateskin", 
+                        "SlateskinStatus", "EatingGhostburger"}, Connection = nil, Enabled = false},
+    Items = {Values = {"BloxyColaItem", "Medkit"}, Connection = nil, Enabled = false},
+    Emotes = {Values = {"Emoting"}, Connection = nil, Enabled = false},
+    Builderman = {Values = {"DispenserConstruction", "SentryConstruction"}, Connection = nil, Enabled = false}
+}
 
--- Cache UI và multipliers để không tìm mỗi frame
-local function cacheCharacterData()
-    local character = LocalPlayer.Character
-    if not character then return nil end
-
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    local speedMultipliers = character:FindFirstChild("SpeedMultipliers")
-    local fovMultipliers = character:FindFirstChild("FOVMultipliers")
-    return character, humanoid, speedMultipliers, fovMultipliers
-end
-
-local cachedCharacter, cachedHumanoid, cachedSpeedMult, cachedFOVMult
-
-local function checkAndSetSlowStatus()
-    cachedCharacter = cachedCharacter or LocalPlayer.Character
-    cachedHumanoid = cachedHumanoid or cachedCharacter and cachedCharacter:FindFirstChildOfClass("Humanoid")
-    cachedSpeedMult = cachedSpeedMult or cachedCharacter and cachedCharacter:FindFirstChild("SpeedMultipliers")
-    cachedFOVMult = cachedFOVMult or cachedCharacter and cachedCharacter:FindFirstChild("FOVMultipliers")
-
-    if cachedSpeedMult then
-        local slowed = cachedSpeedMult:FindFirstChild("SlowedStatus")
-        if slowed and slowed:IsA("NumberValue") then slowed.Value = 1 end
-    end
-    if cachedFOVMult then
-        local slowedFOV = cachedFOVMult:FindFirstChild("SlowedStatus")
-        if slowedFOV and slowedFOV:IsA("NumberValue") then slowedFOV.Value = 1 end
-    end
-
-    -- Ẩn UI báo slow
+-- Hàm ẩn UI báo slow
+local function hideSlownessUI()
     local mainUI = LocalPlayer.PlayerGui:FindFirstChild("MainUI")
     if mainUI then
         local statusContainer = mainUI:FindFirstChild("StatusContainer")
         if statusContainer then
             local slownessUI = statusContainer:FindFirstChild("Slowness")
-            if slownessUI then slownessUI.Visible = false end
+            if slownessUI then
+                slownessUI.Visible = false
+            end
         end
     end
 end
 
--- Loop anti-slow tối ưu
-spawn(function()
-    while true do
-        if AntiSlow then
-            checkAndSetSlowStatus()
+-- Hàm chung xử lý Anti-Slow
+local function handleAntiSlow(survivor, config)
+    if survivor:GetAttribute("Username") ~= LocalPlayer.Name then return end
+    local function onRenderStep()
+        if not survivor.Parent or not config.Enabled then return end
+        local speedMultipliers = survivor:FindFirstChild("SpeedMultipliers")
+        if speedMultipliers then
+            for _, valName in ipairs(config.Values) do
+                local val = speedMultipliers:FindFirstChild(valName)
+                if val and val:IsA("NumberValue") and val.Value ~= 1 then
+                    val.Value = 1
+                end
+            end
         end
-        task.wait(0.1) -- không cần mỗi frame
+        hideSlownessUI()
     end
-end)
 
-Miscs:CreateToggle({
-    Name = "Anti Slowness",
-    CurrentValue = false,
-    Flag = "Toggle_AntiSlow",
-    Callback = function(Value)
-        AntiSlow = Value
+    config.Connection = RunService.RenderStepped:Connect(onRenderStep)
+end
+
+-- Hàm khởi chạy
+local function startAntiSlow(config)
+    config.Enabled = true
+    for _, survivor in pairs(Survivors:GetChildren()) do
+        handleAntiSlow(survivor, config)
     end
-})
+    Survivors.ChildAdded:Connect(function(child)
+        task.wait(0.1)
+        handleAntiSlow(child, config)
+    end)
+end
 
---== Auto 1x1x1x1 Popup (chỉ khi popup xuất hiện) ==--
+-- Hàm dừng
+local function stopAntiSlow(config)
+    config.Enabled = false
+    if config.Connection then
+        config.Connection:Disconnect()
+        config.Connection = nil
+    end
+end
+
+-- Tạo toggle cho từng loại
+for name, config in pairs(AntiSlowConfigs) do
+    AntiSlows:CreateToggle({
+        Name = "Anti-Slow " .. name,
+        CurrentValue = false,
+        Flag = "AntiSlow" .. name,
+        Callback = function(value)
+            if value then
+                startAntiSlow(config)
+            else
+                stopAntiSlow(config)
+            end
+        end
+    })
+end
+
+Miscs:CreateSection("1x1x1x1")
+
+--== Services ==--
 local VIM = game:GetService("VirtualInputManager")
-local tempUI = LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("TemporaryUI")
+
+--== Auto 1x1x1x1 Popup ==--
 local Do1x1PopupsLoop = false
 
-local function clickPopup(gui)
-    if gui:IsA("GuiObject") and gui.Name == "1x1x1x1Popup" then
-        local cx = gui.AbsolutePosition.X + (gui.AbsoluteSize.X / 2)
-        local cy = gui.AbsolutePosition.Y + (gui.AbsoluteSize.Y / 2) + 50
-        VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, true, LocalPlayer.PlayerGui, 1)
-        VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, false, LocalPlayer.PlayerGui, 1)
+local function Do1x1x1x1Popups()
+    local tempUI = LocalPlayer.PlayerGui:FindFirstChild("TemporaryUI")
+    if not tempUI then return end
+
+    for _, gui in ipairs(tempUI:GetChildren()) do
+        if gui.Name == "1x1x1x1Popup" and gui:IsA("GuiObject") then
+            local cx = gui.AbsolutePosition.X + (gui.AbsoluteSize.X / 2)
+            local cy = gui.AbsolutePosition.Y + (gui.AbsoluteSize.Y / 2) + 50
+            VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, true, LocalPlayer.PlayerGui, 1)
+            VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, false, LocalPlayer.PlayerGui, 1)
+        end
     end
 end
 
--- Listen khi popup được thêm vào
-tempUI.ChildAdded:Connect(function(child)
-    if Do1x1PopupsLoop then
-        clickPopup(child)
+spawn(function()
+    while true do
+        if Do1x1PopupsLoop then
+            Do1x1x1x1Popups()
+        end
+        task.wait(0.15) -- giảm spam
     end
 end)
 
--- Rayfield toggle
 Miscs:CreateToggle({
     Name = "Auto 1x1x1x1 Popup",
     CurrentValue = false,
@@ -1794,6 +1909,140 @@ Miscs:CreateToggle({
     Callback = function(Value)
         Do1x1PopupsLoop = Value
     end
+})
+
+local VoidRushController = {}
+
+-- Biến
+VoidRushController.Toggle = false
+VoidRushController.OriginalDashSpeed = 60
+VoidRushController.IsActive = false
+VoidRushController.DashConnection = nil
+VoidRushController.CheckThread = nil
+VoidRushController.KillerConn = nil
+
+local Player = game.Players.LocalPlayer
+local RunService = game:GetService("RunService")
+
+-- Lấy Character
+local function updateCharacter()
+    VoidRushController.Character = Player.Character or Player.CharacterAdded:Wait()
+    VoidRushController.Humanoid = VoidRushController.Character:WaitForChild("Humanoid")
+    VoidRushController.HumanoidRootPart = VoidRushController.Character:WaitForChild("HumanoidRootPart")
+end
+
+updateCharacter()
+
+-- Khi respawn
+Player.CharacterAdded:Connect(function()
+    updateCharacter()
+    VoidRushController:Stop()
+end)
+
+-- Bật Control Void Rush
+function VoidRushController:Start()
+    if self.IsActive then return end
+    self.IsActive = true
+
+    self.DashConnection = RunService.RenderStepped:Connect(function()
+        if not self.Humanoid or not self.HumanoidRootPart then return end
+        self.Humanoid.WalkSpeed = self.OriginalDashSpeed
+        self.Humanoid.AutoRotate = false
+
+        local dir = self.HumanoidRootPart.CFrame.LookVector
+        local horizontalDir = Vector3.new(dir.X, 0, dir.Z).Unit
+        self.Humanoid:Move(horizontalDir)
+    end)
+end
+
+-- Tắt Control Void Rush
+function VoidRushController:Stop()
+    if not self.IsActive then return end
+    self.IsActive = false
+
+    if self.Humanoid then
+        self.Humanoid.WalkSpeed = 16
+        self.Humanoid.AutoRotate = true
+        self.Humanoid:Move(Vector3.new(0,0,0))
+    end
+
+    if self.DashConnection then
+        self.DashConnection:Disconnect()
+        self.DashConnection = nil
+    end
+end
+
+-- Cleanup
+function VoidRushController:FullCleanup()
+    self:Stop()
+    if self.KillerConn then
+        self.KillerConn:Disconnect()
+        self.KillerConn = nil
+    end
+    if self.CheckThread then
+        task.cancel(self.CheckThread)
+        self.CheckThread = nil
+    end
+end
+
+-- Hàm check VoidRush
+function VoidRushController:CheckVoidRush()
+    self.CheckThread = task.spawn(function()
+        while self.Toggle do
+            local KillersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
+            local noliKiller = nil
+
+            for _, killer in ipairs(KillersFolder:GetChildren()) do
+                if killer:GetAttribute("Username") == Player.Name
+                and killer:GetAttribute("ActorDisplayName") == "Noli" then
+                    noliKiller = killer
+                    break
+                end
+            end
+
+            if noliKiller then
+                local function updateState()
+                    if not self.Toggle then
+                        self:Stop()
+                        return
+                    end
+                    if noliKiller:GetAttribute("VoidRushState") == "Dashing" then
+                        self:Start()
+                    else
+                        self:Stop()
+                    end
+                end
+
+                updateState()
+
+                self.KillerConn = noliKiller:GetAttributeChangedSignal("VoidRushState"):Connect(updateState)
+                noliKiller.AncestryChanged:Wait()
+                if self.KillerConn then
+                    self.KillerConn:Disconnect()
+                    self.KillerConn = nil
+                end
+                self:Stop()
+            else
+                task.wait(0.1)
+            end
+        end
+    end)
+end
+
+-- GUI toggle
+Combat:CreateSection("Noli")
+
+Combat:CreateToggle({
+    Name = "Void Rush Controller",
+    CurrentValue = false,
+    Callback = function(value)
+        VoidRushController.Toggle = value
+        if value then
+            VoidRushController:CheckVoidRush()
+        else
+            VoidRushController:FullCleanup()
+        end
+    end,
 })
 
 --// Services
@@ -1865,7 +2114,7 @@ local AttackAnimations = {
 }
 
 --// Hitbox ride logic
-RunService.RenderStepped:Connect(function()
+RunService.Heartbeat:Connect(function()
 	if not Enabled then return end
 	if not HumanoidRootPart then return end
 
@@ -2387,23 +2636,22 @@ autoPunchLoop = RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Variables
-local running = false
-local animTrack
 
--- Function to get up-to-date character & humanoid safely
-local function getCharacterHumanoid()
-    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not humanoid then
-        humanoid = Instance.new("Humanoid")
-        humanoid.Parent = character
-    end
+-- Global environment
+genv = {}
+genv.running = false
+genv.animTrack = nil
+genv.toggleValue = false
+
+-- Get character & humanoid safely
+function genv.getCharacterHumanoid()
+    local character = LocalPlayer.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
     return character, humanoid
 end
 
--- Function to get or create animator safely
-local function getAnimator(humanoid)
+-- Get or create animator safely
+function genv.getAnimator(humanoid)
     local animator = humanoid:FindFirstChildOfClass("Animator")
     if not animator then
         animator = Instance.new("Animator")
@@ -2412,67 +2660,98 @@ local function getAnimator(humanoid)
     return animator
 end
 
--- Function to handle toggle
-local function handleToggle(enabled)
-    running = enabled
+-- Handle toggle
+function genv.handleToggle(enabled)
+    genv.running = enabled
 
-    spawn(function()
-        while running do
-            local character, humanoid = getCharacterHumanoid()
-            local animator = getAnimator(humanoid)
+    -- Stop animation & reset transparency if disabling
+    if not enabled and genv.animTrack then
+        genv.animTrack:Stop()
+        genv.animTrack = nil
+    end
 
-            local torso = character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
-            local rootPart = character:FindFirstChild("HumanoidRootPart")
-
-            if torso and torso.Transparency ~= 0 then
-                if not animTrack or not animTrack.IsPlaying then
-                    local animation = Instance.new("Animation")
-                    animation.AnimationId = "rbxassetid://75804462760596"
-                    animTrack = animator:LoadAnimation(animation)
-                    animTrack.Looped = true
-                    animTrack:Play()
-                    animTrack:AdjustSpeed(0)
-                    if rootPart then
-                        rootPart.Transparency = 0.4
-                    end
-                end
-            else
-                if animTrack and animTrack.IsPlaying then
-                    animTrack:Stop()
-                    animTrack = nil
-                    if rootPart then
-                        rootPart.Transparency = 1
-                    end
-                end
-            end
-
-            wait(0.5)
-        end
-
-        -- Ensure transparency reset when toggle off
-        local _, humanoid = getCharacterHumanoid()
-        local rootPart = humanoid.Parent:FindFirstChild("HumanoidRootPart")
-        if rootPart then
-            rootPart.Transparency = 1
-        end
-    end)
+    local character, _ = genv.getCharacterHumanoid()
+    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+    if rootPart then
+        rootPart.Transparency = enabled and rootPart.Transparency or 1
+    end
 end
 
--- Combat Tab (Rayfield)
+-- Survivor check & auto toggle
+local survivorValue = playerData:WaitForChild("Equipped"):WaitForChild("Survivor")
+
+function genv.updateToggle()
+    local character, humanoid = genv.getCharacterHumanoid()
+    local isTarget = survivorValue.Value == "007n7" and humanoid and humanoid.MaxHealth < 300
+    genv.handleToggle(isTarget)
+end
+
+-- Rayfield Combat UI
 Combat:CreateSection("007n7")
 
+-- Toggle thủ công
 Combat:CreateToggle({
     Name = "Invisible Upon Cloning (007n7)",
     CurrentValue = false,
     Flag = "InvisibleToggle",
     Callback = function(Value)
-        handleToggle(Value)
+        genv.toggleValue = Value
+        if Value then
+            genv.updateToggle()
+        else
+            genv.handleToggle(false)
+        end
     end
 })
 
--- Auto-update on respawn
-LocalPlayer.CharacterAdded:Connect(function()
-    if running then
-        handleToggle(true)
+-- Update when Survivor changes
+survivorValue:GetPropertyChangedSignal("Value"):Connect(function()
+    if genv.toggleValue then
+        genv.updateToggle()
     end
 end)
+
+-- Auto-update on respawn
+LocalPlayer.CharacterAdded:Connect(function(char)
+    -- Small delay to ensure character exists
+    task.wait(0.1)
+    if genv.toggleValue then
+        genv.updateToggle()
+    end
+end)
+
+-- Main loop using RunService.Heartbeat
+RunService.Heartbeat:Connect(function()
+    if not genv.running then return end
+
+    local character, humanoid = genv.getCharacterHumanoid()
+    if not character or not humanoid then return end
+
+    local animator = genv.getAnimator(humanoid)
+    local torso = character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+
+    if humanoid.MaxHealth < 300 and torso and torso.Transparency ~= 0 then
+        if not genv.animTrack or not genv.animTrack.IsPlaying then
+            local animation = Instance.new("Animation")
+            animation.AnimationId = "rbxassetid://75804462760596"
+            genv.animTrack = animator:LoadAnimation(animation)
+            genv.animTrack.Looped = true
+            genv.animTrack:Play()
+            genv.animTrack:AdjustSpeed(0)
+            if rootPart then
+                rootPart.Transparency = 0.4
+            end
+        end
+    else
+        if genv.animTrack and genv.animTrack.IsPlaying then
+            genv.animTrack:Stop()
+            genv.animTrack = nil
+            if rootPart then
+                rootPart.Transparency = 1
+            end
+        end
+    end
+end)
+
+Rayfield:LoadConfiguration()
