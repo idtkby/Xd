@@ -1305,6 +1305,12 @@ end
     end
 })
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+-- Hàm tạo ESP cho 1 model
 local function CreateItemESP(model, color, labelText)
 	if model:FindFirstChild("ItemESP_Gui") then return end
 
@@ -1320,17 +1326,18 @@ local function CreateItemESP(model, color, labelText)
 	gui.Parent = head
 
 	local lbl = Instance.new("TextLabel")
+	lbl.Name = "MainLabel"
 	lbl.Size = UDim2.new(1, 0, 1, 0)
 	lbl.BackgroundTransparency = 1
 	lbl.Font = Enum.Font.Code
 	lbl.TextSize = 14
 	lbl.TextColor3 = color
-	lbl.Text = labelText
+	lbl.Text = labelText .. "\nDist: 0.0"
+	lbl.TextStrokeTransparency = 0
 	lbl.Parent = gui
 
-	-- Thêm viền chữ
 	local stroke = Instance.new("UIStroke")
-	stroke.Color = Color3.new(0, 0, 0) -- viền đen
+	stroke.Color = Color3.new(0, 0, 0)
 	stroke.Thickness = 1.5
 	stroke.Parent = lbl
 end
@@ -1343,39 +1350,56 @@ local function ClearItemESP(model)
 	end
 end
 
+-- Hàm xử lý chung ESP
 local function HandleESP(itemName, color, labelText, enabledFlag)
-	local RunService = game:GetService("RunService")
-	local workspace = game:GetService("Workspace")
 	local existing = {}
 
 	-- Quét hiện tại
-	for _, obj in ipairs(workspace:GetDescendants()) do
+	for _, obj in ipairs(Workspace:GetDescendants()) do
 		if obj:IsA("Model") and obj.Name == itemName then
 			CreateItemESP(obj, color, labelText)
 			table.insert(existing, obj)
 		end
 	end
 
-	-- Theo dõi model mới thêm
+	-- Theo dõi model mới
 	local con
-	con = workspace.DescendantAdded:Connect(function(obj)
+	con = Workspace.DescendantAdded:Connect(function(obj)
 		if obj:IsA("Model") and obj.Name == itemName and _G[enabledFlag] then
-			task.wait(5)
+			task.wait(0.2)
 			CreateItemESP(obj, color, labelText)
 			table.insert(existing, obj)
 		end
 	end)
 
+	-- Update distance
+	local updateConn
+	updateConn = RunService.RenderStepped:Connect(function()
+		if not _G[enabledFlag] then return end
+		for _, obj in ipairs(existing) do
+			if obj.Parent and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+				local hrp = obj:FindFirstChildWhichIsA("BasePart")
+				local gui = hrp and hrp:FindFirstChild("ItemESP_Gui")
+				local lbl = gui and gui:FindFirstChild("MainLabel")
+				if hrp and lbl then
+					local dist = (hrp.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+					lbl.Text = labelText .. string.format("\nDist: %.1f", dist)
+				end
+			end
+		end
+	end)
+
 	-- Dọn khi tắt
-	repeat task.wait(1) until not _G[enabledFlag]
+	repeat task.wait(0.5) until not _G[enabledFlag]
 	con:Disconnect()
+	updateConn:Disconnect()
 	for _, obj in ipairs(existing) do
 		ClearItemESP(obj)
 	end
 	table.clear(existing)
 end
 
--- Toggle BloxyCola
+-- Ví dụ toggle
 Main2Group:AddToggle("EspBloxyCola", {
 	Text = "ESP BloxyCola",
 	Default = false,
@@ -1383,13 +1407,12 @@ Main2Group:AddToggle("EspBloxyCola", {
 		_G.EspBloxyCola = v
 		if v then
 			task.spawn(function()
-				HandleESP("BloxyCola", Color3.fromRGB(0, 255, 255), "Bloxy", "EspBloxyCola")
+				HandleESP("BloxyCola", Color3.fromRGB(0,255,255), "Bloxy", "EspBloxyCola")
 			end)
 		end
 	end
 })
 
--- Toggle Medkit
 Main2Group:AddToggle("EspMedkit", {
 	Text = "ESP Medkit",
 	Default = false,
@@ -1397,7 +1420,7 @@ Main2Group:AddToggle("EspMedkit", {
 		_G.EspMedkit = v
 		if v then
 			task.spawn(function()
-				HandleESP("Medkit", Color3.fromRGB(255, 255, 0), "Medkit", "EspMedkit")
+				HandleESP("Medkit", Color3.fromRGB(255,255,0), "Medkit", "EspMedkit")
 			end)
 		end
 	end
@@ -1407,10 +1430,10 @@ Main2Group:AddToggle("EspSubSpaceTaph", {
 	Text = "ESP Taph mine",
 	Default = false,
 	Callback = function(v)
-		_G.EspMedkit = v
+		_G.EspSubSpaceTaph = v
 		if v then
 			task.spawn(function()
-				HandleESP("SubspaceTripmine", Color3.fromRGB(175,0,255), "SubspaceTripmine", "EspSubSpaceTaph")
+				HandleESP("SubspaceTripmine", Color3.fromRGB(175,0,255), "Subspace", "EspSubSpaceTaph")
 			end)
 		end
 	end
