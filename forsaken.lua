@@ -2585,7 +2585,86 @@ Main4Group:AddSlider("PopupDelaySlider", {
     end
 })
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local Survivors = workspace:WaitForChild("Players"):WaitForChild("Survivors")
 
+-- Cấu hình các loại Anti-Slow
+local AntiSlowConfigs = {
+    ["if using Items"] = {Values = {"BloxyColaItem", "Medkit"}, Connection = nil, Enabled = false},
+    ["Builderman Ability"] = {Values = {"DispenserConstruction", "SentryConstruction"}, Connection = nil, Enabled = false}
+}
+
+-- Hàm ẩn UI báo slow
+local function hideSlownessUI()
+    local mainUI = LocalPlayer.PlayerGui:FindFirstChild("MainUI")
+    if mainUI then
+        local statusContainer = mainUI:FindFirstChild("StatusContainer")
+        if statusContainer then
+            local slownessUI = statusContainer:FindFirstChild("Slowness")
+            if slownessUI then
+                slownessUI.Visible = false
+            end
+        end
+    end
+end
+
+-- Hàm chung xử lý Anti-Slow
+local function handleAntiSlow(survivor, config)
+    if survivor:GetAttribute("Username") ~= LocalPlayer.Name then return end
+    local function onRenderStep()
+        if not survivor.Parent or not config.Enabled then return end
+        local speedMultipliers = survivor:FindFirstChild("SpeedMultipliers")
+        if speedMultipliers then
+            for _, valName in ipairs(config.Values) do
+                local val = speedMultipliers:FindFirstChild(valName)
+                if val and val:IsA("NumberValue") and val.Value ~= 1 then
+                    val.Value = 1
+                end
+            end
+        end
+        hideSlownessUI()
+    end
+
+    config.Connection = RunService.RenderStepped:Connect(onRenderStep)
+end
+
+-- Hàm khởi chạy
+local function startAntiSlow(config)
+    config.Enabled = true
+    for _, survivor in pairs(Survivors:GetChildren()) do
+        handleAntiSlow(survivor, config)
+    end
+    Survivors.ChildAdded:Connect(function(child)
+        task.wait(0.1)
+        handleAntiSlow(child, config)
+    end)
+end
+
+-- Hàm dừng
+local function stopAntiSlow(config)
+    config.Enabled = false
+    if config.Connection then
+        config.Connection:Disconnect()
+        config.Connection = nil
+    end
+end
+
+-- Tạo toggle cho từng loại bằng ObsidianLib
+for name, config in pairs(AntiSlowConfigs) do
+    Main4Group:AddToggle("AntiSlow_" .. name, {
+        Text = "Anti slow: " .. name,
+        Default = false,
+        Callback = function(Value)
+            if Value then
+                startAntiSlow(config)
+            else
+                stopAntiSlow(config)
+            end
+        end
+    })
+end
 
 
 
