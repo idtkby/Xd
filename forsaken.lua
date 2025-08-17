@@ -2531,6 +2531,180 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
+Main3Group:AddDivider()
+Main3Group:AddLabel("--== Killer: [ Noli ] ==--")
+
+local VoidRushController = {}
+
+-- Biến
+VoidRushController.Toggle = false
+VoidRushController.OriginalDashSpeed = 60
+VoidRushController.IsActive = false
+VoidRushController.DashConnection = nil
+VoidRushController.CheckThread = nil
+VoidRushController.KillerConn = nil
+
+local Player = game.Players.LocalPlayer
+local RunService = game:GetService("RunService")
+
+-- Lấy Character
+local function updateCharacter()
+    VoidRushController.Character = Player.Character or Player.CharacterAdded:Wait()
+    VoidRushController.Humanoid = VoidRushController.Character:WaitForChild("Humanoid")
+    VoidRushController.HumanoidRootPart = VoidRushController.Character:WaitForChild("HumanoidRootPart")
+end
+
+updateCharacter()
+
+-- Khi respawn
+Player.CharacterAdded:Connect(function()
+    updateCharacter()
+    VoidRushController:Stop()
+end)
+
+-- Bật Control Void Rush
+function VoidRushController:Start()
+    if self.IsActive then return end
+    self.IsActive = true
+
+    self.DashConnection = RunService.RenderStepped:Connect(function()
+        if not self.Humanoid or not self.HumanoidRootPart then return end
+        self.Humanoid.WalkSpeed = self.OriginalDashSpeed
+        self.Humanoid.AutoRotate = false
+
+        local dir = self.HumanoidRootPart.CFrame.LookVector
+        local horizontalDir = Vector3.new(dir.X, 0, dir.Z).Unit
+        self.Humanoid:Move(horizontalDir)
+    end)
+end
+
+-- Tắt Control Void Rush
+function VoidRushController:Stop()
+    if not self.IsActive then return end
+    self.IsActive = false
+
+    if self.Humanoid then
+        self.Humanoid.WalkSpeed = 16
+        self.Humanoid.AutoRotate = true
+        self.Humanoid:Move(Vector3.new(0,0,0))
+    end
+
+    if self.DashConnection then
+        self.DashConnection:Disconnect()
+        self.DashConnection = nil
+    end
+end
+
+-- Cleanup
+function VoidRushController:FullCleanup()
+    self:Stop()
+    if self.KillerConn then
+        self.KillerConn:Disconnect()
+        self.KillerConn = nil
+    end
+    if self.CheckThread then
+        task.cancel(self.CheckThread)
+        self.CheckThread = nil
+    end
+end
+
+-- Hàm check VoidRush
+function VoidRushController:CheckVoidRush()
+    self.CheckThread = task.spawn(function()
+        while self.Toggle do
+            local KillersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
+            local noliKiller = nil
+
+            for _, killer in ipairs(KillersFolder:GetChildren()) do
+                if killer:GetAttribute("Username") == Player.Name
+                and killer:GetAttribute("ActorDisplayName") == "Noli" then
+                    noliKiller = killer
+                    break
+                end
+            end
+
+            if noliKiller then
+                local function updateState()
+                    if not self.Toggle then
+                        self:Stop()
+                        return
+                    end
+                    if noliKiller:GetAttribute("VoidRushState") == "Dashing" then
+                        self:Start()
+                    else
+                        self:Stop()
+                    end
+                end
+
+                updateState()
+
+                self.KillerConn = noliKiller:GetAttributeChangedSignal("VoidRushState"):Connect(updateState)
+                noliKiller.AncestryChanged:Wait()
+                if self.KillerConn then
+                    self.KillerConn:Disconnect()
+                    self.KillerConn = nil
+                end
+                self:Stop()
+            else
+                task.wait(0.1)
+            end
+        end
+    end)
+end
+
+-- GUI toggle (ObsidianLib)
+Main3Group:AddToggle("VoidRushToggle", {
+    Text = "Void Rush [ ez to change direction ]",
+    Default = false,
+    Callback = function(value)
+        VoidRushController.Toggle = value
+        if value then
+            VoidRushController:CheckVoidRush()
+        else
+            VoidRushController:FullCleanup()
+        end
+    end,
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 local Main4Group = Tabs.Tab2:AddRightGroupbox("-=< Anti >=-")
