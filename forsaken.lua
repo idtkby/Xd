@@ -247,7 +247,7 @@ end)
 Main1Group:AddDivider()
 
 
-Main1Group:AddLabel("--== Shedletsky ==--", true) 
+Main1Group:AddLabel("--== Surviv: [ Shedletsky ] ==--", true) 
 Main1Group:AddToggle("AutoSlash (Passive)", {
     Text = "Auto Slash (Passive)",
     Default = false,
@@ -436,7 +436,7 @@ Main1Group:AddToggle("AutoAimShed", {
 Main1Group:AddDivider()
 
 
-Main1Group:AddLabel("--== Chance ==--", true)
+Main1Group:AddLabel("--== Surviv: [ Chance ] ==--", true)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
@@ -528,7 +528,7 @@ Main1Group:AddToggle("AutoAimChance", {
 Main1Group:AddSlider("PredictionSlider", {
     Text = "Prediction Factor [Beta]",
     Min = 0,
-    Max = 10,
+    Max = 25,
     Default = 1,
     Callback = function(Value)
         predictionFactor = Value
@@ -699,7 +699,7 @@ end)
 
 -- Divider + Label
 Main1Group:AddDivider()
-Main1Group:AddLabel("--== Guest 1337 ==--", true)
+Main1Group:AddLabel("--== Surviv: [ Guest 1337 ] ==--", true)
 
 --// Auto Block + Punch cho Guest1337 Survivor (Obsidian Lib)
 local Players = game:GetService("Players")
@@ -1531,239 +1531,7 @@ Main2Group:AddToggle("ESPMinion", {
     end
 })
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
 
-_G.ESP_Zombie = false
-local espObjectsZombie = {}
-
--- Tạo ESP Zombie
-local function createZombieESP(target)
-    if target.Name ~= "1x1x1x1Zombie" then return end
-    if espObjectsZombie[target] then return end
-
-    local adorneePart = target:FindFirstChild("HumanoidRootPart") or target:FindFirstChildWhichIsA("BasePart")
-    if not adorneePart then return end
-
-    -- Billboard
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "ZombieESP"
-    billboard.Adornee = adorneePart
-    billboard.AlwaysOnTop = true
-    billboard.Size = UDim2.new(0, 200, 0, 50)
-    billboard.StudsOffset = Vector3.new(0, 3, 0)
-    billboard.Parent = game.CoreGui
-
-    -- Label
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 0, 40)
-    label.BackgroundTransparency = 1
-    label.TextColor3 = Color3.fromRGB(0, 255, 0) -- xanh lá đậm
-    label.Font = Enum.Font.Code
-    label.TextSize = 14
-    label.TextStrokeTransparency = 0
-    label.Text = "Zombie\nDist: 0.0"
-    label.Parent = billboard
-
-    -- Viền chữ
-    local uiStroke = Instance.new("UIStroke")
-    uiStroke.Color = Color3.new(0, 0, 0)
-    uiStroke.Thickness = 1.5
-    uiStroke.Parent = label
-
-    -- Outline object
-    local highlight = Instance.new("Highlight")
-    highlight.Name = "ZombieHighlight"
-    highlight.FillTransparency = 1
-    highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
-    highlight.OutlineTransparency = 0
-    highlight.Parent = target
-
-    espObjectsZombie[target] = {billboard = billboard, label = label, highlight = highlight}
-end
-
--- Xóa ESP
-local function removeZombieESP(target)
-    if espObjectsZombie[target] then
-        espObjectsZombie[target].billboard:Destroy()
-        if espObjectsZombie[target].highlight then
-            espObjectsZombie[target].highlight:Destroy()
-        end
-        espObjectsZombie[target] = nil
-    end
-end
-
--- Update text khoảng cách
-RunService.RenderStepped:Connect(function()
-    if not _G.ESP_Zombie then
-        for _, v in pairs(espObjectsZombie) do
-            v.billboard.Enabled = false
-            if v.highlight then v.highlight.Enabled = false end
-        end
-        return
-    end
-
-    for target, data in pairs(espObjectsZombie) do
-        if target and target.Parent then
-            local hrp = target:FindFirstChild("HumanoidRootPart") or target:FindFirstChildWhichIsA("BasePart")
-            if hrp and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                local dist = (hrp.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-                data.label.Text = string.format("Zombie\nDist: %.1f", dist)
-                data.billboard.Enabled = true
-                if data.highlight then data.highlight.Enabled = true end
-            end
-        else
-            removeZombieESP(target)
-        end
-    end
-end)
-
--- Toggle trong Main2Group
-Main2Group:AddToggle("ESPZombie", {
-    Text = "ESP 1x Zombie",
-    Default = false,
-    Callback = function(Value)
-        _G.ESP_Zombie = Value
-        if Value then
-            local map = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
-            if map then
-                for _, obj in ipairs(map:GetChildren()) do
-                    createZombieESP(obj)
-                end
-                map.ChildAdded:Connect(function(child)
-                    if _G.ESP_Zombie then
-                        createZombieESP(child)
-                    end
-                end)
-                map.ChildRemoved:Connect(function(child)
-                    removeZombieESP(child)
-                end)
-            end
-        else
-            for target in pairs(espObjectsZombie) do
-                removeZombieESP(target)
-            end
-        end
-    end
-})
-
-Main2Group:AddDivider()
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
-
-_G.ESP_Skill = false
-local espSkillObjects = {}
-
--- Hàm tạo ESP skill
-local function createSkillESP(obj)
-    if espSkillObjects[obj] then return end
-    if obj.Name ~= "Swords" and obj.Name ~= "shockwave" then return end
-
-    local adorneePart = obj:IsA("BasePart") and obj or obj:FindFirstChildWhichIsA("BasePart")
-    if not adorneePart then return end
-
-    -- Billboard
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "SkillESP"
-    billboard.Adornee = adorneePart
-    billboard.AlwaysOnTop = true
-    billboard.Size = UDim2.new(0, 200, 0, 50)
-    billboard.StudsOffset = Vector3.new(0, 3, 0)
-    billboard.Parent = game.CoreGui
-
-    -- Label
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 0, 40)
-    label.BackgroundTransparency = 1
-    label.TextColor3 = Color3.fromRGB(0, 255, 0) -- xanh lá
-    label.Font = Enum.Font.Code
-    label.TextSize = 14
-    label.TextStrokeTransparency = 0
-    label.Text = (obj.Name == "Swords" and "Entanglement" or "Mass Infection") .. "\nDist: 0.0"
-    label.Parent = billboard
-
-    -- Viền chữ
-    local uiStroke = Instance.new("UIStroke")
-    uiStroke.Color = Color3.new(0, 0, 0)
-    uiStroke.Thickness = 1.5
-    uiStroke.Parent = label
-
-    -- Outline object
-    local highlight = Instance.new("Highlight")
-    highlight.Name = "SkillHighlight"
-    highlight.FillTransparency = 1
-    highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
-    highlight.OutlineTransparency = 0
-    highlight.Parent = obj
-
-    espSkillObjects[obj] = {billboard = billboard, label = label, highlight = highlight}
-end
-
--- Xóa ESP
-local function removeSkillESP(obj)
-    if espSkillObjects[obj] then
-        espSkillObjects[obj].billboard:Destroy()
-        if espSkillObjects[obj].highlight then
-            espSkillObjects[obj].highlight:Destroy()
-        end
-        espSkillObjects[obj] = nil
-    end
-end
-
--- Update khoảng cách
-RunService.RenderStepped:Connect(function()
-    if not _G.ESP_Skill then
-        for _, v in pairs(espSkillObjects) do
-            v.billboard.Enabled = false
-            if v.highlight then v.highlight.Enabled = false end
-        end
-        return
-    end
-
-    for obj, data in pairs(espSkillObjects) do
-        if obj and obj.Parent then
-            local part = obj:IsA("BasePart") and obj or obj:FindFirstChildWhichIsA("BasePart")
-            if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                local dist = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-                local nameText = (obj.Name == "Swords" and "Entanglement" or "Mass Infection")
-                data.label.Text = string.format("%s\nDist: %.1f", nameText, dist)
-                data.billboard.Enabled = true
-                if data.highlight then data.highlight.Enabled = true end
-            end
-        else
-            removeSkillESP(obj)
-        end
-    end
-end)
-
--- Toggle trong Main2Group
-Main2Group:AddToggle("ESPSkill", {
-    Text = "ESP 1x Skill",
-    Default = false,
-    Callback = function(Value)
-        _G.ESP_Skill = Value
-        if Value then
-            for _, obj in ipairs(workspace:GetDescendants()) do
-                createSkillESP(obj)
-            end
-            workspace.DescendantAdded:Connect(function(child)
-                if _G.ESP_Skill then
-                    createSkillESP(child)
-                end
-            end)
-            workspace.DescendantRemoving:Connect(function(child)
-                removeSkillESP(child)
-            end)
-        else
-            for obj in pairs(espSkillObjects) do
-                removeSkillESP(obj)
-            end
-        end
-    end
-})
 
 
 Main2Group:AddDivider()
@@ -1953,7 +1721,7 @@ _G.EspHealth = Value
 
 local Main2o5Group = Tabs.Tab:AddRightTabbox() -- hoặc :AddLeftTabbox()
 
-local M205One = Main2o5Group:AddTab("--== Mi")
+local M205One = Main2o5Group:AddTab("--= Misc =--")
 
 M205One:AddDivider()
 
@@ -2302,7 +2070,7 @@ end)
 
 
 
-local M205Two = Main2o5Group:AddTab("sc ==--")
+local M205Two = Main2o5Group:AddTab("--= Load Script =--")
 
 M205Two:AddDivider()
 
@@ -2414,7 +2182,7 @@ local Main3Group = Tabs.Tab2:AddLeftGroupbox("-=< Main 02 >=-")
 Main3Group:AddDivider()
 
 
-Main3Group:AddLabel("--== TwoTime ==--", true) 
+Main3Group:AddLabel("--== Surviv: [ TwoTime ] ==--", true) 
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
