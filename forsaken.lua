@@ -99,7 +99,7 @@ local Window = Library:CreateWindow({
     Center = true,
     AutoShow = true,
     Resizable = true,
-    Footer = "Script by IganhK",
+    Footer = "Script by IganhK [Beta Version]",
 	   Icon = 117744101166950, -- ID logo
 
     AutoLock = false,
@@ -1053,7 +1053,7 @@ M105One:AddToggle("ApplySprintSpeed", {
     end
 })
 
-
+M105One:AddLabel("40< Safe [90% if not reported]")
 
 
 
