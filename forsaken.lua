@@ -227,7 +227,7 @@ Main1Group:AddToggle("ToggleRestoreGUI", {
             :WaitForChild("Sprinting"))
         
         if sprinting and sprinting.DefaultConfig then
-            local maxStamina = sprinting.DefaultConfig.MaxStamina or 100 -- lấy MaxStamina, fallback = 100
+            local maxStamina = sprinting.DefaultConfig.MaxStamina or 696969 -- lấy MaxStamina, fallback = 696969
             sprinting.Stamina = maxStamina
             sprinting.__staminaChangedEvent:Fire(sprinting.Stamina)
         end
