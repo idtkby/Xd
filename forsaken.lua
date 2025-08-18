@@ -1509,7 +1509,7 @@ Main2Group:AddToggle("EspBuildermanDispenser", {
 	Text = "ESP builderman dispenser",
 	Default = false,
 	Callback = function(v)
-		_G.EspSubSpaceTaph = v
+		_G.EspBuildermanDispenser = v
 		if v then
 			task.spawn(function()
 				HandleESP("BuildermanDispenser", Color3.fromRGB(155,255,0), "Dispenser", "EspBuildermanDispenser")
@@ -1522,7 +1522,7 @@ Main2Group:AddToggle("EspBuildermanSentry", {
 	Text = "ESP builderman sentry",
 	Default = false,
 	Callback = function(v)
-		_G.EspSubSpaceTaph = v
+		_G.EspBuildermanSentry = v
 		if v then
 			task.spawn(function()
 				HandleESP("BuildermanSentry", Color3.fromRGB(155,255,0), "Sentry", "EspBuildermanSentry")
