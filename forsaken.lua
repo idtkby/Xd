@@ -1228,97 +1228,146 @@ local Main2Group = Tabs.Tab:AddRightGroupbox("-=< Visual >=-")
 Main2Group:AddToggle("General", {
     Text = "Esp General",
     Default = false, 
-    Callback = function(Value) 
+    Callback = function(Value)
         local Players = game:GetService("Players")
         local LocalPlayer = Players.LocalPlayer
+
+        -- fallback nếu các flag chưa có
+        if _G.EspGui == nil then _G.EspGui = true end
+        if _G.EspName == nil then _G.EspName = true end
+        if _G.EspDistance == nil then _G.EspDistance = true end
+
         _G.EspGeneral = Value
 
-        -- Xóa ESP khi tắt
-        if not Value then
-            if workspace.Map.Ingame:FindFirstChild("Map") then
-                for _, v in pairs(workspace.Map.Ingame.Map:GetChildren()) do
-                    if v.Name == "Generator" then
-                        for _, n in pairs(v:GetChildren()) do
-                            if n.Name:find("Esp_") then
-                                n:Destroy()
-                            end
-                        end
+        local function getMap()
+            local m = workspace:FindFirstChild("Map")
+            local ingame = m and m:FindFirstChild("Ingame")
+            local mapModel = ingame and ingame:FindFirstChild("Map")
+            return mapModel
+        end
+
+        local function getAdorneePart(model)
+            if not model then return nil end
+            if model.PrimaryPart then return model.PrimaryPart end
+            local p = model:FindFirstChild("HumanoidRootPart")
+                or model:FindFirstChildWhichIsA("BasePart")
+            return p
+        end
+
+        local function ensureHighlight(gen)
+            if not _G.EspHighlight then
+                if gen:FindFirstChild("Esp_Highlight") then
+                    gen.Esp_Highlight:Destroy()
+                end
+                return
+            end
+            if not gen:FindFirstChild("Esp_Highlight") then
+                local h = Instance.new("Highlight")
+                h.Name = "Esp_Highlight"
+                h.FillTransparency = 0.5
+                h.OutlineTransparency = 0
+                h.FillColor = Color3.fromRGB(255,255,255)
+                h.OutlineColor = Color3.fromRGB(255,255,255)
+                h.Adornee = gen
+                h.Parent = gen
+            end
+        end
+
+        local function ensureGui(gen)
+            if not _G.EspGui then
+                if gen:FindFirstChild("Esp_Gui") then gen.Esp_Gui:Destroy() end
+                return
+            end
+            if gen:FindFirstChild("Esp_Gui") then return end
+            local part = getAdorneePart(gen)
+            if not part then return end
+
+            local gui = Instance.new("BillboardGui")
+            gui.Name = "Esp_Gui"
+            gui.Adornee = part
+            gui.Size = UDim2.new(0, 120, 0, 48)
+            gui.StudsOffset = Vector3.new(0, 3, 0)
+            gui.AlwaysOnTop = true
+            gui.Parent = gen  -- có thể thay = game.CoreGui nếu thích
+
+            local lbl = Instance.new("TextLabel")
+            lbl.Name = "TextLabel"
+            lbl.BackgroundTransparency = 1
+            lbl.Size = UDim2.fromScale(1,1)
+            lbl.Font = Enum.Font.Code
+            lbl.TextSize = 15
+            lbl.TextColor3 = _G.EspGuiTextColor or Color3.fromRGB(255,255,255)
+            lbl.TextStrokeTransparency = 0
+            lbl.Text = ""
+            lbl.Parent = gui
+
+            local stroke = Instance.new("UIStroke")
+            stroke.Color = Color3.fromRGB(0,0,0)
+            stroke.Thickness = 1.5
+            stroke.Parent = lbl
+        end
+
+        local function clearAll()
+            local mapModel = getMap()
+            if not mapModel then return end
+            for _, gen in ipairs(mapModel:GetChildren()) do
+                if gen.Name == "Generator" then
+                    for _, n in ipairs(gen:GetChildren()) do
+                        if n.Name:find("^Esp_") then n:Destroy() end
                     end
+                    if gen:FindFirstChild("Esp_Gui") then gen.Esp_Gui:Destroy() end
                 end
             end
         end
 
-        -- Vòng lặp chính
+        if not Value then
+            clearAll()
+            return
+        end
+
         while _G.EspGeneral do
-            if workspace.Map.Ingame:FindFirstChild("Map") then
-                for _, v in pairs(workspace.Map.Ingame.Map:GetChildren()) do
-                    if v.Name == "Generator" and v:FindFirstChild("Progress") then
-                        
-                        -- Highlight
-                        if v:FindFirstChild("Esp_Highlight") then
-                            if v.Progress.Value == 100 then
-                                v.Esp_Highlight.FillColor = Color3.fromRGB(0, 255, 0)
-                                v.Esp_Highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+            local mapModel = getMap()
+            if mapModel and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local lpHRP = LocalPlayer.Character.HumanoidRootPart
+                for _, gen in ipairs(mapModel:GetChildren()) do
+                    if gen.Name == "Generator" and gen:FindFirstChild("Progress") then
+                        ensureHighlight(gen)
+                        ensureGui(gen)
+
+                        -- update màu highlight
+                        local h = gen:FindFirstChild("Esp_Highlight")
+                        if h then
+                            if gen.Progress.Value == 100 then
+                                h.FillColor = Color3.fromRGB(0,255,0)
+                                h.OutlineColor = Color3.fromRGB(0,255,0)
                             else
-                                v.Esp_Highlight.FillColor = _G.ColorLight or Color3.new(255, 255, 255)
-                                v.Esp_Highlight.OutlineColor = _G.ColorLight or Color3.new(255, 255, 255)
+                                local col = _G.ColorLight or Color3.fromRGB(255,255,255)
+                                h.FillColor = col
+                                h.OutlineColor = col
                             end
                         end
-                        if _G.EspHighlight and not v:FindFirstChild("Esp_Highlight") then
-                            local Highlight = Instance.new("Highlight")
-                            Highlight.Name = "Esp_Highlight"
-                            Highlight.FillColor = Color3.fromRGB(255, 255, 255) 
-                            Highlight.OutlineColor = Color3.fromRGB(255, 255, 255) 
-                            Highlight.FillTransparency = 0.5
-                            Highlight.OutlineTransparency = 0
-                            Highlight.Adornee = v
-                            Highlight.Parent = v
-                        elseif not _G.EspHighlight and v:FindFirstChild("Esp_Highlight") then
-                            v.Esp_Highlight:Destroy()
-                        end
 
-                        -- Billboard
-                        if v:FindFirstChild("Esp_Gui") and v.Esp_Gui:FindFirstChild("TextLabel") then
-                            local dist = 0
-                            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                                dist = (LocalPlayer.Character.HumanoidRootPart.Position - v.Position).Magnitude
+                        -- update text + dist
+                        local gui = gen:FindFirstChild("Esp_Gui")
+                        if gui and gui:FindFirstChild("TextLabel") then
+                            local part = getAdorneePart(gen)
+                            if part then
+                                local dist = (lpHRP.Position - part.Position).Magnitude
+                                local nameLine = _G.EspName and ("General ("..gen.Progress.Value.."%)") or ""
+                                local distLine = _G.EspDistance and ("\nDist: "..string.format("%.1f", dist)) or ""
+                                gui.TextLabel.Text = nameLine .. distLine
+                                gui.TextLabel.TextSize = _G.EspGuiTextSize or 15
+                                gui.TextLabel.TextColor3 = _G.EspGuiTextColor or Color3.fromRGB(255,255,255)
                             end
-
-                            v.Esp_Gui.TextLabel.Text = 
-                                (_G.EspName and "General ("..v.Progress.Value.."%)" or "")..
-                                (_G.EspDistance and ("\nDist: "..string.format("%.1f", dist)) or "")
-                            v.Esp_Gui.TextLabel.TextSize = _G.EspGuiTextSize or 15
-                            v.Esp_Gui.TextLabel.TextColor3 = _G.EspGuiTextColor or Color3.new(255, 255, 255)
-                        end
-
-                        if _G.EspGui and not v:FindFirstChild("Esp_Gui") then
-                            local GuiGenEsp = Instance.new("BillboardGui", v)
-                            GuiGenEsp.Adornee = v
-                            GuiGenEsp.Name = "Esp_Gui"
-                            GuiGenEsp.Size = UDim2.new(0, 100, 0, 150)
-                            GuiGenEsp.AlwaysOnTop = true
-                            GuiGenEsp.StudsOffset = Vector3.new(0, 3, 0)
-
-                            local GuiGenEspText = Instance.new("TextLabel", GuiGenEsp)
-                            GuiGenEspText.BackgroundTransparency = 1
-                            GuiGenEspText.Font = Enum.Font.Code
-                            GuiGenEspText.Size = UDim2.new(0, 100, 0, 100)
-                            GuiGenEspText.TextSize = 15
-                            GuiGenEspText.TextColor3 = Color3.new(0,0,0) 
-                            GuiGenEspText.TextStrokeTransparency = 0.5
-                            GuiGenEspText.Text = ""
-                            local UIStroke = Instance.new("UIStroke")
-                            UIStroke.Color = Color3.new(0, 0, 0)
-                            UIStroke.Thickness = 1.5
-                            UIStroke.Parent = GuiGenEspText
-                        elseif not _G.EspGui and v:FindFirstChild("Esp_Gui") then
-                            v.Esp_Gui:Destroy()
                         end
                     end
                 end
             end
             task.wait(0.2)
         end
+
+        -- tắt -> dọn
+        clearAll()
     end
 })
 
