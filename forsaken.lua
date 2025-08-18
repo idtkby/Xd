@@ -1354,7 +1354,7 @@ Main2Group:AddToggle("General", {
                             if part then
                                 local dist = (lpHRP.Position - part.Position).Magnitude
                                 local nameLine = _G.EspName and ("General ("..gen.Progress.Value.."%)") or ""
-                                local distLine = _G.EspDistance and ("\nDistance [ "..string.format("%.1f", dist) " ]") or ""
+                                local distLine = _G.EspDistance and ("\nDistance [ "..string.format("%.1f", dist).." ]") or ""
                                 gui.TextLabel.Text = nameLine .. distLine
                                 gui.TextLabel.TextSize = _G.EspGuiTextSize or 15
                                 gui.TextLabel.TextColor3 = _G.EspGuiTextColor or Color3.fromRGB(255,255,255)
