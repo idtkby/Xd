@@ -982,11 +982,11 @@ M105One:AddInput("SurvivorSpeed", {
     Default = "",
     Numeric = true,
     Finished = true,
-    Text = "Survivor Speed (26-50)",
+    Text = "Survivor Speed (26 - 100)",
     Placeholder = "Enter",
     Callback = function(Value)
         local num = tonumber(Value)
-        if num and num >= 26 and num <= 50 and num ~= 35 and num ~= 45 then
+        if num and num >= 26 and num <= 100 and num ~= 35 and num ~= 45 then
             _G.SurvivorSpeed = num
         else
             Library:Notify("Die, Wise, Cry", 5)
@@ -999,11 +999,11 @@ M105One:AddInput("KillerSpeed", {
     Default = "",
     Numeric = true,
     Finished = true,
-    Text = "Killer Speed (27.5-50)",
+    Text = "Killer Speed (27.5 - 100)",
     Placeholder = "Enter",
     Callback = function(Value)
         local num = tonumber(Value)
-        if num and num >= 27.5 and num <= 50 and num ~= 35 and num ~= 45 then
+        if num and num >= 27.5 and num <= 100 and num ~= 35 and num ~= 45 then
             _G.KillerSpeed = num
         else
             Library:Notify("Die, Wise, Cry", 5)
@@ -2604,7 +2604,7 @@ Main4Group:AddSlider("PopupDelaySlider", {
     Text = "Delay",
     Default = 0.5,
     Min = 0.1,
-    Max = 1,
+    Max = 3,
     Rounding = 2,
     Callback = function(Value)
         _G.PopupDelay = Value
@@ -2680,7 +2680,7 @@ end
 -- Tạo toggle cho từng loại bằng ObsidianLib
 for name, config in pairs(AntiSlowConfigs) do
     Main4Group:AddToggle("AntiSlow_" .. name, {
-        Text = "Anti slow: " .. name,
+        Text = "noslow: " .. name,
         Default = false,
         Callback = function(Value)
             if Value then
@@ -3002,7 +3002,8 @@ while task.wait(20) do
 local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
 
 if staminaModule then
-    staminaModule.StaminaGain = 50
+    staminaModule.StaminaGain = 25
+staminaModule.StaminaLoss = 9
     staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
     print("")
 else
