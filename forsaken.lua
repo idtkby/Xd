@@ -1271,7 +1271,7 @@ end
 if v:FindFirstChild("Esp_Gui") and v["Esp_Gui"]:FindFirstChild("TextLabel") then
 	v["Esp_Gui"]:FindFirstChild("TextLabel").Text = 
 	        (_G.EspName == true and "General ("..v.Progress.Value.."%)" or "")..
-            (_G.EspDistance == true and "\nDistance [ Fix ]" or "")
+            (_G.EspDistance == true and "\nDistance [ %.1f", dist " ]")
     v["Esp_Gui"]:FindFirstChild("TextLabel").TextSize = _G.EspGuiTextSize or 15
     v["Esp_Gui"]:FindFirstChild("TextLabel").TextColor3 = _G.EspGuiTextColor or Color3.new(255, 255, 255)
 end
@@ -2023,7 +2023,6 @@ M205One:AddToggle("FullBright", {
 })
 
 
-
 M205One:AddToggle("ShowPing", {
     Text = "Show YOUR Ping",
     Default = false,
@@ -2033,19 +2032,11 @@ M205One:AddToggle("ShowPing", {
         local Stats = game:GetService("Stats")
         local RunService = game:GetService("RunService")
 
-        if not _G.PingConnections then
-            _G.PingConnections = {}
-        end
-        if not _G.ShowPingEnabled then
-            _G.ShowPingEnabled = false
-        end
+        if not _G.PingConn then _G.PingConn = nil end
 
-        -- Hàm tạo GUI và kết nối
         local function CreatePingGui()
-            if game.CoreGui:FindFirstChild("PingGui") then
-                game.CoreGui.PingGui.Enabled = true
-                return
-            end
+            local oldGui = game.CoreGui:FindFirstChild("PingGui")
+            if oldGui then oldGui:Destroy() end
 
             local ScreenGui = Instance.new("ScreenGui")
             ScreenGui.Name = "PingGui"
@@ -2059,7 +2050,7 @@ M205One:AddToggle("ShowPing", {
             Frame.BackgroundTransparency = 0.5
             Frame.BorderSizePixel = 0
             Frame.Active = true
-            Frame.Draggable = false
+            Frame.Draggable = true -- cho kéo được
             Frame.Parent = ScreenGui
 
             local PingLabel = Instance.new("TextLabel")
@@ -2071,40 +2062,39 @@ M205One:AddToggle("ShowPing", {
             PingLabel.Font = Enum.Font.Code
             PingLabel.Parent = Frame
 
-            table.insert(_G.PingConnections, RunService.RenderStepped:Connect(function()
-                if not ScreenGui.Enabled then return end
+            -- luôn update ping
+            if _G.PingConn then _G.PingConn:Disconnect() end
+            _G.PingConn = RunService.RenderStepped:Connect(function()
+                if not ScreenGui.Parent then return end
                 local ping = Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
                 PingLabel.Text = "Ping: " .. math.floor(ping) .. " ms"
-            end))
+            end)
         end
 
-        -- Nếu bật
         if Value then
             _G.ShowPingEnabled = true
             CreatePingGui()
 
-            -- Tự kết nối lại khi respawn
-            table.insert(_G.PingConnections, player.CharacterAdded:Connect(function()
-                task.wait(0.5)
-                if _G.ShowPingEnabled then
-                    CreatePingGui()
-                end
-            end))
-
+            -- đảm bảo khi respawn GUI vẫn tồn tại
+            if not _G.RespawnConn then
+                _G.RespawnConn = player.CharacterAdded:Connect(function()
+                    task.wait(0.5)
+                    if _G.ShowPingEnabled then
+                        CreatePingGui()
+                    end
+                end)
+            end
         else
             _G.ShowPingEnabled = false
+            if _G.PingConn then _G.PingConn:Disconnect() end
+            _G.PingConn = nil
             if game.CoreGui:FindFirstChild("PingGui") then
-                game.CoreGui.PingGui.Enabled = false
+                game.CoreGui.PingGui:Destroy()
             end
-            for _, conn in ipairs(_G.PingConnections) do
-                if conn and conn.Disconnect then
-                    conn:Disconnect()
-                end
-            end
-            _G.PingConnections = {}
         end
     end
 })
+
 
 M205One:AddButton("Remove MaxZoom Limit", function()
     -- Simple script to set the player’s max camera zoom distance to 300
