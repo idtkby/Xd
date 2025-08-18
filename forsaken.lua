@@ -1229,79 +1229,96 @@ Main2Group:AddToggle("General", {
     Text = "Esp General",
     Default = false, 
     Callback = function(Value) 
-_G.EspGeneral = Value
-if _G.EspGeneral == false then
-if workspace.Map.Ingame:FindFirstChild("Map") then
-	for i, v in pairs(workspace.Map.Ingame:FindFirstChild("Map"):GetChildren()) do
-		if v.Name == "Generator" then
-			for x, n in pairs(v:GetChildren()) do
-				if n.Name:find("Esp_") then
-					n:Destroy()
-				end
-			end
-		end
-	end
-end
-end
-while _G.EspGeneral do
-if workspace.Map.Ingame:FindFirstChild("Map") then
-for i, v in pairs(workspace.Map.Ingame:FindFirstChild("Map"):GetChildren()) do
-if v.Name == "Generator" and v:FindFirstChild("Progress") then
-if v:FindFirstChild("Esp_Highlight") then
-	if v:FindFirstChild("Progress").Value == 100 then
-		v:FindFirstChild("Esp_Highlight").FillColor = Color3.fromRGB(0, 255, 0)
-		v:FindFirstChild("Esp_Highlight").OutlineColor = Color3.fromRGB(0, 255, 0)
-	else
-		v:FindFirstChild("Esp_Highlight").FillColor = _G.ColorLight or Color3.new(255, 255, 255)
-		v:FindFirstChild("Esp_Highlight").OutlineColor = _G.ColorLight or Color3.new(255, 255, 255)
-	end
-end
-if _G.EspHighlight == true and v:FindFirstChild("Esp_Highlight") == nil then
-	local Highlight = Instance.new("Highlight")
-	Highlight.Name = "Esp_Highlight"
-	Highlight.FillColor = Color3.fromRGB(255, 255, 255) 
-	Highlight.OutlineColor = Color3.fromRGB(255, 255, 255) 
-	Highlight.FillTransparency = 0.5
-	Highlight.OutlineTransparency = 0
-	Highlight.Adornee = v
-	Highlight.Parent = v
-	elseif _G.EspHighlight == false and v:FindFirstChild("Esp_Highlight") then
-	v:FindFirstChild("Esp_Highlight"):Destroy()
-end
-if v:FindFirstChild("Esp_Gui") and v["Esp_Gui"]:FindFirstChild("TextLabel") then
-	v["Esp_Gui"]:FindFirstChild("TextLabel").Text = 
-	        (_G.EspName == true and "General ("..v.Progress.Value.."%)" or "")..
-            (_G.EspDistance == true and "\nDistance [ %.1f", dist " ]")
-    v["Esp_Gui"]:FindFirstChild("TextLabel").TextSize = _G.EspGuiTextSize or 15
-    v["Esp_Gui"]:FindFirstChild("TextLabel").TextColor3 = _G.EspGuiTextColor or Color3.new(255, 255, 255)
-end
-if _G.EspGui == true and v:FindFirstChild("Esp_Gui") == nil then
-	GuiGenEsp = Instance.new("BillboardGui", v)
-	GuiGenEsp.Adornee = v
-	GuiGenEsp.Name = "Esp_Gui"
-	GuiGenEsp.Size = UDim2.new(0, 100, 0, 150)
-	GuiGenEsp.AlwaysOnTop = true
-	GuiGenEsp.StudsOffset = Vector3.new(0, 3, 0)
-	GuiGenEspText = Instance.new("TextLabel", GuiGenEsp)
-	GuiGenEspText.BackgroundTransparency = 1
-	GuiGenEspText.Font = Enum.Font.Code
-	GuiGenEspText.Size = UDim2.new(0, 100, 0, 100)
-	GuiGenEspText.TextSize = 15
-	GuiGenEspText.TextColor3 = Color3.new(0,0,0) 
-	GuiGenEspText.TextStrokeTransparency = 0.5
-	GuiGenEspText.Text = ""
-	local UIStroke = Instance.new("UIStroke")
-	UIStroke.Color = Color3.new(0, 0, 0)
-	UIStroke.Thickness = 1.5
-	UIStroke.Parent = GuiGenEspText
-	elseif _G.EspGui == false and v:FindFirstChild("Esp_Gui") then
-	v:FindFirstChild("Esp_Gui"):Destroy()
-end
-end
-end
-end
-task.wait()
-end
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        _G.EspGeneral = Value
+
+        -- Xóa ESP khi tắt
+        if not Value then
+            if workspace.Map.Ingame:FindFirstChild("Map") then
+                for _, v in pairs(workspace.Map.Ingame.Map:GetChildren()) do
+                    if v.Name == "Generator" then
+                        for _, n in pairs(v:GetChildren()) do
+                            if n.Name:find("Esp_") then
+                                n:Destroy()
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        -- Vòng lặp chính
+        while _G.EspGeneral do
+            if workspace.Map.Ingame:FindFirstChild("Map") then
+                for _, v in pairs(workspace.Map.Ingame.Map:GetChildren()) do
+                    if v.Name == "Generator" and v:FindFirstChild("Progress") then
+                        
+                        -- Highlight
+                        if v:FindFirstChild("Esp_Highlight") then
+                            if v.Progress.Value == 100 then
+                                v.Esp_Highlight.FillColor = Color3.fromRGB(0, 255, 0)
+                                v.Esp_Highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+                            else
+                                v.Esp_Highlight.FillColor = _G.ColorLight or Color3.new(255, 255, 255)
+                                v.Esp_Highlight.OutlineColor = _G.ColorLight or Color3.new(255, 255, 255)
+                            end
+                        end
+                        if _G.EspHighlight and not v:FindFirstChild("Esp_Highlight") then
+                            local Highlight = Instance.new("Highlight")
+                            Highlight.Name = "Esp_Highlight"
+                            Highlight.FillColor = Color3.fromRGB(255, 255, 255) 
+                            Highlight.OutlineColor = Color3.fromRGB(255, 255, 255) 
+                            Highlight.FillTransparency = 0.5
+                            Highlight.OutlineTransparency = 0
+                            Highlight.Adornee = v
+                            Highlight.Parent = v
+                        elseif not _G.EspHighlight and v:FindFirstChild("Esp_Highlight") then
+                            v.Esp_Highlight:Destroy()
+                        end
+
+                        -- Billboard
+                        if v:FindFirstChild("Esp_Gui") and v.Esp_Gui:FindFirstChild("TextLabel") then
+                            local dist = 0
+                            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                                dist = (LocalPlayer.Character.HumanoidRootPart.Position - v.Position).Magnitude
+                            end
+
+                            v.Esp_Gui.TextLabel.Text = 
+                                (_G.EspName and "General ("..v.Progress.Value.."%)" or "")..
+                                (_G.EspDistance and ("\nDist: "..string.format("%.1f", dist)) or "")
+                            v.Esp_Gui.TextLabel.TextSize = _G.EspGuiTextSize or 15
+                            v.Esp_Gui.TextLabel.TextColor3 = _G.EspGuiTextColor or Color3.new(255, 255, 255)
+                        end
+
+                        if _G.EspGui and not v:FindFirstChild("Esp_Gui") then
+                            local GuiGenEsp = Instance.new("BillboardGui", v)
+                            GuiGenEsp.Adornee = v
+                            GuiGenEsp.Name = "Esp_Gui"
+                            GuiGenEsp.Size = UDim2.new(0, 100, 0, 150)
+                            GuiGenEsp.AlwaysOnTop = true
+                            GuiGenEsp.StudsOffset = Vector3.new(0, 3, 0)
+
+                            local GuiGenEspText = Instance.new("TextLabel", GuiGenEsp)
+                            GuiGenEspText.BackgroundTransparency = 1
+                            GuiGenEspText.Font = Enum.Font.Code
+                            GuiGenEspText.Size = UDim2.new(0, 100, 0, 100)
+                            GuiGenEspText.TextSize = 15
+                            GuiGenEspText.TextColor3 = Color3.new(0,0,0) 
+                            GuiGenEspText.TextStrokeTransparency = 0.5
+                            GuiGenEspText.Text = ""
+                            local UIStroke = Instance.new("UIStroke")
+                            UIStroke.Color = Color3.new(0, 0, 0)
+                            UIStroke.Thickness = 1.5
+                            UIStroke.Parent = GuiGenEspText
+                        elseif not _G.EspGui and v:FindFirstChild("Esp_Gui") then
+                            v.Esp_Gui:Destroy()
+                        end
+                    end
+                end
+            end
+            task.wait(0.2)
+        end
     end
 })
 
