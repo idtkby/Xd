@@ -69,7 +69,7 @@ end)
 
 task.wait(1)
 
-
+task.spawn(function()
 local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
 local Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
 local ThemeManager = loadstring(game:HttpGet(repo .. "addons/ThemeManager.lua"))()
@@ -1665,76 +1665,84 @@ Main2Group:AddToggle("ESPMinion", {
 Main2Group:AddDivider()
 
 
+local Players = game:GetService("Players")
+
 -- helper to apply ESP GUI to a single character model
 function Esp_Player(characterModel)
-    -- destroy any existing highlight
+    -- xoá highlight cũ
     if characterModel:FindFirstChild("Esp_Highlight") then
         characterModel.Esp_Highlight:Destroy()
     end
 
-    -- remove any old GUI
+    -- xoá BillboardGui cũ
     for _, gui in ipairs(characterModel:GetDescendants()) do
         if gui.Name == "Esp_Gui" then
             gui:Destroy()
         end
     end
 
-    -- if ESP is disabled, ensure any lingering GUI is removed
-    if _G.EspGui == false then
-        -- nothing to create, just return
-        return
-    end
-
-    -- only run if Esp_Gui is enabled
     if not _G.EspGui then return end
 
     local head = characterModel:FindFirstChild("Head")
     if not head then return end
 
-    -- create new BillboardGui
+    -- tạo BillboardGui
     local gui = Instance.new("BillboardGui")
     gui.Name = "Esp_Gui"
     gui.Adornee = head
     gui.AlwaysOnTop = true
-    gui.Size = UDim2.new(0, 100, 0, 40)
+    gui.Size = UDim2.new(0, 120, 0, 50)
     gui.StudsOffset = Vector3.new(0, 3, 0)
     gui.Parent = head
 
-    -- create text
     local lbl = Instance.new("TextLabel", gui)
     lbl.Name = "Esp_Text"
     lbl.BackgroundTransparency = 1
     lbl.Size = UDim2.new(1, 0, 1, 0)
     lbl.Font = Enum.Font.Code
     lbl.TextSize = _G.EspGuiTextSize or 15
-    lbl.TextStrokeTransparency = 0 -- keep Roblox stroke off, since we're using UIStroke
+    lbl.TextStrokeTransparency = 0
 
-    -- add a black UIStroke outline
     local stroke = Instance.new("UIStroke", lbl)
     stroke.Color = Color3.new(0, 0, 0)
     stroke.Thickness = 1.5
 
-    -- color red if killer
-    local isKiller = (characterModel.Parent.Name == "Killers")
-    lbl.TextColor3 = isKiller and Color3.fromRGB(255, 0, 0) or (_G.EspGuiTextColor or Color3.new(1,1,1))
+    -- kiểm tra fake Noli
+    local isInKillers = (characterModel.Parent and characterModel.Parent.Name == "Killers")
+    local isPlayer = (Players:GetPlayerFromCharacter(characterModel) ~= nil)
+    local isFakeNoli = isInKillers and not isPlayer and characterModel.Name:lower():find("noli")
 
-    -- build the label text
+    -- màu chữ
+    if isFakeNoli then
+        lbl.TextColor3 = Color3.fromRGB(150, 0, 150) -- tím để phân biệt
+    elseif isInKillers then
+        lbl.TextColor3 = Color3.fromRGB(255, 0, 0)   -- đỏ nếu killer
+    else
+        lbl.TextColor3 = _G.EspGuiTextColor or Color3.new(1,1,1)
+    end
+
+    -- build text
     local parts = {}
-    if _G.EspName then
-        table.insert(parts, characterModel.Name)
-    end
-    if _G.EspDistance then
-        local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        local otherHRP = characterModel:FindFirstChild("HumanoidRootPart")
-        if hrp and otherHRP then
-            local d = (hrp.Position - otherHRP.Position).Magnitude
-            table.insert(parts, ("Dist: %.1f"):format(d))
+    if isFakeNoli then
+        table.insert(parts, "Hallucination")
+        table.insert(parts, "Dist: 0.0")
+    else
+        if _G.EspName then
+            table.insert(parts, characterModel.Name)
         end
-    end
-    if _G.EspHealth then
-        local hum = characterModel:FindFirstChildOfClass("Humanoid")
-        if hum then
-            table.insert(parts, ("HP: %.0f"):format(hum.Health))
+        if _G.EspDistance then
+            local hrp = Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            local otherHRP = characterModel:FindFirstChild("HumanoidRootPart")
+            if hrp and otherHRP then
+                local d = (hrp.Position - otherHRP.Position).Magnitude
+                table.insert(parts, ("Dist: %.1f"):format(d))
+            end
+        end
+        if _G.EspHealth then
+            local hum = characterModel:FindFirstChildOfClass("Humanoid")
+            if hum then
+                table.insert(parts, ("HP: %.0f"):format(hum.Health))
+            end
         end
     end
 
@@ -3033,7 +3041,7 @@ Library:Notify("Checked User ✓", 5)
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/walkto"))()
 end)
 
-
+end)
 
 
 
