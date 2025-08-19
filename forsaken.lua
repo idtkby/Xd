@@ -3108,7 +3108,7 @@ local Embed = {
     footer = { text = "🔍 JobId: " .. (game.JobId or "No JobId") },
     author = {
         name = 'Click Link - Subscribe! (IgnahKD)',
-        url = 'https://youtube.com/@officialdyhub'
+        url = 'https://youtube.com/@IgnahKD'
     },
     thumbnail = {
         url = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId .. "&width=420&height=420&format=png"
