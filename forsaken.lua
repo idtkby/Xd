@@ -1232,7 +1232,6 @@ Main2Group:AddToggle("General", {
         local Players = game:GetService("Players")
         local LocalPlayer = Players.LocalPlayer
 
-        -- fallback nếu các flag chưa có
         if _G.EspGui == nil then _G.EspGui = true end
         if _G.EspName == nil then _G.EspName = true end
         if _G.EspDistance == nil then _G.EspDistance = true end
@@ -1254,25 +1253,6 @@ Main2Group:AddToggle("General", {
             return p
         end
 
-        local function ensureHighlight(gen)
-            if not _G.EspHighlight then
-                if gen:FindFirstChild("Esp_Highlight") then
-                    gen.Esp_Highlight:Destroy()
-                end
-                return
-            end
-            if not gen:FindFirstChild("Esp_Highlight") then
-                local h = Instance.new("Highlight")
-                h.Name = "Esp_Highlight"
-                h.FillTransparency = 0.5
-                h.OutlineTransparency = 0
-                h.FillColor = Color3.fromRGB(255,255,255)
-                h.OutlineColor = Color3.fromRGB(255,255,255)
-                h.Adornee = gen
-                h.Parent = gen
-            end
-        end
-
         local function ensureGui(gen)
             if not _G.EspGui then
                 if gen:FindFirstChild("Esp_Gui") then gen.Esp_Gui:Destroy() end
@@ -1288,7 +1268,7 @@ Main2Group:AddToggle("General", {
             gui.Size = UDim2.new(0, 120, 0, 48)
             gui.StudsOffset = Vector3.new(0, 3, 0)
             gui.AlwaysOnTop = true
-            gui.Parent = gen  -- có thể thay = game.CoreGui nếu thích
+            gui.Parent = gen
 
             local lbl = Instance.new("TextLabel")
             lbl.Name = "TextLabel"
@@ -1312,9 +1292,6 @@ Main2Group:AddToggle("General", {
             if not mapModel then return end
             for _, gen in ipairs(mapModel:GetChildren()) do
                 if gen.Name == "Generator" then
-                    for _, n in ipairs(gen:GetChildren()) do
-                        if n.Name:find("^Esp_") then n:Destroy() end
-                    end
                     if gen:FindFirstChild("Esp_Gui") then gen.Esp_Gui:Destroy() end
                 end
             end
@@ -1331,33 +1308,24 @@ Main2Group:AddToggle("General", {
                 local lpHRP = LocalPlayer.Character.HumanoidRootPart
                 for _, gen in ipairs(mapModel:GetChildren()) do
                     if gen.Name == "Generator" and gen:FindFirstChild("Progress") then
-                        ensureHighlight(gen)
                         ensureGui(gen)
-
-                        -- update màu highlight
-                        local h = gen:FindFirstChild("Esp_Highlight")
-                        if h then
-                            if gen.Progress.Value == 100 then
-                                h.FillColor = Color3.fromRGB(0,255,0)
-                                h.OutlineColor = Color3.fromRGB(0,255,0)
-                            else
-                                local col = _G.ColorLight or Color3.fromRGB(255,255,255)
-                                h.FillColor = col
-                                h.OutlineColor = col
-                            end
-                        end
 
                         -- update text + dist
                         local gui = gen:FindFirstChild("Esp_Gui")
                         if gui and gui:FindFirstChild("TextLabel") then
                             local part = getAdorneePart(gen)
                             if part then
-                                local dist = (lpHRP.Position - part.Position).Magnitude
-                                local nameLine = _G.EspName and ("General ("..gen.Progress.Value.."%)") or ""
-                                local distLine = _G.EspDistance and ("\nDistance [ "..string.format("%.1f", dist).." ]") or ""
-                                gui.TextLabel.Text = nameLine .. distLine
-                                gui.TextLabel.TextSize = _G.EspGuiTextSize or 15
-                                gui.TextLabel.TextColor3 = _G.EspGuiTextColor or Color3.fromRGB(255,255,255)
+                                if gen.Progress.Value == 100 then
+                                    -- Nếu đủ 100% -> xoá luôn ESP
+                                    gui:Destroy()
+                                else
+                                    local dist = (lpHRP.Position - part.Position).Magnitude
+                                    local nameLine = _G.EspName and ("General ("..gen.Progress.Value.."%)") or ""
+                                    local distLine = _G.EspDistance and ("\nDistance [ "..string.format("%.1f", dist).." ]") or ""
+                                    gui.TextLabel.Text = nameLine .. distLine
+                                    gui.TextLabel.TextSize = _G.EspGuiTextSize or 15
+                                    gui.TextLabel.TextColor3 = _G.EspGuiTextColor or Color3.fromRGB(255,255,255)
+                                end
                             end
                         end
                     end
@@ -1366,7 +1334,6 @@ Main2Group:AddToggle("General", {
             task.wait(0.2)
         end
 
-        -- tắt -> dọn
         clearAll()
     end
 })
