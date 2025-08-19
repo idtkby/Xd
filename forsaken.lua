@@ -1510,24 +1510,55 @@ local targetAnimId = "rbxassetid://123915228705093"
 local highlightConnections = {}
 local active = false
 
-local function addHighlight(character)
-    if not character or character:FindFirstChild("HumanoidRootPart") == nil then return end
-    if character:FindFirstChild("c00l_Highlight") then return end
+local function addHighlightAndLabel(character)
+    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
 
-    local h = Instance.new("Highlight")
-    h.Name = "c00l_Highlight"
-    h.FillColor = Color3.fromRGB(255, 0, 255) -- màu tím hồng
-    h.OutlineColor = Color3.fromRGB(255, 255, 255)
-    h.FillTransparency = 0.25
-    h.OutlineTransparency = 0
-    h.Parent = character
+    -- Highlight
+    if not character:FindFirstChild("c00l_Highlight") then
+        local h = Instance.new("Highlight")
+        h.Name = "c00l_Highlight"
+        h.FillColor = Color3.fromRGB(0, 0, 0) -- fill đen
+        h.OutlineColor = Color3.fromRGB(255, 0, 0) -- viền đỏ
+        h.FillTransparency = 0.5
+        h.OutlineTransparency = 0
+        h.Parent = character
 
-    -- auto remove sau 7.5s
-    task.delay(7.5, function()
-        if h and h.Parent then
-            h:Destroy()
+        task.delay(7.5, function()
+            if h and h.Parent then h:Destroy() end
+        end)
+    end
+
+    -- BillboardGui label
+    if not character:FindFirstChild("c00l_Label") then
+        local head = character:FindFirstChild("Head")
+        if head then
+            local gui = Instance.new("BillboardGui")
+            gui.Name = "c00l_Label"
+            gui.Adornee = head
+            gui.Size = UDim2.new(0, 100, 0, 40)
+            gui.StudsOffset = Vector3.new(0, 3, 0)
+            gui.AlwaysOnTop = true
+            gui.Parent = character
+
+            local lbl = Instance.new("TextLabel")
+            lbl.Size = UDim2.new(1, 0, 1, 0)
+            lbl.BackgroundTransparency = 1
+            lbl.Text = "c00lgui"
+            lbl.Font = Enum.Font.Code
+            lbl.TextSize = 15
+            lbl.TextColor3 = Color3.fromRGB(255, 0, 0) -- chữ đỏ
+            lbl.Parent = gui
+
+            local stroke = Instance.new("UIStroke")
+            stroke.Color = Color3.fromRGB(0,0,0) -- outline chữ đen
+            stroke.Thickness = 2
+            stroke.Parent = lbl
+
+            task.delay(7.5, function()
+                if gui and gui.Parent then gui:Destroy() end
+            end)
         end
-    end)
+    end
 end
 
 local function trackCharacter(player, char)
@@ -1538,7 +1569,7 @@ local function trackCharacter(player, char)
     local conn
     conn = hum.AnimationPlayed:Connect(function(track)
         if track and track.Animation and track.Animation.AnimationId == targetAnimId then
-            addHighlight(char)
+            addHighlightAndLabel(char)
         end
     end)
 
@@ -1566,18 +1597,20 @@ local function stopTracking()
     end
     highlightConnections = {}
 
-    -- Xoá highlight còn sót
+    -- Xoá highlight & label còn sót
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer and plr.Character then
             local h = plr.Character:FindFirstChild("c00l_Highlight")
             if h then h:Destroy() end
+            local g = plr.Character:FindFirstChild("c00l_Label")
+            if g then g:Destroy() end
         end
     end
 end
 
 -- Toggle trong Main2Group
 Main2Group:AddToggle("c00lguiESP", {
-    Text = "Highlight c00lgui Using",
+    Text = "ESP c00lgui Using",
     Default = false,
     Callback = function(Value)
         if Value then
