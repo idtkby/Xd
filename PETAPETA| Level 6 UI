@@ -579,10 +579,10 @@ V1:CreateButton({
 
 
 local V2 = Window:CreateTab("Visual [Chapter 2]", "eye")
-V2:CreateSection("Soon...")
+V2:CreateSection("UPDATING...")
 V2:CreateParagraph({
-	Title = "bro",
-	Content = "Chapter 2 of peta is currently not updated by omochi studio, so there is no chapter 2 map for me to write script, so please do not send any related requests.",
+	Title = "heyyy",
+	Content = "I'm trying to understand the new items and enemies of chapter2, the update script might take a while",
 })
 
 
