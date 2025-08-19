@@ -3065,7 +3065,7 @@ task.spawn(function()
         local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
         if staminaModule then
             staminaModule.StaminaGain = 25
-            staminaModule.StaminaLoss = 9
+            staminaModule.StaminaLoss = 8
             -- Nếu module có hàm update thì gọi nó
             if staminaModule.UpdateStamina then
                 staminaModule.UpdateStamina(staminaModule.Stamina)
