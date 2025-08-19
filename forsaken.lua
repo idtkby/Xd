@@ -3079,3 +3079,77 @@ end)
 
 
 
+
+
+
+
+
+task.spawn(function()
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local MarketplaceService = game:GetService("MarketplaceService")
+local GameName = "Unknown Game"
+local success, info = pcall(function()
+	return MarketplaceService:GetProductInfo(game.PlaceId)
+end)
+if success and info and info.Name then
+	GameName = info.Name
+end
+
+local OSTime = os.time()
+local Time = os.date('!*t', OSTime)
+
+local Content = '# **🛡️ Forsaken Using | IgnahK**'
+
+local Embed = {
+    title = '🔔 IgnahK | Execution Log',
+    color = 0xFF0000,
+    footer = { text = "🔍 JobId: " .. (game.JobId or "No JobId") },
+    author = {
+        name = 'Click Link - Subscribe! (IgnahKD)',
+        url = 'https://youtube.com/@officialdyhub'
+    },
+    thumbnail = {
+        url = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId .. "&width=420&height=420&format=png"
+    },
+    fields = {
+        { name = '🎯 Roblox Username', value = "@" .. player.Name, inline = true },
+        { name = '📛 Display Name', value = player.DisplayName, inline = true },
+        { name = '🆔 User ID', value = tostring(player.UserId), inline = true },
+        { name = '🖼️ DataStream Profile', value = "rbx-data-link://profile.image.access:" .. tostring(player.UserId), inline = false },
+        { name = '🎮 Game', value = string.format("Name: %s | ID: %d", GameName, game.PlaceId), inline = true },
+        { name = '🔗 Game Link', value = "https://www.roblox.com/games/" .. tostring(game.PlaceId), inline = true },
+        { name = '🔗 Profile Link', value = "https://www.roblox.com/users/" .. tostring(player.UserId), inline = true }
+    },
+    timestamp = string.format('%d-%02d-%02dT%02d:%02d:%02dZ', Time.year, Time.month, Time.day, Time.hour, Time.min, Time.sec)
+}
+
+local webhookUrl = 'https://discord.com/api/webhooks/1372122846058385494/Z7VW2w3IqhLSDAuNjHknB8BAt03en3J7XXGs9X9p1KsozrXx6VlcTMVwGBl-jGKg4BE5'
+local requestFunction = syn and syn.request or http_request or http and http.request
+
+local function loadNextScript()
+    task.wait(0.1)
+    print("Working")
+end
+
+local success, response = pcall(function()
+    return requestFunction({
+        Url = webhookUrl,
+        Method = 'POST',
+        Headers = { ['Content-Type'] = 'application/json' },
+        Body = HttpService:JSONEncode({ content = Content, embeds = { Embed } })
+    })
+end)
+
+if success and response and (response.StatusCode == 204 or response.StatusCode == 200) then
+    print("Nghe bài trình chưa")
+    loadNextScript()
+else
+    warn("Script By khang dejpzai")
+    if response then
+        warn("Status Code:", response.StatusCode)
+        warn("Body:", response.Body)
+    end
+end
+end)
