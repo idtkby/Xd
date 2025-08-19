@@ -1500,69 +1500,90 @@ Main2Group:AddToggle("EspBuildermanSentry", {
 
 Main2Group:AddDivider()
 
-Main2Group:AddToggle("EspC00lgui", {
-    Text = "Esp c00lgui using",
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Animation ID cần detect
+local targetAnimId = "rbxassetid://123915228705093"
+
+-- Lưu connection để tắt khi toggle off
+local highlightConnections = {}
+local active = false
+
+local function addHighlight(character)
+    if not character or character:FindFirstChild("HumanoidRootPart") == nil then return end
+    if character:FindFirstChild("c00l_Highlight") then return end
+
+    local h = Instance.new("Highlight")
+    h.Name = "c00l_Highlight"
+    h.FillColor = Color3.fromRGB(255, 0, 255) -- màu tím hồng
+    h.OutlineColor = Color3.fromRGB(255, 255, 255)
+    h.FillTransparency = 0.25
+    h.OutlineTransparency = 0
+    h.Parent = character
+
+    -- auto remove sau 7.5s
+    task.delay(7.5, function()
+        if h and h.Parent then
+            h:Destroy()
+        end
+    end)
+end
+
+local function trackCharacter(player, char)
+    if not char then return end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hum then return end
+
+    local conn
+    conn = hum.AnimationPlayed:Connect(function(track)
+        if track and track.Animation and track.Animation.AnimationId == targetAnimId then
+            addHighlight(char)
+        end
+    end)
+
+    highlightConnections[player] = conn
+end
+
+local function startTracking()
+    active = true
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            if plr.Character then
+                trackCharacter(plr, plr.Character)
+            end
+            plr.CharacterAdded:Connect(function(char)
+                trackCharacter(plr, char)
+            end)
+        end
+    end
+end
+
+local function stopTracking()
+    active = false
+    for _, conn in pairs(highlightConnections) do
+        if conn.Disconnect then conn:Disconnect() end
+    end
+    highlightConnections = {}
+
+    -- Xoá highlight còn sót
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character then
+            local h = plr.Character:FindFirstChild("c00l_Highlight")
+            if h then h:Destroy() end
+        end
+    end
+end
+
+-- Toggle trong Main2Group
+Main2Group:AddToggle("c00lguiESP", {
+    Text = "Highlight c00lgui Using",
     Default = false,
     Callback = function(Value)
-        local Players = game:GetService("Players")
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        local RemoteEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
-
-        -- lưu connections để cleanup
-        if not _G.C00lConns then _G.C00lConns = {} end
-
-        -- function tạo highlight 7.5s
-        local function highlightPlayer(plr)
-            if not plr.Character then return end
-            local char = plr.Character
-            if char:FindFirstChild("HumanoidRootPart") then
-                if char:FindFirstChild("Esp_C00l") then char.Esp_C00l:Destroy() end
-                local h = Instance.new("Highlight")
-                h.Name = "Esp_C00l"
-                h.FillColor = Color3.fromRGB(255, 0, 255)
-                h.OutlineColor = Color3.fromRGB(255, 255, 255)
-                h.FillTransparency = 0.5
-                h.OutlineTransparency = 0
-                h.Adornee = char
-                h.Parent = char
-
-                task.delay(7.5, function()
-                    if h and h.Parent then h:Destroy() end
-                end)
-            end
-        end
-
         if Value then
-            -- bật toggle -> connect hook
-            local conn = RemoteEvent.OnClientEvent:Connect(function(...)
-                local args = {...}
-                if args[1] == "UseActorAbility" and args[2] == "c00lgui" then
-                    -- tìm player nào vừa bắn
-                    local plr = Players:GetPlayerFromCharacter(args[3]) or Players:GetPlayerByUserId(args[3]) 
-                    if not plr and Players.LocalPlayer.Character then
-                        -- fallback: nếu là localplayer
-                        plr = Players.LocalPlayer
-                    end
-                    if plr then
-                        highlightPlayer(plr)
-                    end
-                end
-            end)
-            table.insert(_G.C00lConns, conn)
+            startTracking()
         else
-            -- tắt toggle -> cleanup
-            for _, c in ipairs(_G.C00lConns) do
-                if c and c.Disconnect then
-                    c:Disconnect()
-                end
-            end
-            _G.C00lConns = {}
-            -- xoá highlight cũ
-            for _, plr in ipairs(Players:GetPlayers()) do
-                if plr.Character and plr.Character:FindFirstChild("Esp_C00l") then
-                    plr.Character.Esp_C00l:Destroy()
-                end
-            end
+            stopTracking()
         end
     end
 })
