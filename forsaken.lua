@@ -989,7 +989,7 @@ M105One:AddInput("SurvivorSpeed", {
         if num and num >= 26 and num <= 100 and num ~= 35 and num ~= 45 then
             _G.SurvivorSpeed = num
         else
-            Library:Notify("Die, Wise, Cry", 5)
+            Library:Notify("Die, Rise, Cry", 5)
         end
     end
 })
@@ -1006,7 +1006,7 @@ M105One:AddInput("KillerSpeed", {
         if num and num >= 27.5 and num <= 100 and num ~= 35 and num ~= 45 then
             _G.KillerSpeed = num
         else
-            Library:Notify("Die, Wise, Cry", 5)
+            Library:Notify("Die, Rise, Cry", 5)
         end
     end
 })
