@@ -1768,7 +1768,7 @@ local function addOutline(char, isKiller)
     if isKiller then
         h.OutlineColor = _G.ColorOutlineKill or Color3.fromRGB(255,0,0)
     else
-        h.OutlineColor = _G.ColorOutlineSurvivors or Color3.fromRGB(0,255,0)
+        h.OutlineColor = _G.ColorOutlineSurvivors or Color3.fromRGB(255,255,255)
     end
     h.Parent = char
 end
@@ -1916,32 +1916,19 @@ Main2Group:AddToggle("Player", {
 Main2Group:AddDivider()
 
 
--- đảm bảo globals mặc định
-_G.UseOutline = _G.UseOutline or false
-_G.ColorOutlineKill = _G.ColorOutlineKill or Color3.fromRGB(255,0,0)
-_G.ColorOutlineSurvivors = _G.ColorOutlineSurvivors or Color3.fromRGB(0,255,0)
-
--- Tạo toggle và gắn colorpickers vào toggle (chaining)
-local outlineToggle = Main2Group:AddToggle("OutlineESP", {
+Main2Group:AddToggle("OutlineESP", {
     Text = "Enable Outline",
-    Default = _G.UseOutline,
+    Default = false,
     Callback = function(Value)
         _G.UseOutline = Value
     end
-})
-
--- AddColorPicker là method của object toggle, không phải của Main2Group
-outlineToggle:AddColorPicker("ColorOutlineKill", {
-    Text = "Killers Outline",
-    Default = _G.ColorOutlineKill,
+}):AddColorPicker("ColorOutlineKill", {
+    Default = Color3.fromRGB(255,0,0),
     Callback = function(Value)
         _G.ColorOutlineKill = Value
     end
-})
-
-outlineToggle:AddColorPicker("ColorOutlineSurvivors", {
-    Text = "Survivors Outline",
-    Default = _G.ColorOutlineSurvivors,
+}):AddColorPicker("ColorOutlineSurvivors", {
+    Default = Color3.fromRGB(255,255,255),
     Callback = function(Value)
         _G.ColorOutlineSurvivors = Value
     end
