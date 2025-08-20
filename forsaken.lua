@@ -1916,24 +1916,32 @@ Main2Group:AddToggle("Player", {
 Main2Group:AddDivider()
 
 
-_G.UseOutline = false
-Main2Group:AddToggle("OutlineESP", {
+-- đảm bảo globals mặc định
+_G.UseOutline = _G.UseOutline or false
+_G.ColorOutlineKill = _G.ColorOutlineKill or Color3.fromRGB(255,0,0)
+_G.ColorOutlineSurvivors = _G.ColorOutlineSurvivors or Color3.fromRGB(0,255,0)
+
+-- Tạo toggle và gắn colorpickers vào toggle (chaining)
+local outlineToggle = Main2Group:AddToggle("OutlineESP", {
     Text = "Enable Outline",
-    Default = false,
+    Default = _G.UseOutline,
     Callback = function(Value)
         _G.UseOutline = Value
     end
 })
-Main2Group:AddColorPicker("ColorOutlineKill", {
+
+-- AddColorPicker là method của object toggle, không phải của Main2Group
+outlineToggle:AddColorPicker("ColorOutlineKill", {
     Text = "Killers Outline",
-    Default = Color3.fromRGB(255,0,0),
+    Default = _G.ColorOutlineKill,
     Callback = function(Value)
         _G.ColorOutlineKill = Value
     end
 })
-Main2Group:AddColorPicker("ColorOutlineSurvivors", {
+
+outlineToggle:AddColorPicker("ColorOutlineSurvivors", {
     Text = "Survivors Outline",
-    Default = Color3.fromRGB(0,255,0),
+    Default = _G.ColorOutlineSurvivors,
     Callback = function(Value)
         _G.ColorOutlineSurvivors = Value
     end
