@@ -1755,13 +1755,36 @@ Main2Group:AddDivider()
 
 local Players = game:GetService("Players")
 
--- helper to apply ESP GUI to a single character model
+-- ============ OUTLINE ESP ===============
+local function addOutline(char, isKiller)
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    if char:FindFirstChild("OutlineESP") then return end
+
+    local h = Instance.new("Highlight")
+    h.Name = "OutlineESP"
+    h.Adornee = char
+    h.FillTransparency = 1 -- chỉ viền
+    h.OutlineTransparency = 0
+    if isKiller then
+        h.OutlineColor = _G.ColorOutlineKill or Color3.fromRGB(255,0,0)
+    else
+        h.OutlineColor = _G.ColorOutlineSurvivors or Color3.fromRGB(0,255,0)
+    end
+    h.Parent = char
+end
+
+local function clearOutline(char)
+    if char and char:FindFirstChild("OutlineESP") then
+        char.OutlineESP:Destroy()
+    end
+end
+
+-- ============ LABEL ESP (bản bạn đưa) ===============
 function Esp_Player(characterModel)
     -- xoá highlight cũ
     if characterModel:FindFirstChild("Esp_Highlight") then
         characterModel.Esp_Highlight:Destroy()
     end
-
     -- xoá BillboardGui cũ
     for _, gui in ipairs(characterModel:GetDescendants()) do
         if gui.Name == "Esp_Gui" then
@@ -1774,7 +1797,6 @@ function Esp_Player(characterModel)
     local head = characterModel:FindFirstChild("Head")
     if not head then return end
 
-    -- tạo BillboardGui
     local gui = Instance.new("BillboardGui")
     gui.Name = "Esp_Gui"
     gui.Adornee = head
@@ -1795,21 +1817,18 @@ function Esp_Player(characterModel)
     stroke.Color = Color3.new(0, 0, 0)
     stroke.Thickness = 1.5
 
-    -- kiểm tra fake Noli
     local isInKillers = (characterModel.Parent and characterModel.Parent.Name == "Killers")
     local isPlayer = (Players:GetPlayerFromCharacter(characterModel) ~= nil)
     local isFakeNoli = isInKillers and not isPlayer and characterModel.Name:lower():find("noli")
 
-    -- màu chữ
     if isFakeNoli then
-        lbl.TextColor3 = Color3.fromRGB(150, 0, 150) -- tím để phân biệt
+        lbl.TextColor3 = Color3.fromRGB(150, 0, 150)
     elseif isInKillers then
-        lbl.TextColor3 = Color3.fromRGB(255, 0, 0)   -- đỏ nếu killer
+        lbl.TextColor3 = Color3.fromRGB(255, 0, 0)
     else
         lbl.TextColor3 = _G.EspGuiTextColor or Color3.new(1,1,1)
     end
 
-    -- build text
     local parts = {}
     if isFakeNoli then
         table.insert(parts, "Hallucination")
@@ -1837,6 +1856,7 @@ function Esp_Player(characterModel)
     lbl.Text = table.concat(parts, "\n")
 end
 
+-- ============ UI DROPDOWN + TOGGLES ===============
 Main2Group:AddDropdown("EspPlayer", {
     Text = "Section",
     Values = {"Killers", "Survivors"},
@@ -1844,59 +1864,80 @@ Main2Group:AddDropdown("EspPlayer", {
     Multi = true
 })
 
+-- Toggle chính để bật ESP Player
 Main2Group:AddToggle("Player", {
     Text = "Enable Esp",
-    Default = false, 
-    Callback = function(Value) 
-_G.EspPlayer = Value
-if _G.EspPlayer == false then
-	for i, v in pairs(game.Workspace.Players:GetChildren()) do
-		if v.Name == "Killers" or v.Name == "Survivors" then
-			for y, z in pairs(v:GetChildren()) do
-				if z.Name:find("Esp_") then
-					z:Destroy()
-				end
-			end
-		end
-	end
-end
-while _G.EspPlayer do
-for i, v in pairs(game.Workspace.Players:GetChildren()) do
-	if Options.EspPlayer.Value["Killers"] and v.Name == "Killers" then
-		for y, z in pairs(v:GetChildren()) do
-			if z:FindFirstChild("HumanoidRootPart") and z:FindFirstChild("Humanoid") and z:FindFirstChild("Head") then
-				Esp_Player(z, _G.ColorLightKill or Color3.fromRGB(255, 0, 0))
-			end
-		end
-	elseif not Options.EspPlayer.Value["Killers"] then
-		if v.Name == "Killers" then
-			for y, z in pairs(v:GetChildren()) do
-				if z.Name:find("Esp_") then
-					z:Destroy()
-				end
-			end
-		end
-	end
-	if Options.EspPlayer.Value["Survivors"] and v.Name == "Survivors" then
-		for y, z in pairs(v:GetChildren()) do
-			if z:FindFirstChild("HumanoidRootPart") and z:FindFirstChild("Humanoid") and z:FindFirstChild("Head") then
-				Esp_Player(z, _G.ColorLightSurvivors or Color3.fromRGB(0, 255, 0))
-			end
-		end
-	elseif not Options.EspPlayer.Value["Survivors"] and v.Name == "Survivors" then
-		for y, z in pairs(v:GetChildren()) do
-			if z.Name:find("Esp_") then
-				z:Destroy()
-			end
-		end
-	end
-end
-task.wait()
-end
+    Default = false,
+    Callback = function(Value)
+        _G.EspPlayer = Value
+        if not Value then
+            for _, v in pairs(game.Workspace.Players:GetChildren()) do
+                if v.Name == "Killers" or v.Name == "Survivors" then
+                    for _, z in pairs(v:GetChildren()) do
+                        if z:FindFirstChild("Esp_Gui") then z.Esp_Gui:Destroy() end
+                        if z:FindFirstChild("OutlineESP") then z.OutlineESP:Destroy() end
+                    end
+                end
+            end
+            return
+        end
+
+        while _G.EspPlayer do
+            for _, folder in pairs(game.Workspace.Players:GetChildren()) do
+                if Options.EspPlayer.Value["Killers"] and folder.Name == "Killers" then
+                    for _, char in pairs(folder:GetChildren()) do
+                        if char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") and char:FindFirstChild("Head") then
+                            Esp_Player(char)
+                            if _G.UseOutline then
+                                addOutline(char, true)
+                            else
+                                clearOutline(char)
+                            end
+                        end
+                    end
+                elseif Options.EspPlayer.Value["Survivors"] and folder.Name == "Survivors" then
+                    for _, char in pairs(folder:GetChildren()) do
+                        if char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") and char:FindFirstChild("Head") then
+                            Esp_Player(char)
+                            if _G.UseOutline then
+                                addOutline(char, false)
+                            else
+                                clearOutline(char)
+                            end
+                        end
+                    end
+                end
+            end
+            task.wait(0.2)
+        end
     end
 })
 
 Main2Group:AddDivider()
+
+
+_G.UseOutline = false
+Main2Group:AddToggle("OutlineESP", {
+    Text = "Enable Outline",
+    Default = false,
+    Callback = function(Value)
+        _G.UseOutline = Value
+    end
+})
+Main2Group:AddColorPicker("ColorOutlineKill", {
+    Text = "Killers Outline",
+    Default = Color3.fromRGB(255,0,0),
+    Callback = function(Value)
+        _G.ColorOutlineKill = Value
+    end
+})
+Main2Group:AddColorPicker("ColorOutlineSurvivors", {
+    Text = "Survivors Outline",
+    Default = Color3.fromRGB(0,255,0),
+    Callback = function(Value)
+        _G.ColorOutlineSurvivors = Value
+    end
+})
 
 
 
