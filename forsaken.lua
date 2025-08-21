@@ -2467,10 +2467,18 @@ local function isBehindTarget(hrp, targetHRP)
     end
 end
 
--- TP ra sau killer
+-- TP đúng ra sau killer
 local function tpBehind(hrp, targetHRP)
-    local backPos = targetHRP.CFrame * CFrame.new(0, 0, -(_G.AimBackstab_Range * 0.5))
-    hrp.CFrame = CFrame.new(backPos.Position, targetHRP.Position)
+    if not hrp or not targetHRP then return end
+
+    -- killer facing
+    local look = targetHRP.CFrame.LookVector
+
+    -- lùi lại 2 stud (bạn có thể chỉnh _G.AimBackstab_Range)
+    local backPos = targetHRP.Position - look * (_G.AimBackstab_Range)
+
+    -- đặt nhân vật ở sau lưng killer, nhìn về killer
+    hrp.CFrame = CFrame.new(backPos, targetHRP.Position)
 end
 
 -- Bắt remote để bật cooldown + xử lý TP mode
