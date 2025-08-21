@@ -2498,20 +2498,22 @@ daggerRemote.OnClientEvent:Connect(function(action, ability)
         if globalCooldown then return end
         globalCooldown = true
 
-        -- nếu đang ở TP mode thì TP ngay
+        -- nếu đang ở TP mode thì đợi 0.1s rồi TP
         if _G.AimBackstab_Action == "TP" then
-            local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
-                if killersFolder then
-                    for _, killer in ipairs(killersFolder:GetChildren()) do
-                        local kHRP = killer:FindFirstChild("HumanoidRootPart")
-                        if kHRP and (hrp.Position - kHRP.Position).Magnitude <= _G.AimBackstab_Range then
-                            tpBehind(hrp, kHRP)
+            task.delay(0.1, function() -- <--- thêm delay
+                local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+                    if killersFolder then
+                        for _, killer in ipairs(killersFolder:GetChildren()) do
+                            local kHRP = killer:FindFirstChild("HumanoidRootPart")
+                            if kHRP and (hrp.Position - kHRP.Position).Magnitude <= _G.AimBackstab_Range then
+                                tpBehind(hrp, kHRP)
+                            end
                         end
                     end
                 end
-            end
+            end)
         end
 
         -- notify
