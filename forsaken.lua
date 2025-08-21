@@ -2493,7 +2493,7 @@ end
 
 -- Bắt remote để bật cooldown + xử lý TP mode
 daggerRemote.OnClientEvent:Connect(function(action, ability)
-    task.delay(0.3, function() -- <--- delay ngay khi remote gọi
+    task.delay(0.5, function() -- <--- delay ngay khi remote gọi
         if action == "UseActorAbility" and ability == "Dagger" then
             if not _G.AimBackstab_Enabled then return end
             if globalCooldown then return end
