@@ -2551,22 +2551,20 @@ daggerRemote.OnClientEvent:Connect(function(action, ability)
     end
 end)
 
--- Vòng lặp Aim
--- helper: quay cùng hướng killer (không nhìn vào killer)
+-- helper: quay cùng hướng killer
 local function faceSameDirection(hrp, targetHRP)
     local look = targetHRP.CFrame.LookVector
     if look.Magnitude < 0.001 then return end
-    -- hướng về (vị trí hiện tại + look) => cùng hướng với killer
     hrp.CFrame = CFrame.new(hrp.Position, hrp.Position + look)
 end
 
--- Vòng lặp Aim (PATCHED)
+-- ===============================
+-- VÒNG LẶP AIM + TP "BACK" FIXED
+-- ===============================
 RunService.Heartbeat:Connect(function()
     if not _G.AimBackstab_Enabled then return end
-    if globalCooldown then return end
-    if _G.AimBackstab_Action ~= "Aim" then return end
-
     if not lp.Character or lp.Character.Name ~= "TwoTime" then return end
+
     local hrp = lp.Character:FindFirstChild("HumanoidRootPart")
     local hum = lp.Character:FindFirstChildOfClass("Humanoid")
     if not hrp then return end
@@ -2580,30 +2578,26 @@ RunService.Heartbeat:Connect(function()
 
         local dist = (hrp.Position - kHRP.Position).Magnitude
 
-        -- Kiểu Free: quay nhìn vào killer, vẫn dùng Behind/Around
+        -- Free style = xoay về killer (Behind/Around vẫn áp dụng)
         local shouldAim_Free = (_G.AimBackstab_Style == "Free") and isBehindTarget(hrp, kHRP)
 
-        -- Kiểu Back: chỉ cần trong range là quay cùng hướng killer
-        local shouldAim_Back = (_G.AimBackstab_Style == "Back") and (dist <= _G.AimBackstab_Range)
+        -- Back style = xoay cùng killer (Behind/Around vẫn áp dụng)
+        local shouldAim_Back = (_G.AimBackstab_Style == "Back") and isBehindTarget(hrp, kHRP)
 
-        if shouldAim_Free or shouldAim_Back then
-            local startTime = tick()
+        -- ⚡ NEW: Nếu chọn TP + Back thì cũng aim theo killer khi vào range
+        local shouldAim_BackTP = (_G.AimBackstab_Style == "Back" and _G.AimBackstab_Action == "TP" and dist <= _G.AimBackstab_Range)
+
+        if shouldAim_Free or shouldAim_Back or shouldAim_BackTP then
             local oldAuto = hum and hum.AutoRotate
             if hum then hum.AutoRotate = false end
 
-            while tick() - startTime < 1 do
-                if not hrp or not kHRP or not kHRP.Parent then break end
-
-                if _G.AimBackstab_Style == "Back" then
-                    faceSameDirection(hrp, kHRP) -- quay cùng hướng killer
-                else
-                    -- Free: quay nhìn vào killer
-                    local dir = (kHRP.Position - hrp.Position).Unit
-                    local yRot = math.atan2(-dir.X, -dir.Z)
-                    hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
-                end
-
-                RunService.Heartbeat:Wait()
+            if _G.AimBackstab_Style == "Back" then
+                faceSameDirection(hrp, kHRP)
+            else
+                -- Free: quay nhìn vào killer
+                local dir = (kHRP.Position - hrp.Position).Unit
+                local yRot = math.atan2(-dir.X, -dir.Z)
+                hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
             end
 
             if hum and oldAuto ~= nil then hum.AutoRotate = oldAuto end
