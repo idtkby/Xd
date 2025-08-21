@@ -2493,6 +2493,7 @@ end
 
 -- Bắt remote để bật cooldown + xử lý TP mode
 daggerRemote.OnClientEvent:Connect(function(action, ability)
+task.delay(0.2, function() -- <--- thêm delay
     if action == "UseActorAbility" and ability == "Dagger" then
         if not _G.AimBackstab_Enabled then return end
         if globalCooldown then return end
@@ -2500,7 +2501,7 @@ daggerRemote.OnClientEvent:Connect(function(action, ability)
 
         -- nếu đang ở TP mode thì đợi 0.1s rồi TP
         if _G.AimBackstab_Action == "TP" then
-            task.delay(0.4, function() -- <--- thêm delay
+            
                 local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
                 if hrp then
                     local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
