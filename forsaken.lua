@@ -2434,110 +2434,105 @@ Main3Group:AddDivider()
 
 Main3Group:AddLabel("--== Surviv: [ TwoTime ] ==--", true) 
 
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local lp = Players.LocalPlayer
-
--- Remote
-local daggerRemote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
-
--- Config
-_G.AimBackstab_Enabled = false
-_G.AimBackstab_Mode = "Behind" -- Aim hoặc Around
-_G.AimBackstab_Range = 4
-_G.AimBackstab_Action = "Aim" -- hoặc "TP"
-
--- Cooldown
-local globalCooldown = false
-local TP_OFFSET = 2.5
-
--- Hàm check sau lưng
-local function isBehindTarget(hrp, targetHRP)
-    local distance = (hrp.Position - targetHRP.Position).Magnitude
-    if distance > _G.AimBackstab_Range then return false end
-    if _G.AimBackstab_Mode == "Around" then return true end
-    local direction = -targetHRP.CFrame.LookVector
-    local toPlayer = (hrp.Position - targetHRP.Position)
-    return toPlayer:Dot(direction) > 0.5
-end
-
--- Hàm TP sau lưng
-local function tpBehind(hrp, targetHRP)
-    if not hrp or not targetHRP then return end
-    local backPos = targetHRP.Position - targetHRP.CFrame.LookVector * TP_OFFSET
-    hrp.CFrame = CFrame.new(backPos, targetHRP.Position)
-
-    -- Aim liên tục 1 giây
-    local startTime = tick()
-    while tick() - startTime < 1 do
-        if not hrp or not targetHRP or not targetHRP.Parent then break end
-        local direction = (targetHRP.Position - hrp.Position).Unit
-        local yRot = math.atan2(-direction.X, -direction.Z)
-        hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
-        RunService.Heartbeat:Wait()
-    end
-end
-
--- Hook FireServer để delay remote chỉ khi TP mode
-local oldNamecall
-oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
-    local method = getnamecallmethod()
-    local args = {...}
-
-    if not checkcaller() and typeof(self) == "Instance" and self == daggerRemote and method == "FireServer" then
-        if _G.AimBackstab_Action == "TP" then
-            -- TP ngay
-            local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                task.spawn(function()
-                    local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
-                    if killersFolder then
-                        for _, killer in ipairs(killersFolder:GetChildren()) do
-                            local kHRP = killer:FindFirstChild("HumanoidRootPart")
-                            if kHRP and (hrp.Position - kHRP.Position).Magnitude <= _G.AimBackstab_Range then
-                                tpBehind(hrp, kHRP)
-                            end
-                        end
-                    end
-                end)
-            end
-
-            -- Delay remote 0.5s
-            task.delay(0.3, function()
-                oldNamecall(self, unpack(args))
-            end)
-            return -- ngăn gửi ngay
-        end
-
-        -- Không phải TP mode, gửi remote ngay
-        return oldNamecall(self, unpack(args))
-    end
-
-    return oldNamecall(self, ...)
-end)
-
--- Bắt remote để bật cooldown + notify
-daggerRemote.OnClientEvent:Connect(function(action, ability)
-    if action ~= "UseActorAbility" or ability ~= "Dagger" then return end
-    if not _G.AimBackstab_Enabled then return end
-    if globalCooldown then return end
-    globalCooldown = true
-
-    game.StarterGui:SetCore("SendNotification", {
-        Title = "Backstab",
-        Text = "Cooldown 30s...",
-        Duration = 3
-    })
-
-    task.delay(30, function()
-        globalCooldown = false
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Backstab",
-            Text = "Cooldown Ended!",
-            Duration = 3
-        })
-    end)
+local Players = game:GetService("Players")  
+local ReplicatedStorage = game:GetService("ReplicatedStorage")  
+local RunService = game:GetService("RunService")  
+local lp = Players.LocalPlayer  
+  
+-- Remote  
+local daggerRemote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")  
+  
+-- Config  
+_G.AimBackstab_Enabled = false  
+_G.AimBackstab_Mode = "Behind" -- cho Aim  
+_G.AimBackstab_Range = 4  
+_G.AimBackstab_Action = "Aim" -- hoặc "TP"  
+  
+-- cooldown  
+local globalCooldown = false  
+  
+-- Check hướng sau lưng (dùng cho Aim)  
+local function isBehindTarget(hrp, targetHRP)  
+    local distance = (hrp.Position - targetHRP.Position).Magnitude  
+    if distance > _G.AimBackstab_Range then  
+        return false  
+    end  
+  
+    if _G.AimBackstab_Mode == "Around" then  
+        return true  
+    else  
+        local direction = -targetHRP.CFrame.LookVector  
+        local toPlayer = (hrp.Position - targetHRP.Position)  
+        return toPlayer:Dot(direction) > 0.5  
+    end  
+end  
+  
+-- offset đứng sau killer (fix TP quá xa)  
+local TP_OFFSET = 2.5  
+  
+-- TP đúng ra sau killer  
+local function tpBehind(hrp, targetHRP)  
+    if not hrp or not targetHRP then return end  
+  
+    local look = targetHRP.CFrame.LookVector  
+    local backPos = targetHRP.Position - look * TP_OFFSET  
+  
+    -- đặt nhân vật ở sau lưng killer, nhìn về killer  
+    hrp.CFrame = CFrame.new(backPos, targetHRP.Position)  
+  
+    -- sau khi TP thì aim liên tục 1 giây  
+    local startTime = tick()  
+    while tick() - startTime < 1 do  
+        if not hrp or not targetHRP or not targetHRP.Parent then break end  
+        local direction = (targetHRP.Position - hrp.Position).Unit  
+        local yRot = math.atan2(-direction.X, -direction.Z)  
+        hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)  
+        RunService.Heartbeat:Wait()  
+    end  
+end  
+  
+-- Bắt remote để bật cooldown + xử lý TP mode  
+daggerRemote.OnClientEvent:Connect(function(action, ability)  
+    if action ~= "UseActorAbility" or ability ~= "Dagger" then return end  
+  
+    -- TP ngay lập tức nếu đang ở TP mode  
+    if _G.AimBackstab_Action == "TP" then  
+        local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")  
+        if hrp then  
+            task.spawn(function() -- non-blocking, chạy ngay  
+                local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")  
+                if not killersFolder then return end  
+                for _, killer in ipairs(killersFolder:GetChildren()) do  
+                    local kHRP = killer:FindFirstChild("HumanoidRootPart")  
+                    if kHRP and (hrp.Position - kHRP.Position).Magnitude <= _G.AimBackstab_Range then  
+                        tpBehind(hrp, kHRP)  
+                    end  
+                end  
+            end)  
+        end  
+    end  
+  
+    -- Delay 0.5s chỉ cho phần cooldown + notify  
+    task.delay(0, function()  
+        if not _G.AimBackstab_Enabled then return end  
+        if globalCooldown then return end  
+        globalCooldown = true  
+  
+        game.StarterGui:SetCore("SendNotification", {  
+            Title = "Backstab",  
+            Text = "Cooldown 30s...",  
+            Duration = 3  
+        })  
+  
+        task.delay(30, function()  
+            globalCooldown = false  
+            game.StarterGui:SetCore("SendNotification", {  
+                Title = "Backstab",  
+                Text = "Cooldown Ended!",  
+                Duration = 3  
+            })  
+        end)  
+    end)  
 end)
 
 -- Vòng lặp Aim
