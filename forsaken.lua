@@ -2500,7 +2500,7 @@ daggerRemote.OnClientEvent:Connect(function(action, ability)
 
         -- nếu đang ở TP mode thì đợi 0.1s rồi TP
         if _G.AimBackstab_Action == "TP" then
-            task.delay(0.2, function() -- <--- thêm delay
+            task.delay(0.3, function() -- <--- thêm delay
                 local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
                 if hrp then
                     local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
