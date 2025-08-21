@@ -2439,17 +2439,96 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local lp = Players.LocalPlayer
 
--- Remote
 local daggerRemote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
 
--- Main3Group: Backstab Aim
 _G.AimBackstab_Enabled = false
-_G.AimBackstab_Mode = "Behind" -- hoặc "Around"
+_G.AimBackstab_Mode = "Behind"
 _G.AimBackstab_Range = 4
-_G.AimBackstab_Action = "Aim" -- hoặc "TP"
+_G.AimBackstab_Action = "Aim"
 
--- Danh sách lưu để TP 1 lần
 local tpCooldown = {}
+_G.CanBackstab = false
+
+-- Track anim localplayer
+local validAnimIds = {
+    ["rbxassetid://86545133269813"] = true,
+    ["rbxassetid://89448354637442"] = true
+}
+
+local function trackAnimations(char)
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hum then return end
+    local animator = hum:FindFirstChildOfClass("Animator")
+    if not animator then return end
+
+    animator.AnimationPlayed:Connect(function(track)
+        if validAnimIds[track.Animation.AnimationId] then
+            _G.CanBackstab = true
+            -- khi anim dừng thì reset
+            track.Stopped:Connect(function()
+                _G.CanBackstab = false
+            end)
+        end
+    end)
+end
+
+-- init
+if lp.Character then trackAnimations(lp.Character) end
+lp.CharacterAdded:Connect(function(c)
+    task.wait(1)
+    trackAnimations(c)
+end)
+
+local function isBehindTarget(hrp, targetHRP)
+    local distance = (hrp.Position - targetHRP.Position).Magnitude
+    if distance > _G.AimBackstab_Range then
+        return false
+    end
+
+    if _G.AimBackstab_Mode == "Around" then
+        return true
+    else
+        local direction = -targetHRP.CFrame.LookVector
+        local toPlayer = (hrp.Position - targetHRP.Position)
+        return toPlayer:Dot(direction) > 0.5
+    end
+end
+
+RunService.Heartbeat:Connect(function()
+    if not _G.AimBackstab_Enabled or not _G.CanBackstab then return end
+
+    if not lp.Character or lp.Character.Name ~= "TwoTime" then return end
+
+    local hrp = lp.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+    if not killersFolder then return end
+
+    for _, killer in ipairs(killersFolder:GetChildren()) do
+        local kHRP = killer:FindFirstChild("HumanoidRootPart")
+        if kHRP and isBehindTarget(hrp, kHRP) then
+            if _G.AimBackstab_Action == "Aim" then
+                local startTime = tick()
+                while tick() - startTime < 1 and _G.CanBackstab do
+                    if not hrp or not kHRP or not kHRP.Parent then break end
+                    local direction = (kHRP.Position - hrp.Position).Unit
+                    local yRot = math.atan2(-direction.X, -direction.Z)
+                    hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
+                    RunService.Heartbeat:Wait()
+                end
+            elseif _G.AimBackstab_Action == "TP" then
+                if not tpCooldown[killer] then
+                    local backPos = kHRP.CFrame * CFrame.new(0, 0, _G.AimBackstab_Range * -0.5)
+                    hrp.CFrame = CFrame.new(backPos.Position, kHRP.Position)
+                    tpCooldown[killer] = true
+                end
+            end
+        else
+            tpCooldown[killer] = nil
+        end
+    end
+end)
 
 Main3Group:AddToggle("AimBackstabToggle", {
     Text = "Auto Aim/TP Backstab",
@@ -2494,60 +2573,7 @@ Main3Group:AddDropdown("AimBackstabAction", {
     end
 })
 
-local function isBehindTarget(hrp, targetHRP)
-    local distance = (hrp.Position - targetHRP.Position).Magnitude
-    if distance > _G.AimBackstab_Range then
-        return false
-    end
 
-    if _G.AimBackstab_Mode == "Around" then
-        return true
-    else
-        local direction = -targetHRP.CFrame.LookVector
-        local toPlayer = (hrp.Position - targetHRP.Position)
-        return toPlayer:Dot(direction) > 0.5
-    end
-end
-
-RunService.Heartbeat:Connect(function()
-    if not _G.AimBackstab_Enabled then return end
-
-    -- Chỉ hoạt động nếu localplayer là survivor TwoTime
-    if not lp.Character or lp.Character.Name ~= "TwoTime" then return end
-
-    local hrp = lp.Character:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-
-    local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
-    if not killersFolder then return end
-
-    for _, killer in ipairs(killersFolder:GetChildren()) do
-        local kHRP = killer:FindFirstChild("HumanoidRootPart")
-        if kHRP and isBehindTarget(hrp, kHRP) then
-            if _G.AimBackstab_Action == "Aim" then
-                -- Aim liên tục 1 giây
-                local startTime = tick()
-                while tick() - startTime < 1 do
-                    if not hrp or not kHRP or not kHRP.Parent then break end
-                    local direction = (kHRP.Position - hrp.Position).Unit
-                    local yRot = math.atan2(-direction.X, -direction.Z)
-                    hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
-                    RunService.Heartbeat:Wait()
-                end
-            elseif _G.AimBackstab_Action == "TP" then
-                -- Chỉ TP 1 lần mỗi khi vào range
-                if not tpCooldown[killer] then
-                    local backPos = kHRP.CFrame * CFrame.new(0, 0, _G.AimBackstab_Range * -0.5)
-                    hrp.CFrame = CFrame.new(backPos.Position, kHRP.Position)
-                    tpCooldown[killer] = true
-                end
-            end
-        else
-            -- Reset cooldown khi killer ra khỏi range
-            tpCooldown[killer] = nil
-        end
-    end
-end)
 
 Main3Group:AddDivider()
 Main3Group:AddLabel("--== Killer: [ Noli ] ==--")
