@@ -2468,7 +2468,7 @@ local function isBehindTarget(hrp, targetHRP)
 end
 
 -- offset đứng sau killer (fix TP quá xa)
-local TP_OFFSET = 4
+local TP_OFFSET = 2.5
 
 -- TP đúng ra sau killer
 local function tpBehind(hrp, targetHRP)
@@ -2493,46 +2493,45 @@ end
 
 -- Bắt remote để bật cooldown + xử lý TP mode
 daggerRemote.OnClientEvent:Connect(function(action, ability)
-    -- Nếu đang ở TP mode thì TP luôn
-    if action == "UseActorAbility" and ability == "Dagger" and _G.AimBackstab_Action == "TP" then
+    if action ~= "UseActorAbility" or ability ~= "Dagger" then return end
+
+    -- TP ngay lập tức nếu đang ở TP mode
+    if _G.AimBackstab_Action == "TP" then
         local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
         if hrp then
-            local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
-            if killersFolder then
+            task.spawn(function() -- non-blocking, chạy ngay
+                local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+                if not killersFolder then return end
                 for _, killer in ipairs(killersFolder:GetChildren()) do
                     local kHRP = killer:FindFirstChild("HumanoidRootPart")
                     if kHRP and (hrp.Position - kHRP.Position).Magnitude <= _G.AimBackstab_Range then
                         tpBehind(hrp, kHRP)
                     end
                 end
-            end
+            end)
         end
     end
 
-    -- Delay phần xử lý cooldown và notify 0.5s
+    -- Delay 0.5s chỉ cho phần cooldown + notify
     task.delay(0.3, function()
-        if action == "UseActorAbility" and ability == "Dagger" then
-            if not _G.AimBackstab_Enabled then return end
-            if globalCooldown then return end
-            globalCooldown = true
+        if not _G.AimBackstab_Enabled then return end
+        if globalCooldown then return end
+        globalCooldown = true
 
-            -- notify
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Backstab",
+            Text = "Cooldown 30s...",
+            Duration = 3
+        })
+
+        task.delay(30, function()
+            globalCooldown = false
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Backstab",
-                Text = "Cooldown 30s...",
+                Text = "Cooldown Ended!",
                 Duration = 3
             })
-
-            -- cooldown reset
-            task.delay(30, function()
-                globalCooldown = false
-                game.StarterGui:SetCore("SendNotification", {
-                    Title = "Backstab",
-                    Text = "Cooldown Ended!",
-                    Duration = 3
-                })
-            end)
-        end
+        end)
     end)
 end)
 
