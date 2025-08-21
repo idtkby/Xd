@@ -2493,15 +2493,14 @@ end
 
 -- Bắt remote để bật cooldown + xử lý TP mode
 daggerRemote.OnClientEvent:Connect(function(action, ability)
-task.delay(0.2, function() -- <--- thêm delay
-    if action == "UseActorAbility" and ability == "Dagger" then
-        if not _G.AimBackstab_Enabled then return end
-        if globalCooldown then return end
-        globalCooldown = true
+    task.delay(0.1, function() -- <--- delay ngay khi remote gọi
+        if action == "UseActorAbility" and ability == "Dagger" then
+            if not _G.AimBackstab_Enabled then return end
+            if globalCooldown then return end
+            globalCooldown = true
 
-        -- nếu đang ở TP mode thì đợi 0.1s rồi TP
-        if _G.AimBackstab_Action == "TP" then
-            
+            -- nếu đang ở TP mode thì TP luôn (không cần delay thêm)
+            if _G.AimBackstab_Action == "TP" then
                 local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
                 if hrp then
                     local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
@@ -2514,26 +2513,26 @@ task.delay(0.2, function() -- <--- thêm delay
                         end
                     end
                 end
-            end)
-        end
+            end
 
-        -- notify
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Backstab",
-            Text = "Cooldown 30s...",
-            Duration = 3
-        })
-
-        -- cooldown reset
-        task.delay(30, function()
-            globalCooldown = false
+            -- notify
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Backstab",
-                Text = "Cooldown Ended!",
+                Text = "Cooldown 30s...",
                 Duration = 3
             })
-        end)
-    end
+
+            -- cooldown reset
+            task.delay(30, function()
+                globalCooldown = false
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = "Backstab",
+                    Text = "Cooldown Ended!",
+                    Duration = 3
+                })
+            end)
+        end
+    end)
 end)
 
 -- Vòng lặp Aim
