@@ -2450,44 +2450,7 @@ _G.AimBackstab_Range = 4
 _G.AimBackstab_Action = "Aim" -- hoặc "TP"
 _G.AimBackstab_Style = "Free" -- Free hoặc Back
 
--- Vòng lặp Aim
-RunService.Heartbeat:Connect(function()
-    if not _G.AimBackstab_Enabled then return end
-    if globalCooldown then return end
-    if _G.AimBackstab_Action ~= "Aim" then return end
 
-    if not lp.Character or lp.Character.Name ~= "TwoTime" then return end
-    local hrp = lp.Character:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-
-    local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
-    if not killersFolder then return end
-
-    for _, killer in ipairs(killersFolder:GetChildren()) do
-        local kHRP = killer:FindFirstChild("HumanoidRootPart")
-        if kHRP and isBehindTarget(hrp, kHRP) then
-            local startTime = tick()
-            while tick() - startTime < 1 do
-                if not hrp or not kHRP or not kHRP.Parent then break end
-
-                if _G.AimBackstab_Style == "Free" then
-                    -- aim kiểu cũ: nhìn về killer
-                    local direction = (kHRP.Position - hrp.Position).Unit
-                    local yRot = math.atan2(-direction.X, -direction.Z)
-                    hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
-
-                elseif _G.AimBackstab_Style == "Back" then
-                    -- aim mới: quay theo hướng killer
-                    local look = kHRP.CFrame.LookVector
-                    local yRot = math.atan2(-look.X, -look.Z)
-                    hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
-                end
-
-                RunService.Heartbeat:Wait()
-            end
-        end
-    end
-end)
 
 -- Thêm dropdown chọn style
 Main3Group:AddDropdown("AimBackstabStyle", {
@@ -2589,6 +2552,15 @@ daggerRemote.OnClientEvent:Connect(function(action, ability)
 end)
 
 -- Vòng lặp Aim
+-- helper: quay cùng hướng killer (không nhìn vào killer)
+local function faceSameDirection(hrp, targetHRP)
+    local look = targetHRP.CFrame.LookVector
+    if look.Magnitude < 0.001 then return end
+    -- hướng về (vị trí hiện tại + look) => cùng hướng với killer
+    hrp.CFrame = CFrame.new(hrp.Position, hrp.Position + look)
+end
+
+-- Vòng lặp Aim (PATCHED)
 RunService.Heartbeat:Connect(function()
     if not _G.AimBackstab_Enabled then return end
     if globalCooldown then return end
@@ -2596,6 +2568,7 @@ RunService.Heartbeat:Connect(function()
 
     if not lp.Character or lp.Character.Name ~= "TwoTime" then return end
     local hrp = lp.Character:FindFirstChild("HumanoidRootPart")
+    local hum = lp.Character:FindFirstChildOfClass("Humanoid")
     if not hrp then return end
 
     local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
@@ -2603,16 +2576,37 @@ RunService.Heartbeat:Connect(function()
 
     for _, killer in ipairs(killersFolder:GetChildren()) do
         local kHRP = killer:FindFirstChild("HumanoidRootPart")
-        if kHRP and isBehindTarget(hrp, kHRP) then
-            -- Aim 1 giây
+        if not kHRP then continue end
+
+        local dist = (hrp.Position - kHRP.Position).Magnitude
+
+        -- Kiểu Free: quay nhìn vào killer, vẫn dùng Behind/Around
+        local shouldAim_Free = (_G.AimBackstab_Style == "Free") and isBehindTarget(hrp, kHRP)
+
+        -- Kiểu Back: chỉ cần trong range là quay cùng hướng killer
+        local shouldAim_Back = (_G.AimBackstab_Style == "Back") and (dist <= _G.AimBackstab_Range)
+
+        if shouldAim_Free or shouldAim_Back then
             local startTime = tick()
+            local oldAuto = hum and hum.AutoRotate
+            if hum then hum.AutoRotate = false end
+
             while tick() - startTime < 1 do
                 if not hrp or not kHRP or not kHRP.Parent then break end
-                local direction = (kHRP.Position - hrp.Position).Unit
-                local yRot = math.atan2(-direction.X, -direction.Z)
-                hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
+
+                if _G.AimBackstab_Style == "Back" then
+                    faceSameDirection(hrp, kHRP) -- quay cùng hướng killer
+                else
+                    -- Free: quay nhìn vào killer
+                    local dir = (kHRP.Position - hrp.Position).Unit
+                    local yRot = math.atan2(-dir.X, -dir.Z)
+                    hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
+                end
+
                 RunService.Heartbeat:Wait()
             end
+
+            if hum and oldAuto ~= nil then hum.AutoRotate = oldAuto end
         end
     end
 end)
