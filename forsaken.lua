@@ -2468,7 +2468,7 @@ local function isBehindTarget(hrp, targetHRP)
 end
 
 -- offset đứng sau killer (fix TP quá xa)
-local TP_OFFSET = 3
+local TP_OFFSET = 4
 
 -- TP đúng ra sau killer
 local function tpBehind(hrp, targetHRP)
