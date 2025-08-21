@@ -2517,17 +2517,15 @@ RunService.Heartbeat:Connect(function()
                     hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
                     RunService.Heartbeat:Wait()
                 end
-            elseif _G.AimBackstab_Action == "TP" then
-                if not tpCooldown[killer] then
-                    local backPos = kHRP.CFrame * CFrame.new(0, 0, _G.AimBackstab_Range * -0.5)
-                    hrp.CFrame = CFrame.new(backPos.Position, kHRP.Position)
-                    tpCooldown[killer] = true
-                end
-            end
-        else
-            tpCooldown[killer] = nil
-        end
-    end
+            elseif _G.AimBackstab_Action == "TP" then  
+    -- Chỉ TP 1 lần mỗi khi vào range  
+    if not tpCooldown[killer] then  
+        -- luôn TP ra sau lưng killer, không phụ thuộc "Behind" hay "Around"
+        local backPos = kHRP.CFrame * CFrame.new(0, 0, -(_G.AimBackstab_Range * 0.5))  
+        hrp.CFrame = CFrame.new(backPos.Position, kHRP.Position)  
+        tpCooldown[killer] = true  
+    end  
+end
 end)
 
 Main3Group:AddToggle("AimBackstabToggle", {
