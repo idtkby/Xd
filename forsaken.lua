@@ -2563,6 +2563,7 @@ end
 -- ===============================
 RunService.Heartbeat:Connect(function()
     if not _G.AimBackstab_Enabled then return end
+    if globalCooldown then return end -- ⚡ FIX: chặn toàn bộ khi đang cooldown
     if not lp.Character or lp.Character.Name ~= "TwoTime" then return end
 
     local hrp = lp.Character:FindFirstChild("HumanoidRootPart")
@@ -2578,13 +2579,8 @@ RunService.Heartbeat:Connect(function()
 
         local dist = (hrp.Position - kHRP.Position).Magnitude
 
-        -- Free style = xoay về killer (Behind/Around vẫn áp dụng)
         local shouldAim_Free = (_G.AimBackstab_Style == "Free") and isBehindTarget(hrp, kHRP)
-
-        -- Back style = xoay cùng killer (Behind/Around vẫn áp dụng)
         local shouldAim_Back = (_G.AimBackstab_Style == "Back") and isBehindTarget(hrp, kHRP)
-
-        -- ⚡ NEW: Nếu chọn TP + Back thì cũng aim theo killer khi vào range
         local shouldAim_BackTP = (_G.AimBackstab_Style == "Back" and _G.AimBackstab_Action == "TP" and dist <= _G.AimBackstab_Range)
 
         if shouldAim_Free or shouldAim_Back or shouldAim_BackTP then
@@ -2594,7 +2590,6 @@ RunService.Heartbeat:Connect(function()
             if _G.AimBackstab_Style == "Back" then
                 faceSameDirection(hrp, kHRP)
             else
-                -- Free: quay nhìn vào killer
                 local dir = (kHRP.Position - hrp.Position).Unit
                 local yRot = math.atan2(-dir.X, -dir.Z)
                 hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
