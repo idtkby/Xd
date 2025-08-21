@@ -2444,17 +2444,14 @@ local daggerRemote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net
 
 -- Config
 _G.AimBackstab_Enabled = false
-_G.AimBackstab_Mode = "Behind" -- vẫn giữ dropdown cho Aim
+_G.AimBackstab_Mode = "Behind" -- cho Aim
 _G.AimBackstab_Range = 4
 _G.AimBackstab_Action = "Aim" -- hoặc "TP"
 
 -- cooldown
 local globalCooldown = false
-local tpCooldown = {}
 
--- UI (bạn giữ nguyên phần AddToggle / AddDropdown / AddInput / AddDropdown nhé)
-
--- Check hướng sau lưng (chỉ dùng cho Aim)
+-- Check hướng sau lưng (dùng cho Aim)
 local function isBehindTarget(hrp, targetHRP)
     local distance = (hrp.Position - targetHRP.Position).Magnitude
     if distance > _G.AimBackstab_Range then
@@ -2470,43 +2467,59 @@ local function isBehindTarget(hrp, targetHRP)
     end
 end
 
--- Luôn TP ra sau killer
+-- TP ra sau killer
 local function tpBehind(hrp, targetHRP)
     local backPos = targetHRP.CFrame * CFrame.new(0, 0, -(_G.AimBackstab_Range * 0.5))
     hrp.CFrame = CFrame.new(backPos.Position, targetHRP.Position)
 end
 
--- Lắng nghe remote để trigger TP
+-- Bắt remote để bật cooldown + xử lý TP mode
 daggerRemote.OnClientEvent:Connect(function(action, ability)
     if action == "UseActorAbility" and ability == "Dagger" then
-        if not _G.AimBackstab_Enabled or _G.AimBackstab_Action ~= "TP" then return end
+        if not _G.AimBackstab_Enabled then return end
         if globalCooldown then return end
         globalCooldown = true
 
-        local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-        if not hrp then return end
-
-        local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
-        if not killersFolder then return end
-
-        for _, killer in ipairs(killersFolder:GetChildren()) do
-            local kHRP = killer:FindFirstChild("HumanoidRootPart")
-            if kHRP and (hrp.Position - kHRP.Position).Magnitude <= _G.AimBackstab_Range then
-                tpBehind(hrp, kHRP)
+        -- nếu đang ở TP mode thì TP ngay
+        if _G.AimBackstab_Action == "TP" then
+            local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+                if killersFolder then
+                    for _, killer in ipairs(killersFolder:GetChildren()) do
+                        local kHRP = killer:FindFirstChild("HumanoidRootPart")
+                        if kHRP and (hrp.Position - kHRP.Position).Magnitude <= _G.AimBackstab_Range then
+                            tpBehind(hrp, kHRP)
+                        end
+                    end
+                end
             end
         end
 
-        -- bật cooldown 30s
+        -- notify
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Backstab",
+            Text = "Cooldown 30s...",
+            Duration = 3
+        })
+
+        -- cooldown reset
         task.delay(30, function()
             globalCooldown = false
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Backstab",
+                Text = "Cooldown Ended!",
+                Duration = 3
+            })
         end)
     end
 end)
 
 -- Vòng lặp Aim
 RunService.Heartbeat:Connect(function()
-    if not _G.AimBackstab_Enabled or _G.AimBackstab_Action ~= "Aim" then return end
+    if not _G.AimBackstab_Enabled then return end
     if globalCooldown then return end
+    if _G.AimBackstab_Action ~= "Aim" then return end
 
     if not lp.Character or lp.Character.Name ~= "TwoTime" then return end
     local hrp = lp.Character:FindFirstChild("HumanoidRootPart")
@@ -2518,7 +2531,7 @@ RunService.Heartbeat:Connect(function()
     for _, killer in ipairs(killersFolder:GetChildren()) do
         local kHRP = killer:FindFirstChild("HumanoidRootPart")
         if kHRP and isBehindTarget(hrp, kHRP) then
-            -- Aim trong 1s
+            -- Aim 1 giây
             local startTime = tick()
             while tick() - startTime < 1 do
                 if not hrp or not kHRP or not kHRP.Parent then break end
