@@ -2433,6 +2433,7 @@ Main3Group:AddDivider()
 
 
 Main3Group:AddLabel("--== Surviv: [ TwoTime ] ==--", true) 
+
 local Players = game:GetService("Players")  
 local ReplicatedStorage = game:GetService("ReplicatedStorage")  
 local RunService = game:GetService("RunService")  
@@ -2442,10 +2443,62 @@ local lp = Players.LocalPlayer
 local daggerRemote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")  
   
 -- Config  
-_G.AimBackstab_Enabled = false  
-_G.AimBackstab_Mode = "Behind" -- cho Aim  
-_G.AimBackstab_Range = 4  
-_G.AimBackstab_Action = "Aim" -- hoặc "TP"  
+-- Config
+_G.AimBackstab_Enabled = false
+_G.AimBackstab_Mode = "Behind" -- cho Aim (giữ nguyên)
+_G.AimBackstab_Range = 4
+_G.AimBackstab_Action = "Aim" -- hoặc "TP"
+_G.AimBackstab_Style = "Free" -- Free hoặc Back
+
+-- Vòng lặp Aim
+RunService.Heartbeat:Connect(function()
+    if not _G.AimBackstab_Enabled then return end
+    if globalCooldown then return end
+    if _G.AimBackstab_Action ~= "Aim" then return end
+
+    if not lp.Character or lp.Character.Name ~= "TwoTime" then return end
+    local hrp = lp.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+    if not killersFolder then return end
+
+    for _, killer in ipairs(killersFolder:GetChildren()) do
+        local kHRP = killer:FindFirstChild("HumanoidRootPart")
+        if kHRP and isBehindTarget(hrp, kHRP) then
+            local startTime = tick()
+            while tick() - startTime < 1 do
+                if not hrp or not kHRP or not kHRP.Parent then break end
+
+                if _G.AimBackstab_Style == "Free" then
+                    -- aim kiểu cũ: nhìn về killer
+                    local direction = (kHRP.Position - hrp.Position).Unit
+                    local yRot = math.atan2(-direction.X, -direction.Z)
+                    hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
+
+                elseif _G.AimBackstab_Style == "Back" then
+                    -- aim mới: quay theo hướng killer
+                    local look = kHRP.CFrame.LookVector
+                    local yRot = math.atan2(-look.X, -look.Z)
+                    hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
+                end
+
+                RunService.Heartbeat:Wait()
+            end
+        end
+    end
+end)
+
+-- Thêm dropdown chọn style
+Main3Group:AddDropdown("AimBackstabStyle", {
+    Values = {"Free", "Back"},
+    Default = 1,
+    Multi = false,
+    Text = "Aim Style",
+    Callback = function(v)
+        _G.AimBackstab_Style = v
+    end
+})
   
 -- cooldown  
 local globalCooldown = false  
@@ -2606,7 +2659,6 @@ Main3Group:AddDropdown("AimBackstabAction", {
         _G.AimBackstab_Action = v
     end
 })
-
 
 
 Main3Group:AddDivider()
