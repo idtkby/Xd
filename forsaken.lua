@@ -2433,7 +2433,6 @@ Main3Group:AddDivider()
 
 
 Main3Group:AddLabel("--== Surviv: [ TwoTime ] ==--", true) 
-
 local Players = game:GetService("Players")  
 local ReplicatedStorage = game:GetService("ReplicatedStorage")  
 local RunService = game:GetService("RunService")  
@@ -2492,47 +2491,48 @@ local function tpBehind(hrp, targetHRP)
 end  
   
 -- Bắt remote để bật cooldown + xử lý TP mode  
-daggerRemote.OnClientEvent:Connect(function(action, ability)  
-    if action ~= "UseActorAbility" or ability ~= "Dagger" then return end  
-  
-    -- TP ngay lập tức nếu đang ở TP mode  
-    if _G.AimBackstab_Action == "TP" then  
-        local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")  
-        if hrp then  
-            task.spawn(function() -- non-blocking, chạy ngay  
-                local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")  
-                if not killersFolder then return end  
-                for _, killer in ipairs(killersFolder:GetChildren()) do  
-                    local kHRP = killer:FindFirstChild("HumanoidRootPart")  
-                    if kHRP and (hrp.Position - kHRP.Position).Magnitude <= _G.AimBackstab_Range then  
-                        tpBehind(hrp, kHRP)  
-                    end  
-                end  
-            end)  
-        end  
-    end  
-  
-    -- Delay 0.5s chỉ cho phần cooldown + notify  
-    task.delay(0, function()  
-        if not _G.AimBackstab_Enabled then return end  
-        if globalCooldown then return end  
-        globalCooldown = true  
-  
-        game.StarterGui:SetCore("SendNotification", {  
-            Title = "Backstab",  
-            Text = "Cooldown 30s...",  
-            Duration = 3  
-        })  
-  
-        task.delay(30, function()  
-            globalCooldown = false  
-            game.StarterGui:SetCore("SendNotification", {  
-                Title = "Backstab",  
-                Text = "Cooldown Ended!",  
-                Duration = 3  
-            })  
-        end)  
-    end)  
+-- Bắt remote để bật cooldown + xử lý TP mode
+daggerRemote.OnClientEvent:Connect(function(action, ability)
+    if action == "UseActorAbility" and ability == "Dagger" then
+        if not _G.AimBackstab_Enabled then return end
+        if globalCooldown then return end
+        globalCooldown = true
+
+        -- nếu đang ở TP mode thì đợi 0.1s rồi TP
+        if _G.AimBackstab_Action == "TP" then
+            task.delay(0, function() -- <--- thêm delay
+                local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+                    if killersFolder then
+                        for _, killer in ipairs(killersFolder:GetChildren()) do
+                            local kHRP = killer:FindFirstChild("HumanoidRootPart")
+                            if kHRP and (hrp.Position - kHRP.Position).Magnitude <= _G.AimBackstab_Range then
+                                tpBehind(hrp, kHRP)
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+
+        -- notify
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Backstab",
+            Text = "Cooldown 30s...",
+            Duration = 3
+        })
+
+        -- cooldown reset
+        task.delay(30, function()
+            globalCooldown = false
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Backstab",
+                Text = "Cooldown Ended!",
+                Duration = 3
+            })
+        end)
+    end
 end)
 
 -- Vòng lặp Aim
