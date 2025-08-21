@@ -2493,27 +2493,28 @@ end
 
 -- Bắt remote để bật cooldown + xử lý TP mode
 daggerRemote.OnClientEvent:Connect(function(action, ability)
-    task.delay(0.5, function() -- <--- delay ngay khi remote gọi
+    -- Nếu đang ở TP mode thì TP luôn
+    if action == "UseActorAbility" and ability == "Dagger" and _G.AimBackstab_Action == "TP" then
+        local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+            if killersFolder then
+                for _, killer in ipairs(killersFolder:GetChildren()) do
+                    local kHRP = killer:FindFirstChild("HumanoidRootPart")
+                    if kHRP and (hrp.Position - kHRP.Position).Magnitude <= _G.AimBackstab_Range then
+                        tpBehind(hrp, kHRP)
+                    end
+                end
+            end
+        end
+    end
+
+    -- Delay phần xử lý cooldown và notify 0.5s
+    task.delay(0.3, function()
         if action == "UseActorAbility" and ability == "Dagger" then
             if not _G.AimBackstab_Enabled then return end
             if globalCooldown then return end
             globalCooldown = true
-
-            -- nếu đang ở TP mode thì TP luôn (không cần delay thêm)
-            if _G.AimBackstab_Action == "TP" then
-                local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
-                    if killersFolder then
-                        for _, killer in ipairs(killersFolder:GetChildren()) do
-                            local kHRP = killer:FindFirstChild("HumanoidRootPart")
-                            if kHRP and (hrp.Position - kHRP.Position).Magnitude <= _G.AimBackstab_Range then
-                                tpBehind(hrp, kHRP)
-                            end
-                        end
-                    end
-                end
-            end
 
             -- notify
             game.StarterGui:SetCore("SendNotification", {
