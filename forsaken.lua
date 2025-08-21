@@ -2439,46 +2439,22 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local lp = Players.LocalPlayer
 
+-- Remote
 local daggerRemote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
 
+-- Config
 _G.AimBackstab_Enabled = false
-_G.AimBackstab_Mode = "Behind"
+_G.AimBackstab_Mode = "Behind" -- vẫn giữ dropdown cho Aim
 _G.AimBackstab_Range = 4
-_G.AimBackstab_Action = "Aim"
+_G.AimBackstab_Action = "Aim" -- hoặc "TP"
 
+-- cooldown
+local globalCooldown = false
 local tpCooldown = {}
-_G.CanBackstab = false
 
--- Track anim localplayer
-local validAnimIds = {
-    ["rbxassetid://86545133269813"] = true,
-    ["rbxassetid://89448354637442"] = true
-}
+-- UI (bạn giữ nguyên phần AddToggle / AddDropdown / AddInput / AddDropdown nhé)
 
-local function trackAnimations(char)
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    if not hum then return end
-    local animator = hum:FindFirstChildOfClass("Animator")
-    if not animator then return end
-
-    animator.AnimationPlayed:Connect(function(track)
-        if validAnimIds[track.Animation.AnimationId] then
-            _G.CanBackstab = true
-            -- khi anim dừng thì reset
-            track.Stopped:Connect(function()
-                _G.CanBackstab = false
-            end)
-        end
-    end)
-end
-
--- init
-if lp.Character then trackAnimations(lp.Character) end
-lp.CharacterAdded:Connect(function(c)
-    task.wait(1)
-    trackAnimations(c)
-end)
-
+-- Check hướng sau lưng (chỉ dùng cho Aim)
 local function isBehindTarget(hrp, targetHRP)
     local distance = (hrp.Position - targetHRP.Position).Magnitude
     if distance > _G.AimBackstab_Range then
@@ -2494,11 +2470,45 @@ local function isBehindTarget(hrp, targetHRP)
     end
 end
 
+-- Luôn TP ra sau killer
+local function tpBehind(hrp, targetHRP)
+    local backPos = targetHRP.CFrame * CFrame.new(0, 0, -(_G.AimBackstab_Range * 0.5))
+    hrp.CFrame = CFrame.new(backPos.Position, targetHRP.Position)
+end
+
+-- Lắng nghe remote để trigger TP
+daggerRemote.OnClientEvent:Connect(function(action, ability)
+    if action == "UseActorAbility" and ability == "Dagger" then
+        if not _G.AimBackstab_Enabled or _G.AimBackstab_Action ~= "TP" then return end
+        if globalCooldown then return end
+        globalCooldown = true
+
+        local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+
+        local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+        if not killersFolder then return end
+
+        for _, killer in ipairs(killersFolder:GetChildren()) do
+            local kHRP = killer:FindFirstChild("HumanoidRootPart")
+            if kHRP and (hrp.Position - kHRP.Position).Magnitude <= _G.AimBackstab_Range then
+                tpBehind(hrp, kHRP)
+            end
+        end
+
+        -- bật cooldown 30s
+        task.delay(30, function()
+            globalCooldown = false
+        end)
+    end
+end)
+
+-- Vòng lặp Aim
 RunService.Heartbeat:Connect(function()
-    if not _G.AimBackstab_Enabled or not _G.CanBackstab then return end
+    if not _G.AimBackstab_Enabled or _G.AimBackstab_Action ~= "Aim" then return end
+    if globalCooldown then return end
 
     if not lp.Character or lp.Character.Name ~= "TwoTime" then return end
-
     local hrp = lp.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
 
@@ -2508,24 +2518,17 @@ RunService.Heartbeat:Connect(function()
     for _, killer in ipairs(killersFolder:GetChildren()) do
         local kHRP = killer:FindFirstChild("HumanoidRootPart")
         if kHRP and isBehindTarget(hrp, kHRP) then
-            if _G.AimBackstab_Action == "Aim" then
-                local startTime = tick()
-                while tick() - startTime < 1 and _G.CanBackstab do
-                    if not hrp or not kHRP or not kHRP.Parent then break end
-                    local direction = (kHRP.Position - hrp.Position).Unit
-                    local yRot = math.atan2(-direction.X, -direction.Z)
-                    hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
-                    RunService.Heartbeat:Wait()
-                end
-            elseif _G.AimBackstab_Action == "TP" then  
-    -- Chỉ TP 1 lần mỗi khi vào range  
-    if not tpCooldown[killer] then  
-        -- luôn TP ra sau lưng killer, không phụ thuộc "Behind" hay "Around"
-        local backPos = kHRP.CFrame * CFrame.new(0, 0, -(_G.AimBackstab_Range * 0.5))  
-        hrp.CFrame = CFrame.new(backPos.Position, kHRP.Position)  
-        tpCooldown[killer] = true  
-    end  
-end
+            -- Aim trong 1s
+            local startTime = tick()
+            while tick() - startTime < 1 do
+                if not hrp or not kHRP or not kHRP.Parent then break end
+                local direction = (kHRP.Position - hrp.Position).Unit
+                local yRot = math.atan2(-direction.X, -direction.Z)
+                hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
+                RunService.Heartbeat:Wait()
+            end
+        end
+    end
 end)
 
 Main3Group:AddToggle("AimBackstabToggle", {
