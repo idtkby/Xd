@@ -2655,8 +2655,8 @@ Main3Group:AddDropdown("AimBackstabAction", {
 
 local Main3o5Group = Tabs.Tab2:AddLeftTabbox()
 
-local M305One = Main3o5Group:AddTab("--== Killer: [ Noli ]")
-M305one:AddDivider()
+local M305One = Main3o5Group:AddTab("Killer: [ Noli ]")
+M305One:AddDivider()
 
 local VoidRushController = {}
 
