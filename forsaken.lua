@@ -2268,7 +2268,7 @@ RunService.Heartbeat:Connect(function()
 end)
 
 -- Toggle trong tab M205Two
-M205Two:AddToggle("JohnDoeAnim", {
+M205One:AddToggle("JohnDoeAnim", {
     Text = "John Doe Anim [Beta]",
     Default = false,
     Callback = function(v)
