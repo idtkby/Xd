@@ -2194,6 +2194,7 @@ local AttackReplace = {
     ["rbxassetid://119462383658044"] = true,
     ["rbxassetid://116618003477002"] = true,
     ["rbxassetid://87259391926321"]  = true,
+    ["rbxassetid://93069721274110"] = true,
 }
 
 -- ===== Internals =====
@@ -2232,19 +2233,17 @@ local function chooseState(hum)
     local spd = hum.MoveDirection.Magnitude * hum.WalkSpeed
     local state = "Idle"
 
+    -- ngưỡng chuẩn
     if spd > 13 then
         state = "Run"
     elseif spd > 0.1 then
         state = "Walk"
     end
 
-    -- nếu đang Run mà speed tụt >=2 so với frame trước → ép xuống Walk
+    -- override theo chênh lệch
     if currentState == "Run" and (lastSpeed - spd) >= 2 then
         state = "Walk"
-    end
-
-    -- nếu đang Walk mà speed tăng vượt ngưỡng → ép sang Run
-    if currentState == "Walk" and spd > 13 then
+    elseif currentState == "Walk" and spd > 13 then
         state = "Run"
     end
 
