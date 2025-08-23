@@ -29,11 +29,7 @@ task.wait(1) -- Đợi 1s trước khi thực thi
 
 
 
-task.spawn(function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Forsaken/main/Hitboxfunction"))()
-wait(2)
-getgenv().RV = 0
-end)
+
 
 task.spawn(function()
 -- Break maxstamina Loop (standalone version)
@@ -1083,6 +1079,14 @@ M105One:AddLabel("40< Safe [90% if not reported]")
 local M105Two = Main1o5Group:AddTab("--== Hitbox ==--")
 
 M105Two:AddDivider()
+M105Two:AddLabel("Note: Game hitbox will not work properly when Load hitbox script, so if load you can only use hitbox input")
+M105Two:AddButton("Load Hitbox", function()
+task.spawn(function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Forsaken/main/Hitboxfunction"))()
+wait(2)
+getgenv().RV = 0
+end)
+end)
 
 
 _G.RV_Survivor = 0
