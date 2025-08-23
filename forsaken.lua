@@ -2074,58 +2074,100 @@ end)
 
 M205One:AddDivider()
 
-local targetName = "LastSurvivor"
-local targetId = "rbxassetid://130101085745481"
+M205One:AddLabel("Last Mans Standing Sound")
 
-M205One:AddButton({
-    Text = "diva vs ghoul lms",
-    Func = function()
-        for _, snd in ipairs(workspace:GetDescendants()) do
-            if snd:IsA("Sound") and snd.Name == targetName then
-                if snd.SoundId ~= targetId then
-                    local wasPlaying = snd.IsPlaying
-                    local timePos = snd.TimePosition
-                    snd.SoundId = targetId
-                    snd.TimePosition = timePos -- giữ nguyên thời điểm phát
-                    if wasPlaying then
-                        snd:Play()
-                    end
-                end
+local targetName = "LastSurvivor"
+
+-- Danh sách sound để chọn
+local soundLibrary = {
+    ["Burnout"] = "130101085745481",
+    ["Plead"]   = "80564889711353",
+}
+
+-- Mặc định chọn Burnout
+_G.LastSoundLoop = false
+_G.LastSoundChoice = "Burnout"
+
+-- Hàm đổi sound
+local function switchSound(id)
+    for _, snd in ipairs(workspace:GetDescendants()) do
+        if snd:IsA("Sound") and snd.Name == targetName then
+            if snd.SoundId ~= "rbxassetid://"..id then
+                local wasPlaying = snd.IsPlaying
+                local timePos = snd.TimePosition
+                snd.SoundId = "rbxassetid://"..id
+                snd.TimePosition = timePos
+                if wasPlaying then snd:Play() end
             end
+        end
+    end
+end
+
+-- Button đổi ngay lập tức
+M205One:AddButton({
+    Text = "Switch Once",
+    Func = function()
+        local id = soundLibrary[_G.LastSoundChoice]
+        if id then
+            switchSound(id)
         end
     end
 })
 
-local targetName = "LastSurvivor"
-local targetId = "rbxassetid://130101085745481"
-
-_G.LastSoundLoop = false
-
+-- Toggle đổi liên tục
 M205One:AddToggle("LastSound", {
-    Text = "diva vs ghoul lms",
+    Text = "Auto Switch",
     Default = false,
     Callback = function(Value)
         _G.LastSoundLoop = Value
         if Value then
             task.spawn(function()
-                while _G.LastSoundLoop do
-                    for _, snd in ipairs(workspace:GetDescendants()) do
-                        if snd:IsA("Sound") and snd.Name == targetName then
-                            if snd.SoundId ~= targetId then
-                                local wasPlaying = snd.IsPlaying
-                                local timePos = snd.TimePosition
-                                snd.SoundId = targetId
-                                snd.TimePosition = timePos -- giữ vị trí phát
-                                if wasPlaying then
-                                    snd:Play()
-                                end
-                            end
-                        end
-                    end
-                    task.wait(0.3)
-                end
+                local targetName = "LastSurvivor"
+local trackedSounds = {}
+
+-- hook sẵn sound
+local function trackSound(snd)
+    if snd:IsA("Sound") and snd.Name == targetName then
+        trackedSounds[snd] = true
+        snd.Destroying:Connect(function() trackedSounds[snd] = nil end)
+    end
+end
+
+for _, d in ipairs(workspace:GetDescendants()) do
+    trackSound(d)
+end
+
+workspace.DescendantAdded:Connect(trackSound)
+
+-- loop giờ chỉ duyệt trackedSounds, nhẹ hơn rất nhiều
+while _G.LastSoundLoop do
+    local id = soundLibrary[_G.LastSoundChoice]
+    if id then
+        for snd in pairs(trackedSounds) do
+            if snd.SoundId ~= "rbxassetid://"..id then
+                local wasPlaying = snd.IsPlaying
+                local timePos = snd.TimePosition
+                snd.SoundId = "rbxassetid://"..id
+                snd.TimePosition = timePos
+                if wasPlaying then snd:Play() end
+            end
+        end
+    end
+    task.wait(0.3)
+end
             end)
         end
+    end
+})
+
+-- Dropdown chọn nhạc
+M205One:AddDropdown("LastSoundChoice", {
+    Values = {"Burnout","Plead"},
+    Default = 1,
+    Multi = false,
+    Text = "Choose Sound",
+    Callback = function(choice)
+        _G.LastSoundChoice = choice
     end
 })
 
