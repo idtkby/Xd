@@ -2230,34 +2230,29 @@ end
 local lastSpeed = 0
 
 local function chooseState(hum)
-if currentState == "Run" and (lastSpeed - spd) >= 2 then
-    state = "Walk"
-    return state, true -- báo là đổi tức thì
-elseif currentState == "Walk" and spd > 13 then
-    state = "Run"
-    return state, true
-end
-
-
     local spd = hum.MoveDirection.Magnitude * hum.WalkSpeed
-    local state = "Idle"
+    local state, instant = "Idle", false
 
-    -- ngưỡng chuẩn
     if spd > 13 then
         state = "Run"
     elseif spd > 0.1 then
         state = "Walk"
+    else
+        state = "Idle"
     end
 
-    -- override theo chênh lệch
+    -- force switch: nếu đang Run mà tụt >=2 speed thì về Walk ngay
     if currentState == "Run" and (lastSpeed - spd) >= 2 then
-        state = "Walk"
-    elseif currentState == "Walk" and spd > 13 then
-        state = "Run"
+        state, instant = "Walk", true
+    end
+
+    -- force switch: nếu đang Walk mà vượt 13 thì lên Run ngay
+    if currentState == "Walk" and spd > 13 then
+        state, instant = "Run", true
     end
 
     lastSpeed = spd
-    return state
+    return state, instant
 end
 
 local function applyLocomotion(animator, useJD, state, instant)
