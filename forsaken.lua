@@ -2074,7 +2074,7 @@ end)
 
 M205One:AddDivider()
 
-M205One:AddLabel("Last Mans Standing Sound")
+M205One:AddLabel("-= Last Mans Standing Sound =-")
 
 local targetName = "LastSurvivor"
 
@@ -2170,6 +2170,8 @@ M205One:AddDropdown("LastSoundChoice", {
         _G.LastSoundChoice = choice
     end
 })
+
+M205One:AddDivider()
 
 -- === Animation Loop ===
 local animationId = "75804462760596"
