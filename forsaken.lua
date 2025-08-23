@@ -2177,103 +2177,124 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local lp = Players.LocalPlayer
 
--- John Doe toggle state
-_G.JohnDoeAnim = false
+-- ===== Config =====
+_G.JohnDoeAnim = false -- Toggle
 
--- Anim IDs
-local Animations = {
-    Run = "rbxassetid://95204713031545",
+-- John Doe (custom)
+local JD = {
     Idle = "rbxassetid://91803931583310",
     Walk = "rbxassetid://113177639892418",
-    Attack = "rbxassetid://93069721274110"
+    Run  = "rbxassetid://95204713031545",
+    Attack = "rbxassetid://93069721274110",
 }
 
--- Attack IDs cần replace
+-- Các attack gốc cần replace -> JD.Attack
 local AttackReplace = {
-    ["rbxassetid://86545133269813"] = true,
+    ["rbxassetid://86545133269813"]  = true,
     ["rbxassetid://119462383658044"] = true,
     ["rbxassetid://116618003477002"] = true,
-    ["rbxassetid://87259391926321"] = true,
+    ["rbxassetid://87259391926321"]  = true,
 }
 
--- Helper: đổi AnimId
-local function replaceAnim(anim)
-    if not anim or not anim.AnimationId then return end
-    if AttackReplace[anim.AnimationId] then
-        anim.AnimationId = Animations.Attack
-        print("[Anim] Attack replaced ->", anim.AnimationId)
+-- ===== Internals =====
+local conns = {}
+local currentTrack
+local currentState = ""
+local refreshNow
+
+local animCache = {}
+local function getAnimation(id)
+    local a = animCache[id]
+    if not a or not a.Parent then
+        a = Instance.new("Animation")
+        a.AnimationId = id
+        animCache[id] = a
+    end
+    return a
+end
+
+local function stopTrack(track, fade)
+    if track and track.IsPlaying then
+        track:Stop(fade or 0.1)
     end
 end
 
--- Auto hook animation objects
-local function hookAnim(anim)
-    if not anim:IsA("Animation") then return end
-    anim:GetPropertyChangedSignal("AnimationId"):Connect(function()
-        if _G.JohnDoeAnim then
-            replaceAnim(anim)
+local function playTrack(animator, id, looped)
+    local anim = getAnimation(id)
+    local track = animator:LoadAnimation(anim)
+    track.Looped = looped and true or false
+    track:Play(0.1, 1, 1)
+    return track
+end
+
+local function chooseState(hum)
+    local spd = hum.MoveDirection.Magnitude * hum.WalkSpeed
+    if spd > 13 then return "Run"
+    elseif spd > 0.1 and spd <= 13 then return "Walk"
+    else return "Idle" end
+end
+
+local function applyLocomotion(animator, state)
+    local bank = JD
+    local targetId = bank[state]
+    if not targetId then return end
+    if currentTrack and currentTrack.IsPlaying then
+        local curAnim = currentTrack.Animation
+        if curAnim and curAnim.AnimationId == targetId then return end
+    end
+    stopTrack(currentTrack, 0.1)
+    currentTrack = playTrack(animator, targetId, true)
+end
+
+local function setupCharacter(char)
+    for _,c in pairs(conns) do pcall(function() c:Disconnect() end) end
+    table.clear(conns)
+    stopTrack(currentTrack); currentTrack = nil
+    currentState = ""
+
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local animator = char:FindFirstChildWhichIsA("Animator", true)
+    if not hum or not animator then return end
+
+    conns.animPlayed = animator.AnimationPlayed:Connect(function(track)
+        if not _G.JohnDoeAnim then return end
+        local a = track.Animation
+        if a and AttackReplace[a.AnimationId] then
+            stopTrack(track, 0)
+            local atk = playTrack(animator, JD.Attack, false)
+            pcall(function() atk.Priority = Enum.AnimationPriority.Action end)
         end
     end)
-    replaceAnim(anim)
-end
 
--- Hook all existing + future animations
-for _, d in ipairs(lp.Character:GetDescendants()) do
-    hookAnim(d)
-end
-lp.Character.DescendantAdded:Connect(hookAnim)
-
--- Loop update speed anim
-RunService.Heartbeat:Connect(function()
-    if not _G.JohnDoeAnim then return end
-    if not lp.Character then return end
-    local hum = lp.Character:FindFirstChildOfClass("Humanoid")
-    if not hum then return end
-
-    local speed = hum.MoveDirection.Magnitude * hum.WalkSpeed
-    local animator = lp.Character:FindFirstChildWhichIsA("Animator", true)
-    if not animator then return end
-
-    -- Xác định trạng thái
-    if speed > 25 then
-        -- Running
-        for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
-            if track.Animation and track.Animation.AnimationId ~= Animations.Run then
-                track:Stop()
-                track.Animation.AnimationId = Animations.Run
-                track:Play()
-                print("[Anim] Run ->", Animations.Run)
-            end
+    conns.hb = RunService.Heartbeat:Connect(function()
+        if not _G.JohnDoeAnim then return end
+        local st = chooseState(hum)
+        if st ~= currentState then
+            currentState = st
+            applyLocomotion(animator, currentState)
         end
-    elseif speed > 0 and speed <= 15 then
-        -- Walking
-        for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
-            if track.Animation and track.Animation.AnimationId ~= Animations.Walk then
-                track:Stop()
-                track.Animation.AnimationId = Animations.Walk
-                track:Play()
-                print("[Anim] Walk ->", Animations.Walk)
-            end
-        end
-    elseif speed < 1 then
-        -- Idle
-        for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
-            if track.Animation and track.Animation.AnimationId ~= Animations.Idle then
-                track:Stop()
-                track.Animation.AnimationId = Animations.Idle
-                track:Play()
-                print("[Anim] Idle ->", Animations.Idle)
-            end
+    end)
+
+    refreshNow = function()
+        if _G.JohnDoeAnim then
+            currentState = ""
+            local st = chooseState(hum)
+            applyLocomotion(animator, st)
+            currentState = st
         end
     end
-end)
+end
 
--- Toggle trong tab M205Two
+if lp.Character then setupCharacter(lp.Character) end
+conns.charAdded = lp.CharacterAdded:Connect(setupCharacter)
+
+-- UI
 M205One:AddToggle("JohnDoeAnim", {
     Text = "John Doe Anim [Beta]",
     Default = false,
     Callback = function(v)
         _G.JohnDoeAnim = v
-        print("John Doe Anim:", v)
+        if refreshNow then refreshNow() end
     end
 })
 
@@ -3684,6 +3705,9 @@ SaveManager:BuildConfigSection(Tabs["UI Settings"])
 ThemeManager:ApplyToTab(Tabs["UI Settings"])
 SaveManager:LoadAutoloadConfig() 
 
+
+
+
 local DevOnlyGroup = Tabs["UI Settings"]:AddLeftTabbox() -- hoặc :AddLeftTabbox()
 
 local Dotab = DevOnlyGroup:AddTab("=-= Dev Only =-=")
@@ -3700,6 +3724,16 @@ end
 Library:Notify("Checked User ✓", 5)
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/walkto"))()
 end)
+
+do
+    _G.speedLabel = DevOnlyGroup:AddLabel("Speed: 0")
+
+    game:GetService("RunService").Heartbeat:Connect(function()
+        local hrp = Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local speed = (hrp and math.floor(hrp.Velocity.Magnitude + 0.5)) or 0
+        _G.speedLabel:SetText("Speed: " .. speed)
+    end)
+end
 
 end)
 
