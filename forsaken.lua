@@ -2200,7 +2200,6 @@ local AttackReplace = {
 local conns = {}
 local currentTrack
 local currentState = ""
-local refreshNow
 
 local animCache = {}
 local function getAnimation(id)
@@ -2229,14 +2228,13 @@ end
 
 local function chooseState(hum)
     local spd = hum.MoveDirection.Magnitude * hum.WalkSpeed
-    if spd > 13 then return "Run"
-    elseif spd > 0.1 and spd <= 13 then return "Walk"
+    if spd > 12.2 then return "Run"
+    elseif spd > 0.1 and spd <= 12 then return "Walk"
     else return "Idle" end
 end
 
 local function applyLocomotion(animator, state)
-    local bank = JD
-    local targetId = bank[state]
+    local targetId = JD[state]
     if not targetId then return end
     if currentTrack and currentTrack.IsPlaying then
         local curAnim = currentTrack.Animation
@@ -2247,6 +2245,7 @@ local function applyLocomotion(animator, state)
 end
 
 local function setupCharacter(char)
+    -- clear old
     for _,c in pairs(conns) do pcall(function() c:Disconnect() end) end
     table.clear(conns)
     stopTrack(currentTrack); currentTrack = nil
@@ -2256,6 +2255,7 @@ local function setupCharacter(char)
     local animator = char:FindFirstChildWhichIsA("Animator", true)
     if not hum or not animator then return end
 
+    -- Attack replace
     conns.animPlayed = animator.AnimationPlayed:Connect(function(track)
         if not _G.JohnDoeAnim then return end
         local a = track.Animation
@@ -2266,6 +2266,7 @@ local function setupCharacter(char)
         end
     end)
 
+    -- Locomotion loop
     conns.hb = RunService.Heartbeat:Connect(function()
         if not _G.JohnDoeAnim then return end
         local st = chooseState(hum)
@@ -2275,26 +2276,29 @@ local function setupCharacter(char)
         end
     end)
 
-    refreshNow = function()
-        if _G.JohnDoeAnim then
-            currentState = ""
-            local st = chooseState(hum)
-            applyLocomotion(animator, st)
-            currentState = st
-        end
+    -- nếu toggle đang bật khi respawn → kích hoạt lại ngay
+    if _G.JohnDoeAnim then
+        currentState = ""
+        local st = chooseState(hum)
+        applyLocomotion(animator, st)
+        currentState = st
     end
 end
 
+-- init + respawn
 if lp.Character then setupCharacter(lp.Character) end
-conns.charAdded = lp.CharacterAdded:Connect(setupCharacter)
+lp.CharacterAdded:Connect(setupCharacter)
 
--- UI
+-- ===== UI =====
 M205One:AddToggle("JohnDoeAnim", {
     Text = "John Doe Anim [Beta]",
     Default = false,
     Callback = function(v)
         _G.JohnDoeAnim = v
-        if refreshNow then refreshNow() end
+        -- bật lại thì refresh anim ngay
+        if v and lp.Character then
+            setupCharacter(lp.Character)
+        end
     end
 })
 
