@@ -80,7 +80,7 @@ InfoTab:CreateParagraph({
 
 InfoTab:CreateParagraph({
 	Title = "[NOLI🎭] Forsaken",
-	Content = "[+] Esp, etc\n-- Version 1.0.0 --",
+	Content = "[+] Add anti tab\n[+] Upgrade twotime tab [Aimbot Dagger]\n-- Version 1.1.0 --",
 })
 
 InfoTab:CreateSection("GameHub")
