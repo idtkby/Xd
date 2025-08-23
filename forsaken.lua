@@ -2226,33 +2226,67 @@ local function playTrack(animator, id, looped)
     return track
 end
 
-local lastSpeed = 0
+local UserInputService = game:GetService("UserInputService")
 
+_G.JohnDoeAnim = false
+_G.RunLocked = true -- mặc định lock run
+
+-- === sửa chooseState ===
 local function chooseState(hum)
     local spd = hum.MoveDirection.Magnitude * hum.WalkSpeed
     local state, instant = "Idle", false
 
-    if spd > 13 then
-        state = "Run"
-    elseif spd > 0.1 then
-        state = "Walk"
+    -- nếu Run đang lock thì chỉ cho phép Idle/Walk
+    if not _G.RunLocked then
+        if spd > 13 then
+            state = "Run"
+        elseif spd > 0.1 then
+            state = "Walk"
+        else
+            state = "Idle"
+        end
     else
-        state = "Idle"
+        if spd > 0.1 then
+            state = "Walk"
+        else
+            state = "Idle"
+        end
     end
 
-    -- force switch: nếu đang Run mà tụt >=2 speed thì về Walk ngay
-    if currentState == "Run" and (lastSpeed - spd) >= 2 then
+    -- force switch khi tụt speed nhanh (nếu run ko lock)
+    if not _G.RunLocked and currentState == "Run" and (lastSpeed - spd) >= 2 then
         state, instant = "Walk", true
     end
-
-    -- force switch: nếu đang Walk mà vượt 13 thì lên Run ngay
-    if currentState == "Walk" and spd > 13 then
+    if not _G.RunLocked and currentState == "Walk" and spd > 13 then
         state, instant = "Run", true
     end
 
     lastSpeed = spd
     return state, instant
 end
+
+-- === Mobile: toggle khi click SprintingButton ===
+local sprintBtn = lp:WaitForChild("PlayerGui"):WaitForChild("MainUI"):WaitForChild("SprintingButton")
+sprintBtn.MouseButton1Click:Connect(function()
+    _G.RunLocked = not _G.RunLocked
+    warn("RunLocked =", _G.RunLocked and "LOCKED" or "UNLOCKED")
+end)
+
+-- === PC: toggle khi nhấn Shift ===
+UserInputService.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.KeyCode == Enum.KeyCode.LeftShift then
+        _G.RunLocked = not _G.RunLocked
+        warn("RunLocked =", _G.RunLocked and "LOCKED" or "UNLOCKED")
+    end
+-- init + respawn
+if lp.Character then setupCharacter(lp.Character) end
+lp.CharacterAdded:Connect(function(char)
+    _G.RunLocked = true -- reset về lock mỗi lần respawn
+    warn("Respawn → RunLocked = LOCKED")
+    setupCharacter(char)
+end)
+end)
 
 local function applyLocomotion(animator, useJD, state, instant)
     local bank = useJD and JD or DEF
