@@ -2895,6 +2895,83 @@ Main4Group:AddSlider("PopupDelaySlider", {
 })
 
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local lp = Players.LocalPlayer
+
+-- Config
+_G.AntiTwoTimeBackstab = false
+
+-- Anim ID cần track
+local backstabAnims = {
+    ["86545133269813"] = true,
+    ["89448354637442"] = true
+}
+
+-- Hàm check phía sau lưng
+local function isBehindMe(myHRP, targetHRP)
+    local look = myHRP.CFrame.LookVector
+    local toTarget = (targetHRP.Position - myHRP.Position)
+    return look:Dot(toTarget) > 0 and toTarget.Magnitude <= 10
+end
+
+-- Hàm quay aim vào target 0.3s
+local function aimAtTarget(myHRP, targetHRP)
+    local start = tick()
+    while tick() - start < 0.3 do
+        if not myHRP or not targetHRP or not targetHRP.Parent then break end
+        local dir = (targetHRP.Position - myHRP.Position).Unit
+        local yRot = math.atan2(-dir.X, -dir.Z)
+        myHRP.CFrame = CFrame.new(myHRP.Position) * CFrame.Angles(0, yRot, 0)
+        RunService.Heartbeat:Wait()
+    end
+end
+
+-- Track anim của TwoTime
+local function trackTwoTime(twoTimeChar)
+    local hum = twoTimeChar:FindFirstChildOfClass("Humanoid")
+    if not hum then return end
+    hum.AnimationPlayed:Connect(function(track)
+        if not _G.AntiTwoTimeBackstab then return end
+        if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
+        if lp.Character.Name ~= "Killer" then return end -- chỉ chạy nếu là killer
+
+        local myHRP = lp.Character.HumanoidRootPart
+        local targetHRP = twoTimeChar:FindFirstChild("HumanoidRootPart")
+        if not targetHRP then return end
+
+        local animId = track.Animation.AnimationId:match("%d+")
+        if backstabAnims[animId] and isBehindMe(myHRP, targetHRP) then
+            aimAtTarget(myHRP, targetHRP)
+        end
+    end)
+end
+
+-- Khi có TwoTime spawn
+Players.PlayerAdded:Connect(function(plr)
+    plr.CharacterAdded:Connect(function(char)
+        if char.Name == "TwoTime" then
+            trackTwoTime(char)
+        end
+    end)
+end)
+
+-- Với TwoTime đã có sẵn
+for _, plr in ipairs(Players:GetPlayers()) do
+    if plr.Character and plr.Character.Name == "TwoTime" then
+        trackTwoTime(plr.Character)
+    end
+end
+
+-- Toggle GUI
+Main4Group:AddToggle("AntiTwoTimeBackstab", {
+    Text = "Anti TwoTime Backstab",
+    Default = false,
+    Callback = function(v)
+        _G.AntiTwoTimeBackstab = v
+    end
+})
+
+local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local Survivors = workspace:WaitForChild("Players"):WaitForChild("Survivors")
