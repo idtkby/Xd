@@ -1505,6 +1505,19 @@ Main2Group:AddToggle("EspBuildermanSentry", {
 	end
 })
 
+Main2Group:AddToggle("EspDIGITALFOOTPRINT", {
+	Text = "ESP JohnDoe Trap",
+	Default = false,
+	Callback = function(v)
+		_G.EspDIGITALFOOTPRINT = v
+		if v then
+			task.spawn(function()
+				HandleESP("Shadow", Color3.fromRGB(255,0,255), "Digital Footprint", "EspDIGITALFOOTPRINT")
+			end)
+		end
+	end
+})
+
 Main2Group:AddDivider()
 
 local Players = game:GetService("Players")
