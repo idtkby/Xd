@@ -2226,11 +2226,30 @@ local function playTrack(animator, id, looped)
     return track
 end
 
+local lastSpeed = 0
+
 local function chooseState(hum)
     local spd = hum.MoveDirection.Magnitude * hum.WalkSpeed
-    if spd > 12.2 then return "Run"
-    elseif spd > 0.1 and spd <= 12 then return "Walk"
-    else return "Idle" end
+    local state = "Idle"
+
+    if spd > 13 then
+        state = "Run"
+    elseif spd > 0.1 then
+        state = "Walk"
+    end
+
+    -- nếu đang Run mà speed tụt >=2 so với frame trước → ép xuống Walk
+    if currentState == "Run" and (lastSpeed - spd) >= 2 then
+        state = "Walk"
+    end
+
+    -- nếu đang Walk mà speed tăng vượt ngưỡng → ép sang Run
+    if currentState == "Walk" and spd > 13 then
+        state = "Run"
+    end
+
+    lastSpeed = spd
+    return state
 end
 
 local function applyLocomotion(animator, state)
@@ -2257,14 +2276,18 @@ local function setupCharacter(char)
 
     -- Attack replace
     conns.animPlayed = animator.AnimationPlayed:Connect(function(track)
-        if not _G.JohnDoeAnim then return end
-        local a = track.Animation
-        if a and AttackReplace[a.AnimationId] then
-            stopTrack(track, 0)
-            local atk = playTrack(animator, JD.Attack, false)
-            pcall(function() atk.Priority = Enum.AnimationPriority.Action end)
-        end
-    end)
+    if not _G.JohnDoeAnim then return end
+    local a = track.Animation
+    if a and AttackReplace[a.AnimationId] then
+        -- disable track gốc thay vì chỉ stop (đỡ bị game play lại)
+        track:AdjustSpeed(0)
+        track:Stop(0)
+
+        local atk = playTrack(animator, JD.Attack, false)
+        pcall(function() atk.Priority = Enum.AnimationPriority.Action end)
+        atk:Play(0.05, 1, 1)
+    end
+end)
 
     -- Locomotion loop
     conns.hb = RunService.Heartbeat:Connect(function()
