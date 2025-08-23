@@ -2601,7 +2601,7 @@ RunService.Heartbeat:Connect(function()
 end)
 
 Main3Group:AddToggle("AimBackstabToggle", {
-    Text = "Auto Aim/TP Backstab",
+    Text = "Aimbot Dagger",
     Default = false,
     Callback = function(v)
         _G.AimBackstab_Enabled = v
