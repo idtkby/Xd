@@ -2878,19 +2878,32 @@ end
 
 local function hookSound(sound)
     if soundHooks[sound] then return end
-    local playedConn = sound.Played:Connect(function() attemptError404ForSound(sound) end)
-    local propConn = sound:GetPropertyChangedSignal("IsPlaying"):Connect(function()
-        if sound.IsPlaying then attemptError404ForSound(sound) end
+    local connections = {}
+
+    connections.playedConn = sound.Played:Connect(function()
+        attemptError404ForSound(sound)
     end)
-    local destroyConn = sound.Destroying:Connect(function()
-        playedConn:Disconnect()
-        propConn:Disconnect()
-        destroyConn:Disconnect()
+
+    connections.propConn = sound:GetPropertyChangedSignal("IsPlaying"):Connect(function()
+        if sound.IsPlaying then
+            attemptError404ForSound(sound)
+        end
+    end)
+
+    connections.destroyConn = sound.Destroying:Connect(function()
+        for _, conn in pairs(connections) do
+            if conn.Connected then
+                conn:Disconnect()
+            end
+        end
         soundHooks[sound] = nil
         soundTriggeredUntil[sound] = nil
     end)
+
     soundHooks[sound] = true
-    if sound.IsPlaying then attemptError404ForSound(sound) end
+    if sound.IsPlaying then
+        attemptError404ForSound(sound)
+    end
 end
 
 -- Hook existing + future sounds
@@ -3045,76 +3058,132 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local lp = Players.LocalPlayer
 
--- Config
+-- Toggle
 _G.AntiTwoTimeBackstab = false
 
--- Anim ID cần track
-local backstabAnims = {
+-- Anim IDs cần track
+local BACKSTAB_ANIMS = {
     ["86545133269813"] = true,
-    ["89448354637442"] = true
+    ["89448354637442"] = true,
 }
 
--- Hàm check phía sau lưng
-local function isBehindMe(myHRP, targetHRP)
-    local look = myHRP.CFrame.LookVector
-    local toTarget = (targetHRP.Position - myHRP.Position)
-    return look:Dot(toTarget) > 0 and toTarget.Magnitude <= 10
+-- Utils
+local function getHRP(model)
+    return model and model:FindFirstChild("HumanoidRootPart")
 end
 
--- Hàm quay aim vào target 0.3s
-local function aimAtTarget(myHRP, targetHRP)
-    local start = tick()
-    while tick() - start < 0.3 do
+local function isLocalKiller()
+    local ch = lp.Character
+    return ch and ch.Parent and ch.Parent.Name == "Killers"
+end
+
+-- target ở PHÍA SAU lưng localp & trong 10 studs
+local function isBehindLocalWithin10(myHRP, targetHRP)
+    if not myHRP or not targetHRP then return false end
+    local toTarget = targetHRP.Position - myHRP.Position
+    -- dot < 0 => ở phía sau
+    return myHRP.CFrame.LookVector:Dot(toTarget) < 0 and toTarget.Magnitude <= 10
+end
+
+-- Aim 0.3s vào target
+local function aimAtTarget0p3s(myHRP, targetHRP)
+    local t0 = tick()
+    while tick() - t0 < 0.3 do
         if not myHRP or not targetHRP or not targetHRP.Parent then break end
         local dir = (targetHRP.Position - myHRP.Position).Unit
-        local yRot = math.atan2(-dir.X, -dir.Z)
-        myHRP.CFrame = CFrame.new(myHRP.Position) * CFrame.Angles(0, yRot, 0)
+        local y = math.atan2(-dir.X, -dir.Z)
+        myHRP.CFrame = CFrame.new(myHRP.Position) * CFrame.Angles(0, y, 0)
         RunService.Heartbeat:Wait()
     end
 end
 
--- Track anim của TwoTime
-local function trackTwoTime(twoTimeChar)
-    local hum = twoTimeChar:FindFirstChildOfClass("Humanoid")
-    if not hum then return end
-    hum.AnimationPlayed:Connect(function(track)
-        if not _G.AntiTwoTimeBackstab then return end
-        if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
-        if lp.Character.Name ~= "Killer" then return end -- chỉ chạy nếu là killer
+-- Lấy TwoTime gần nhất đang ở phía sau & trong 10 studs
+local function getNearestTwoTimeBehindWithin10(myHRP)
+    local survivors = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Survivors")
+    if not survivors or not myHRP then return nil end
 
-        local myHRP = lp.Character.HumanoidRootPart
-        local targetHRP = twoTimeChar:FindFirstChild("HumanoidRootPart")
-        if not targetHRP then return end
-
-        local animId = track.Animation.AnimationId:match("%d+")
-        if backstabAnims[animId] and isBehindMe(myHRP, targetHRP) then
-            aimAtTarget(myHRP, targetHRP)
+    local nearest, bestDist = nil, math.huge
+    for _, m in ipairs(survivors:GetChildren()) do
+        if m.Name == "TwoTime" then
+            local hrp = getHRP(m)
+            if hrp and isBehindLocalWithin10(myHRP, hrp) then
+                local d = (hrp.Position - myHRP.Position).Magnitude
+                if d < bestDist then
+                    bestDist, nearest = d, m
+                end
+            end
         end
-    end)
+    end
+    return nearest
 end
 
--- Khi có TwoTime spawn
-Players.PlayerAdded:Connect(function(plr)
-    plr.CharacterAdded:Connect(function(char)
-        if char.Name == "TwoTime" then
-            trackTwoTime(char)
-        end
-    end)
-end)
+-- Kết nối theo dõi AnimationPlayed cho một model TwoTime
+local function hookTwoTimeChar(twoChar)
+    local hum = twoChar:FindFirstChildOfClass("Humanoid")
+    if not hum then return end
 
--- Với TwoTime đã có sẵn
-for _, plr in ipairs(Players:GetPlayers()) do
-    if plr.Character and plr.Character.Name == "TwoTime" then
-        trackTwoTime(plr.Character)
+    local function onPlayed(track)
+        if not _G.AntiTwoTimeBackstab then return end
+        if not isLocalKiller() then return end
+
+        local animId = track and track.Animation and track.Animation.AnimationId and track.Animation.AnimationId:match("%d+")
+        if not animId or not BACKSTAB_ANIMS[animId] then return end
+
+        local myHRP = getHRP(lp.Character)
+        local targetHRP = getHRP(twoChar)
+        if not myHRP or not targetHRP then return end
+
+        -- chỉ aim nếu đúng là TwoTime gần nhất ở phía sau trong 10 studs
+        local nearest = getNearestTwoTimeBehindWithin10(myHRP)
+        if nearest == twoChar then
+            aimAtTarget0p3s(myHRP, targetHRP)
+        end
+    end
+
+    -- Bắt ở Humanoid.AnimationPlayed (nếu có) và Animator.AnimationPlayed cho chắc
+    if hum.AnimationPlayed then
+        hum.AnimationPlayed:Connect(onPlayed)
+    end
+    local animator = hum:FindFirstChildOfClass("Animator") or hum:FindFirstChild("Animator")
+    if animator and animator.AnimationPlayed then
+        animator.AnimationPlayed:Connect(onPlayed)
     end
 end
 
--- Toggle GUI
+-- Hook các TwoTime hiện có
+local function hookAllExistingTwoTimes()
+    local survivors = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Survivors")
+    if not survivors then return end
+    for _, m in ipairs(survivors:GetChildren()) do
+        if m.Name == "TwoTime" then
+            hookTwoTimeChar(m)
+        end
+    end
+end
+
+-- Theo dõi TwoTime mới xuất hiện
+local function listenTwoTimeSpawns()
+    local survivors = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Survivors")
+    if not survivors then return end
+    survivors.ChildAdded:Connect(function(m)
+        if m.Name == "TwoTime" then
+            -- đợi Humanoid/Animator sẵn sàng
+            task.wait(0.2)
+            hookTwoTimeChar(m)
+        end
+    end)
+end
+
+-- UI toggle
 Main4Group:AddToggle("AntiTwoTimeBackstab", {
     Text = "Anti TwoTime Backstab",
     Default = false,
     Callback = function(v)
         _G.AntiTwoTimeBackstab = v
+        if v then
+            hookAllExistingTwoTimes()
+            listenTwoTimeSpawns()
+        end
     end
 })
 
