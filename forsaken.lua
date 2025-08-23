@@ -2173,6 +2173,110 @@ M205One:AddDropdown("LastSoundChoice", {
 
 M205One:AddDivider()
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local lp = Players.LocalPlayer
+
+-- John Doe toggle state
+_G.JohnDoeAnim = false
+
+-- Anim IDs
+local Animations = {
+    Run = "rbxassetid://95204713031545",
+    Idle = "rbxassetid://91803931583310",
+    Walk = "rbxassetid://113177639892418",
+    Attack = "rbxassetid://93069721274110"
+}
+
+-- Attack IDs cần replace
+local AttackReplace = {
+    ["rbxassetid://86545133269813"] = true,
+    ["rbxassetid://119462383658044"] = true,
+    ["rbxassetid://116618003477002"] = true,
+    ["rbxassetid://87259391926321"] = true,
+}
+
+-- Helper: đổi AnimId
+local function replaceAnim(anim)
+    if not anim or not anim.AnimationId then return end
+    if AttackReplace[anim.AnimationId] then
+        anim.AnimationId = Animations.Attack
+        print("[Anim] Attack replaced ->", anim.AnimationId)
+    end
+end
+
+-- Auto hook animation objects
+local function hookAnim(anim)
+    if not anim:IsA("Animation") then return end
+    anim:GetPropertyChangedSignal("AnimationId"):Connect(function()
+        if _G.JohnDoeAnim then
+            replaceAnim(anim)
+        end
+    end)
+    replaceAnim(anim)
+end
+
+-- Hook all existing + future animations
+for _, d in ipairs(lp.Character:GetDescendants()) do
+    hookAnim(d)
+end
+lp.Character.DescendantAdded:Connect(hookAnim)
+
+-- Loop update speed anim
+RunService.Heartbeat:Connect(function()
+    if not _G.JohnDoeAnim then return end
+    if not lp.Character then return end
+    local hum = lp.Character:FindFirstChildOfClass("Humanoid")
+    if not hum then return end
+
+    local speed = hum.MoveDirection.Magnitude * hum.WalkSpeed
+    local animator = lp.Character:FindFirstChildWhichIsA("Animator", true)
+    if not animator then return end
+
+    -- Xác định trạng thái
+    if speed > 25 then
+        -- Running
+        for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+            if track.Animation and track.Animation.AnimationId ~= Animations.Run then
+                track:Stop()
+                track.Animation.AnimationId = Animations.Run
+                track:Play()
+                print("[Anim] Run ->", Animations.Run)
+            end
+        end
+    elseif speed > 0 and speed <= 15 then
+        -- Walking
+        for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+            if track.Animation and track.Animation.AnimationId ~= Animations.Walk then
+                track:Stop()
+                track.Animation.AnimationId = Animations.Walk
+                track:Play()
+                print("[Anim] Walk ->", Animations.Walk)
+            end
+        end
+    elseif speed < 1 then
+        -- Idle
+        for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+            if track.Animation and track.Animation.AnimationId ~= Animations.Idle then
+                track:Stop()
+                track.Animation.AnimationId = Animations.Idle
+                track:Play()
+                print("[Anim] Idle ->", Animations.Idle)
+            end
+        end
+    end
+end)
+
+-- Toggle trong tab M205Two
+M205Two:AddToggle("JohnDoeAnim", {
+    Text = "John Doe Anim [Beta]",
+    Default = false,
+    Callback = function(v)
+        _G.JohnDoeAnim = v
+        print("John Doe Anim:", v)
+    end
+})
+
 -- === Animation Loop ===
 local animationId = "75804462760596"
 local animationSpeed = 0
