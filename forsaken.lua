@@ -1079,7 +1079,10 @@ M105One:AddLabel("40< Safe [90% if not reported]")
 local M105Two = Main1o5Group:AddTab("--== Hitbox ==--")
 
 M105Two:AddDivider()
-M105Two:AddLabel("Note: Game hitbox will not work properly when Load hitbox script, so if load you can only use hitbox input")
+M105Two:AddButton("Loadhitbox Note", function()
+Library:Notify("Game hitbox will not work properly when Load hitbox script, so if load you can only use hitbox input", 30)
+end)
+
 M105Two:AddButton("Load Hitbox", function()
 task.spawn(function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Forsaken/main/Hitboxfunction"))()
