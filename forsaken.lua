@@ -1979,6 +1979,12 @@ _G.EspHealth = Value
     end
 })
 
+
+
+
+
+
+
 local Main2o5Group = Tabs.Tab:AddRightTabbox() -- hoặc :AddLeftTabbox()
 
 local M205One = Main2o5Group:AddTab("--= Misc =--")
@@ -2533,20 +2539,12 @@ daggerRemote.OnClientEvent:Connect(function(action, ability)
         end
 
         -- notify
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Backstab",
-            Text = "Cooldown 30s...",
-            Duration = 3
-        })
+        Library:Notify("Cooldown 30s", 5)
 
         -- cooldown reset
         task.delay(30, function()
             globalCooldown = false
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Backstab",
-                Text = "Cooldown Ended!",
-                Duration = 3
-            })
+            Library:Notify("Cooldown Ended", 5)
         end)
     end
 end)
@@ -2644,8 +2642,21 @@ Main3Group:AddDropdown("AimBackstabAction", {
 })
 
 
-Main3Group:AddDivider()
-Main3Group:AddLabel("--== Killer: [ Noli ] ==--")
+
+
+
+
+
+
+
+
+
+
+
+local Main3o5Group = Tabs.Tab2:AddLeftTabbox("-=< Main 02 >=-")
+
+local M305one = Main3o5Group:AddTab("--== Killer: [ Noli ]")
+M305One:AddDivider()
 
 local VoidRushController = {}
 
@@ -2766,7 +2777,7 @@ function VoidRushController:CheckVoidRush()
 end
 
 -- GUI toggle (ObsidianLib)
-Main3Group:AddToggle("VoidRushToggle", {
+M305one:AddToggle("VoidRushToggle", {
     Text = "Void Rush [ ez to change direction ]",
     Default = false,
     Callback = function(value)
@@ -2779,6 +2790,122 @@ Main3Group:AddToggle("VoidRushToggle", {
     end,
 })
 
+local M305Two = Main3o5Group:AddTab("[ John Doe ]")
+M305Two:AddDivider()
+
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+
+-- Vars
+local autoErrorEnabled = false
+local detectionRange = 14
+local soundHooks = {}
+local soundTriggeredUntil = {}
+
+-- Trigger sounds
+local autoErrorTriggerSounds = {
+    ["86710781315432"] = true,
+    ["99820161736138"] = true,
+    ["609342351"] = true,
+    ["81976396729343"] = true,
+    ["12222225"] = true,
+    ["80521472651047"] = true,
+    ["139012439429121"] = true,
+    ["91194698358028"] = true,
+    ["111910850942168"] = true,
+    ["83851356262523"] = true,
+}
+
+-- Helpers
+local function extractNumericSoundId(sound)
+    if not sound or not sound.SoundId then return nil end
+    return tostring(sound.SoundId):match("%d+")
+end
+
+local function getSoundWorldPosition(sound)
+    if sound.Parent and sound.Parent:IsA("BasePart") then
+        return sound.Parent.Position
+    elseif sound.Parent and sound.Parent:IsA("Attachment") and sound.Parent.Parent:IsA("BasePart") then
+        return sound.Parent.Parent.Position
+    end
+    local found = sound.Parent and sound.Parent:FindFirstChildWhichIsA("BasePart", true)
+    if found then return found.Position end
+    return nil
+end
+
+local function attemptError404ForSound(sound)
+    if not autoErrorEnabled then return end
+    if not sound or not sound:IsA("Sound") or not sound.IsPlaying then return end
+
+    local id = extractNumericSoundId(sound)
+    if not id or not autoErrorTriggerSounds[id] then return end
+
+    local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+    if not myRoot then return end
+
+    if soundTriggeredUntil[sound] and tick() < soundTriggeredUntil[sound] then return end
+
+    local pos = getSoundWorldPosition(sound)
+    local shouldTrigger = (not pos) or ((myRoot.Position - pos).Magnitude <= detectionRange)
+
+    if shouldTrigger then
+        warn("[AUTO ERROR 404] Triggered for Sound ID:", id)
+        local args = {"UseActorAbility","404Error"}
+        game:GetService("ReplicatedStorage"):WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+        soundTriggeredUntil[sound] = tick() + 1.2
+    end
+end
+
+local function hookSound(sound)
+    if soundHooks[sound] then return end
+    local playedConn = sound.Played:Connect(function() attemptError404ForSound(sound) end)
+    local propConn = sound:GetPropertyChangedSignal("IsPlaying"):Connect(function()
+        if sound.IsPlaying then attemptError404ForSound(sound) end
+    end)
+    local destroyConn = sound.Destroying:Connect(function()
+        playedConn:Disconnect()
+        propConn:Disconnect()
+        destroyConn:Disconnect()
+        soundHooks[sound] = nil
+        soundTriggeredUntil[sound] = nil
+    end)
+    soundHooks[sound] = true
+    if sound.IsPlaying then attemptError404ForSound(sound) end
+end
+
+-- Hook existing + future sounds
+for _, s in ipairs(game:GetDescendants()) do
+    if s:IsA("Sound") then hookSound(s) end
+end
+game.DescendantAdded:Connect(function(d)
+    if d:IsA("Sound") then hookSound(d) end
+end)
+
+
+-- Toggle auto error
+M305Two:AddToggle("Auto404", {
+    Text = "Auto Error 404 Parry",
+    Default = false,
+    Callback = function(Value)
+        autoErrorEnabled = Value
+    end
+})
+
+-- Input detection range
+M305Two:AddInput("Range404", {
+    Text = "Detection Range",
+    Default = "14",
+    Numeric = true,
+    Finished = true,
+    Callback = function(val)
+        local num = tonumber(val)
+        if num and num > 0 then
+            detectionRange = num
+        else
+            detectionRange = 14
+        end
+    end
+})
 
 
 
