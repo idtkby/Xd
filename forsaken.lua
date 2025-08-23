@@ -2653,9 +2653,9 @@ Main3Group:AddDropdown("AimBackstabAction", {
 
 
 
-local Main3o5Group = Tabs.Tab2:AddLeftTabbox("-=< Main 02 >=-")
+local Main3o5Group = Tabs.Tab2:AddLeftTabbox()
 
-local M305one = Main3o5Group:AddTab("--== Killer: [ Noli ]")
+local M305One = Main3o5Group:AddTab("--== Killer: [ Noli ]")
 M305one:AddDivider()
 
 local VoidRushController = {}
@@ -2777,7 +2777,7 @@ function VoidRushController:CheckVoidRush()
 end
 
 -- GUI toggle (ObsidianLib)
-M305one:AddToggle("VoidRushToggle", {
+M305One:AddToggle("VoidRushToggle", {
     Text = "Void Rush [ ez to change direction ]",
     Default = false,
     Callback = function(value)
