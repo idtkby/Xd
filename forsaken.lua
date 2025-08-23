@@ -2230,6 +2230,15 @@ end
 local lastSpeed = 0
 
 local function chooseState(hum)
+if currentState == "Run" and (lastSpeed - spd) >= 2 then
+    state = "Walk"
+    return state, true -- báo là đổi tức thì
+elseif currentState == "Walk" and spd > 13 then
+    state = "Run"
+    return state, true
+end
+
+
     local spd = hum.MoveDirection.Magnitude * hum.WalkSpeed
     local state = "Idle"
 
@@ -2251,14 +2260,17 @@ local function chooseState(hum)
     return state
 end
 
-local function applyLocomotion(animator, state)
-    local targetId = JD[state]
+local function applyLocomotion(animator, useJD, state, instant)
+    local bank = useJD and JD or DEF
+    local targetId = bank[state]
     if not targetId then return end
+
     if currentTrack and currentTrack.IsPlaying then
         local curAnim = currentTrack.Animation
         if curAnim and curAnim.AnimationId == targetId then return end
     end
-    stopTrack(currentTrack, 0.1)
+
+    stopTrack(currentTrack, instant and 0 or 0.1) -- nếu instant thì ko fade
     currentTrack = playTrack(animator, targetId, true)
 end
 
@@ -2291,11 +2303,11 @@ end)
     -- Locomotion loop
     conns.hb = RunService.Heartbeat:Connect(function()
         if not _G.JohnDoeAnim then return end
-        local st = chooseState(hum)
-        if st ~= currentState then
-            currentState = st
-            applyLocomotion(animator, currentState)
-        end
+        local st, instant = chooseState(hum)
+if st ~= currentState then
+    currentState = st
+    applyLocomotion(animator, _G.JohnDoeAnim, currentState, instant)
+end
     end)
 
     -- nếu toggle đang bật khi respawn → kích hoạt lại ngay
