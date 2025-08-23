@@ -111,7 +111,44 @@ Tabs = {
 	["UI Settings"] = Window:AddTab("UI Settings", "rbxassetid://7733955511")
 }
 
+--== Tabs
 local Main1Group = Tabs.Tab:AddLeftGroupbox("-=< Main >=-")
+local Main1o5Group = Tabs.Tab:AddLeftTabbox() -- hoặc :AddLeftTabbox()
+
+local Main2Group = Tabs.Tab:AddRightGroupbox("-=< Visual >=-")
+local Main2o5Group = Tabs.Tab:AddRightTabbox() -- hoặc :AddLeftTabbox()
+
+local Main3Group = Tabs.Tab2:AddLeftGroupbox("-=< Main 02 >=-")
+local Main3o5Group = Tabs.Tab2:AddLeftTabbox()
+
+local Main4Group = Tabs.Tab2:AddRightGroupbox("-=< Anti >=-")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- first, set a default global delay
 _G.AutoGeneralDelay = 1.8
@@ -920,8 +957,8 @@ Main1Group:AddToggle("AutoAimCharge", {
 
 
 
-local Main1o5Group = Tabs.Tab:AddLeftTabbox() -- hoặc :AddLeftTabbox()
 
+-- Main1o5Group
 local M105One = Main1o5Group:AddTab("--== Player ==--")
 
 --// Obsidian UI - M105One
@@ -1230,8 +1267,8 @@ M105Two:AddLabel("Killers: 10 ~ 30", true)
 
 
 
-local Main2Group = Tabs.Tab:AddRightGroupbox("-=< Visual >=-")
 
+-- Main2Group
 Main2Group:AddToggle("General", {
     Text = "Esp General",
     Default = false, 
@@ -2005,8 +2042,7 @@ _G.EspHealth = Value
 
 
 
-local Main2o5Group = Tabs.Tab:AddRightTabbox() -- hoặc :AddLeftTabbox()
-
+-- Main2o5Group
 local M205One = Main2o5Group:AddTab("--= Misc =--")
 
 M205One:AddDivider()
@@ -2647,7 +2683,7 @@ end)
 
 
 
-local Main3Group = Tabs.Tab2:AddLeftGroupbox("-=< Main 02 >=-")
+-- Main3Group
 Main3Group:AddDivider()
 
 
@@ -2866,8 +2902,7 @@ Main3Group:AddDropdown("AimBackstabAction", {
 
 
 
-local Main3o5Group = Tabs.Tab2:AddLeftTabbox()
-
+--Main3o5Group
 local M305One = Main3o5Group:AddTab("Killer: [ Noli ]")
 M305One:AddDivider()
 
@@ -3173,7 +3208,7 @@ M305Two:AddInput("Range404", {
 
 
 
-local Main4Group = Tabs.Tab2:AddRightGroupbox("-=< Anti >=-")
+--Main4Group
 
 
 
