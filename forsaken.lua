@@ -2194,7 +2194,6 @@ local AttackReplace = {
     ["rbxassetid://119462383658044"] = true,
     ["rbxassetid://116618003477002"] = true,
     ["rbxassetid://87259391926321"]  = true,
-    ["rbxassetid://93069721274110"] = true,
 }
 
 -- ===== Internals =====
@@ -3759,7 +3758,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/w
 end)
 
 do
-    _G.speedLabel = DevOnlyGroup:AddLabel("Speed: 0")
+    _G.speedLabel = Dotab:AddLabel("Speed: 0")
 
     game:GetService("RunService").Heartbeat:Connect(function()
         local hrp = Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
