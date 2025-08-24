@@ -2268,6 +2268,10 @@ local AttackReplace = {
     ["rbxassetid://126355327951215"] = true,
     ["rbxassetid://107339108383093"] = true,
     ["rbxassetid://109230267448394"] = true,
+    ["rbxassetid://18885909645"]     = true,
+    ["rbxassetid://18885915433"]     = true,
+    ["rbxassetid://83829782357897"]  = true,
+    ["rbxassetid://18885919947"]     = true,
 }
 
 --[[
