@@ -2209,204 +2209,162 @@ M205One:AddDropdown("LastSoundChoice", {
 
 M205One:AddDivider()
 
-local Players = game:GetService("Players")  
-local RunService = game:GetService("RunService")  
-local lp = Players.LocalPlayer  
-  
--- ===== Config =====  
-_G.JohnDoeAnim = false -- Toggle  
-  
--- John Doe (custom)  
-local JD = {  
-    Idle = "rbxassetid://91803931583310",  
-    Walk = "rbxassetid://113177639892418",  
-    Run  = "rbxassetid://95204713031545",  
-    Attack = "rbxassetid://93069721274110",  
-}  
-  
--- Các attack gốc cần replace -> JD.Attack  
-local AttackReplace = {  
-    ["rbxassetid://86545133269813"]  = true,  
-    ["rbxassetid://119462383658044"] = true,  
-    ["rbxassetid://116618003477002"] = true,  
-    ["rbxassetid://87259391926321"]  = true,  
-}  
-  
--- ===== Internals =====  
-local conns = {}  
-local currentTrack  
-local currentState = ""  
-  
-local animCache = {}  
-local function getAnimation(id)  
-    local a = animCache[id]  
-    if not a or not a.Parent then  
-        a = Instance.new("Animation")  
-        a.AnimationId = id  
-        animCache[id] = a  
-    end  
-    return a  
-end  
-  
-local function stopTrack(track, fade)  
-    if track and track.IsPlaying then  
-        track:Stop(fade or 0.1)  
-    end  
-end  
-  
-local function playTrack(animator, id, looped)  
-    local anim = getAnimation(id)  
-    local track = animator:LoadAnimation(anim)  
-    track.Looped = looped and true or false  
-    track:Play(0.1, 1, 1)  
-    return track  
-end  
-  
-local UserInputService = game:GetService("UserInputService")  
-  
-_G.JohnDoeAnim = false  
-_G.RunLocked = true -- mặc định lock run  
-  
--- === sửa chooseState ===  
-local function chooseState(hum)  
-    local spd = hum.MoveDirection.Magnitude * hum.WalkSpeed  
-    local state, instant = "Idle", false  
-  
-    -- nếu Run đang lock thì chỉ cho phép Idle/Walk  
-    if not _G.RunLocked then  
-        if spd > 13 then  
-            state = "Run"  
-        elseif spd > 0.1 then  
-            state = "Walk"  
-        else  
-            state = "Idle"  
-        end  
-    else  
-        if spd > 0.1 then  
-            state = "Walk"  
-        else  
-            state = "Idle"  
-        end  
-    end  
-  
-    -- force switch khi tụt speed nhanh (nếu run ko lock)  
-    if not _G.RunLocked and currentState == "Run" and (lastSpeed - spd) >= 2 then  
-        state, instant = "Walk", true  
-    end  
-    if not _G.RunLocked and currentState == "Walk" and spd > 13 then  
-        state, instant = "Run", true  
-    end  
-  
-    lastSpeed = spd  
-    return state, instant  
-end  
-  
-  
--- Hàm reset RunLocked khi respawn  
-local function onCharacterAdded(char)  
-    _G.RunLocked = true  
-    warn("RunLocked = LOCKED (respawn)")  
-end  
-  
--- Kết nối sự kiện respawn  
-lp.CharacterAdded:Connect(onCharacterAdded)  
-  
--- Nếu character đã tồn tại lúc load script thì cũng lock luôn  
-if lp.Character then  
-    onCharacterAdded(lp.Character)  
-end  
-  
--- === Mobile: toggle khi click SprintingButton ===  
-local sprintBtn = lp:WaitForChild("PlayerGui"):WaitForChild("MainUI"):WaitForChild("SprintingButton")  
-sprintBtn.MouseButton1Click:Connect(function()  
-    _G.RunLocked = not _G.RunLocked  
-    warn("RunLocked =", _G.RunLocked and "LOCKED" or "UNLOCKED")  
-end)  
-  
--- === PC: toggle khi nhấn Shift ===  
-UserInputService.InputBegan:Connect(function(input, gp)  
-    if gp then return end  
-    if input.KeyCode == Enum.KeyCode.LeftShift then  
-        _G.RunLocked = not _G.RunLocked  
-        warn("RunLocked =", _G.RunLocked and "LOCKED" or "UNLOCKED")  
-    end  
-end)  
-  
-local function applyLocomotion(animator, useJD, state, instant)  
-    local bank = useJD and JD or DEF  
-    local targetId = bank[state]  
-    if not targetId then return end  
-  
-    if currentTrack and currentTrack.IsPlaying then  
-        local curAnim = currentTrack.Animation  
-        if curAnim and curAnim.AnimationId == targetId then return end  
-    end  
-  
-    stopTrack(currentTrack, instant and 0 or 0.1) -- nếu instant thì ko fade  
-    currentTrack = playTrack(animator, targetId, true)  
-end  
-  
-local function setupCharacter(char)  
-    -- clear old  
-    for _,c in pairs(conns) do pcall(function() c:Disconnect() end) end  
-    table.clear(conns)  
-    stopTrack(currentTrack); currentTrack = nil  
-    currentState = ""  
-  
-    local hum = char:FindFirstChildOfClass("Humanoid")  
-    local animator = char:FindFirstChildWhichIsA("Animator", true)  
-    if not hum or not animator then return end  
-  
-    -- Attack replace  
-    conns.animPlayed = animator.AnimationPlayed:Connect(function(track)  
-    if not _G.JohnDoeAnim then return end  
-    local a = track.Animation  
-    if a and AttackReplace[a.AnimationId] then  
-        -- disable track gốc thay vì chỉ stop (đỡ bị game play lại)  
-        track:AdjustSpeed(0)  
-        track:Stop(0)  
-  
-        local atk = playTrack(animator, JD.Attack, false)  
-        pcall(function() atk.Priority = Enum.AnimationPriority.Action end)  
-        atk:Play(0.05, 1, 1)  
-    end  
-end)  
-  
-    -- Locomotion loop  
-    conns.hb = RunService.Heartbeat:Connect(function()  
-        if not _G.JohnDoeAnim then return end  
-        local st, instant = chooseState(hum)  
-if st ~= currentState then  
-    currentState = st  
-    applyLocomotion(animator, _G.JohnDoeAnim, currentState, instant)  
-end  
-    end)  
-  
-    -- nếu toggle đang bật khi respawn → kích hoạt lại ngay  
-    if _G.JohnDoeAnim then  
-        currentState = ""  
-        local st = chooseState(hum)  
-        applyLocomotion(animator, st)  
-        currentState = st  
-    end  
-end  
-  
--- init + respawn  
-if lp.Character then setupCharacter(lp.Character) end  
-lp.CharacterAdded:Connect(setupCharacter)  
-  
--- ===== UI =====  
-M205One:AddToggle("JohnDoeAnim", {  
-    Text = "John Doe Anim [Beta]",  
-    Default = false,  
-    Callback = function(v)  
-        _G.JohnDoeAnim = v  
-        -- bật lại thì refresh anim ngay  
-        if v and lp.Character then  
-            setupCharacter(lp.Character)  
-        end  
-    end  
-})  
+local Players = game:GetService("Players")        
+local RunService = game:GetService("RunService")        
+local lp = Players.LocalPlayer        
+        
+-- ===== Config =====        
+_G.JohnDoeAnim = false -- Toggle        
+        
+-- John Doe (custom)        
+local JD = {        
+    Idle = "rbxassetid://91803931583310",        
+    Walk = "rbxassetid://113177639892418",        
+    Run  = "rbxassetid://95204713031545",        
+    Attack = "rbxassetid://93069721274110",        
+}        
+        
+-- Các attack gốc cần replace -> JD.Attack        
+local AttackReplace = {        
+    ["rbxassetid://86545133269813"]  = true,        
+    ["rbxassetid://119462383658044"] = true,        
+    ["rbxassetid://116618003477002"] = true,        
+    ["rbxassetid://87259391926321"]  = true,        
+}        
+        
+-- ===== Internals =====        
+local conns = {}        
+local currentTrack        
+local currentState = ""        
+        
+local animCache = {}        
+local function getAnimation(id)        
+    local a = animCache[id]        
+    if not a or not a.Parent then        
+        a = Instance.new("Animation")        
+        a.AnimationId = id        
+        animCache[id] = a        
+    end        
+    return a        
+end        
+        
+local function stopTrack(track, fade)        
+    if track and track.IsPlaying then        
+        track:Stop(fade or 0.1)        
+    end        
+end        
+        
+local function playTrack(animator, id, looped)        
+    local anim = getAnimation(id)        
+    local track = animator:LoadAnimation(anim)        
+    track.Looped = looped and true or false        
+    track:Play(0.1, 1, 1)        
+    return track        
+end        
+        
+local lastSpeed = 0        
+        
+local function chooseState(hum)        
+    local spd = hum.MoveDirection.Magnitude * hum.WalkSpeed        
+    local state, instant = "Idle", false        
+        
+    if spd > 12.2 then        
+        state = "Run"        
+    elseif spd > 0.1 then        
+        state = "Walk"        
+    else        
+        state = "Idle"        
+    end        
+        
+    -- force switch: nếu đang Run mà tụt >=2 speed thì về Walk ngay        
+    if currentState == "Run" and (lastSpeed - spd) >= 2 then        
+        state, instant = "Walk", true        
+    end        
+        
+    -- force switch: nếu đang Walk mà vượt 13 thì lên Run ngay        
+    if currentState == "Walk" and spd > 13 then        
+        state, instant = "Run", true        
+    end        
+        
+    lastSpeed = spd        
+    return state, instant        
+end        
+        
+local function applyLocomotion(animator, useJD, state, instant)        
+    local bank = useJD and JD or DEF        
+    local targetId = bank[state]        
+    if not targetId then return end        
+        
+    if currentTrack and currentTrack.IsPlaying then        
+        local curAnim = currentTrack.Animation        
+        if curAnim and curAnim.AnimationId == targetId then return end        
+    end        
+        
+    stopTrack(currentTrack, instant and 0 or 0.1) -- nếu instant thì ko fade        
+    currentTrack = playTrack(animator, targetId, true)        
+end        
+        
+local function setupCharacter(char)        
+    -- clear old        
+    for _,c in pairs(conns) do pcall(function() c:Disconnect() end) end        
+    table.clear(conns)        
+    stopTrack(currentTrack); currentTrack = nil        
+    currentState = ""        
+        
+    local hum = char:FindFirstChildOfClass("Humanoid")        
+    local animator = char:FindFirstChildWhichIsA("Animator", true)        
+    if not hum or not animator then return end        
+        
+    -- Attack replace        
+    conns.animPlayed = animator.AnimationPlayed:Connect(function(track)        
+    if not _G.JohnDoeAnim then return end        
+    local a = track.Animation        
+    if a and AttackReplace[a.AnimationId] then        
+        -- disable track gốc thay vì chỉ stop (đỡ bị game play lại)        
+        track:AdjustSpeed(0)        
+        track:Stop(0)        
+        
+        local atk = playTrack(animator, JD.Attack, false)        
+        pcall(function() atk.Priority = Enum.AnimationPriority.Action end)        
+        atk:Play(0.05, 1, 1)        
+    end        
+end)        
+        
+    -- Locomotion loop        
+    conns.hb = RunService.Heartbeat:Connect(function()        
+        if not _G.JohnDoeAnim then return end        
+        local st, instant = chooseState(hum)        
+if st ~= currentState then        
+    currentState = st        
+    applyLocomotion(animator, _G.JohnDoeAnim, currentState, instant)        
+end        
+    end)        
+        
+    -- nếu toggle đang bật khi respawn → kích hoạt lại ngay        
+    if _G.JohnDoeAnim then        
+        currentState = ""        
+        local st = chooseState(hum)        
+        applyLocomotion(animator, st)        
+        currentState = st        
+    end        
+end        
+        
+-- init + respawn        
+if lp.Character then setupCharacter(lp.Character) end        
+lp.CharacterAdded:Connect(setupCharacter)        
+        
+-- ===== UI =====        
+M205One:AddToggle("JohnDoeAnim", {        
+    Text = "John Doe Anim [Beta]",        
+    Default = false,        
+    Callback = function(v)        
+        _G.JohnDoeAnim = v        
+        -- bật lại thì refresh anim ngay        
+        if v and lp.Character then        
+            setupCharacter(lp.Character)        
+        end        
+    end        
+})
   
 
 -- === Animation Loop ===
