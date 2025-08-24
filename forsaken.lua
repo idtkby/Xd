@@ -2290,19 +2290,22 @@ local function chooseState(hum)
     return state, instant        
 end        
         
-local function applyLocomotion(animator, useJD, state, instant)        
-    local bank = useJD and JD or DEF        
-    local targetId = bank[state]        
-    if not targetId then return end        
-        
-    if currentTrack and currentTrack.IsPlaying then        
-        local curAnim = currentTrack.Animation        
-        if curAnim and curAnim.AnimationId == targetId then return end        
-    end        
-        
-    stopTrack(currentTrack, instant and 0 or 0.1) -- nếu instant thì ko fade        
-    currentTrack = playTrack(animator, targetId, true)        
-end        
+local currentLocomotionTrack
+local currentAttackTrack
+
+local function applyLocomotion(animator, useJD, state, instant)
+    local bank = useJD and JD or DEF
+    local targetId = bank[state]
+    if not targetId then return end
+
+    if currentLocomotionTrack and currentLocomotionTrack.IsPlaying then
+        local curAnim = currentLocomotionTrack.Animation
+        if curAnim and curAnim.AnimationId == targetId then return end
+    end
+
+    stopTrack(currentLocomotionTrack, instant and 0 or 0.1) -- Chỉ stop locomotion
+    currentLocomotionTrack = playTrack(animator, targetId, true)
+end
         
 local function setupCharacter(char)        
     -- clear old        
@@ -2316,19 +2319,24 @@ local function setupCharacter(char)
     if not hum or not animator then return end        
         
     -- Attack replace        
-    conns.animPlayed = animator.AnimationPlayed:Connect(function(track)        
-    if not _G.JohnDoeAnim then return end        
-    local a = track.Animation        
-    if a and AttackReplace[a.AnimationId] then        
-        -- disable track gốc thay vì chỉ stop (đỡ bị game play lại)        
-        track:AdjustSpeed(0)        
-        track:Stop(0)        
-        
-        local atk = playTrack(animator, JD.Attack, false)        
-        pcall(function() atk.Priority = Enum.AnimationPriority.Action end)        
-        atk:Play(0.05, 1, 1)        
-    end        
-end)        
+    -- Trong phần attack replace
+conns.animPlayed = animator.AnimationPlayed:Connect(function(track)
+    if not _G.JohnDoeAnim then return end
+    local a = track.Animation
+    if a and AttackReplace[a.AnimationId] then
+        -- stop track gốc
+        track:AdjustSpeed(0)
+        track:Stop(0)
+
+        -- play attack riêng
+        if currentAttackTrack and currentAttackTrack.IsPlaying then
+            currentAttackTrack:Stop(0)
+        end
+        currentAttackTrack = playTrack(animator, JD.Attack, false)
+        pcall(function() currentAttackTrack.Priority = Enum.AnimationPriority.Action end)
+        currentAttackTrack:Play(0.05, 1, 1)
+    end
+end)
         
     -- Locomotion loop        
     conns.hb = RunService.Heartbeat:Connect(function()        
