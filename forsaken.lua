@@ -2318,23 +2318,43 @@ local function setupCharacter(char)
     local animator = char:FindFirstChildWhichIsA("Animator", true)        
     if not hum or not animator then return end        
         
-    -- Attack replace        
-    -- Trong phần attack replace
+    local currentLocomotionTrack
+local currentAttackTrack
+local isAttacking = false
+
+-- Attack replace
 conns.animPlayed = animator.AnimationPlayed:Connect(function(track)
     if not _G.JohnDoeAnim then return end
     local a = track.Animation
     if a and AttackReplace[a.AnimationId] then
-        -- stop track gốc
+        isAttacking = true -- đánh dấu đang attack
+
         track:AdjustSpeed(0)
         track:Stop(0)
 
-        -- play attack riêng
         if currentAttackTrack and currentAttackTrack.IsPlaying then
             currentAttackTrack:Stop(0)
         end
         currentAttackTrack = playTrack(animator, JD.Attack, false)
         pcall(function() currentAttackTrack.Priority = Enum.AnimationPriority.Action end)
         currentAttackTrack:Play(0.05, 1, 1)
+
+        -- Khi attack kết thúc thì bỏ flag
+        currentAttackTrack.Stopped:Connect(function()
+            isAttacking = false
+        end)
+    end
+end)
+
+-- Locomotion loop
+conns.hb = RunService.Heartbeat:Connect(function()
+    if not _G.JohnDoeAnim then return end
+    if isAttacking then return end -- nếu đang attack thì không thay locomotion
+
+    local st, instant = chooseState(hum)
+    if st ~= currentState then
+        currentState = st
+        applyLocomotion(animator, _G.JohnDoeAnim, currentState, instant)
     end
 end)
         
