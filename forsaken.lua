@@ -2136,6 +2136,7 @@ local targetName = "LastSurvivor"
 local soundLibrary = {
     ["Burnout"] = "130101085745481",
     ["Plead"]   = "80564889711353",
+    ["Compass"] = "127298326178102",
 }
 
 -- Mặc định chọn Burnout
@@ -2216,7 +2217,7 @@ end
 
 -- Dropdown chọn nhạc
 M205One:AddDropdown("LastSoundChoice", {
-    Values = {"Burnout","Plead"},
+    Values = {"Burnout","Plead","Compass"},
     Default = 1,
     Multi = false,
     Text = "Choose Sound",
