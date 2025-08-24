@@ -2251,7 +2251,14 @@ local AttackReplace = {
     ["rbxassetid://126830014841198"] = true,
     ["rbxassetid://121086746534252"] = true,
     ["rbxassetid://126355327951215"] = true,
+    ["rbxassetid://107339108383093"] = true,
+    ["rbxassetid://109230267448394"] = true,
 }
+
+--[[
+[MessageOutput] [Anim] rbxassetid://107339108383093
+[MessageOutput] [Anim] rbxassetid://109230267448394
+]]
 
 -- ===== Internals =====
 local conns = {}
