@@ -735,90 +735,93 @@ Main1Group:AddDivider()
 Main1Group:AddLabel("--== Surviv: [ Guest 1337 ] ==--", true)
 
 --// Auto Block + Punch cho Guest1337 Survivor (Obsidian Lib)
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
-local lp = Players.LocalPlayer
-
--- Remote
-local NetworkEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
-
--- Biến
-_G.AutoBlockPunch_Enabled = false
-_G.AutoBlockPunch_Range = 18
-local cooldown = 25 -- thời gian cooldown (giây)
-local lastActionTime = 0
-
-local clickedTracks = {}
-local animationIds = {
-    ["126830014841198"] = true, ["126355327951215"] = true, ["121086746534252"] = true,
-    ["18885909645"] = true, ["98456918873918"] = true, ["105458270463374"] = true,
-    ["83829782357897"] = true, ["125403313786645"] = true, ["118298475669935"] = true,
-    ["82113744478546"] = true, ["70371667919898"] = true, ["99135633258223"] = true,
-    ["97167027849946"] = true, ["109230267448394"] = true, ["139835501033932"] = true,
-    ["126896426760253"] = true,
-}
-
--- Kiểm tra localplayer là Guest1337 survivor (không ở team Killers)
-local function isGuestSurvivor()
-    if not lp.Character or lp.Character.Name ~= "Guest1337" then
-        return false
-    end
-    return lp.Character.Parent and lp.Character.Parent.Name ~= "Killers"
-end
-
--- Gửi remote block
-local function remoteBlock()
-    NetworkEvent:FireServer("UseActorAbility", "Block")
-end
-
--- Gửi remote punch + aim
+local Players = game:GetService("Players")    
+local ReplicatedStorage = game:GetService("ReplicatedStorage")    
+local RunService = game:GetService("RunService")    
+local Workspace = game:GetService("Workspace")    
+local lp = Players.LocalPlayer    
+    
+-- Remote    
+local NetworkEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")    
+    
+-- Biến    
+_G.AutoBlockPunch_Enabled = false    
+_G.AutoBlockPunch_Range = 18    
+_G.AutoBlock_Enabled = false
+_G.AutoPunch_Enabled = false
+local cooldown = 25 -- thời gian cooldown (giây)    
+local lastActionTime = 0    
+    
+local clickedTracks = {}    
+local animationIds = {    
+    ["126830014841198"] = true, ["126355327951215"] = true, ["121086746534252"] = true,    
+    ["18885909645"] = true, ["98456918873918"] = true, ["105458270463374"] = true,    
+    ["83829782357897"] = true, ["125403313786645"] = true, ["118298475669935"] = true,    
+    ["82113744478546"] = true, ["70371667919898"] = true, ["99135633258223"] = true,    
+    ["97167027849946"] = true, ["109230267448394"] = true, ["139835501033932"] = true,    
+    ["126896426760253"] = true,    
+}    
+    
+-- Kiểm tra localplayer là Guest1337 survivor (không ở team Killers)    
+local function isGuestSurvivor()    
+    if not lp.Character or lp.Character.Name ~= "Guest1337" then    
+        return false    
+    end    
+    return lp.Character.Parent and lp.Character.Parent.Name ~= "Killers"    
+end    
+    
+-- Gửi remote block    
+local function remoteBlock()    
+    NetworkEvent:FireServer("UseActorAbility", "Block")    
+end    
+    
+-- Gửi remote punch + aim    
 local function remotePunchAndAim(targetRoot)
     local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
     if not (hrp and targetRoot) then return end
 
-    local startTime = tick()
-    local aimConn
-    aimConn = RunService.Heartbeat:Connect(function()
-        if tick() - startTime > 1 or not targetRoot.Parent then
-            if aimConn then aimConn:Disconnect() end
-            return
-        end
-        hrp.CFrame = CFrame.new(hrp.Position, targetRoot.Position)
-    end)
+    -- xoay hướng
+    hrp.CFrame = CFrame.new(hrp.Position, targetRoot.Position)
 
-    NetworkEvent:FireServer("UseActorAbility", "Punch")
+    -- gửi remote punch
+    local args = {"UseActorAbility", "Punch"}
+    NetworkEvent:FireServer(unpack(args))
 end
-
--- Obsidian Lib UI
-Main1Group:AddToggle("AutoBlockPunchToggle", {
-    Text = "Auto Block + Punch",
+    
+Main1Group:AddToggle("AutoBlockToggle", {
+    Text = "Auto Block",
     Default = false,
     Callback = function(v)
-        _G.AutoBlockPunch_Enabled = v
+        _G.AutoBlock_Enabled = v
     end
 })
 
-Main1Group:AddInput("AutoBlockPunchRange", {
-    Default = tostring(_G.AutoBlockPunch_Range),
-    Numeric = true,
-    Text = "Detection Range",
-    Placeholder = "5 ~ 50",
-    Callback = function(value)
-        local num = tonumber(value)
-        if num and num >= 5 and num <= 50 then
-            _G.AutoBlockPunch_Range = num
-        else
-            Library:Notify("Invalid range (5-50)", 5)
-        end
+Main1Group:AddToggle("AutoPunchToggle", {
+    Text = "Auto Punch",
+    Default = false,
+    Callback = function(v)
+        _G.AutoPunch_Enabled = v
     end
 })
-
--- Loop chính
+    
+Main1Group:AddInput("AutoBlockPunchRange", {    
+    Default = tostring(_G.AutoBlockPunch_Range),    
+    Numeric = true,    
+    Text = "Detection Range",    
+    Placeholder = "5 ~ 50",    
+    Callback = function(value)    
+        local num = tonumber(value)    
+        if num and num >= 5 and num <= 50 then    
+            _G.AutoBlockPunch_Range = num    
+        else    
+            Library:Notify("Invalid range (5-50)", 5)    
+        end    
+    end    
+})    
+  
+-- Loop chính  
 RunService.Heartbeat:Connect(function()
-    if not _G.AutoBlockPunch_Enabled or not isGuestSurvivor() then return end
-
+    if not isGuestSurvivor() then return end
     local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
     if not myRoot then return end
 
@@ -835,23 +838,34 @@ RunService.Heartbeat:Connect(function()
                     local anim = track.Animation
                     local id = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")
                     if id and animationIds[id] and not clickedTracks[track] then
-                        -- kiểm tra cooldown
-                        if tick() - lastActionTime >= cooldown then
-                            lastActionTime = tick() -- cập nhật thời điểm hành động
-                            clickedTracks[track] = true
+                        clickedTracks[track] = true
+
+                        -- chỉ block nếu bật AutoBlock
+                        if _G.AutoBlock_Enabled and tick() - lastActionTime >= cooldown then
+                            lastActionTime = tick()
                             remoteBlock()
-                            remotePunchAndAim(root)
-                            task.spawn(function()
-                                track.Stopped:Wait()
-                                clickedTracks[track] = nil
-                            end)
                         end
+
+                        -- chỉ punch nếu bật AutoPunch
+                        if _G.AutoPunch_Enabled and tick() - lastActionTime >= cooldown then
+                            lastActionTime = tick()
+                            remotePunchAndAim(root)
+                        end
+
+                        task.spawn(function()
+                            track.Stopped:Wait()
+                            clickedTracks[track] = nil
+                        end)
                     end
                 end
             end
         end
     end
 end)
+
+
+
+
 
 --// Auto Aim (Charge) cho Guest1337 Survivor + Aim Camera
 getgenv().AutoAimCharge = false
