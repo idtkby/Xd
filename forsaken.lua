@@ -3549,7 +3549,6 @@ end
 
 
 
-end)
 
 
 
@@ -3620,7 +3619,6 @@ end)
 
 
 
-task.spawn(function()
 ------------------------------------------------------------------------
 local MenuGroup = Tabs["UI Settings"]:AddLeftGroupbox("Menu")
 local CreditsGroup = Tabs["UI Settings"]:AddRightGroupbox("Credit & Request")
@@ -3844,7 +3842,6 @@ do
         _G.speedLabel:SetText("Speed: " .. speed)
     end)
 end
-
 
 
 end)
