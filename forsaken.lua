@@ -1591,6 +1591,7 @@ Main2Group:AddToggle("EspBuildermanSentry", {
 	end
 })
 
+task.spawn(function()
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local lp = Players.LocalPlayer
@@ -1665,6 +1666,7 @@ Main2Group:AddToggle("ESPJohnDoeTrap", {
         end
     end
 })
+end)
 
 Main2Group:AddDivider()
 
