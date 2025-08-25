@@ -1627,6 +1627,11 @@ local function createESP(part)
     label.Font = Enum.Font.Code
     label.Text = "Digital Footprint\nDistance: 0.0"
     label.Parent = billboard
+    
+local UIStroke = Instance.new("UIStroke")
+	UIStroke.Color = Color3.new(0, 0, 0)
+	UIStroke.Thickness = 1.5
+	UIStroke.Parent = label
 
     -- update distance
     RunService.Heartbeat:Connect(function()
