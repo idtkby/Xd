@@ -1,6 +1,6 @@
 -- Kiểm tra ID game
-if game.PlaceId ~= 14476003462 then
-    return warn("Script only works in the specified game (ID: 14476003462){PETAPETA | Level6 (無限旅館)}")
+if game.PlaceId ~= 14476003462 and game.PlaceId ~= 79036558298014 then
+    return warn("Script only works in the specified game (ID: 14476003462){PETAPETA [Chapter 2]}")
 end
 
 -- Thông báo khi đúng ID game
@@ -136,7 +136,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- Tạo cửa sổ giao diện chính
 local Window = Rayfield:CreateWindow({
-    Name = "Script By IgnahK [PETAPETA {無限旅館}]",
+    Name = "Script By IgnahK [PETAPETA [Chapter 2]]",
     LoadingTitle = "Loading Script...",
     LoadingSubtitle = "Please wait",
     ConfigurationSaving = {
@@ -578,14 +578,218 @@ V1:CreateButton({
 
 
 
-local V2 = Window:CreateTab("Visual [Chapter 2]", "eye")
-V2:CreateSection("UPDATING...")
-V2:CreateParagraph({
-	Title = "heyyy",
-	Content = "I'm trying to understand the new items and enemies of chapter2, the update script might take a while",
+local V2 = Window:CreateTab("Petapeta [Chapter 2][Updating..]", "eye")
+
+--[[
+
+Mumyo_model
+EnemyHumanMock
+ef_moth
+
+ItemSpawnPoint
+
+Item_015
+
+Crystal
+
+
+EyeHitbox
+
+
+LoadPart
+]]
+
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local Camera = Workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+
+local activeESPList = {}
+local espObjects = {}
+
+-- ⚙️ Danh sách các nhóm ESP
+local espGroups = {
+	{
+		label = "Enemy",
+		objects = {
+			Mumyo_model = {label = "Enemy", color = Color3.fromRGB(255, 0, 0)},
+			EnemyHumanMock = {label = "Enemy", color = Color3.fromRGB(255,0,0)},
+   ef_moth = {label = "Enemy", color = Color3.fromRGB(255,0,0)},
+		}
+	},
+	{
+		label = "Item spawm point",
+		objects = {
+			ItemSpawnPoint = {label = "ItemSpawnPoint", color = Color3.fromRGB(0,255,0)}
+		}
+	},
+	-- Thêm các nhóm khác ở đây nếu muốn...
+ 	{
+		label = "Next Stage",
+		objects = {
+			LoadPart = {label = "Next Stage", color = Color3.fromRGB(255,255,255)},
+		}
+	},
+	{
+		label = "Key",
+		objects = {
+			Key = {label = "Key", color = Color3.fromRGB(150, 150, 150)},
+   key = {label = "Key", color = Color3.fromRGB(150, 150, 150)}
+		}
+	},
+	
+}
+
+-- 🧱 Tạo Billboard ESP
+local function createESP(item, text, color)
+	if espObjects[item] then return end
+
+	local part = item:IsA("Model") and (item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart")) or item
+	if not part or not part:IsA("BasePart") then return end
+
+	-- Billboard ESP
+	local gui = Instance.new("BillboardGui")
+	gui.Name = "ItemESP"
+	gui.AlwaysOnTop = true
+	gui.Size = UDim2.new(0, 100, 0, 40)
+	gui.StudsOffset = Vector3.new(0, 2, 0)
+	gui.MaxDistance = 500
+	gui.Adornee = part
+	gui.Parent = part
+
+	local label = Instance.new("TextLabel", gui)
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.new(1, 0, 1, 0)
+	label.Text = text
+	label.TextColor3 = color
+	label.Font = Enum.Font.Bodoni
+	label.TextStrokeColor3 = Color3.new(0, 0, 0)
+	label.TextStrokeTransparency = 0
+	label.TextSize = 20
+
+	-- Highlight (Outline)
+	local hl = Instance.new("Highlight")
+	hl.Adornee = item:IsA("Model") and item or part
+	hl.FillColor = Color3.new(0, 0, 0)
+	hl.FillTransparency = 1 -- chỉ viền ngoài
+	hl.OutlineColor = color
+	hl.OutlineTransparency = 0
+	hl.Parent = part
+
+	espObjects[item] = {gui = gui, label = label, highlight = hl}
+end
+
+-- 🗑️ Xoá ESP
+local function removeESP(item)
+	local data = espObjects[item]
+	if data then
+		if data.gui then data.gui:Destroy() end
+		if data.highlight then data.highlight:Destroy() end
+		espObjects[item] = nil
+	end
+end
+
+-- 🔁 Cập nhật TextSize theo khoảng cách
+RunService.RenderStepped:Connect(function()
+	for item, data in pairs(espObjects) do
+		local name = item.Name
+		local found = false
+		for _, group in ipairs(espGroups) do
+			if activeESPList[group.label] and group.objects[name] then
+				local pos = (item:IsA("Model") and item:GetPivot().Position) or (item:IsA("BasePart") and item.Position)
+				local dist = (Camera.CFrame.Position - pos).Magnitude
+				data.label.TextSize = math.clamp(25 * (1 - dist / 200), 10, 25)
+				found = true
+				break
+			end
+		end
+		if not found then
+			removeESP(item)
+		end
+	end
+end)
+
+-- 👁️ Theo dõi object mới được thêm
+Workspace.DescendantAdded:Connect(function(obj)
+	local name = obj.Name
+	for _, group in ipairs(espGroups) do
+		if activeESPList[group.label] and group.objects[name] then
+			task.wait(0.05)
+			createESP(obj, group.objects[name].label, group.objects[name].color)
+		end
+	end
+end)
+
+-- 🔘 Tạo toggle riêng cho từng nhóm
+for _, group in ipairs(espGroups) do
+	V2:CreateToggle({
+		Name = "ESP: " .. group.label,
+		CurrentValue = false,
+		Callback = function(state)
+			activeESPList[group.label] = state
+
+			if not state then
+				for obj in pairs(espObjects) do
+					if group.objects[obj.Name] then
+						removeESP(obj)
+					end
+				end
+			else
+				for _, obj in ipairs(Workspace:GetDescendants()) do
+					if group.objects[obj.Name] and not espObjects[obj] then
+						createESP(obj, group.objects[obj.Name].label, group.objects[obj.Name].color)
+					end
+				end
+			end
+		end
+	})
+end
+
+-- === Helpers ===
+local function SetEye(part)
+    if part and part:IsA("BasePart") and part.Name == "EyeHitbox" then
+        -- dùng pcall phòng hờ object vừa tạo chưa fully ready
+        pcall(function()
+            part.Transparency = 0.8
+        end)
+    end
+end
+
+local function ApplyAllEyes()
+    for _, d in ipairs(workspace:GetDescendants()) do
+        if d:IsA("BasePart") and d.Name == "EyeHitbox" then
+            SetEye(d)
+        end
+    end
+end
+
+-- === Button Rayfield (đặt trong Tab/Section của bạn) ===
+-- ví dụ: local Tab = Window:CreateTab("Visual", 4483362458)
+
+V2:CreateButton({
+    Name = "ESP: EyeHitbox",
+    Callback = function()
+        -- ngắt kết nối cũ nếu có (tránh double hook khi bấm lại / re-exec)
+        getgenv().EyeHitboxConn = (function(old)
+            if old then pcall(function() old:Disconnect() end) end
+            return nil
+        end)(getgenv().EyeHitboxConn)
+
+        -- áp dụng ngay cho toàn map
+        ApplyAllEyes()
+
+        -- auto cho part mới
+        getgenv().EyeHitboxConn = workspace.DescendantAdded:Connect(function(d)
+            if d:IsA("BasePart") and d.Name == "EyeHitbox" then
+                -- defer 1 frame để chắc chắn instance đã ổn định
+                task.defer(function()
+                    SetEye(d)
+                end)
+            end
+        end)
+    end
 })
-
-
 
 
 
@@ -772,6 +976,111 @@ KTab:CreateToggle({
 				if AutoZeniRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") then
 					local model = desc:FindFirstAncestorWhichIsA("Model")
 					if model and model.Name:match("^Zeni_[1-3]$") then
+						table.insert(ZeniList, {model = model, obj = desc})
+					end
+				end
+			end)
+
+			local function triggerPrompt(obj)
+				pcall(function()
+					if obj:IsA("ProximityPrompt") then
+						fireproximityprompt(obj, math.huge)
+					elseif obj:IsA("ClickDetector") then
+						fireclickdetector(obj)
+					elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
+						firetouchinterest(HumanoidRootPart, obj.Parent, 0)
+						task.wait()
+						firetouchinterest(HumanoidRootPart, obj.Parent, 1)
+					end
+				end)
+			end
+
+			local function getClosestPart(model, refPos)
+				local closest, minDist = nil, math.huge
+				for _, part in ipairs(model:GetChildren()) do
+					if part:IsA("BasePart") then
+						local dist = (part.Position - refPos).Magnitude
+						if dist < minDist then
+							minDist = dist
+							closest = part
+						end
+					end
+				end
+				return closest, minDist
+			end
+
+			ZeniConnection = RunService.Heartbeat:Connect(function()
+				if not AutoZeniRunning or not LocalPlayer.Character then return end
+				local HRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+				if not HRP then return end
+
+				local now = tick()
+				for i = #ZeniList, 1, -1 do
+					local data = ZeniList[i]
+					local model = data.model
+					local obj = data.obj
+					if not model or not model:IsDescendantOf(workspace) then
+						table.remove(ZeniList, i)
+						continue
+					end
+
+					if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
+						continue
+					end
+
+					local _, dist = getClosestPart(model, HRP.Position)
+					if dist and dist <= 7 then
+						lastTriggerTime[model] = now
+						triggerPrompt(obj)
+					end
+				end
+			end)
+		else
+			if ZeniConnection then
+				ZeniConnection:Disconnect()
+				ZeniConnection = nil
+			end
+			ZeniList = {}
+		end
+	end
+})
+
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local AutoZeniRunning = false
+local ZeniConnection
+local ZeniList = {}
+
+KTab:CreateToggle({
+	Name = "Auto Collect Crystal [Chap2]",
+	CurrentValue = false,
+	Callback = function(state)
+		AutoZeniRunning = state
+		if state then
+			local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+			local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+			local lastTriggerTime = {}
+
+			-- Cập nhật danh sách Zeni khi có object mới vào Workspace
+			local function scanZeni()
+				ZeniList = {}
+				for _, obj in ipairs(workspace:GetDescendants()) do
+					if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(LocalPlayer.Character) then
+						local model = obj:FindFirstAncestorWhichIsA("Model")
+						if model and model.Name == "Crystal" then
+							table.insert(ZeniList, {model = model, obj = obj})
+						end
+					end
+				end
+			end
+
+			scanZeni()
+			workspace.DescendantAdded:Connect(function(desc)
+				if AutoZeniRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") then
+					local model = desc:FindFirstAncestorWhichIsA("Model")
+					if model and model.Name == "Crystal" then
 						table.insert(ZeniList, {model = model, obj = desc})
 					end
 				end
