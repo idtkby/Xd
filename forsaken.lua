@@ -749,7 +749,7 @@ _G.AutoBlockPunch_Range = 18
 _G.AutoBlock_Enabled = false  
 _G.AutoPunch_Enabled = false  
 _G.AutoPunchAimbot_Enabled = false  
-local cooldown = 25 -- thời gian cooldown (giây)      
+local cooldown = 1 -- thời gian cooldown (giây)      
 local lastActionTime = 0      
       
 local clickedTracks = {}      
