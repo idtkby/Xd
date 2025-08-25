@@ -1402,12 +1402,18 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 -- Hàm tạo ESP cho 1 model
-local function CreateItemESP(model, color, labelText)
-	if model:FindFirstChild("ItemESP_Gui") then return end
+local function CreateItemESP(obj, color, labelText)
+	if obj:FindFirstChild("ItemESP_Gui") or obj:FindFirstChild("ItemESP_Outline") then return end
 
-	local head = model:FindFirstChildWhichIsA("BasePart")
+	local head
+	if obj:IsA("Model") then
+		head = obj:FindFirstChildWhichIsA("BasePart")
+	else
+		head = obj -- chính nó là Part
+	end
 	if not head then return end
 
+	-- Billboard ESP
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "ItemESP_Gui"
 	gui.Adornee = head
@@ -1431,6 +1437,17 @@ local function CreateItemESP(model, color, labelText)
 	stroke.Color = Color3.new(0, 0, 0)
 	stroke.Thickness = 1.5
 	stroke.Parent = lbl
+
+	-- Outline ESP (Highlight)
+	if _G.UseOutline then
+		local hl = Instance.new("Highlight")
+		hl.Name = "ItemESP_Outline"
+		hl.Adornee = obj
+		hl.FillTransparency = 1
+		hl.OutlineTransparency = 0
+		hl.OutlineColor = color
+		hl.Parent = obj
+	end
 end
 
 local function ClearItemESP(model)
@@ -1439,6 +1456,8 @@ local function ClearItemESP(model)
 			v:Destroy()
 		end
 	end
+	local hl = model:FindFirstChild("ItemESP_Outline")
+	if hl then hl:Destroy() end
 end
 
 -- Hàm xử lý chung ESP
@@ -1463,7 +1482,7 @@ local function HandleESP(itemName, color, labelText, enabledFlag)
 		end
 	end)
 
-	-- Update distance
+	-- Update distance + outline toggle
 	local updateConn
 	updateConn = RunService.RenderStepped:Connect(function()
 		if not _G[enabledFlag] then return end
@@ -1476,6 +1495,22 @@ local function HandleESP(itemName, color, labelText, enabledFlag)
 					local dist = (hrp.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
 					lbl.Text = labelText .. string.format("\nDist: %.1f", dist)
 				end
+			end
+
+			-- Bật/tắt outline theo toggle
+			local hl = obj:FindFirstChild("ItemESP_Outline")
+			if _G.UseOutline then
+				if not hl then
+					local newHl = Instance.new("Highlight")
+					newHl.Name = "ItemESP_Outline"
+					newHl.Adornee = obj
+					newHl.FillTransparency = 1
+					newHl.OutlineTransparency = 0
+					newHl.OutlineColor = color
+					newHl.Parent = obj
+				end
+			else
+				if hl then hl:Destroy() end
 			end
 		end
 	end)
