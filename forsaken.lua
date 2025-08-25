@@ -735,132 +735,181 @@ Main1Group:AddDivider()
 Main1Group:AddLabel("--== Surviv: [ Guest 1337 ] ==--", true)
 
 --// Auto Block + Punch cho Guest1337 Survivor (Obsidian Lib)
-local Players = game:GetService("Players")    
-local ReplicatedStorage = game:GetService("ReplicatedStorage")    
-local RunService = game:GetService("RunService")    
-local Workspace = game:GetService("Workspace")    
-local lp = Players.LocalPlayer    
-    
--- Remote    
-local NetworkEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")    
-    
--- Biến    
-_G.AutoBlockPunch_Enabled = false    
-_G.AutoBlockPunch_Range = 18    
-_G.AutoBlock_Enabled = false
-_G.AutoPunch_Enabled = false
-local cooldown = 25 -- thời gian cooldown (giây)    
-local lastActionTime = 0    
-    
-local clickedTracks = {}    
-local animationIds = {    
-    ["126830014841198"] = true, ["126355327951215"] = true, ["121086746534252"] = true,    
-    ["18885909645"] = true, ["98456918873918"] = true, ["105458270463374"] = true,    
-    ["83829782357897"] = true, ["125403313786645"] = true, ["118298475669935"] = true,    
-    ["82113744478546"] = true, ["70371667919898"] = true, ["99135633258223"] = true,    
-    ["97167027849946"] = true, ["109230267448394"] = true, ["139835501033932"] = true,    
-    ["126896426760253"] = true,    
-}    
-    
--- Kiểm tra localplayer là Guest1337 survivor (không ở team Killers)    
-local function isGuestSurvivor()    
-    if not lp.Character or lp.Character.Name ~= "Guest1337" then    
-        return false    
-    end    
-    return lp.Character.Parent and lp.Character.Parent.Name ~= "Killers"    
-end    
-    
--- Gửi remote block    
-local function remoteBlock()    
-    NetworkEvent:FireServer("UseActorAbility", "Block")    
-end    
-    
--- Gửi remote punch + aim    
-local function remotePunchAndAim(targetRoot)
-    local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-    if not (hrp and targetRoot) then return end
+local Players = game:GetService("Players")      
+local ReplicatedStorage = game:GetService("ReplicatedStorage")      
+local RunService = game:GetService("RunService")      
+local Workspace = game:GetService("Workspace")      
+local lp = Players.LocalPlayer      
+      
+-- Remote      
+local NetworkEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")      
+      
+-- Biến      
+_G.AutoBlockPunch_Range = 18      
+_G.AutoBlock_Enabled = false  
+_G.AutoPunch_Enabled = false  
+_G.AutoPunchAimbot_Enabled = false  
+local cooldown = 25 -- thời gian cooldown (giây)      
+local lastActionTime = 0      
+      
+local clickedTracks = {}      
+local animationIds = {      
+    ["126830014841198"] = true, ["126355327951215"] = true, ["121086746534252"] = true,      
+    ["18885909645"] = true, ["98456918873918"] = true, ["105458270463374"] = true,      
+    ["83829782357897"] = true, ["125403313786645"] = true, ["118298475669935"] = true,      
+    ["82113744478546"] = true, ["70371667919898"] = true, ["99135633258223"] = true,      
+    ["97167027849946"] = true, ["109230267448394"] = true, ["139835501033932"] = true,      
+    ["126896426760253"] = true, ["93069721274110"] = true,  
+}      
+      
+-- Kiểm tra localplayer là Guest1337 survivor (không ở team Killers)      
+local function isGuestSurvivor()      
+    if not lp.Character or lp.Character.Name ~= "Guest1337" then      
+        return false      
+    end      
+    return lp.Character.Parent and lp.Character.Parent.Name ~= "Killers"      
+end      
+      
+-- Gửi remote block      
+local function remoteBlock()      
+    NetworkEvent:FireServer("UseActorAbility", "Block")      
+end      
+      
+-- Gửi remote punch      
+-- Gửi remote punch      
+local function remotePunch(targetRoot)  
+    local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")  
+    if not (hrp and targetRoot) then return end  
 
-    -- xoay hướng
-    hrp.CFrame = CFrame.new(hrp.Position, targetRoot.Position)
+    -- gửi remote punch  
+    NetworkEvent:FireServer("UseActorAbility", "Punch")  
+end  
 
-    -- gửi remote punch
-    local args = {"UseActorAbility", "Punch"}
-    NetworkEvent:FireServer(unpack(args))
-end
-    
-Main1Group:AddToggle("AutoBlockToggle", {
-    Text = "Auto Block",
-    Default = false,
-    Callback = function(v)
-        _G.AutoBlock_Enabled = v
-    end
-})
+-- Nếu bật PunchAimbot thì aim khi có sự kiện Punch client nhận từ server  
+NetworkEvent.OnClientEvent:Connect(function(action, ability, extra)  
+    if not _G.AutoPunchAimbot_Enabled then return end  
+    if action == "UseActorAbility" and ability == "Punch" then  
+        -- tìm killer gần nhất để aim  
+        local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")  
+        if not myRoot then return end  
 
-Main1Group:AddToggle("AutoPunchToggle", {
-    Text = "Auto Punch",
-    Default = false,
-    Callback = function(v)
-        _G.AutoPunch_Enabled = v
-    end
-})
-    
-Main1Group:AddInput("AutoBlockPunchRange", {    
-    Default = tostring(_G.AutoBlockPunch_Range),    
-    Numeric = true,    
-    Text = "Detection Range",    
-    Placeholder = "5 ~ 50",    
-    Callback = function(value)    
-        local num = tonumber(value)    
-        if num and num >= 5 and num <= 50 then    
-            _G.AutoBlockPunch_Range = num    
-        else    
-            Library:Notify("Invalid range (5-50)", 5)    
-        end    
-    end    
-})    
+        local nearest, dist = nil, math.huge  
+        local killersFolder = Workspace:FindFirstChild("Players") and Workspace.Players:FindFirstChild("Killers")  
+        if killersFolder then  
+            for _, killer in ipairs(killersFolder:GetChildren()) do  
+                local root = killer:FindFirstChild("HumanoidRootPart")  
+                local humanoid = killer:FindFirstChildOfClass("Humanoid")  
+                if root and humanoid and humanoid.Health > 0 then  
+                    local d = (root.Position - myRoot.Position).Magnitude  
+                    if d < dist then  
+                        dist = d  
+                        nearest = root  
+                    end  
+                end  
+            end  
+        end  
+
+        if nearest then  
+            -- aim trong 1.2s khi punch diễn ra  
+            local start = tick()  
+            local aimConn  
+            aimConn = RunService.Heartbeat:Connect(function()  
+                if tick() - start > 1.2 or not nearest.Parent or not myRoot.Parent then  
+                    if aimConn then aimConn:Disconnect() end  
+                    return  
+                end  
+                myRoot.CFrame = CFrame.new(myRoot.Position, nearest.Position)  
+            end)  
+        end  
+    end  
+end)
+      
+-- UI      
+Main1Group:AddToggle("AutoBlockToggle", {  
+    Text = "Auto Block",  
+    Default = false,  
+    Callback = function(v)  
+        _G.AutoBlock_Enabled = v  
+    end  
+})  
   
--- Loop chính  
-RunService.Heartbeat:Connect(function()
-    if not isGuestSurvivor() then return end
-    local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-    if not myRoot then return end
-
-    local killersFolder = Workspace:FindFirstChild("Players") and Workspace.Players:FindFirstChild("Killers")
-    if not killersFolder then return end
-
-    for _, killer in ipairs(killersFolder:GetChildren()) do
-        local root = killer:FindFirstChild("HumanoidRootPart")
-        local humanoid = killer:FindFirstChildOfClass("Humanoid")
-        if root and humanoid and humanoid.Health > 0 then
-            local dist = (root.Position - myRoot.Position).Magnitude
-            if dist <= _G.AutoBlockPunch_Range then
-                for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
-                    local anim = track.Animation
-                    local id = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")
-                    if id and animationIds[id] and not clickedTracks[track] then
-                        clickedTracks[track] = true
-
-                        -- chỉ block nếu bật AutoBlock
-                        if _G.AutoBlock_Enabled and tick() - lastActionTime >= cooldown then
-                            lastActionTime = tick()
-                            remoteBlock()
-                        end
-
-                        -- chỉ punch nếu bật AutoPunch
-                        if _G.AutoPunch_Enabled and tick() - lastActionTime >= cooldown then
-                            lastActionTime = tick()
-                            remotePunchAndAim(root)
-                        end
-
-                        task.spawn(function()
-                            track.Stopped:Wait()
-                            clickedTracks[track] = nil
-                        end)
-                    end
-                end
-            end
-        end
-    end
+Main1Group:AddToggle("AutoPunchToggle", {  
+    Text = "Auto Punch",  
+    Default = false,  
+    Callback = function(v)  
+        _G.AutoPunch_Enabled = v  
+    end  
+})  
+  
+Main1Group:AddToggle("AutoPunchAimbotToggle", {  
+    Text = "Punch Aimbot",  
+    Default = false,  
+    Callback = function(v)  
+        _G.AutoPunchAimbot_Enabled = v  
+    end  
+})  
+  
+Main1Group:AddInput("AutoBlockPunchRange", {      
+    Default = tostring(_G.AutoBlockPunch_Range),      
+    Numeric = true,      
+    Text = "Detection Range",      
+    Placeholder = "5 ~ 50",      
+    Callback = function(value)      
+        local num = tonumber(value)      
+        if num and num >= 5 and num <= 50 then      
+            _G.AutoBlockPunch_Range = num  
+        else      
+            Library:Notify("Invalid range (5-50)", 5)      
+        end      
+    end      
+})      
+    
+-- Loop chính    
+RunService.Heartbeat:Connect(function()  
+    if not isGuestSurvivor() then return end  
+    local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")  
+    if not myRoot then return end  
+  
+    local killersFolder = Workspace:FindFirstChild("Players") and Workspace.Players:FindFirstChild("Killers")  
+    if not killersFolder then return end  
+  
+    for _, killer in ipairs(killersFolder:GetChildren()) do  
+        local root = killer:FindFirstChild("HumanoidRootPart")  
+        local humanoid = killer:FindFirstChildOfClass("Humanoid")  
+        if root and humanoid and humanoid.Health > 0 then  
+            local dist = (root.Position - myRoot.Position).Magnitude  
+            if dist <= _G.AutoBlockPunch_Range then  
+                for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do  
+                    local anim = track.Animation  
+                    local id = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")  
+                    if id and animationIds[id] and not clickedTracks[track] then  
+                        clickedTracks[track] = true  
+  
+                        -- cooldown chung  
+                        if tick() - lastActionTime >= cooldown then  
+                            lastActionTime = tick()  
+  
+                            -- Block trước nếu bật  
+                            if _G.AutoBlock_Enabled then  
+                                remoteBlock()  
+                                task.wait(0.2) -- delay 0.2s trước khi punch  
+                            end  
+  
+                            -- Punch nếu bật  
+                            if _G.AutoPunch_Enabled then  
+                                remotePunch(root)  
+                            end  
+                        end  
+  
+                        task.spawn(function()  
+                            track.Stopped:Wait()  
+                            clickedTracks[track] = nil  
+                        end)  
+                    end  
+                end  
+            end  
+        end  
+    end  
 end)
 
 
