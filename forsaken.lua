@@ -1591,17 +1591,79 @@ Main2Group:AddToggle("EspBuildermanSentry", {
 	end
 })
 
-Main2Group:AddToggle("EspDIGITALFOOTPRINT", {
-	Text = "ESP JohnDoe Trap",
-	Default = false,
-	Callback = function(v)
-		_G.EspDIGITALFOOTPRINT = v
-		if v then
-			task.spawn(function()
-				HandleESP("Shadow", Color3.fromRGB(255,0,255), "Digital Footprint", "EspDIGITALFOOTPRINT")
-			end)
-		end
-	end
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local lp = Players.LocalPlayer
+
+-- ESP Config
+getgenv().ESP_JohnDoeTrap = false
+local espFolder = Instance.new("Folder", game.CoreGui)
+espFolder.Name = "JohnDoeTrapESP"
+
+-- Hàm tạo ESP cho 1 part
+local function createESP(part)
+    if not part:IsA("BasePart") or part.Name ~= "Shadow" then return end
+    if part:FindFirstChild("ESPBox") then return end
+
+    -- chỉnh part
+    part.Transparency = 0.8
+    part.Color = Color3.fromRGB(255,0,255)
+    part.Material = Enum.Material.Neon
+
+    -- Billboard
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "ESPBox"
+    billboard.AlwaysOnTop = true
+    billboard.Size = UDim2.new(0,200,0,50)
+    billboard.StudsOffset = Vector3.new(0,2,0)
+    billboard.Parent = part
+
+    local label = Instance.new("TextLabel")
+    label.BackgroundTransparency = 1
+    label.Size = UDim2.new(1,0,1,0)
+    label.TextColor3 = Color3.fromRGB(255,0,255)
+    label.TextScaled = true
+    label.Font = Enum.Font.Code
+    label.Text = "Digital Footprint\nDistance: 0.0"
+    label.Parent = billboard
+
+    -- update distance
+    RunService.Heartbeat:Connect(function()
+        if not part:IsDescendantOf(workspace) or not billboard.Parent then return end
+        local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            local dist = (part.Position - hrp.Position).Magnitude
+            label.Text = string.format("Digital Footprint\nDistance: %.1f", dist)
+        end
+    end)
+end
+
+-- toggle Obsidian
+Main2Group:AddToggle("ESPJohnDoeTrap", {
+    Text = "ESP JohnDoe Trap",
+    Default = false,
+    Callback = function(v)
+        getgenv().ESP_JohnDoeTrap = v
+        if v then
+            -- quét toàn bộ
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if obj:IsA("BasePart") and obj.Name == "Shadow" then
+                    createESP(obj)
+                end
+            end
+            -- bắt part mới
+            workspace.DescendantAdded:Connect(function(obj)
+                if getgenv().ESP_JohnDoeTrap and obj:IsA("BasePart") and obj.Name == "Shadow" then
+                    createESP(obj)
+                end
+            end)
+        else
+            -- tắt ESP → xoá
+            for _, esp in ipairs(espFolder:GetDescendants()) do
+                esp:Destroy()
+            end
+        end
+    end
 })
 
 Main2Group:AddDivider()
