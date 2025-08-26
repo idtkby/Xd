@@ -63,181 +63,6 @@ else
 end
 end)
 
-task.spawn(function()
--- Variables  
-getgenv().Players = game:GetService("Players")  
-getgenv().LocalPlayer = getgenv().Players.LocalPlayer  
-getgenv().Remote = game:GetService("ReplicatedStorage").Modules.Network.RemoteEvent  
-  
--- Lấy global environment an toàn  
-local globalEnv = getgenv()  
-  
--- Khai báo các service  
-globalEnv.Players = game:GetService("Players")  
-globalEnv.RunService = game:GetService("RunService")  
-globalEnv.Camera = workspace.CurrentCamera  
-globalEnv.Player = globalEnv.Players.LocalPlayer  
-  
--- Biến cấu hình  
-globalEnv.walkSpeed = 100 -- tốc độ di chuyển  
-globalEnv.blockAnimationId = {18885940850, 18885937766}  
-globalEnv.toggle = false -- trạng thái bật/tắt  
-globalEnv.connection = nil  
-  
--- Hàm lấy Character  
-function globalEnv.getCharacter()  
-    return globalEnv.Player.Character or globalEnv.Player.CharacterAdded:Wait()  
-end  
-  
--- Heartbeat loop  
-function globalEnv.onHeartbeat()  
-    local player = globalEnv.Player  
-    local character = globalEnv.getCharacter()  
-  
-    if character.Name ~= "c00lkidd" then return end  
-    local char = globalEnv.getCharacter()  
-    local rootPart = char:FindFirstChild("HumanoidRootPart")  
-    local humanoid = char:FindFirstChildOfClass("Humanoid")  
-    local lv = rootPart and rootPart:FindFirstChild("LinearVelocity")  
-    if not rootPart or not humanoid or not lv then return end  
-  
-    if lv then  
-        lv.VectorVelocity = Vector3.new(math.huge, math.huge, math.huge)  
-        lv.Enabled = false -- Tắt LinearVelocity  
-    end  
-  
--- Biến kiểm soát dừng di chuyển  
-local stopMovement = false  
-  
--- Hàm kiểm tra giá trị của Result  
-local validValues = {  
-    Timeout = true,  
-    Collide = true,  
-    Hit = true  
-}  
-  
-local function watchResult(result)  
-    local function checkValue()  
-        if validValues[result.Value] then  
-            stopMovement = true  
-        end  
-    end  
-    checkValue()  
-    result:GetPropertyChangedSignal("Value"):Connect(checkValue)  
-end  
-  
--- Khi Character xuất hiện  
-local function onCharacterAdded(character)  
-    local result = character:FindFirstChild("Result")  
-    if result and result:IsA("StringValue") then  
-        watchResult(result)  
-    end  
-    character.ChildAdded:Connect(function(child)  
-        if child.Name == "Result" and child:IsA("StringValue") then  
-            watchResult(child)  
-        end  
-    end)  
-end  
-  
--- Lắng nghe khi Player có Character  
-Player.CharacterAdded:Connect(onCharacterAdded)  
-if Player.Character then  
-    onCharacterAdded(Player.Character)  
-end  
-  
-    if not stopMovement then  
-        local lookVector = globalEnv.Camera.CFrame.LookVector  
-        local moveDir = Vector3.new(lookVector.X, 0, lookVector.Z)  
-        if moveDir.Magnitude > 0 then  
-            moveDir = moveDir.Unit  
-            rootPart.Velocity = Vector3.new(moveDir.X * globalEnv.walkSpeed, rootPart.Velocity.Y, moveDir.Z * globalEnv.walkSpeed)  
-            rootPart.CFrame = CFrame.new(rootPart.Position, rootPart.Position + moveDir)  
-        end  
-    end  
-end  
-  
--- Tạo hook chung  
-getgenv().createHook = function(remoteName)  
-    getgenv()["original_" .. remoteName] = hookmetamethod(game, "__namecall", function(self, ...)  
-        local method = getnamecallmethod()  
-        local args = {...}  
-  
-        if self == getgenv().Remote and method == "FireServer" then  
-            if args[1] == getgenv().LocalPlayer.Name .. remoteName then  
-                return -- block  
-            end  
-        end  
-  
-        return getgenv()["original_" .. remoteName](self, ...) -- gọi hook gốc  
-    end)  
-    return getgenv()["original_" .. remoteName]  
-end  
-  
-getgenv().isFiringDusekkar = false  
-  
--- Bật hook  
-getgenv().enableHook = function(remoteName)  
-    if not getgenv()["hook_" .. remoteName] then  
-        getgenv()["hook_" .. remoteName] = getgenv().createHook(remoteName)  
-    end  
-  
-    if remoteName == "DusekkarCancel" then  
-        if not getgenv().isFiringDusekkar then  
-            getgenv().isFiringDusekkar = true  
-            task.spawn(function()  
-                task.wait(4)  
-                local ReplicatedStorage = game:GetService("ReplicatedStorage")  
-                local RemoteEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")  
-                RemoteEvent:FireServer({game:GetService("Players").LocalPlayer.Name .. "DusekkarCancel"})  
-                getgenv().isFiringDusekkar = false -- cho phép gọi lại khi cần  
-            end)  
-        end  
-    end  
-end  
-  
--- Tắt hook  
-getgenv().disableHook = function(remoteName)  
-    if getgenv()["hook_" .. remoteName] then  
-        hookmetamethod(game, "__namecall", getgenv()["hook_" .. remoteName]) -- phục hồi hook gốc  
-  
-        getgenv()["hook_" .. remoteName] = nil  
-        getgenv()["original_" .. remoteName] = nil  
-    end  
-end  
-  
--- Cài đặt các hàm cho từng loại  
-getgenv().EnableC00lkidd = function() getgenv().enableHook("C00lkiddCollision") end  
-getgenv().DisableC00lkidd = function() getgenv().disableHook("C00lkiddCollision") end  
-  
-getgenv().EnableCharge = function() getgenv().enableHook("Guest1337Collision") end  
-getgenv().DisableCharge = function() getgenv().disableHook("Guest1337Collision") end  
-  
-  
-getgenv().blockFootstepPlayed = false  
-  
-getgenv().HookFootstepPlayed = function(enable)  
-    if enable then  
-        if not getgenv().originalFootstepHook then  
-            getgenv().originalFootstepHook = hookmetamethod(game, "__namecall", function(self, ...)  
-                local method = getnamecallmethod()  
-                local args = {...}  
-  
-                -- Chặn FootstepPlayed trong UnreliableRemoteEvent  
-                if method == "FireServer" and self.Name == "UnreliableRemoteEvent" then  
-                    if args[1] == "FootstepPlayed" and getgenv().blockFootstepPlayed then  
-                        return -- Block FootstepPlayed  
-                    end  
-                end  
-  
-                return getgenv().originalFootstepHook(self, ...)  
-            end)  
-        end  
-        getgenv().blockFootstepPlayed = true  
-    else  
-        getgenv().blockFootstepPlayed = false  
-    end  
-end  
-end)
 
 task.wait(1)
 
@@ -1038,45 +863,92 @@ RunService.Heartbeat:Connect(function()
             if dist <= _G.AutoBlockPunch_Range then  
 
                 -- 1) Kiểm tra Animation  
-                for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do  
-                    local anim = track.Animation
-local id = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")
-if id then
-    -- Trường hợp anim đặc biệt
-    if id == specialAnimId and not clickedTracks[track] then
-        clickedTracks[track] = true
+                -- Đánh dấu thời điểm anim/sound bắt đầu
+local animStarted = {}
+local soundStarted = {}
 
-        local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-        if myRoot and root then
-            local dist = (root.Position - myRoot.Position).Magnitude
-            if dist <= 50 and isFacingTarget(root, myRoot, 35) then -- 35° lệch cho phép
-                remoteBlock()
+-- Trong loop chính
+for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
+    local anim = track.Animation
+    local id = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")
+    if id then
+        -- Anim đặc biệt
+        if id == specialAnimId and not clickedTracks[track] then
+            clickedTracks[track] = true
+
+            if myRoot and root then
+                local dist = (root.Position - myRoot.Position).Magnitude
+                if dist <= 50 and isFacingTarget(root, myRoot, 35) then
+                    remoteBlock()
+                end
             end
+
+            task.spawn(function()
+                track.Stopped:Wait()
+                clickedTracks[track] = nil
+            end)
         end
 
-        task.spawn(function()
-            track.Stopped:Wait()
-            clickedTracks[track] = nil
-        end)
+        -- Anim bình thường
+        if animationIds[id] then
+            -- Chỉ cho phép khi anim được phát lúc đang trong range
+            if not animStarted[track] then
+                if dist <= _G.AutoBlockPunch_Range then
+                    animStarted[track] = true
+                end
+            end
+
+            if animStarted[track] and not clickedTracks[track] then
+                clickedTracks[track] = true
+                if tick() - lastActionTime >= cooldown then
+                    lastActionTime = tick()
+                    if _G.AutoBlock_Enabled then
+                        remoteBlock()
+                        task.wait(0.2)
+                    end
+                    if _G.AutoPunch_Enabled then
+                        remotePunch(root)
+                    end
+                end
+                task.spawn(function()
+                    track.Stopped:Wait()
+                    clickedTracks[track] = nil
+                    animStarted[track] = nil
+                end)
+            end
+        end
     end
+end
 
-    -- Các anim block bình thường
-    if animationIds[id] and not clickedTracks[track] then
-        clickedTracks[track] = true
-        if tick() - lastActionTime >= cooldown then
-            lastActionTime = tick()
-            if _G.AutoBlock_Enabled then
-                remoteBlock()
-                task.wait(0.2)
+-- 2) Kiểm tra Sound
+for _, sound in ipairs(killer:GetDescendants()) do
+    if sound:IsA("Sound") and sound.IsPlaying then
+        local sid = sound.SoundId and sound.SoundId:match("%d+")
+        if sid and autoBlockTriggerSounds[sid] then
+            if not soundStarted[sid] then
+                if dist <= _G.AutoBlockPunch_Range then
+                    soundStarted[sid] = true
+                end
             end
-            if _G.AutoPunch_Enabled then
-                remotePunch(root)
+
+            if soundStarted[sid] and not clickedSounds[sid] then
+                clickedSounds[sid] = true
+                if tick() - lastActionTime >= cooldown then
+                    lastActionTime = tick()
+                    if _G.AutoBlock_Enabled then
+                        remoteBlock()
+                        task.wait(0.2)
+                    end
+                    if _G.AutoPunch_Enabled then
+                        remotePunch(root)
+                    end
+                end
+                task.delay(2, function()
+                    clickedSounds[sid] = nil
+                    soundStarted[sid] = nil
+                end)
             end
         end
-        task.spawn(function()
-            track.Stopped:Wait()
-            clickedTracks[track] = nil
-        end)
     end
 end
 
