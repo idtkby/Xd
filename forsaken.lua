@@ -2624,7 +2624,44 @@ M205One:AddDropdown("LastSoundChoice", {
 M205One:AddDivider()
 
 task.spawn(function()
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+local RunService = game:GetService("RunService")
 
+getgenv().AutoTouchPizza = false
+
+-- Hàm ăn Pizza
+local function eatPizza()
+    local char = lp.Character or lp.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+
+    for _, v in ipairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") and v.Name == "Pizza" and v:FindFirstChild("TouchInterest") then
+            firetouchinterest(hrp, v, 0) -- chạm
+            task.wait(0.1)
+            firetouchinterest(hrp, v, 1) -- ngừng chạm
+        end
+    end
+end
+
+-- Loop chính
+task.spawn(function()
+    while true do
+        if getgenv().AutoTouchPizza then
+            eatPizza()
+        end
+        task.wait(5) -- delay 5s/lần
+    end
+end)
+
+-- Toggle obsidian
+M205One:CreateToggle({
+    Name = "Auto Touch Pizza",
+    CurrentValue = false,
+    Callback = function(Value)
+        getgenv().AutoTouchPizza = Value
+    end
+})
 
 -- Biến fling
 local flingPunchOn = false
