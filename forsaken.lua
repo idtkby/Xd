@@ -737,27 +737,28 @@ Main1Group:AddLabel("--== Surviv: [ Guest 1337 ] ==--", true)
 
 --// Auto Block + Punch cho Guest1337 Survivor (Obsidian Lib)
 task.spawn(function()
+-- === RunService loop (with track age filter + special anims) ===
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local lp = Players.LocalPlayer
-
--- Remote
 local NetworkEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
 
--- Biến
-_G.AutoBlockPunch_Range = 18
-_G.AutoBlock_Enabled = false
-_G.AutoPunch_Enabled = false
-_G.AutoPunchAimbot_Enabled = false
-local cooldown = 1 -- giây
+-- settings
+local cooldown = 1
 local lastActionTime = 0
-
 local clickedTracks = {}
 local clickedSounds = {}
+local trackStartTimes = {}               -- lưu thời điểm track bắt đầu
+local MAX_TRACK_AGE = 1.5                -- ngưỡng (giây) — only react to tracks younger than this (non-special)
+local SPECIAL_ANIMS = {                  -- các anim "đặc biệt" -> bypass age filter + do facing check
+    ["106776364623742"] = true,
+    ["18885906143"]      = true,
+    ["98456918873918"]   = true,
+}
 
--- Animation-based AutoBlock IDs
+-- animation IDs và sound list (giữ nguyên từ trước)
 local animationIds = {
     ["126830014841198"] = true, ["126355327951215"] = true, ["121086746534252"] = true,
     ["18885909645"] = true, ["98456918873918"] = true, ["105458270463374"] = true,
@@ -770,7 +771,6 @@ local animationIds = {
     ["92173139187970"] = true
 }
 
--- Audio-based Auto Block IDs
 local autoBlockTriggerSounds = {
     ["102228729296384"] = true, ["140242176732868"] = true, ["112809109188560"] = true,
     ["136323728355613"] = true, ["115026634746636"] = true, ["84116622032112"] = true,
@@ -779,97 +779,59 @@ local autoBlockTriggerSounds = {
     ["84307400688050"] = true, ["113037804008732"] = true, ["105200830849301"] = true
 }
 
--- Special animation id to check + parameters
-local SPECIAL_ANIM_ID = "106776364623742"
-local SPECIAL_CHECK_DISTANCE = 100 -- fixed 100 studs
-local SPECIAL_ALIGNMENT_THRESHOLD = 0.8 -- dot product threshold (0..1)
-
--- Kiểm tra localplayer là Guest1337 survivor
+-- helpers
 local function isGuestSurvivor()
     if not lp.Character or lp.Character.Name ~= "Guest1337" then return false end
     return lp.Character.Parent and lp.Character.Parent.Name ~= "Killers"
 end
 
--- Remote Block
 local function remoteBlock()
     NetworkEvent:FireServer("UseActorAbility", "Block")
 end
-
--- Remote Punch
 local function remotePunch(targetRoot)
-    local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-    if hrp and targetRoot then
+    if lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") and targetRoot then
         NetworkEvent:FireServer("UseActorAbility", "Punch")
     end
 end
 
--- helper: check if killer is moving/looking toward localplayer
-local function killerIsFacingOrMovingToPlayer(killerRoot, myRoot)
-    if not killerRoot or not myRoot then return false end
-
+local function killerIsFacingOrMovingToPlayer(killerRoot, myRoot, threshold)
+    threshold = threshold or 0.8
+    if not killerRoot or not myRoot then return false, math.huge end
     local toPlayer = (myRoot.Position - killerRoot.Position)
     local dist = toPlayer.Magnitude
-    if dist == 0 then return false end
-
+    if dist == 0 then return false, dist end
     local dirToPlayer = toPlayer.Unit
 
-    -- prefer using velocity direction if available
     local vel = killerRoot.AssemblyLinearVelocity
     local velDir
     if vel and vel.Magnitude > 0.1 then
         velDir = vel.Unit
     else
-        -- fallback to lookVector
         velDir = killerRoot.CFrame.LookVector
-        if velDir.Magnitude < 0.001 then return false end
+        if velDir.Magnitude < 0.001 then return false, dist end
         velDir = Vector3.new(velDir.X, 0, velDir.Z).Unit
     end
 
-    -- flatten both to horizontal for fair comparison
-    local v1 = Vector3.new(dirToPlayer.X, 0, dirToPlayer.Z).Unit
-    local v2 = Vector3.new(velDir.X, 0, velDir.Z).Unit
+    local v1 = Vector3.new(dirToPlayer.X, 0, dirToPlayer.Z)
+    local mag1 = v1.Magnitude
+    if mag1 == 0 then return false, dist end
+    v1 = v1.Unit
+    local v2 = Vector3.new(velDir.X, 0, velDir.Z)
+    local mag2 = v2.Magnitude
+    if mag2 == 0 then return false, dist end
+    v2 = v2.Unit
 
     local dot = v1:Dot(v2)
-    return dot >= SPECIAL_ALIGNMENT_THRESHOLD, dist
+    return dot >= threshold, dist
 end
 
--- Punch Aimbot theo remote Punch từ server
-NetworkEvent.OnClientEvent:Connect(function(action, ability)
-    if not _G.AutoPunchAimbot_Enabled then return end
-    if action == "UseActorAbility" and ability == "Punch" then
-        local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-        if not myRoot then return end
+-- keep trackStartTimes updated: whenever we first see a playing track that we haven't recorded -> record and attach Stopped handler
+local function registerTrackStart(track)
+    if not track or trackStoppedConnectionMap[track] then return end
+end
+-- We'll maintain per-track Stopped listeners inline below.
 
-        local nearest, dist = nil, math.huge
-        local killersFolder = Workspace:FindFirstChild("Players") and Workspace.Players:FindFirstChild("Killers")
-        if killersFolder then
-            for _, killer in ipairs(killersFolder:GetChildren()) do
-                local root = killer:FindFirstChild("HumanoidRootPart")
-                local humanoid = killer:FindFirstChildOfClass("Humanoid")
-                if root and humanoid and humanoid.Health > 0 then
-                    local d = (root.Position - myRoot.Position).Magnitude
-                    if d < dist then
-                        dist = d; nearest = root
-                    end
-                end
-            end
-        end
-
-        if nearest then
-            local start = tick()
-            local aimConn
-            aimConn = RunService.Heartbeat:Connect(function()
-                if tick() - start > 1.2 or not nearest.Parent or not myRoot.Parent then
-                    if aimConn then aimConn:Disconnect() end
-                    return
-                end
-                myRoot.CFrame = CFrame.new(myRoot.Position, nearest.Position)
-            end)
-        end
-    end
-end)
-
--- Main loop (animation + audio checks)
+-- Main loop
 RunService.Heartbeat:Connect(function()
     if not isGuestSurvivor() then return end
     local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
@@ -881,99 +843,105 @@ RunService.Heartbeat:Connect(function()
     for _, killer in ipairs(killersFolder:GetChildren()) do
         local root = killer:FindFirstChild("HumanoidRootPart")
         local humanoid = killer:FindFirstChildOfClass("Humanoid")
-        if root and humanoid and humanoid.Health > 0 then
-            local dist = (root.Position - myRoot.Position).Magnitude
-            if dist <= _G.AutoBlockPunch_Range then
+        if not (root and humanoid and humanoid.Health > 0) then goto cont end
 
-                -- 0) Special animation: nếu killer phát SPECIAL_ANIM_ID, check hướng -> block/punch (100 studs fixed)
-                for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
-                    local anim = track.Animation
-                    local aid = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")
-                    if aid and aid == SPECIAL_ANIM_ID and not clickedTracks[track] then
-                        -- only act if within fixed 100 studs and facing/moving toward player
-                        local isFacing, d = killerIsFacingOrMovingToPlayer(root, myRoot)
-                        if isFacing and d <= SPECIAL_CHECK_DISTANCE then
-                            clickedTracks[track] = true
-                            if tick() - lastActionTime >= cooldown then
-                                lastActionTime = tick()
-                                if _G.AutoBlock_Enabled then
-                                    remoteBlock()
-                                    task.wait(0.2)
-                                end
-                                if _G.AutoPunch_Enabled then
-                                    remotePunch(root)
-                                end
-                            end
-                            task.spawn(function()
-                                track.Stopped:Wait()
-                                clickedTracks[track] = nil
-                            end)
-                        end
-                    end
-                end
+        local dist = (root.Position - myRoot.Position).Magnitude
+        if dist > _G.AutoBlockPunch_Range then goto cont end
 
-                -- 1) Kiểm tra Animation (những id thông thường)
-                -- 1) Kiểm tra Animation (những id thông thường, chỉ block nếu anim bắt đầu khi killer đang trong range)
-for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
-    local anim = track.Animation
-    local id = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")
-    if id and animationIds[id] and not clickedTracks[track] then
-        -- chỉ đánh dấu và block nếu killer đang TRONG RANGE tại thời điểm anim phát
-        if dist <= _G.AutoBlockPunch_Range then
-            clickedTracks[track] = true
-
-            if tick() - lastActionTime >= cooldown then
-                lastActionTime = tick()
-
-                if _G.AutoBlock_Enabled then
-                    remoteBlock()
-                    task.wait(0.2)
-                end
-                if _G.AutoPunch_Enabled then
-                    remotePunch(root)
+        -- Iterate tracks: maintain trackStartTimes
+        for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
+            if track and track.IsPlaying then
+                if not trackStartTimes[track] then
+                    trackStartTimes[track] = tick()
+                    -- cleanup when stopped
+                    spawn(function(tk)
+                        pcall(function()
+                            tk.Stopped:Wait()
+                        end)
+                        trackStartTimes[tk] = nil
+                        clickedTracks[tk] = nil
+                    end, track)
                 end
             end
-        else
-            -- nếu anim bắt đầu ngoài range thì bỏ qua
-            clickedTracks[track] = true
         end
 
-        -- clear khi anim dừng
-        task.spawn(function()
-            track.Stopped:Wait()
-            clickedTracks[track] = nil
-        end)
-    end
-end
-
-                -- 2) Kiểm tra Sound
-                for _, sound in ipairs(killer:GetDescendants()) do
-                    if sound:IsA("Sound") and sound.IsPlaying then
-                        local sid = sound.SoundId and sound.SoundId:match("%d+")
-                        if sid and autoBlockTriggerSounds[sid] and not clickedSounds[sid] then
-                            clickedSounds[sid] = true
-
-                            if tick() - lastActionTime >= cooldown then
-                                lastActionTime = tick()
-
-                                if _G.AutoBlock_Enabled then
-                                    remoteBlock()
-                                    task.wait(0.2)
-                                end
-                                if _G.AutoPunch_Enabled then
-                                    remotePunch(root)
-                                end
-                            end
-
-                            task.delay(2, function()
-                                clickedSounds[sid] = nil
-                            end)
+        -- 0) Special animations: bypass age filter; use facing+distance check (100 studs fixed)
+        for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
+            local anim = track.Animation
+            local aid = anim and anim.AnimationId and tostring(anim.AnimationId):match("%d+")
+            if aid and SPECIAL_ANIMS[aid] and not clickedTracks[track] then
+                local isFacing, d = killerIsFacingOrMovingToPlayer(root, myRoot, 0.8)
+                if isFacing and d <= 100 then
+                    clickedTracks[track] = true
+                    if tick() - lastActionTime >= cooldown then
+                        lastActionTime = tick()
+                        if _G.AutoBlock_Enabled then
+                            remoteBlock()
+                            task.wait(0.2)
+                        end
+                        if _G.AutoPunch_Enabled then
+                            remotePunch(root)
                         end
                     end
+                    -- clear when stopped
+                    spawn(function(tk)
+                        pcall(function() tk.Stopped:Wait() end)
+                        clickedTracks[tk] = nil
+                    end, track)
                 end
-
             end
         end
+
+        -- 1) Normal animation triggers: only if track "mới" (age <= MAX_TRACK_AGE)
+        for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
+            local anim = track.Animation
+            local id = anim and anim.AnimationId and tostring(anim.AnimationId):match("%d+")
+            if id and animationIds[id] and not clickedTracks[track] then
+                local startT = trackStartTimes[track]
+                local age = startT and (tick() - startT) or math.huge
+                if age <= MAX_TRACK_AGE then
+                    -- valid fresh track -> trigger
+                    clickedTracks[track] = true
+                    if tick() - lastActionTime >= cooldown then
+                        lastActionTime = tick()
+                        if _G.AutoBlock_Enabled then
+                            remoteBlock()
+                            task.wait(0.2)
+                        end
+                        if _G.AutoPunch_Enabled then
+                            remotePunch(root)
+                        end
+                    end
+                    spawn(function(tk)
+                        pcall(function() tk.Stopped:Wait() end)
+                        clickedTracks[tk] = nil
+                    end, track)
+                end
+            end
+        end
+
+        -- 2) Audio checks
+        for _, sound in ipairs(killer:GetDescendants()) do
+            if sound:IsA("Sound") and sound.IsPlaying then
+                local sid = sound.SoundId and sound.SoundId:match("%d+")
+                if sid and autoBlockTriggerSounds[sid] and not clickedSounds[sid] then
+                    clickedSounds[sid] = true
+                    if tick() - lastActionTime >= cooldown then
+                        lastActionTime = tick()
+                        if _G.AutoBlock_Enabled then
+                            remoteBlock()
+                            task.wait(0.2)
+                        end
+                        if _G.AutoPunch_Enabled then
+                            remotePunch(root)
+                        end
+                    end
+                    task.delay(2, function() clickedSounds[sid] = nil end)
+                end
+            end
+        end
+
+        ::cont::
     end
 end)
       
