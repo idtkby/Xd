@@ -2626,12 +2626,11 @@ M205One:AddDivider()
 task.spawn(function()
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
 
 getgenv().AutoBringPizza = false
-local eating = false -- tránh spam
+local eating = false
 
--- Hàm ăn Pizza
+-- Hàm ăn Pizza an toàn (ăn từng cái một)
 local function eatPizza()
     if eating then return end
     eating = true
@@ -2645,37 +2644,47 @@ local function eatPizza()
             if not hrp or not hum then break end
             if hum.Health >= hum.MaxHealth then break end
 
-            local foundPizza = false
+            -- tìm Pizza gần nhất
+            local nearest, dist = nil, math.huge
             for _, v in ipairs(workspace:GetDescendants()) do
                 if v:IsA("BasePart") and v.Name == "Pizza" and v:FindFirstChild("TouchInterest") then
-                    foundPizza = true
-                    firetouchinterest(hrp, v, 0)
-                    task.wait(0.1)
-                    firetouchinterest(hrp, v, 1)
+                    local d = (v.Position - hrp.Position).Magnitude
+                    if d < dist then
+                        dist = d
+                        nearest = v
+                    end
                 end
             end
 
-            if not foundPizza then break end
-            task.wait(1) -- lặp lại sau 1s nếu còn Pizza
+            if nearest then
+                firetouchinterest(hrp, nearest, 0)
+                task.wait(0.1)
+                firetouchinterest(hrp, nearest, 1)
+                task.wait(1) -- delay ăn tiếp
+            else
+                break -- không còn Pizza
+            end
         end
         eating = false
     end)
 end
 
--- Theo dõi khi Pizza mới xuất hiện
+-- Theo dõi khi có Pizza mới spawn
 workspace.DescendantAdded:Connect(function(obj)
-    if getgenv().AutoBringPizza and obj:IsA("BasePart") and obj.Name == "Pizza" and obj:FindFirstChild("TouchInterest") then
-        eatPizza()
+    if getgenv().AutoBringPizza and not eating then
+        if obj:IsA("BasePart") and obj.Name == "Pizza" and obj:FindFirstChild("TouchInterest") then
+            eatPizza()
+        end
     end
 end)
 
--- Toggle Obsidian
+-- Toggle (Obsidian style)
 M205One:AddToggle("AutoBringPizzaToggle", {
-    Text = "Auto Eat Pizza",
+    Text = "Auto eat Pizza",
     Default = false,
     Callback = function(v)
         getgenv().AutoBringPizza = v
-        if v then
+        if v and not eating then
             -- Nếu bật khi đã có Pizza sẵn
             for _, v in ipairs(workspace:GetDescendants()) do
                 if v:IsA("BasePart") and v.Name == "Pizza" and v:FindFirstChild("TouchInterest") then
