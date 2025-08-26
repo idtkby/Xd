@@ -981,7 +981,6 @@ end
             end  
         end  
     end  
-end
 end)
       
 -- UI      
