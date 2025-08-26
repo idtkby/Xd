@@ -1,301 +1,15 @@
 local Players = game:GetService("Players")
-local localPlayer = Players.LocalPlayer
-local playerData = localPlayer:WaitForChild("PlayerData")
+local playerData = game:GetService("Players").LocalPlayer:WaitForChild("PlayerData")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local LocalPlayer = game:GetService("Players").LocalPlayer
 local MarketplaceService = game:GetService("MarketplaceService")
 local RemoteEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
 local TweenService = game:GetService("TweenService")
-local lp = Players.LocalPlayer
-local PlayerGui = lp:WaitForChild("PlayerGui")
+local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 local Humanoid, Animator
 local player = Players.LocalPlayer
 local purchasedEmotesFolder = playerData:WaitForChild("Purchased"):WaitForChild("Emotes")
 local Remote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
-
--- Hàm lấy danh sách emote từ Purchased.Emotes
-local function getEmoteList()
-    local list = {}
-    for _, emote in ipairs(purchasedEmotesFolder:GetChildren()) do
-        table.insert(list, emote.Name)
-    end
-    return list
-end
-
---==================== GUI 1 (Dropdown) ====================--
-local emoteList = getEmoteList()
-local selectedEmote = emoteList[1]
-
-local emoteGuiMain = Instance.new("ScreenGui")
-emoteGuiMain.Name = "CustomEmoteGuiMain"
-emoteGuiMain.ResetOnSpawn = false
-emoteGuiMain.DisplayOrder = 999998
-emoteGuiMain.Enabled = false
-emoteGuiMain.Parent = localPlayer:WaitForChild("PlayerGui")
-
-local emoteGuiToggle = Instance.new("ScreenGui")
-emoteGuiToggle.Name = "CustomEmoteGuiToggle"
-emoteGuiToggle.ResetOnSpawn = false
-emoteGuiToggle.DisplayOrder = 999999
-emoteGuiToggle.Parent = localPlayer:WaitForChild("PlayerGui")
-
-local toggleEmoteGuiButton = Instance.new("ImageButton")
-toggleEmoteGuiButton.Size = UDim2.new(0, 60, 0, 60)
-toggleEmoteGuiButton.Position = UDim2.new(0.05, 340, 0.05, -47.5)
-toggleEmoteGuiButton.AnchorPoint = Vector2.new(0.5, 0.5)
-toggleEmoteGuiButton.BackgroundTransparency = 1
-toggleEmoteGuiButton.Image = "rbxassetid://73335752800725"
-toggleEmoteGuiButton.ZIndex = 999999
-toggleEmoteGuiButton.Parent = emoteGuiToggle
-
-local survivorValue = playerData:WaitForChild("Equipped"):WaitForChild("Survivor")
-local guiVisible = false
-
-local function updateToggle()
-    local isTarget = survivorValue.Value == "007n7"
-    emoteGuiToggle.Enabled = isTarget
-    if not isTarget then
-        emoteGuiMain.Enabled = false
-        guiVisible = false
-    end
-end
-updateToggle()
-survivorValue:GetPropertyChangedSignal("Value"):Connect(updateToggle)
-
-local playButton = Instance.new("TextButton")
-playButton.Size = UDim2.new(0, 160, 0, 36)
-playButton.Position = UDim2.new(1, -204, 0, 150)
-playButton.BackgroundColor3 = Color3.fromRGB(80,80,80)
-playButton.TextColor3 = Color3.new(1,1,1)
-playButton.Font = Enum.Font.SourceSans
-playButton.TextSize = 18
-playButton.Text = "Boombox Clone (007n7)"
-playButton.Parent = emoteGuiMain
-
-local dropdownFrame = Instance.new("Frame")
-dropdownFrame.Size = UDim2.new(0, 220, 0, 40)
-dropdownFrame.Position = UDim2.new(1, -240, 0, 100)
-dropdownFrame.BackgroundColor3 = Color3.fromRGB(40,40,40)
-dropdownFrame.BorderSizePixel = 0
-dropdownFrame.Parent = emoteGuiMain
-
-local dropdownButton = Instance.new("TextButton")
-dropdownButton.Size = UDim2.new(1,0,1,0)
-dropdownButton.BackgroundColor3 = Color3.fromRGB(60,60,60)
-dropdownButton.TextColor3 = Color3.new(1,1,1)
-dropdownButton.Font = Enum.Font.SourceSans
-dropdownButton.TextSize = 18
-dropdownButton.Text = selectedEmote and ("Emote: "..selectedEmote) or "Chọn Emote"
-dropdownButton.Parent = dropdownFrame
-
-local emoteListFrame = Instance.new("ScrollingFrame")
-emoteListFrame.Size = UDim2.new(1,0,0, math.clamp(#emoteList,1,8) * 30)
-emoteListFrame.Position = UDim2.new(0,0,1,2)
-emoteListFrame.BackgroundColor3 = Color3.fromRGB(50,50,50)
-emoteListFrame.BorderSizePixel = 0
-emoteListFrame.Visible = false
-emoteListFrame.CanvasSize = UDim2.new(0,0,0, #emoteList * 30)
-emoteListFrame.ScrollBarThickness = 6
-emoteListFrame.Parent = dropdownFrame
-
-local listLayout = Instance.new("UIListLayout")
-listLayout.FillDirection = Enum.FillDirection.Vertical
-listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-listLayout.Parent = emoteListFrame
-
-local function populateDropdown(list)
-    for _, child in ipairs(emoteListFrame:GetChildren()) do
-        if child:IsA("TextButton") then child:Destroy() end
-    end
-    for _, name in ipairs(list) do
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, -6, 0, 30)
-        btn.Position = UDim2.new(0, 3, 0, 0)
-        btn.BackgroundColor3 = Color3.fromRGB(70,70,70)
-        btn.TextColor3 = Color3.new(1,1,1)
-        btn.Font = Enum.Font.SourceSans
-        btn.TextSize = 16
-        btn.Text = name
-        btn.Parent = emoteListFrame
-        btn.MouseButton1Click:Connect(function()
-            selectedEmote = name
-            dropdownButton.Text = "Emote: " .. name
-            emoteListFrame.Visible = false
-        end)
-    end
-    emoteListFrame.CanvasSize = UDim2.new(0,0,0, #list * 30)
-    emoteListFrame.Size = UDim2.new(1,0,0, math.clamp(#list,1,8) * 30)
-end
-populateDropdown(emoteList)
-
-dropdownButton.MouseButton1Click:Connect(function()
-    emoteListFrame.Visible = not emoteListFrame.Visible
-    if emoteListFrame.Visible then
-        Remote:FireServer("StopEmote", "Animations", "0")
-    end
-end)
-
-playButton.MouseButton1Click:Connect(function()
-    if not selectedEmote then return end
-    Remote:FireServer("PlayEmote", "Animations", selectedEmote)
-    task.wait(0.001)
-    Remote:FireServer("StopEmote", "Animations", selectedEmote)
-    task.wait(0.001)
-    Remote:FireServer("UseActorAbility", "Clone")
-    emoteListFrame.Visible = false
-end)
-
-toggleEmoteGuiButton.MouseButton1Click:Connect(function()
-    guiVisible = not guiVisible
-    emoteGuiMain.Enabled = guiVisible
-    if not guiVisible then
-        emoteListFrame.Visible = false
-    end
-end)
-
---==================== GUI 2 (Dropdown giống GUI 1) ====================--
-local emotes2 = getEmoteList()
-
-local screenGui2 = Instance.new("ScreenGui")
-screenGui2.DisplayOrder = 999999
-screenGui2.Name = "EmoteGUI2"
-screenGui2.Parent = localPlayer:WaitForChild("PlayerGui")
-screenGui2.ResetOnSpawn = false
-screenGui2.ZIndexBehavior = Enum.ZIndexBehavior.Global
-
--- Bỏ background2, thay bằng Frame trong suốt để chứa dropdown và nút Play
-local background2 = Instance.new("Frame")
-background2.Size = UDim2.new(0, 260, 0, 100)
-background2.Position = UDim2.new(0, 0, 0.203, 0)
-background2.BackgroundTransparency = 1 -- trong suốt hẳn luôn
-background2.BorderSizePixel = 0
-background2.Visible = false
-background2.Parent = screenGui2
-
--- Play button GUI 2
-local playButton2 = Instance.new("TextButton")
-playButton2.Size = UDim2.new(0, 160, 0, 36)
-playButton2.Position = UDim2.new(0, 50, 0, 60)
-playButton2.BackgroundColor3 = Color3.fromRGB(80,80,80)
-playButton2.TextColor3 = Color3.new(1,1,1)
-playButton2.Font = Enum.Font.SourceSans
-playButton2.TextSize = 18
-playButton2.Text = "Play Emote"
-playButton2.Parent = background2
-
--- Dropdown GUI 2
-local dropdownFrame2 = Instance.new("Frame")
-dropdownFrame2.Size = UDim2.new(0, 220, 0, 40)
-dropdownFrame2.Position = UDim2.new(0, 20, 0, 10)
-dropdownFrame2.BackgroundColor3 = Color3.fromRGB(40,40,40)
-dropdownFrame2.BorderSizePixel = 0
-dropdownFrame2.Parent = background2
-
-local dropdownButton2 = Instance.new("TextButton")
-dropdownButton2.Size = UDim2.new(1,0,1,0)
-dropdownButton2.BackgroundColor3 = Color3.fromRGB(60,60,60)
-dropdownButton2.TextColor3 = Color3.new(1,1,1)
-dropdownButton2.Font = Enum.Font.SourceSans
-dropdownButton2.TextSize = 18
-dropdownButton2.Text = emotes2[1] and ("Emote: "..emotes2[1]) or "Chọn Emote"
-dropdownButton2.Parent = dropdownFrame2
-
-local emoteListFrame2 = Instance.new("ScrollingFrame")
-emoteListFrame2.Size = UDim2.new(1,0,0, math.clamp(#emotes2,1,8) * 30)
-emoteListFrame2.Position = UDim2.new(0,0,1,2)
-emoteListFrame2.BackgroundColor3 = Color3.fromRGB(50,50,50)
-emoteListFrame2.BorderSizePixel = 0
-emoteListFrame2.Visible = false
-emoteListFrame2.CanvasSize = UDim2.new(0,0,0, #emotes2 * 30)
-emoteListFrame2.ScrollBarThickness = 6
-emoteListFrame2.Parent = dropdownFrame2
-
-local listLayout2 = Instance.new("UIListLayout")
-listLayout2.FillDirection = Enum.FillDirection.Vertical
-listLayout2.SortOrder = Enum.SortOrder.LayoutOrder
-listLayout2.Parent = emoteListFrame2
-
--- Selected emote GUI 2
-local selectedEmote2 = emotes2[1]
-
-local function populateDropdown2(list)
-	for _, child in ipairs(emoteListFrame2:GetChildren()) do
-		if child:IsA("TextButton") then child:Destroy() end
-	end
-	for _, name in ipairs(list) do
-		local btn = Instance.new("TextButton")
-		btn.Size = UDim2.new(1, -6, 0, 30)
-		btn.Position = UDim2.new(0, 3, 0, 0)
-		btn.BackgroundColor3 = Color3.fromRGB(70,70,70)
-		btn.TextColor3 = Color3.new(1,1,1)
-		btn.Font = Enum.Font.SourceSans
-		btn.TextSize = 16
-		btn.Text = name
-		btn.Parent = emoteListFrame2
-		btn.MouseButton1Click:Connect(function()
-			selectedEmote2 = name
-			dropdownButton2.Text = "Emote: " .. name
-			emoteListFrame2.Visible = false
-		end)
-	end
-	emoteListFrame2.CanvasSize = UDim2.new(0,0,0, #list * 30)
-	emoteListFrame2.Size = UDim2.new(1,0,0, math.clamp(#list,1,8) * 30)
-end
-populateDropdown2(emotes2)
-
-dropdownButton2.MouseButton1Click:Connect(function()
-	emoteListFrame2.Visible = not emoteListFrame2.Visible
-	if emoteListFrame2.Visible then
-		Remote:FireServer("StopEmote", "Animations", "0")
-	end
-end)
-
-playButton2.MouseButton1Click:Connect(function()
-	if not selectedEmote2 then return end
-	Remote:FireServer("PlayEmote", "Animations", selectedEmote2)
-end)
-
--- Toggle button GUI 2
-local toggleButton2 = Instance.new("ImageButton")
-toggleButton2.Size = UDim2.new(0, 60, 0, 60)
-toggleButton2.Position = UDim2.new(0.05, 248, 0.05, -47.5)
-toggleButton2.AnchorPoint = Vector2.new(0.5, 0.5)
-toggleButton2.BackgroundTransparency = 1
-toggleButton2.Image = "rbxassetid://87214736647237"
-toggleButton2.Parent = screenGui2
-toggleButton2.ZIndex = 200010
-
-toggleButton2.MouseButton1Click:Connect(function()
-	background2.Visible = not background2.Visible
-	if background2.Visible then
-		Remote:FireServer("StopEmote", "Animations", "0")
-	end
-end)
-
-
---==================== Auto Update ====================--
--- Auto update cả GUI 2
-local function refreshAll()
-	local newList = getEmoteList()
-	emoteList = newList
-	populateDropdown(newList) -- GUI 1
-	populateDropdown2(newList) -- GUI 2
-	if #newList > 0 then
-		selectedEmote = selectedEmote or newList[1]
-		selectedEmote2 = selectedEmote2 or newList[1]
-		dropdownButton.Text = "Emote: " .. selectedEmote
-		dropdownButton2.Text = "Emote: " .. selectedEmote2
-	else
-		selectedEmote = nil
-		selectedEmote2 = nil
-		dropdownButton.Text = "Choose Emote"
-		dropdownButton2.Text = "Choose Emote"
-	end
-end
-
-purchasedEmotesFolder.ChildAdded:Connect(refreshAll)
-purchasedEmotesFolder.ChildRemoved:Connect(refreshAll)
 
 --=Hub=
 
@@ -303,7 +17,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
    Name = "Nyansaken Hub",
-   Icon = 81031301564433,
+   Icon = 119855670079790,
    LoadingTitle = "Loading Nyansaken Hub...",
    LoadingSubtitle = "by PKDLL",
    ShowText = "Nyansaken",
@@ -329,16 +43,13 @@ local Window = Rayfield:CreateWindow({
       FileName = "nyansakenkey", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
       SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
       GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
-      Key = {"THEBESTSKINELLIOT", "PKDLLIsC00L", "YANCTHEBEST", "CORRUPTNATURE", "FMSWELCOME", "KEYISKEY"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+      Key = {"HELLNAHMAN", "ARTISTDOOFUS", "ADMINYANCIEL", "PDKLLISCOOL", "FREESCHLEP", "CHANCEMS4", "GENSUPDATE"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
    }
 })
 
 -- Helpers
-local autoPunchOn = false
-local aimPunch = false
 local detectionRange = 18
 local facingCheckEnabled = false
-local autoBlockAudioOn = false
 local looseFacing = true
 local predictionValue = 4
 
@@ -355,7 +66,7 @@ local autoBlockTriggerSounds = {
     ["95079963655241"] = true,
     ["101199185291628"] = true,
     ["119942598489800"] = true,
-    ["84307400688050"] = true,
+    ["84307400688050"] = true
 }
 
 -- Tabs
@@ -732,7 +443,7 @@ local function getProgressPercent(value)
     elseif value == 78 then return "75%"
     elseif value == 100 then return "100%"
     else
-    return tostring(value) .. "%"
+    return ""
     end
 end
 
@@ -1330,18 +1041,18 @@ ESP:CreateToggle({
 
 local Camera = workspace.CurrentCamera
 
--- Config chung
-getgenv().AimbotConfig = getgenv().AimbotConfig or {
-    Slash = { Enabled = false, Smoothness = 1, Prediction = 0.25, Duration = 2 },
-    Shoot = { Enabled = false, Smoothness = 1, Prediction = 0.25, Duration = 1.3 },
-    Killers = { Enabled = false, Duration = 3 }, -- Không có prediction/smoothness
-    SelectedSkills = { 
-        "Slash", "Punch", "Stab", "Nova", "VoidRush", 
-        "WalkspeedOverride", "Behead", "GashingWound", 
-        "CorruptNature", "CorruptEnergy", "MassInfection", "Entanglement" 
-    }
-}
+getgenv().AimbotConfig = getgenv().AimbotConfig or {}
 
+getgenv().AimbotConfig.Slash = getgenv().AimbotConfig.Slash or { Enabled = false, Smoothness = 1, Prediction = 0.25, Duration = 2 }
+getgenv().AimbotConfig.Shoot = getgenv().AimbotConfig.Shoot or { Enabled = false, Smoothness = 1, Prediction = 0.25, Duration = 1.3 }
+getgenv().AimbotConfig.TrueShoot = getgenv().AimbotConfig.TrueShoot or { Enabled = false, Smoothness = 1, Prediction = 0.25, Duration = 1.3 }
+getgenv().AimbotConfig.ThrowPizza = getgenv().AimbotConfig.ThrowPizza or { Enabled = false, Smoothness = 1, Prediction = 0.25, Duration = 1.5 }
+getgenv().AimbotConfig.Killers = getgenv().AimbotConfig.Killers or { Enabled = false, Duration = 3 }
+getgenv().AimbotConfig.SelectedSkills = getgenv().AimbotConfig.SelectedSkills or {
+    "Slash", "Punch", "Stab", "Nova", "VoidRush", 
+    "WalkspeedOverride", "Behead", "GashingWound", 
+    "CorruptNature", "CorruptEnergy", "MassInfection", "Entanglement"
+}
 ------------------------------------------------
 -- GUI
 Aimbot:CreateSection("Shedletsky")
@@ -1370,7 +1081,7 @@ Aimbot:CreateSlider({
 Aimbot:CreateSlider({
     Name = "Prediction Slash",
     Range = {0, 2},
-    Increment = 0.2,
+    Increment = 0.05,
     Suffix = "s",
     CurrentValue = getgenv().AimbotConfig.Slash.Prediction,
     Flag = "PredictionSlash",
@@ -1406,7 +1117,7 @@ Aimbot:CreateSlider({
 Aimbot:CreateSlider({
     Name = "Prediction Shoot",
     Range = {0, 2},
-    Increment = 0.2,
+    Increment = 0.05,
     Suffix = "s",
     CurrentValue = getgenv().AimbotConfig.Shoot.Prediction,
     Flag = "PredictionShoot",
@@ -1416,7 +1127,80 @@ Aimbot:CreateSlider({
 })
 
 ------------------------------------------------
+Aimbot:CreateParagraph({Title = "True Shoot Aimbot", Content = "For Chance True Shoot Only"})
+
+Aimbot:CreateToggle({
+    Name = "Aimbot True Shoot",
+    CurrentValue = getgenv().AimbotConfig.TrueShoot.Enabled,
+    Flag = "AutoAimTrueShoot",
+    Callback = function(Value)
+        getgenv().AimbotConfig.TrueShoot.Enabled = Value
+    end,
+})
+
+Aimbot:CreateSlider({
+    Name = "Smoothness True Shoot",
+    Range = {0, 101},
+    Increment = 1,
+    Suffix = "ms",
+    CurrentValue = getgenv().AimbotConfig.TrueShoot.Smoothness * 100,
+    Flag = "SmoothnessTrueShoot",
+    Callback = function(Value)
+        getgenv().AimbotConfig.TrueShoot.Smoothness = Value / 100
+    end,
+})
+
+Aimbot:CreateSlider({
+    Name = "Prediction True Shoot",
+    Range = {0, 2},
+    Increment = 0.05,
+    Suffix = "s",
+    CurrentValue = getgenv().AimbotConfig.TrueShoot.Prediction,
+    Flag = "PredictionTrueShoot",
+    Callback = function(Value)
+        getgenv().AimbotConfig.TrueShoot.Prediction = Value
+    end,
+})
+
+------------------------------------------------
+Aimbot:CreateSection("Elliot")
+
+Aimbot:CreateToggle({
+    Name = "Aimbot Throw Pizza",
+    CurrentValue = getgenv().AimbotConfig.ThrowPizza.Enabled,
+    Flag = "AutoAimThrowPizza",
+    Callback = function(Value)
+        getgenv().AimbotConfig.ThrowPizza.Enabled = Value
+    end,
+})
+
+Aimbot:CreateSlider({
+    Name = "Smoothness Throw Pizza",
+    Range = {0, 101},
+    Increment = 1,
+    Suffix = "ms",
+    CurrentValue = getgenv().AimbotConfig.ThrowPizza.Smoothness * 100,
+    Flag = "SmoothnessThrowPizza",
+    Callback = function(Value)
+        getgenv().AimbotConfig.ThrowPizza.Smoothness = Value / 100
+    end,
+})
+
+Aimbot:CreateSlider({
+    Name = "Prediction Throw Pizza",
+    Range = {0, 2},
+    Increment = 0.2,
+    Suffix = "s",
+    CurrentValue = getgenv().AimbotConfig.ThrowPizza.Prediction,
+    Flag = "PredictionThrowPizza",
+    Callback = function(Value)
+        getgenv().AimbotConfig.ThrowPizza.Prediction = Value
+    end,
+})
+
+------------------------------------------------
 Aimbot:CreateSection("Killers")
+
 Aimbot:CreateToggle({
     Name = "Killers's Aimbot",
     CurrentValue = getgenv().AimbotConfig.Killers.Enabled,
@@ -1435,8 +1219,8 @@ local function isKillerSkill(skillName)
     return false
 end
 
--- Hàm lấy mục tiêu (Killers)
-local function getNearestTarget()
+-- Hàm lấy mục tiêu gần nhất theo khoảng cách
+local function getNearestTargetByDistance()
     local nearest
     local shortestDistance = math.huge
     local myChar = LocalPlayer.Character
@@ -1455,18 +1239,47 @@ local function getNearestTarget()
     return nearest
 end
 
--- Aimlock chung
+-- Hàm lấy mục tiêu có MaxHP lớn hơn 300
+local function getNearestTargetByMaxHP()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") then
+            local humanoid = player.Character.Humanoid
+            if humanoid.MaxHealth > 300 then
+                return player
+            end
+        end
+    end
+end
+
+-- Aim vào rootpart (dùng cho các kỹ năng cận chiến)
+local function aimrootpart(target, duration, prediction, smoothness)
+    local myChar = LocalPlayer.Character
+    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    if not target or not target.Character then return end
+    local root = target.Character:FindFirstChild("HumanoidRootPart")
+    if not root or not myRoot then return end
+
+    task.spawn(function()
+        local start = tick()
+        while tick() - start < duration and root.Parent and myRoot.Parent do
+            local predictedPos = root.Position + (root.Velocity * prediction)
+            local targetCFrame = CFrame.lookAt(myRoot.Position, predictedPos)
+            myRoot.CFrame = myRoot.CFrame:Lerp(targetCFrame, math.clamp(smoothness, 0, 1))
+            task.wait()
+        end
+    end)
+end
+
+-- Aimlock vào camera (dùng cho kỹ năng bắn xa)
 local function aimlock(target, duration, prediction, smoothness)
     local start = tick()
     local cam = workspace.CurrentCamera
-
     local conn
     conn = RunService.RenderStepped:Connect(function()
         if tick() - start > duration or not target or not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") then
             conn:Disconnect()
             return
         end
-
         local hrp = target.Character.HumanoidRootPart
         local pos = hrp.Position + (hrp.Velocity * prediction)
         local cf = CFrame.new(cam.CFrame.Position, pos)
@@ -1475,33 +1288,59 @@ local function aimlock(target, duration, prediction, smoothness)
 end
 
 ------------------------------------------------
--- Trigger sự kiện
+-- Xử lý sự kiện skill
 RemoteEvent.OnClientEvent:Connect(function(...)
     local args = {...}
     if args[1] == "UseActorAbility" then
         local skill = args[2]
+        local player = getgenv().Player
+        local character = getgenv().getCharacter()
 
-        -- Slash
-        if skill == "Slash" and getgenv().AimbotConfig.Slash.Enabled then
-            local target = getNearestTarget()
+        if character and skill == "Slash" 
+           and getgenv().AimbotConfig.Slash.Enabled 
+           and character.Name == "Shedletsky" then
+
+            local target = getNearestTargetByMaxHP()
             if target then
-                aimlock(target, getgenv().AimbotConfig.Slash.Duration, getgenv().AimbotConfig.Slash.Prediction, getgenv().AimbotConfig.Slash.Smoothness)
+                aimrootpart(
+                    target, 
+                    getgenv().AimbotConfig.Slash.Duration, 
+                    getgenv().AimbotConfig.Slash.Prediction, 
+                    getgenv().AimbotConfig.Slash.Smoothness
+                )
             end
         end
 
         -- Shoot
-        if skill == "Shoot" and getgenv().AimbotConfig.Shoot.Enabled then
-            local target = getNearestTarget()
+        if skill == "Shoot" then
+            if getgenv().AimbotConfig.Shoot.Enabled then
+                local target = getNearestTargetByMaxHP()
+                if target then
+                    aimrootpart(target, getgenv().AimbotConfig.Shoot.Duration, getgenv().AimbotConfig.Shoot.Prediction, getgenv().AimbotConfig.Shoot.Smoothness)
+                end
+            end
+
+            if getgenv().AimbotConfig.TrueShoot.Enabled then
+                local target = getNearestTargetByMaxHP()
+                if target then
+                    aimlock(target, getgenv().AimbotConfig.TrueShoot.Duration, getgenv().AimbotConfig.TrueShoot.Prediction, getgenv().AimbotConfig.TrueShoot.Smoothness)
+                end
+            end
+        end
+
+        -- ThrowPizza
+        if skill == "ThrowPizza" and getgenv().AimbotConfig.ThrowPizza.Enabled then
+            local target = getNearestTargetByDistance()
             if target then
-                aimlock(target, getgenv().AimbotConfig.Shoot.Duration, getgenv().AimbotConfig.Shoot.Prediction, getgenv().AimbotConfig.Shoot.Smoothness)
+                aimrootpart(target, getgenv().AimbotConfig.ThrowPizza.Duration, getgenv().AimbotConfig.ThrowPizza.Prediction, getgenv().AimbotConfig.ThrowPizza.Smoothness)
             end
         end
 
         -- Killers
         if getgenv().AimbotConfig.Killers.Enabled and isKillerSkill(skill) then
-            local target = getNearestTarget()
+            local target = getNearestTargetByDistance()
             if target then
-                aimlock(target, getgenv().AimbotConfig.Killers.Duration, 0, 1) -- prediction=0, smooth=1
+                aimlock(target, getgenv().AimbotConfig.Killers.Duration, 0, 1)
             end
         end
     end
@@ -1626,6 +1465,139 @@ Players.LocalPlayer.CharacterAdded:Connect(function(v)
 	char = v
 end)
 
+-- Khởi tạo genv biến toàn cục
+getgenv().Players = game:GetService("Players")
+getgenv().ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+getgenv().player = getgenv().Players.LocalPlayer
+getgenv().device = getgenv().player:GetAttribute("Device")
+
+-- Nếu device là table, lấy phần tử đầu tiên
+if type(getgenv().device) == "table" then
+    getgenv().device = genv().device[1]
+end
+
+getgenv().device = tostring(getgenv().device or "PC") -- đảm bảo là string và có giá trị mặc định
+
+-- Tạo section cho GUI
+Miscs:CreateSection("Device")
+
+-- Tạo dropdown
+Miscs:CreateDropdown({
+    Name = "Spoof Device",
+    Options = {"PC", "Mobile", "Console"},
+    CurrentOption = getgenv().device,
+    MultipleOptions = false,
+    Callback = function(selectedOption)
+        local selected = selectedOption[1]
+        RemoteEvent:FireServer("SetDevice", selected)
+    end,
+})
+
+
+Miscs:CreateSection("Footsteps")
+Miscs:CreateToggle({
+    Name = "Anti Footsteps",
+    CurrentValue = false,
+    Flag = "AntiFootsteps",
+    Callback = function(value)
+		if value then
+			getgenv().HookFootstepPlayed(true)
+		else
+			getgenv().HookFootstepPlayed(false)
+        end
+    end,
+})
+
+-- Dùng getgenv() để lưu biến toàn cục
+getgenv().Players = game:GetService("Players")
+getgenv().originalValues = {}
+getgenv().paths = {
+    "HideKillerWins",
+    "HidePlaytime",
+    "HideSurvivorWins"
+}
+getgenv().toggleState = false
+
+-- Hàm lưu giá trị gốc của một player
+getgenv().saveOriginalValues = function(player)
+    if not getgenv().originalValues[player.UserId] then
+        getgenv().originalValues[player.UserId] = {}
+    end
+    for _, key in ipairs(getgenv().paths) do
+        local value = player:FindFirstChild("PlayerData")
+            and player.PlayerData:FindFirstChild("Settings")
+            and player.PlayerData.Settings:FindFirstChild("Privacy")
+            and player.PlayerData.Settings.Privacy:FindFirstChild(key)
+        if value then
+            getgenv().originalValues[player.UserId][key] = value.Value
+        end
+    end
+end
+
+-- Hàm đặt tất cả value = false
+getgenv().setAllFalse = function(player)
+    for _, key in ipairs(getgenv().paths) do
+        local value = player:FindFirstChild("PlayerData")
+            and player.PlayerData:FindFirstChild("Settings")
+            and player.PlayerData.Settings:FindFirstChild("Privacy")
+            and player.PlayerData.Settings.Privacy:FindFirstChild(key)
+        if value then
+            value.Value = false
+        end
+    end
+end
+
+-- Hàm khôi phục giá trị gốc
+getgenv().restoreValues = function(player)
+    if getgenv().originalValues[player.UserId] then
+        for key, val in pairs(getgenv().originalValues[player.UserId]) do
+            local value = player:FindFirstChild("PlayerData")
+                and player.PlayerData:FindFirstChild("Settings")
+                and player.PlayerData.Settings:FindFirstChild("Privacy")
+                and player.PlayerData.Settings.Privacy:FindFirstChild(key)
+            if value then
+                value.Value = val
+            end
+        end
+    end
+end
+
+-- Hàm toggle
+getgenv().togglePrivacy = function(disable)
+    for _, player in ipairs(getgenv().Players:GetPlayers()) do
+        if disable then
+            getgenv().saveOriginalValues(player)
+            getgenv().setAllFalse(player)
+        else
+            getgenv().restoreValues(player)
+        end
+    end
+    getgenv().toggleState = disable
+end
+
+-- Khi có player mới vào, nếu toggle đang bật thì set false luôn
+getgenv().Players.PlayerAdded:Connect(function(player)
+    if getgenv().toggleState == true then
+        getgenv().saveOriginalValues(player)
+        getgenv().setAllFalse(player)
+    end
+end)
+
+Miscs:CreateSection("Stats")
+Miscs:CreateToggle({
+    Name = "Anti Hidden Stats",
+    CurrentValue = false,
+    Flag = "AntiHiddenStats",
+    Callback = function(value)
+		if value then
+			getgenv().togglePrivacy(true)
+		else
+			getgenv().togglePrivacy(false)
+        end
+    end,
+})
+
 Miscs:CreateSection("FOV")
 Miscs:CreateInput({
     Name = "Input FOV",
@@ -1670,11 +1642,11 @@ RoundTimer:GetAttributeChangedSignal("TimeLeft"):Connect(function()
 
 	local timeLeft = RoundTimer:GetAttribute("TimeLeft")
 	if timeLeft and timeLeft <= 0.2 then
-		local char = LocalPlayer.Character
+		local char = game:GetService("Players").LocalPlayer.Character
 		if not char then return end
 
 		-- Equip tất cả tool từ Backpack
-		for _, v in pairs(LocalPlayer.Backpack:GetChildren()) do
+		for _, v in pairs(game:GetService("Players").LocalPlayer.Backpack:GetChildren()) do
 			if v:IsA("Tool") then
 				v.Parent = char
 			end
@@ -1695,7 +1667,7 @@ end)
 -- Auto Pickup Tool khi còn sống
 task.spawn(function()
 	while task.wait(1) do
-		local char = LocalPlayer.Character
+		local char = game:GetService("Players").LocalPlayer.Character
 		if autoPickupEnabled and isAlive(char) then
 			local mapIngame = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
 			if mapIngame then
@@ -1716,6 +1688,65 @@ Miscs:CreateToggle({
 	Callback = function(Value)
 		autoPickupEnabled = Value
 	end,
+})
+
+_G.pickUpNear = false
+_G.pickUpAll = false
+
+local function autoPickUpLoop()
+    while task.wait(0.2) do
+        if not _G.pickUpNear and not _G.pickUpAll then break end
+
+        pcall(function()
+            local items = {}
+            for _, v in pairs(workspace.Map.Ingame:GetDescendants()) do
+                if v:IsA("Tool") then
+                    table.insert(items, v.ItemRoot)
+                end
+            end
+
+            for _, v in pairs(items) do
+                if _G.pickUpNear then
+                    local magnitude = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.Position).magnitude
+                    if magnitude <= 10 then
+                        fireproximityprompt(v.ProximityPrompt)
+                    end
+                end
+
+                if _G.pickUpAll then
+                    if not game.Players.LocalPlayer.Backpack:FindFirstChild(v.Parent.Name) then
+                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.CFrame
+                        task.wait(0.3)
+                        fireproximityprompt(v.ProximityPrompt)
+                    end
+                end
+            end
+        end)
+    end
+end
+
+Miscs:CreateToggle({
+    Name = "Auto Pick Up Near Items",
+    CurrentValue = false,
+    Flag = "AutoPickUpItems",
+    Callback = function(call)
+        _G.pickUpNear = call
+        if call then
+            task.spawn(autoPickUpLoop)
+        end
+    end,
+})
+
+Miscs:CreateToggle({
+    Name = "Auto Pick Up All Items",
+    CurrentValue = false,
+    Flag = "AutoPickUpAll",
+    Callback = function(call)
+        _G.pickUpAll = call
+        if call then
+            task.spawn(autoPickUpLoop)
+        end
+    end,
 })
 
 -- === Section Creation ===
@@ -1802,7 +1833,7 @@ local AntiSlowConfigs = {
 
 -- Hàm ẩn UI báo slow
 local function hideSlownessUI()
-    local mainUI = LocalPlayer.PlayerGui:FindFirstChild("MainUI")
+    local mainUI = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("MainUI")
     if mainUI then
         local statusContainer = mainUI:FindFirstChild("StatusContainer")
         if statusContainer then
@@ -1816,7 +1847,7 @@ end
 
 -- Hàm chung xử lý Anti-Slow
 local function handleAntiSlow(survivor, config)
-    if survivor:GetAttribute("Username") ~= LocalPlayer.Name then return end
+    if survivor:GetAttribute("Username") ~= game:GetService("Players").LocalPlayer.Name then return end
     local function onRenderStep()
         if not survivor.Parent or not config.Enabled then return end
         local speedMultipliers = survivor:FindFirstChild("SpeedMultipliers")
@@ -1873,43 +1904,370 @@ end
 
 Miscs:CreateSection("1x1x1x1")
 
---== Services ==--
-local VIM = game:GetService("VirtualInputManager")
+Miscs:CreateToggle({
+    Name = "Auto Close 1x1x1x1 Popups",
+    CurrentValue = false,
+    Flag = "Toggle_1x1Popup",
+    Callback = function(Value)
+        DoLoop = Value
+        task.spawn(function()
+            local player = game:GetService("Players").LocalPlayer
+            local Survivors = workspace:WaitForChild("Players"):WaitForChild("Survivors")
+            while DoLoop and task.wait() do
+                -- Auto Close 1x1x1x1 Popups
+                local temp = player.PlayerGui:FindFirstChild("TemporaryUI")
+                if temp and temp:FindFirstChild("1x1x1x1Popup") then
+                    temp["1x1x1x1Popup"]:Destroy()
+                end
 
---== Auto 1x1x1x1 Popup ==--
-local Do1x1PopupsLoop = false
+                -- Anti-Slow SlowedStatus
+                for _, survivor in pairs(Survivors:GetChildren()) do
+                    if survivor:GetAttribute("Username") == player.Name then
+                        -- SpeedMultipliers
+                        local speedMultipliers = survivor:FindFirstChild("SpeedMultipliers")
+                        if speedMultipliers then
+                            local val = speedMultipliers:FindFirstChild("SlowedStatus")
+                            if val and val:IsA("NumberValue") then
+                                val.Value = 1
+                            end
+                        end
+                        -- FOVMultipliers
+                        local fovMultipliers = survivor:FindFirstChild("FOVMultipliers")
+                        if fovMultipliers then
+                            local val = fovMultipliers:FindFirstChild("SlowedStatus")
+                            if val and val:IsA("NumberValue") then
+                                val.Value = 1
+                            end
+                        end
+                    end
+                end
+            end
+        end)
+    end
+})
 
-local function Do1x1x1x1Popups()
-    local tempUI = LocalPlayer.PlayerGui:FindFirstChild("TemporaryUI")
-    if not tempUI then return end
+getgenv().LMSSongs = {
+    ["Burnout"] = "rbxassetid://130101085745481",
+    ["Compass"] = "rbxassetid://127298326178102",
+    ["Vanity"] = "rbxassetid://137266220091579",
+    ["Close To Me"] = "rbxassetid://90022574613230",
+    ["Plead"] = "rbxassetid://80564889711353",
+    ["Creation Of Hatred"] = "rbxassetid://115884097233860",
+}
 
-    for _, gui in ipairs(tempUI:GetChildren()) do
-        if gui.Name == "1x1x1x1Popup" and gui:IsA("GuiObject") then
-            local cx = gui.AbsolutePosition.X + (gui.AbsoluteSize.X / 2)
-            local cy = gui.AbsolutePosition.Y + (gui.AbsoluteSize.Y / 2) + 50
-            VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, true, LocalPlayer.PlayerGui, 1)
-            VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, false, LocalPlayer.PlayerGui, 1)
+getgenv().selectedSong = "Compass"
+
+getgenv().currentLastSurvivor = nil
+getgenv().currentSongId = nil
+getgenv().originalSongId = nil
+
+getgenv().isToggleOn = false
+
+Miscs:CreateSection("Last Man Standing")
+
+Miscs:CreateToggle({
+    Name = "LMS Replacer Song",
+    CurrentValue = false,
+    Flag = "LMS_Toggle",
+    Callback = function(value)
+        getgenv().isToggleOn = value
+        local theme = game.Workspace:FindFirstChild("Themes")
+        if not theme then return end
+        local lastSurvivor = theme:FindFirstChild("LastSurvivor")
+        if not lastSurvivor then return end
+
+        if value then
+
+            if not getgenv().originalSongId then
+                getgenv().originalSongId = lastSurvivor.SoundId
+            end
+            local songId = getgenv().LMSSongs[getgenv().selectedSong]
+            if songId then
+                lastSurvivor.SoundId = songId
+                lastSurvivor:Play()
+                getgenv().currentLastSurvivor = lastSurvivor
+                getgenv().currentSongId = songId
+            end
+        else
+
+            if getgenv().originalSongId then
+                lastSurvivor.SoundId = getgenv().originalSongId
+                lastSurvivor:Play()
+            end
+            getgenv().currentLastSurvivor = nil
+            getgenv().currentSongId = nil
+            getgenv().originalSongId = nil
+        end
+    end,
+})
+
+Miscs:CreateDropdown({
+    Name = "LMS Song",
+    Options = {"Burnout", "Compass", "Vanity", "Close To Me", "Plead", "Creation Of Hatred"},
+    CurrentOption = selectedSong,
+    MultipleOptions = false,
+    Callback = function(mysongslist)
+        if type(mysongslist) == "table" then
+            getgenv().selectedSong = mysongslist[1]
+        else
+            getgenv().selectedSong = mysongslist
+        end
+
+        if getgenv().isToggleOn then
+            local theme = game.Workspace:FindFirstChild("Themes")
+            if theme then
+                local lastSurvivor = theme:FindFirstChild("LastSurvivor")
+                if lastSurvivor then
+                    local songId = getgenv().LMSSongs[getgenv().selectedSong]
+                    if songId then
+                        lastSurvivor.SoundId = songId
+                        lastSurvivor:Play()
+                        getgenv().currentLastSurvivor = lastSurvivor
+                        getgenv().currentSongId = songId
+                    end
+                end
+            end
+        end
+    end,
+})
+
+-- Sử dụng getgenv() để lưu biến toàn cục
+getgenv().chatWindow = game:GetService("TextChatService"):WaitForChild("ChatWindowConfiguration")
+getgenv().chatEnabled = false
+getgenv().connection = nil
+
+Miscs:CreateSection("Chat")
+Miscs:CreateToggle({
+    Name = "Toggle Chat Visibility",
+    CurrentValue = false,
+    Flag = "ChatWindowToggle",
+    Callback = function(value)
+        getgenv().chatEnabled = value
+        if getgenv().chatEnabled then
+            -- Kết nối Heartbeat để bật liên tục
+            getgenv().connection = game:GetService("RunService").RenderStepped:Connect(function()
+                getgenv().chatWindow.Enabled = true
+            end)
+        else
+            -- Ngắt kết nối Heartbeat khi toggle tắt
+            if getgenv().connection then
+                getgenv().connection:Disconnect()
+                getgenv().connection = nil
+            end
+            -- Tắt chat window khi toggle off
+            getgenv().chatWindow.Enabled = false
+        end
+    end
+})
+
+-- Variables
+getgenv().Players = game:GetService("Players")
+getgenv().LocalPlayer = getgenv().Players.LocalPlayer
+getgenv().Remote = game:GetService("ReplicatedStorage").Modules.Network.RemoteEvent
+
+-- Lấy global environment an toàn
+local globalEnv = getgenv()
+
+-- Khai báo các service
+globalEnv.Players = game:GetService("Players")
+globalEnv.RunService = game:GetService("RunService")
+globalEnv.Camera = workspace.CurrentCamera
+globalEnv.Player = globalEnv.Players.LocalPlayer
+
+-- Biến cấu hình
+globalEnv.walkSpeed = 100 -- tốc độ di chuyển
+globalEnv.blockAnimationId = {18885940850, 18885937766}
+globalEnv.toggle = false -- trạng thái bật/tắt
+globalEnv.connection = nil
+
+-- Hàm lấy Character
+function globalEnv.getCharacter()
+    return globalEnv.Player.Character or globalEnv.Player.CharacterAdded:Wait()
+end
+
+-- Heartbeat loop
+function globalEnv.onHeartbeat()
+    local player = globalEnv.Player
+    local character = globalEnv.getCharacter()
+
+    if character.Name ~= "c00lkidd" then return end
+    local char = globalEnv.getCharacter()
+    local rootPart = char:FindFirstChild("HumanoidRootPart")
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    local lv = rootPart and rootPart:FindFirstChild("LinearVelocity")
+    if not rootPart or not humanoid or not lv then return end
+
+    if lv then
+        lv.VectorVelocity = Vector3.new(math.huge, math.huge, math.huge)
+        lv.Enabled = false -- Tắt LinearVelocity
+    end
+
+-- Biến kiểm soát dừng di chuyển
+local stopMovement = false
+
+-- Hàm kiểm tra giá trị của Result
+local validValues = {
+    Timeout = true,
+    Collide = true,
+    Hit = true
+}
+
+local function watchResult(result)
+    local function checkValue()
+        if validValues[result.Value] then
+            stopMovement = true
+        end
+    end
+    checkValue()
+    result:GetPropertyChangedSignal("Value"):Connect(checkValue)
+end
+
+-- Khi Character xuất hiện
+local function onCharacterAdded(character)
+    local result = character:FindFirstChild("Result")
+    if result and result:IsA("StringValue") then
+        watchResult(result)
+    end
+    character.ChildAdded:Connect(function(child)
+        if child.Name == "Result" and child:IsA("StringValue") then
+            watchResult(child)
+        end
+    end)
+end
+
+-- Lắng nghe khi Player có Character
+Player.CharacterAdded:Connect(onCharacterAdded)
+if Player.Character then
+    onCharacterAdded(Player.Character)
+end
+
+    if not stopMovement then
+        local lookVector = globalEnv.Camera.CFrame.LookVector
+        local moveDir = Vector3.new(lookVector.X, 0, lookVector.Z)
+        if moveDir.Magnitude > 0 then
+            moveDir = moveDir.Unit
+            rootPart.Velocity = Vector3.new(moveDir.X * globalEnv.walkSpeed, rootPart.Velocity.Y, moveDir.Z * globalEnv.walkSpeed)
+            rootPart.CFrame = CFrame.new(rootPart.Position, rootPart.Position + moveDir)
         end
     end
 end
 
-spawn(function()
-    while true do
-        if Do1x1PopupsLoop then
-            Do1x1x1x1Popups()
-        end
-        task.wait(0.15) -- giảm spam
-    end
-end)
+-- Tạo hook chung
+getgenv().createHook = function(remoteName)
+    getgenv()["original_" .. remoteName] = hookmetamethod(game, "__namecall", function(self, ...)
+        local method = getnamecallmethod()
+        local args = {...}
 
-Miscs:CreateToggle({
-    Name = "Auto 1x1x1x1 Popup",
+        if self == getgenv().Remote and method == "FireServer" then
+            if args[1] == getgenv().LocalPlayer.Name .. remoteName then
+                return -- block
+            end
+        end
+
+        return getgenv()["original_" .. remoteName](self, ...) -- gọi hook gốc
+    end)
+    return getgenv()["original_" .. remoteName]
+end
+
+getgenv().isFiringDusekkar = false
+
+-- Bật hook
+getgenv().enableHook = function(remoteName)
+    if not getgenv()["hook_" .. remoteName] then
+        getgenv()["hook_" .. remoteName] = getgenv().createHook(remoteName)
+    end
+
+    if remoteName == "DusekkarCancel" then
+        if not getgenv().isFiringDusekkar then
+            getgenv().isFiringDusekkar = true
+            task.spawn(function()
+                task.wait(4)
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local RemoteEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
+                RemoteEvent:FireServer({game:GetService("Players").LocalPlayer.Name .. "DusekkarCancel"})
+                getgenv().isFiringDusekkar = false -- cho phép gọi lại khi cần
+            end)
+        end
+    end
+end
+
+-- Tắt hook
+getgenv().disableHook = function(remoteName)
+    if getgenv()["hook_" .. remoteName] then
+        hookmetamethod(game, "__namecall", getgenv()["hook_" .. remoteName]) -- phục hồi hook gốc
+
+        getgenv()["hook_" .. remoteName] = nil
+        getgenv()["original_" .. remoteName] = nil
+    end
+end
+
+-- Cài đặt các hàm cho từng loại
+getgenv().EnableC00lkidd = function() getgenv().enableHook("C00lkiddCollision") end
+getgenv().DisableC00lkidd = function() getgenv().disableHook("C00lkiddCollision") end
+
+getgenv().EnableVoidRush = function() getgenv().enableHook("VoidRushCollision") end
+getgenv().DisableVoidRush = function() getgenv().disableHook("VoidRushCollision") end
+
+getgenv().EnableCharge = function() getgenv().enableHook("Guest1337Collision") end
+getgenv().DisableCharge = function() getgenv().disableHook("Guest1337Collision") end
+
+getgenv().EnableProtection = function() getgenv().enableHook("DusekkarCancel") end
+getgenv().DisableProtection = function() getgenv().disableHook("DusekkarCancel") end
+
+getgenv().blockFootstepPlayed = false
+
+getgenv().HookFootstepPlayed = function(enable)
+    if enable then
+        if not getgenv().originalFootstepHook then
+            getgenv().originalFootstepHook = hookmetamethod(game, "__namecall", function(self, ...)
+                local method = getnamecallmethod()
+                local args = {...}
+
+                -- Chặn FootstepPlayed trong UnreliableRemoteEvent
+                if method == "FireServer" and self.Name == "UnreliableRemoteEvent" then
+                    if args[1] == "FootstepPlayed" and getgenv().blockFootstepPlayed then
+                        return -- Block FootstepPlayed
+                    end
+                end
+
+                return getgenv().originalFootstepHook(self, ...)
+            end)
+        end
+        getgenv().blockFootstepPlayed = true
+    else
+        getgenv().blockFootstepPlayed = false
+    end
+end
+
+Combat:CreateSection("c00lkidd")
+Combat:CreateToggle({
+    Name = "Walkspeed Override Controller",
     CurrentValue = false,
-    Flag = "Toggle_1x1Popup",
-    Callback = function(Value)
-        Do1x1PopupsLoop = Value
+    Flag = "AutoMove",
+    Callback = function(value)
+        if value then
+            globalEnv.connection = globalEnv.RunService.Heartbeat:Connect(globalEnv.onHeartbeat)
+        else
+            if globalEnv.connection then
+                globalEnv.connection:Disconnect()
+            end
+        end
     end
 })
+
+Combat:CreateToggle({
+    Name = "Walkspeed-Override Ignore Objectables",
+    CurrentValue = false,
+    Flag = "IgnoreC00lkidd",
+    Callback = function(Value)
+        if Value then
+            getgenv().EnableC00lkidd()
+        else
+            getgenv().DisableC00lkidd()
+        end
+    end
+})
+
 
 local VoidRushController = {}
 
@@ -2045,16 +2403,106 @@ Combat:CreateToggle({
     end,
 })
 
+Combat:CreateToggle({
+    Name = "Void-Rush Ignore Objectables",
+    CurrentValue = false,
+    Flag = "IgnoreVoidRush",
+    Callback = function(Value)
+        if Value then
+            getgenv().EnableVoidRush()
+        else
+            getgenv().DisableVoidRush()
+        end
+    end
+})
+
+-- Functions
+local function setupCharacter(character)
+    local Humanoid = character:WaitForChild("Humanoid")
+    local HumanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    _G.Humanoid = Humanoid
+    _G.HumanoidRootPart = HumanoidRootPart
+    DEFAULT_WALK_SPEED = Humanoid.WalkSpeed
+end
+
+local function startCharge()
+    if isChargeActive then return end
+    isChargeActive = true
+
+    connection = RunService.RenderStepped:Connect(function()
+        if not _G.Humanoid or not _G.HumanoidRootPart then return end
+        _G.Humanoid.WalkSpeed = ORIGINAL_DASH_SPEED
+        _G.Humanoid.AutoRotate = false
+
+        local direction = _G.HumanoidRootPart.CFrame.LookVector
+        local horizontal = Vector3.new(direction.X, 0, direction.Z)
+        if horizontal.Magnitude > 0 then
+            _G.Humanoid:Move(horizontal.Unit)
+        end
+    end)
+end
+
+local function stopCharge()
+    if not isChargeActive then return end
+    isChargeActive = false
+    if _G.Humanoid then
+        _G.Humanoid.WalkSpeed = DEFAULT_WALK_SPEED
+        _G.Humanoid.AutoRotate = true
+        _G.Humanoid:Move(Vector3.new(0, 0, 0))
+    end
+    if connection then
+        connection:Disconnect()
+        connection = nil
+    end
+end
+
+if game:GetService("Players").LocalPlayer.Character then
+    setupCharacter(game:GetService("Players").LocalPlayer.Character)
+end
+
+game:GetService("Players").LocalPlayer.CharacterAdded:Connect(setupCharacter)
+
+RunService.RenderStepped:Connect(function()
+    if not chargecontrol then return end
+    if not game:GetService("Players").LocalPlayer.Character then return end
+
+    local speedMultipliers = game:GetService("Players").LocalPlayer.Character:FindFirstChild("SpeedMultipliers")
+    if speedMultipliers then
+        local charge = speedMultipliers:FindFirstChild("Guest1337Charge")
+        if charge then
+            startCharge()
+        else
+            stopCharge()
+        end
+    else
+        stopCharge()
+    end
+end)
+
+Combat:CreateSection("Dusekkar")
+Combat:CreateToggle({
+    Name = "Anti-Cancelled Protection",
+    CurrentValue = false,
+    Flag = "ProtectionDusekkar",
+    Callback = function(Value)
+        if Value then
+            getgenv().EnableProtection()
+        else
+            getgenv().DisableProtection()
+        end
+    end
+})
+
 --// Services
 local RNG = Random.new()
 
 --// Character references
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Character = game:GetService("Players").LocalPlayer.Character or game:GetService("Players").LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 local Animator = Humanoid:WaitForChild("Animator")
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 
-LocalPlayer.CharacterAdded:Connect(function(char)
+game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function(char)
 	Character = char
 	Humanoid = char:WaitForChild("Humanoid")
 	Animator = Humanoid:WaitForChild("Animator")
@@ -2151,7 +2599,7 @@ RunService.Heartbeat:Connect(function()
 
 	if not Target then return end
 
-	local ping = LocalPlayer:GetNetworkPing()
+	local ping = game:GetService("Players").LocalPlayer:GetNetworkPing()
 	local randomOffset = Vector3.new(RNG:NextNumber(-1.5, 1.5), 0, RNG:NextNumber(-1.5, 1.5))
 	local predicted = Target.HumanoidRootPart.Position + randomOffset + (Target.HumanoidRootPart.Velocity * (ping * 1.25))
 	local neededVelocity = (predicted - HumanoidRootPart.Position) / (ping * 2)
@@ -2160,6 +2608,428 @@ RunService.Heartbeat:Connect(function()
 	HumanoidRootPart.Velocity = neededVelocity
 	RunService.RenderStepped:Wait()
 	HumanoidRootPart.Velocity = oldVelocity
+end)
+
+getgenv().Lighting = game:GetService("Lighting")
+getgenv().Workspace = game:GetService("Workspace")
+
+-- Biến lưu trạng thái toggle
+getgenv().removeEffectsEnabled = false
+getgenv().lightingConnection = nil
+getgenv().workspaceConnection = nil
+
+-- Các instance cần xóa trong Lighting
+getgenv().lightingTargets = {
+    "BlindnessBlur",
+    "SubspaceVFXBlur",
+    "SubspaceVFXColorCorrection"
+}
+
+-- Các instance cần xóa trong Workspace
+getgenv().workspaceTargets = {
+    "GlitchParts"
+}
+
+-- Hàm xóa các instance trong Lighting
+getgenv().removeLightingInstances = function()
+    for _, name in ipairs(getgenv().lightingTargets) do
+        local obj = getgenv().Lighting:FindFirstChild(name)
+        if obj then
+            obj:Destroy()
+        end
+    end
+end
+
+-- Hàm xóa các instance trong Workspace
+getgenv().removeWorkspaceInstances = function()
+    for _, name in ipairs(getgenv().workspaceTargets) do
+        local obj = getgenv().Workspace:FindFirstChild(name)
+        if obj then
+            obj:Destroy()
+        end
+    end
+end
+
+-- Bật toggle
+getgenv().enableRemoveEffects = function()
+    getgenv().removeLightingInstances()
+    getgenv().removeWorkspaceInstances()
+
+    -- Theo dõi Lighting
+    getgenv().lightingConnection = getgenv().Lighting.ChildAdded:Connect(function(child)
+        if table.find(getgenv().lightingTargets, child.Name) then
+            child:Destroy()
+        end
+    end)
+
+    -- Theo dõi Workspace
+    getgenv().workspaceConnection = getgenv().Workspace.ChildAdded:Connect(function(child)
+        if table.find(getgenv().workspaceTargets, child.Name) then
+            child:Destroy()
+        end
+    end)
+
+    getgenv().removeEffectsEnabled = true
+end
+
+-- Tắt toggle
+getgenv().disableRemoveEffects = function()
+    if getgenv().lightingConnection then
+        getgenv().lightingConnection:Disconnect()
+        getgenv().lightingConnection = nil
+    end
+    if getgenv().workspaceConnection then
+        getgenv().workspaceConnection:Disconnect()
+        getgenv().workspaceConnection = nil
+    end
+    getgenv().removeEffectsEnabled = false
+end
+
+Combat:CreateSection("Blindness")
+Combat:CreateToggle({
+    Name = "Anti Blindness",
+    CurrentValue = false,
+    Flag = "RemoveBlindness",
+    Callback = function(value)
+        if value then
+            getgenv().enableRemoveEffects()
+        else
+            getgenv().disableRemoveEffects()
+        end
+    end
+})
+
+-- Hàm lấy GUI an toàn
+local function getRerollGui()
+    local success, gui = pcall(function()
+        return game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild("MainUI", 5)
+            :WaitForChild("AbilityContainer", 5)
+            :WaitForChild("Reroll", 5)
+    end)
+    return success and gui or nil
+end
+
+-- Biến toggle và slider
+local AutoCoinFlip = false
+local MaxCharges = 3    -- mặc định 3
+local Delay = 0.25       -- Delay cố định
+
+
+Combat:CreateSection("Chance")
+-- Toggle Auto Coin Flip
+Combat:CreateToggle({
+    Name = "Auto CoinFlip",
+    CurrentValue = false,
+    Flag = "AutoCoinFlip",
+    Callback = function(value)
+        AutoCoinFlip = value
+    end
+})
+
+-- Slider giới hạn charges
+Combat:CreateSlider({
+    Name = "Charges",
+    Range = {1, 3},
+    Increment = 1,
+    Suffix = "charges",
+    CurrentValue = MaxCharges,
+    Flag = "MaxChargesSlider",
+    Callback = function(value)
+        MaxCharges = value
+    end
+})
+
+-- Thiết lập Remote chính
+getgenv().StorageReplicated = game:GetService("ReplicatedStorage")
+getgenv().NetworkRemote = getgenv().StorageReplicated:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
+getgenv().MainRemote = getgenv().NetworkRemote
+
+-- Bảng lưu hook gốc và hook hiện tại
+getgenv().baseHooks = {}
+getgenv().currentHooks = {}
+
+-- Tạo hook chung cho remote theo tên
+getgenv().initHook = function(targetRemote)
+    getgenv().originalHookFunction = hookmetamethod(game, "__namecall", function(self, ...)
+        getgenv().methodCalled = getnamecallmethod()
+        getgenv().parameters = {...}
+
+        if self == getgenv().MainRemote and getgenv().methodCalled == "FireServer" then
+            -- Kiểm tra remote có chứa username
+            if type(getgenv().parameters[1]) == "string" and getgenv().parameters[1]:find(game.Players.LocalPlayer.Name) and getgenv().parameters[1]:find(targetRemote) then
+                -- Nếu là remote gửi vector, thay bằng hướng camera
+                if #getgenv().parameters >= 2 and typeof(getgenv().parameters[2]) == "Vector3" then
+                    getgenv().camera = workspace.CurrentCamera
+                    getgenv().parameters[2] = getgenv().camera.CFrame.LookVector
+                    return getgenv().baseHooks[targetRemote](self, unpack(getgenv().parameters))
+                end
+
+                -- Block remote nếu không muốn gửi
+                return
+            end
+        end
+
+        return getgenv().baseHooks[targetRemote](self, ...)
+    end)
+
+    getgenv().baseHooks[targetRemote] = getgenv().originalHookFunction
+    return getgenv().originalHookFunction
+end
+
+-- Bật hook
+getgenv().activateHook = function(targetRemote)
+    if not getgenv().currentHooks[targetRemote] then
+        getgenv().currentHooks[targetRemote] = getgenv().initHook(targetRemote)
+    end
+end
+
+-- Tắt hook, restore hook gốc
+getgenv().deactivateHook = function(targetRemote)
+    if getgenv().currentHooks[targetRemote] and getgenv().baseHooks[targetRemote] then
+        hookmetamethod(game, "__namecall", getgenv().baseHooks[targetRemote])
+        getgenv().currentHooks[targetRemote] = nil
+        getgenv().baseHooks[targetRemote] = nil
+    end
+end
+
+Combat:CreateToggle({
+    Name = "Chance True Shoot",
+    CurrentValue = false,
+    Flag = "ChanceTrueShoot",
+    Callback = function(value)
+        if value then
+            getgenv().activateHook("ChanceFireShot")
+        else
+            getgenv().deactivateHook("ChanceFireShot")
+        end
+    end
+})
+
+-- Loop auto coin flip
+spawn(function()
+    while true do
+        local gui = getRerollGui()
+        if gui then
+            local chargesLabel = gui:FindFirstChild("Charges")
+            local currentCharges = chargesLabel and tonumber(chargesLabel.Text) or 0
+
+            if AutoCoinFlip and currentCharges < MaxCharges then
+                local ok, err = pcall(function()
+                    game:GetService("ReplicatedStorage"):WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer("UseActorAbility", "CoinFlip")
+                end)
+            end
+        end
+
+        wait(Delay)
+    end
+end)
+
+Combat:CreateSection("Guest 1337 -- Charge")
+Combat:CreateToggle({
+    Name = "Charge Controller",
+    CurrentValue = false,
+    Flag = "ChargeControlToggle",
+    Callback = function(Value)
+        toggled = Value
+        if toggled then
+            chargecontrol = true
+        else
+            chargecontrol = false
+            stopCharge()
+        end
+    end
+})
+
+Combat:CreateToggle({
+    Name = "Charge Ignore Objectables",
+    CurrentValue = false,
+    Flag = "IgnoreCharge",
+    Callback = function(Value)
+        if Value then
+            getgenv().EnableCharge()
+        else
+            getgenv().DisableCharge()
+        end
+    end
+})
+
+
+-- Services
+local killerNames = { "Jason", "c00lkidd", "JohnDoe", "1x1x1x1", "Noli" }
+
+-- Vars
+local enabled = false
+local cooldown = false
+local lastTarget = nil
+local range = 4
+local mode = "Behind"
+local daggerCooldownText
+
+-- Helpers
+local counterAnimIDs = { "126830014841198", "126355327951215", "121086746534252", "18885909645",
+"98456918873918", "105458270463374", "83829782357897", "125403313786645",
+"118298475669935", "82113744478546", "70371667919898", "99135633258223",
+"97167027849946", "109230267448394", "139835501033932", "126896426760253",
+"109667959938617", "126681776859538", "129976080405072", "121293883585738",
+"81639435858902", "137314737492715", "92173139187970" }
+
+local function killerPlayingCounterAnim(killer)
+    local humanoid = killer:FindFirstChildOfClass("Humanoid")
+    if not humanoid or not humanoid:FindFirstChildOfClass("Animator") then return false end
+    for _, track in ipairs(humanoid.Animator:GetPlayingAnimationTracks()) do
+        if track.Animation and track.Animation.AnimationId then
+            local animIdNum = track.Animation.AnimationId:match("%d+")
+            for _, id in ipairs(counterAnimIDs) do
+                if tostring(animIdNum) == id then
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
+local function isBehindTarget(hrp, targetHRP)
+    local distance = (hrp.Position - targetHRP.Position).Magnitude
+    if distance > range then return false end
+    if mode == "Around" then return true end
+    local direction = -targetHRP.CFrame.LookVector
+    local toPlayer = (hrp.Position - targetHRP.Position)
+    return toPlayer:Dot(direction) > 0.5
+end
+
+-- Dagger cooldown refresh
+local function refreshDaggerRef()
+    local mainui = game:GetService("Players").LocalPlayer:FindFirstChild("PlayerGui"):FindFirstChild("MainUI")
+    if mainui and mainui:FindFirstChild("AbilityContainer") then
+        local dagger = mainui.AbilityContainer:FindFirstChild("Dagger")
+        if dagger and dagger:FindFirstChild("CooldownTime") then
+            daggerCooldownText = dagger.CooldownTime
+            return
+        end
+    end
+    daggerCooldownText = nil
+end
+
+game:GetService("Players").LocalPlayer.PlayerGui.DescendantAdded:Connect(refreshDaggerRef)
+game:GetService("Players").LocalPlayer.PlayerGui.DescendantRemoving:Connect(function(obj)
+    if obj == daggerCooldownText then
+        daggerCooldownText = nil
+    end
+end)
+refreshDaggerRef()
+
+-- GUI Elements
+Combat:CreateSection("Two Time")
+-- Backstab Toggle
+Combat:CreateToggle({
+    Name = "Auto Backstab",
+    CurrentValue = false,
+    Flag = "BackstabEnabled",
+    Callback = function(value)
+        enabled = value
+    end
+})
+
+-- Range
+Combat:CreateSlider({
+    Name = "Range",
+    Range = {1, 20},
+    Increment = 1,
+    Suffix = "studs",
+    CurrentValue = 4,
+    Flag = "BackstabRange",
+    Callback = function(value)
+        range = value
+    end
+})
+
+-- Mode
+Combat:CreateDropdown({
+    Name = "Mode",
+    Options = {"Behind", "Around"},
+    CurrentOption = "Behind",
+    Flag = "BackstabMode",
+    Callback = function(option)
+        mode = option
+    end
+})
+
+-- Main RenderStepped logic
+game:GetService("RunService").RenderStepped:Connect(function()
+    if not daggerCooldownText or not daggerCooldownText.Parent then return end
+    if tonumber(daggerCooldownText.Text) then return end
+    if not enabled or cooldown then return end
+
+    local char = game:GetService("Players").LocalPlayer.Character
+    if not (char and char:FindFirstChild("HumanoidRootPart")) then return end
+    local hrp = char.HumanoidRootPart
+    local stats = game:GetService("Stats")
+
+    for _, name in ipairs(killerNames) do
+        local killer = workspace:WaitForChild("Players"):WaitForChild("Killers"):FindFirstChild(name)
+        if killer and killer:FindFirstChild("HumanoidRootPart") then
+            local kHRP = killer.HumanoidRootPart
+
+            if isBehindTarget(hrp, kHRP) and killer ~= lastTarget then
+                cooldown = true
+                lastTarget = killer
+
+                local start = tick()
+                local didDagger = false
+                local connection
+                connection = game:GetService("RunService").Heartbeat:Connect(function()
+                    if not (char and char.Parent and kHRP and kHRP.Parent) then
+                        connection:Disconnect()
+                        return
+                    end
+
+                    local elapsed = tick() - start
+                    if elapsed >= 0.5 then
+                        connection:Disconnect()
+                        return
+                    end
+
+                    local ping = tonumber(stats.Network.ServerStatsItem["Data Ping"]:GetValueString():match("%d+")) or 50
+                    local pingSeconds = ping / 1000
+                    local killerVelocity = kHRP.Velocity
+                    local moveDir = killerVelocity.Magnitude > 0.1 and killerVelocity.Unit or Vector3.new()
+                    local pingOffset = moveDir * (pingSeconds * killerVelocity.Magnitude)
+                    local predictedPos = kHRP.Position + pingOffset
+
+                    local targetPos
+                    if mode == "Behind" then
+                        targetPos = predictedPos - (kHRP.CFrame.LookVector * 0.3)
+                    else
+                        local lookVec = kHRP.CFrame.LookVector
+                        local rightVec = kHRP.CFrame.RightVector
+                        local rel = (hrp.Position - kHRP.Position)
+                        local lateralSpeed = killerVelocity:Dot(rightVec)
+                        local baseOffset = (rel.Magnitude > 0.1) and rel.Unit * 0.3 or Vector3.new()
+                        local lateralOffset = rightVec * lateralSpeed * 0.3
+                        targetPos = predictedPos + baseOffset + lateralOffset
+                    end
+
+                    hrp.CFrame = CFrame.new(targetPos, targetPos + kHRP.CFrame.LookVector)
+
+                    if not didDagger then
+                        didDagger = true
+                        game:GetService("ReplicatedStorage"):WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer("UseActorAbility", "Dagger")
+                    end
+                end)
+
+                task.delay(2, function()
+                    while isBehindTarget(hrp, kHRP) do
+                        game:GetService("RunService").Heartbeat:Wait()
+                    end
+                    lastTarget = nil
+                    cooldown = false
+                end)
+
+                break
+            end
+        end
+    end
 end)
 
 Combat:CreateSection("Guest 1337 -- Auto Block")
@@ -2209,20 +3079,20 @@ Combat:CreateSlider({
 })
 
 --== Persistent Storage ==--
-local savedRangeRaging = lp:FindFirstChild("RagingPaceRange")
+local savedRangeRaging = game:GetService("Players").LocalPlayer:FindFirstChild("RagingPaceRange")
 if not savedRangeRaging then
     savedRangeRaging = Instance.new("NumberValue")
     savedRangeRaging.Name = "RagingPaceRange"
     savedRangeRaging.Value = 19 -- default
-    savedRangeRaging.Parent = lp
+    savedRangeRaging.Parent = game:GetService("Players").LocalPlayer
 end
 
-local savedRange404 = lp:FindFirstChild("Error404Range")
+local savedRange404 = game:GetService("Players").LocalPlayer:FindFirstChild("Error404Range")
 if not savedRange404 then
     savedRange404 = Instance.new("NumberValue")
     savedRange404.Name = "Error404Range"
     savedRange404.Value = 19 -- default
-    savedRange404.Parent = lp
+    savedRange404.Parent = game:GetService("Players").LocalPlayer
 end
 
 --== Settings ==--
@@ -2288,9 +3158,9 @@ end
 --== Main Detection ==--
 local function detectAndSpam(skillName, range, cooldownTable, animTable)
     for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= lp and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        if player ~= game:GetService("Players").LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             local targetHRP = player.Character.HumanoidRootPart
-            local myChar = lp.Character
+            local myChar = game:GetService("Players").LocalPlayer.Character
             if myChar and myChar:FindFirstChild("HumanoidRootPart") then
                 local dist = (targetHRP.Position - myChar.HumanoidRootPart.Position).Magnitude
                 if dist <= range and (not cooldownTable[player] or tick() - cooldownTable[player] >= COOLDOWN_TIME) then
@@ -2493,7 +3363,7 @@ local function attemptBlockForSound(sound)
     local id = extractNumericSoundId(sound)
     if not id or not autoBlockTriggerSounds[id] then return end
 
-    local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+    local myRoot = Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if not myRoot then return end
 
     -- Throttle one block per sound for a short window
@@ -2589,7 +3459,7 @@ autoPunchLoop = RunService.RenderStepped:Connect(function()
     local charges = punchBtn and punchBtn:FindFirstChild("Charges")
 
     if charges and charges.Text == "1" then
-        local myChar = lp.Character
+        local myChar = Players.LocalPlayer.Character
         local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
         local humanoid = myChar and myChar:FindFirstChild("Humanoid")
 
@@ -2645,7 +3515,7 @@ genv.toggleValue = false
 
 -- Get character & humanoid safely
 function genv.getCharacterHumanoid()
-    local character = LocalPlayer.Character
+    local character = game:GetService("Players").LocalPlayer.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
     return character, humanoid
 end
@@ -2712,7 +3582,7 @@ survivorValue:GetPropertyChangedSignal("Value"):Connect(function()
 end)
 
 -- Auto-update on respawn
-LocalPlayer.CharacterAdded:Connect(function(char)
+game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function(char)
     -- Small delay to ensure character exists
     task.wait(0.1)
     if genv.toggleValue then
@@ -2753,5 +3623,286 @@ RunService.Heartbeat:Connect(function()
         end
     end
 end)
+-- Hàm lấy danh sách emote từ Purchased.Emotes
+local function getEmoteList()
+    local list = {}
+    for _, emote in ipairs(purchasedEmotesFolder:GetChildren()) do
+        table.insert(list, emote.Name)
+    end
+    return list
+end
 
+--==================== GUI 1 (Dropdown) ====================--
+local emoteList = getEmoteList()
+local selectedEmote = emoteList[1]
+
+local emoteGuiMain = Instance.new("ScreenGui")
+emoteGuiMain.Name = "CustomEmoteGuiMain"
+emoteGuiMain.ResetOnSpawn = false
+emoteGuiMain.DisplayOrder = 999998
+emoteGuiMain.Enabled = false
+emoteGuiMain.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+
+local emoteGuiToggle = Instance.new("ScreenGui")
+emoteGuiToggle.Name = "CustomEmoteGuiToggle"
+emoteGuiToggle.ResetOnSpawn = false
+emoteGuiToggle.DisplayOrder = 999999
+emoteGuiToggle.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+
+local toggleEmoteGuiButton = Instance.new("ImageButton")
+toggleEmoteGuiButton.Size = UDim2.new(0, 60, 0, 60)
+toggleEmoteGuiButton.Position = UDim2.new(0.05, 340, 0.05, -47.5)
+toggleEmoteGuiButton.AnchorPoint = Vector2.new(0.5, 0.5)
+toggleEmoteGuiButton.BackgroundTransparency = 1
+toggleEmoteGuiButton.Image = "rbxassetid://73335752800725"
+toggleEmoteGuiButton.ZIndex = 999999
+toggleEmoteGuiButton.Parent = emoteGuiToggle
+
+local survivorValue = playerData:WaitForChild("Equipped"):WaitForChild("Survivor")
+local guiVisible = false
+
+local function updateToggle()
+    local isTarget = survivorValue.Value == "007n7"
+    emoteGuiToggle.Enabled = isTarget
+    if not isTarget then
+        emoteGuiMain.Enabled = false
+        guiVisible = false
+    end
+end
+updateToggle()
+survivorValue:GetPropertyChangedSignal("Value"):Connect(updateToggle)
+
+local playButton = Instance.new("TextButton")
+playButton.Size = UDim2.new(0, 160, 0, 36)
+playButton.Position = UDim2.new(1, -204, 0, 150)
+playButton.BackgroundColor3 = Color3.fromRGB(80,80,80)
+playButton.TextColor3 = Color3.new(1,1,1)
+playButton.Font = Enum.Font.SourceSans
+playButton.TextSize = 18
+playButton.Text = "Boombox Clone (007n7)"
+playButton.Parent = emoteGuiMain
+
+local dropdownFrame = Instance.new("Frame")
+dropdownFrame.Size = UDim2.new(0, 220, 0, 40)
+dropdownFrame.Position = UDim2.new(1, -240, 0, 100)
+dropdownFrame.BackgroundColor3 = Color3.fromRGB(40,40,40)
+dropdownFrame.BorderSizePixel = 0
+dropdownFrame.Parent = emoteGuiMain
+
+local dropdownButton = Instance.new("TextButton")
+dropdownButton.Size = UDim2.new(1,0,1,0)
+dropdownButton.BackgroundColor3 = Color3.fromRGB(60,60,60)
+dropdownButton.TextColor3 = Color3.new(1,1,1)
+dropdownButton.Font = Enum.Font.SourceSans
+dropdownButton.TextSize = 18
+dropdownButton.Text = selectedEmote and ("Emote: "..selectedEmote) or "Chọn Emote"
+dropdownButton.Parent = dropdownFrame
+
+local emoteListFrame = Instance.new("ScrollingFrame")
+emoteListFrame.Size = UDim2.new(1,0,0, math.clamp(#emoteList,1,8) * 30)
+emoteListFrame.Position = UDim2.new(0,0,1,2)
+emoteListFrame.BackgroundColor3 = Color3.fromRGB(50,50,50)
+emoteListFrame.BorderSizePixel = 0
+emoteListFrame.Visible = false
+emoteListFrame.CanvasSize = UDim2.new(0,0,0, #emoteList * 30)
+emoteListFrame.ScrollBarThickness = 6
+emoteListFrame.Parent = dropdownFrame
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.FillDirection = Enum.FillDirection.Vertical
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout.Parent = emoteListFrame
+
+local function populateDropdown(list)
+    for _, child in ipairs(emoteListFrame:GetChildren()) do
+        if child:IsA("TextButton") then child:Destroy() end
+    end
+    for _, name in ipairs(list) do
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, -6, 0, 30)
+        btn.Position = UDim2.new(0, 3, 0, 0)
+        btn.BackgroundColor3 = Color3.fromRGB(70,70,70)
+        btn.TextColor3 = Color3.new(1,1,1)
+        btn.Font = Enum.Font.SourceSans
+        btn.TextSize = 16
+        btn.Text = name
+        btn.Parent = emoteListFrame
+        btn.MouseButton1Click:Connect(function()
+            selectedEmote = name
+            dropdownButton.Text = "Emote: " .. name
+            emoteListFrame.Visible = false
+        end)
+    end
+    emoteListFrame.CanvasSize = UDim2.new(0,0,0, #list * 30)
+    emoteListFrame.Size = UDim2.new(1,0,0, math.clamp(#list,1,8) * 30)
+end
+populateDropdown(emoteList)
+
+dropdownButton.MouseButton1Click:Connect(function()
+    emoteListFrame.Visible = not emoteListFrame.Visible
+    if emoteListFrame.Visible then
+        Remote:FireServer("StopEmote", "Animations", "0")
+    end
+end)
+
+playButton.MouseButton1Click:Connect(function()
+    if not selectedEmote then return end
+    Remote:FireServer("PlayEmote", "Animations", selectedEmote)
+    task.wait(0.001)
+    Remote:FireServer("StopEmote", "Animations", selectedEmote)
+    task.wait(0.001)
+    Remote:FireServer("UseActorAbility", "Clone")
+    emoteListFrame.Visible = false
+end)
+
+toggleEmoteGuiButton.MouseButton1Click:Connect(function()
+    guiVisible = not guiVisible
+    emoteGuiMain.Enabled = guiVisible
+    if not guiVisible then
+        emoteListFrame.Visible = false
+    end
+end)
+
+--==================== GUI 2 (Dropdown giống GUI 1) ====================--
+local emotes2 = getEmoteList()
+
+local screenGui2 = Instance.new("ScreenGui")
+screenGui2.DisplayOrder = 999999
+screenGui2.Name = "EmoteGUI2"
+screenGui2.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+screenGui2.ResetOnSpawn = false
+screenGui2.ZIndexBehavior = Enum.ZIndexBehavior.Global
+
+-- Bỏ background2, thay bằng Frame trong suốt để chứa dropdown và nút Play
+local background2 = Instance.new("Frame")
+background2.Size = UDim2.new(0, 260, 0, 100)
+background2.Position = UDim2.new(0, 0, 0.203, 0)
+background2.BackgroundTransparency = 1 -- trong suốt hẳn luôn
+background2.BorderSizePixel = 0
+background2.Visible = false
+background2.Parent = screenGui2
+
+-- Play button GUI 2
+local playButton2 = Instance.new("TextButton")
+playButton2.Size = UDim2.new(0, 160, 0, 36)
+playButton2.Position = UDim2.new(0, 50, 0, 60)
+playButton2.BackgroundColor3 = Color3.fromRGB(80,80,80)
+playButton2.TextColor3 = Color3.new(1,1,1)
+playButton2.Font = Enum.Font.SourceSans
+playButton2.TextSize = 18
+playButton2.Text = "Play Emote"
+playButton2.Parent = background2
+
+-- Dropdown GUI 2
+local dropdownFrame2 = Instance.new("Frame")
+dropdownFrame2.Size = UDim2.new(0, 220, 0, 40)
+dropdownFrame2.Position = UDim2.new(0, 20, 0, 10)
+dropdownFrame2.BackgroundColor3 = Color3.fromRGB(40,40,40)
+dropdownFrame2.BorderSizePixel = 0
+dropdownFrame2.Parent = background2
+
+local dropdownButton2 = Instance.new("TextButton")
+dropdownButton2.Size = UDim2.new(1,0,1,0)
+dropdownButton2.BackgroundColor3 = Color3.fromRGB(60,60,60)
+dropdownButton2.TextColor3 = Color3.new(1,1,1)
+dropdownButton2.Font = Enum.Font.SourceSans
+dropdownButton2.TextSize = 18
+dropdownButton2.Text = emotes2[1] and ("Emote: "..emotes2[1]) or "Chọn Emote"
+dropdownButton2.Parent = dropdownFrame2
+
+local emoteListFrame2 = Instance.new("ScrollingFrame")
+emoteListFrame2.Size = UDim2.new(1,0,0, math.clamp(#emotes2,1,8) * 30)
+emoteListFrame2.Position = UDim2.new(0,0,1,2)
+emoteListFrame2.BackgroundColor3 = Color3.fromRGB(50,50,50)
+emoteListFrame2.BorderSizePixel = 0
+emoteListFrame2.Visible = false
+emoteListFrame2.CanvasSize = UDim2.new(0,0,0, #emotes2 * 30)
+emoteListFrame2.ScrollBarThickness = 6
+emoteListFrame2.Parent = dropdownFrame2
+
+local listLayout2 = Instance.new("UIListLayout")
+listLayout2.FillDirection = Enum.FillDirection.Vertical
+listLayout2.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout2.Parent = emoteListFrame2
+
+-- Selected emote GUI 2
+local selectedEmote2 = emotes2[1]
+
+local function populateDropdown2(list)
+	for _, child in ipairs(emoteListFrame2:GetChildren()) do
+		if child:IsA("TextButton") then child:Destroy() end
+	end
+	for _, name in ipairs(list) do
+		local btn = Instance.new("TextButton")
+		btn.Size = UDim2.new(1, -6, 0, 30)
+		btn.Position = UDim2.new(0, 3, 0, 0)
+		btn.BackgroundColor3 = Color3.fromRGB(70,70,70)
+		btn.TextColor3 = Color3.new(1,1,1)
+		btn.Font = Enum.Font.SourceSans
+		btn.TextSize = 16
+		btn.Text = name
+		btn.Parent = emoteListFrame2
+		btn.MouseButton1Click:Connect(function()
+			selectedEmote2 = name
+			dropdownButton2.Text = "Emote: " .. name
+			emoteListFrame2.Visible = false
+		end)
+	end
+	emoteListFrame2.CanvasSize = UDim2.new(0,0,0, #list * 30)
+	emoteListFrame2.Size = UDim2.new(1,0,0, math.clamp(#list,1,8) * 30)
+end
+populateDropdown2(emotes2)
+
+dropdownButton2.MouseButton1Click:Connect(function()
+	emoteListFrame2.Visible = not emoteListFrame2.Visible
+	if emoteListFrame2.Visible then
+		Remote:FireServer("StopEmote", "Animations", "0")
+	end
+end)
+
+playButton2.MouseButton1Click:Connect(function()
+	if not selectedEmote2 then return end
+	Remote:FireServer("PlayEmote", "Animations", selectedEmote2)
+end)
+
+-- Toggle button GUI 2
+local toggleButton2 = Instance.new("ImageButton")
+toggleButton2.Size = UDim2.new(0, 60, 0, 60)
+toggleButton2.Position = UDim2.new(0.05, 248, 0.05, -47.5)
+toggleButton2.AnchorPoint = Vector2.new(0.5, 0.5)
+toggleButton2.BackgroundTransparency = 1
+toggleButton2.Image = "rbxassetid://87214736647237"
+toggleButton2.Parent = screenGui2
+toggleButton2.ZIndex = 200010
+
+toggleButton2.MouseButton1Click:Connect(function()
+	background2.Visible = not background2.Visible
+	if background2.Visible then
+		Remote:FireServer("StopEmote", "Animations", "0")
+	end
+end)
+
+
+--==================== Auto Update ====================--
+-- Auto update cả GUI 2
+local function refreshAll()
+	local newList = getEmoteList()
+	emoteList = newList
+	populateDropdown(newList) -- GUI 1
+	populateDropdown2(newList) -- GUI 2
+	if #newList > 0 then
+		selectedEmote = selectedEmote or newList[F1]
+		selectedEmote2 = selectedEmote2 or newList[1]
+		dropdownButton.Text = "Emote: " .. selectedEmote
+		dropdownButton2.Text = "Emote: " .. selectedEmote2
+	else
+		selectedEmote = nil
+		selectedEmote2 = nil
+		dropdownButton.Text = "Choose Emote"
+		dropdownButton2.Text = "Choose Emote"
+	end
+end
+
+purchasedEmotesFolder.ChildAdded:Connect(refreshAll)
+purchasedEmotesFolder.ChildRemoved:Connect(refreshAll)
 Rayfield:LoadConfiguration()
