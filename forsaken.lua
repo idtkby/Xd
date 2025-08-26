@@ -735,6 +735,7 @@ Main1Group:AddDivider()
 Main1Group:AddLabel("--== Surviv: [ Guest 1337 ] ==--", true)
 
 --// Auto Block + Punch cho Guest1337 Survivor (Obsidian Lib)
+task.spawn(function()
 local Players = game:GetService("Players")      
 local ReplicatedStorage = game:GetService("ReplicatedStorage")      
 local RunService = game:GetService("RunService")      
@@ -946,7 +947,7 @@ Main1Group:AddInput("AutoBlockPunchRange", {
 })      
     
 
-
+end)
 
 
 
