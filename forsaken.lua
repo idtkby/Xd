@@ -2436,7 +2436,7 @@ M205One:AddDivider()
 task.spawn(function()
 -- Biến fling
 local flingPunchOn = false
-local flingPower = 0
+local flingPower = 500
 
 -- UI (Obsidian style)
 M205One:AddToggle("FlingPunchToggle", {
