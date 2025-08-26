@@ -2624,6 +2624,69 @@ M205One:AddDropdown("LastSoundChoice", {
 M205One:AddDivider()
 
 task.spawn(function()
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+
+getgenv().AutoBringPizza = false
+local eating = false -- tránh spam
+
+-- Hàm ăn Pizza
+local function eatPizza()
+    if eating then return end
+    eating = true
+
+    task.spawn(function()
+        while getgenv().AutoBringPizza do
+            local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            local hum = character:FindFirstChildOfClass("Humanoid")
+
+            if not hrp or not hum then break end
+            if hum.Health >= hum.MaxHealth then break end
+
+            local foundPizza = false
+            for _, v in ipairs(workspace:GetDescendants()) do
+                if v:IsA("BasePart") and v.Name == "Pizza" and v:FindFirstChild("TouchInterest") then
+                    foundPizza = true
+                    firetouchinterest(hrp, v, 0)
+                    task.wait(0.1)
+                    firetouchinterest(hrp, v, 1)
+                end
+            end
+
+            if not foundPizza then break end
+            task.wait(1) -- lặp lại sau 1s nếu còn Pizza
+        end
+        eating = false
+    end)
+end
+
+-- Theo dõi khi Pizza mới xuất hiện
+workspace.DescendantAdded:Connect(function(obj)
+    if getgenv().AutoBringPizza and obj:IsA("BasePart") and obj.Name == "Pizza" and obj:FindFirstChild("TouchInterest") then
+        eatPizza()
+    end
+end)
+
+-- Toggle Obsidian
+M205One:AddToggle("AutoBringPizzaToggle", {
+    Text = "Auto Eat Pizza",
+    Default = false,
+    Callback = function(v)
+        getgenv().AutoBringPizza = v
+        if v then
+            -- Nếu bật khi đã có Pizza sẵn
+            for _, v in ipairs(workspace:GetDescendants()) do
+                if v:IsA("BasePart") and v.Name == "Pizza" and v:FindFirstChild("TouchInterest") then
+                    eatPizza()
+                    break
+                end
+            end
+        end
+    end
+})
+
 -- Biến fling
 local flingPunchOn = false
 local flingPower = 500
