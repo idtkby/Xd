@@ -2433,6 +2433,47 @@ M205One:AddDropdown("LastSoundChoice", {
 
 M205One:AddDivider()
 
+task.spawn(function()
+-- Biến fling
+local flingPunchOn = false
+local flingPower = 150
+
+-- UI (Obsidian style)
+M205One:AddToggle("FlingPunchToggle", {
+    Text = "Fling",
+    Default = false,
+    Callback = function(v)
+        flingPunchOn = v
+    end
+})
+
+-- Loop fling
+coroutine.wrap(function()
+    local hrp, c, vel, movel = nil, nil, nil, 0.1
+    while true do
+        RunService.Heartbeat:Wait()
+        if flingPunchOn then
+            -- kiểm tra character + HRP
+            while flingPunchOn and not (c and c.Parent and hrp and hrp.Parent) do
+                RunService.Heartbeat:Wait()
+                c = lp.Character
+                hrp = c and c:FindFirstChild("HumanoidRootPart")
+            end
+            if flingPunchOn and hrp then
+                vel = hrp.Velocity
+                hrp.Velocity = vel * flingPower + Vector3.new(0, flingPower, 0)
+                RunService.RenderStepped:Wait()
+                hrp.Velocity = vel
+                RunService.Stepped:Wait()
+                hrp.Velocity = vel + Vector3.new(0, movel, 0)
+                movel = -movel
+            end
+        end
+    end
+end)()
+
+end)
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local lp = Players.LocalPlayer
