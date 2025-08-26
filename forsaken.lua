@@ -949,7 +949,9 @@ Main1Group:AddInput("AutoBlockPunchRange", {
 
 end)
 
+Main2Group:AddLabel("Request 170< ping")
 
+Main1Group:AddDivider()
 
 
 --// Auto Aim (Charge) cho Guest1337 Survivor + Aim Camera
