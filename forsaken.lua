@@ -965,6 +965,18 @@ local function remoteBlock()
     NetworkEvent:FireServer("UseActorAbility", "Block")      
 end      
 
+-- ID anim đặc biệt
+local specialAnimId = "106776364623742"
+
+-- Hàm check xem killer đang hướng tới localp
+local function isFacingTarget(killerRoot, targetRoot, maxAngleDeg)
+    local dirToTarget = (targetRoot.Position - killerRoot.Position).Unit
+    local facing = killerRoot.CFrame.LookVector
+    local dot = facing:Dot(dirToTarget) -- Cos góc
+    local angle = math.deg(math.acos(math.clamp(dot, -1, 1)))
+    return angle < maxAngleDeg -- nhỏ hơn góc max nghĩa là đang hướng tới
+end
+
 -- Remote Punch      
 local function remotePunch(targetRoot)  
     local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")  
@@ -1027,29 +1039,46 @@ RunService.Heartbeat:Connect(function()
 
                 -- 1) Kiểm tra Animation  
                 for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do  
-                    local anim = track.Animation  
-                    local id = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")  
-                    if id and animationIds[id] and not clickedTracks[track] then  
-                        clickedTracks[track] = true  
+                    local anim = track.Animation
+local id = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")
+if id then
+    -- Trường hợp anim đặc biệt
+    if id == specialAnimId and not clickedTracks[track] then
+        clickedTracks[track] = true
 
-                        if tick() - lastActionTime >= cooldown then  
-                            lastActionTime = tick()  
+        local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+        if myRoot and root then
+            local dist = (root.Position - myRoot.Position).Magnitude
+            if dist <= 50 and isFacingTarget(root, myRoot, 35) then -- 35° lệch cho phép
+                remoteBlock()
+            end
+        end
 
-                            if _G.AutoBlock_Enabled then  
-                                remoteBlock()  
-                                task.wait(0.2)  
-                            end  
-                            if _G.AutoPunch_Enabled then  
-                                remotePunch(root)  
-                            end  
-                        end  
+        task.spawn(function()
+            track.Stopped:Wait()
+            clickedTracks[track] = nil
+        end)
+    end
 
-                        task.spawn(function()  
-                            track.Stopped:Wait()  
-                            clickedTracks[track] = nil  
-                        end)  
-                    end  
-                end  
+    -- Các anim block bình thường
+    if animationIds[id] and not clickedTracks[track] then
+        clickedTracks[track] = true
+        if tick() - lastActionTime >= cooldown then
+            lastActionTime = tick()
+            if _G.AutoBlock_Enabled then
+                remoteBlock()
+                task.wait(0.2)
+            end
+            if _G.AutoPunch_Enabled then
+                remotePunch(root)
+            end
+        end
+        task.spawn(function()
+            track.Stopped:Wait()
+            clickedTracks[track] = nil
+        end)
+    end
+end
 
                 -- 2) Kiểm tra Sound  
                 for _, sound in ipairs(killer:GetDescendants()) do  
