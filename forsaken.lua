@@ -883,15 +883,19 @@ RunService.Heartbeat:Connect(function()
     if not killersFolder then return end
 
     for _, killer in ipairs(killersFolder:GetChildren()) do
-        local root = killer:FindFirstChild("HumanoidRootPart")
-        local humanoid = killer:FindFirstChildOfClass("Humanoid")
-        if not root or not humanoid or (humanoid.Health or 0) <= 0 then
-            -- skip this killer
-        else
-            local kpos = root.Position
-            local dist = (kpos - myRoot.Position).Magnitude
-            local inRange = (dist <= _G.AutoBlockPunch_Range)
+    local root = killer:FindFirstChild("HumanoidRootPart")
+    local humanoid = killer:FindFirstChildOfClass("Humanoid")
+    if root and humanoid and humanoid.Health > 0 then
+        local kpos = root.Position
+        local dist = (kpos - myRoot.Position).Magnitude
+        local inRange = (dist <= _G.AutoBlockPunch_Range)
 
+        -- ⚡ Bỏ qua fake Noli
+        local isInKillers = (killer.Parent and killer.Parent.Name == "Killers")
+        local isPlayer = (Players:GetPlayerFromCharacter(killer) ~= nil)
+        local isFakeNoli = isInKillers and not isPlayer and killer.Name:lower():find("noli")
+
+        if not isFakeNoli then
             -- 1) Predictive approach detection (kẻ địch đang lao về phía bạn)
             local approachSpeed = 0
             local ok, vel = pcall(function() return root.AssemblyLinearVelocity end)
@@ -914,54 +918,46 @@ RunService.Heartbeat:Connect(function()
 
             if effectiveInRange then
                 -- Animation-based detection
-                -- danh sách animation đặc biệt: chỉ khi track này xuất hiện mới kích hoạt auto-block
-local specialAnimIds = {
-    ["18885906143"] = true,
-    ["98456918873918"] = true
-}
+                local specialAnimIds = {
+                    ["18885906143"] = true,
+                    ["98456918873918"] = true
+                }
 
--- ... trong vòng Heartbeat, thay phần Animation-based detection bằng:
--- 1) Animation-based detection (CHỈ xem các specialAnimIds)
-for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
-    if not clickedTracks[track] then
-        local anim = track.Animation
-        local aid = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")
-        -- chỉ quan tâm khi aid nằm trong specialAnimIds
-        if aid and specialAnimIds[aid] then
-            -- timePosition có thể giúp tránh trigger khi anim đã chạy lâu (tránh false positive)
-            local ok2, tp = pcall(function() return track.TimePosition end)
-            local timePos = (ok2 and tp) and tp or 0
+                for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
+                    if not clickedTracks[track] then
+                        local anim = track.Animation
+                        local aid = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")
+                        if aid and specialAnimIds[aid] then
+                            local ok2, tp = pcall(function() return track.TimePosition end)
+                            local timePos = (ok2 and tp) and tp or 0
 
-            -- nếu imminent (tiến về phía bạn nhanh) thì trigger ngay; nếu không thì chỉ trigger khi anim mới bắt đầu
-            local allowTrigger = imminent or (timePos <= 0.25)
-
-            if allowTrigger then
-                clickedTracks[track] = true
-                if tick() - lastActionTime >= cooldown then
-                    lastActionTime = tick()
-                    if _G.AutoBlock_Enabled then
-                        remoteBlock()
-                        task.wait(0.2)
-                    end
-                    if _G.AutoPunch_Enabled then
-                        remotePunch(root)
+                            local allowTrigger = imminent or (timePos <= 0.25)
+                            if allowTrigger then
+                                clickedTracks[track] = true
+                                if tick() - lastActionTime >= cooldown then
+                                    lastActionTime = tick()
+                                    if _G.AutoBlock_Enabled then
+                                        remoteBlock()
+                                        task.wait(0.2)
+                                    end
+                                    if _G.AutoPunch_Enabled then
+                                        remotePunch(root)
+                                    end
+                                end
+                                task.spawn(function()
+                                    track.Stopped:Wait()
+                                    clickedTracks[track] = nil
+                                end)
+                            end
+                        end
                     end
                 end
-                task.spawn(function()
-                    track.Stopped:Wait()
-                    clickedTracks[track] = nil
-                end)
-            end
-        end
-    end
-end
 
                 -- Sound-based detection
                 for _, sound in ipairs(killer:GetDescendants()) do
                     if sound:IsA("Sound") and sound.IsPlaying then
                         local sid = sound.SoundId and sound.SoundId:match("%d+")
                         if sid and autoBlockTriggerSounds[sid] and not clickedSounds[sid] then
-                            -- nếu imminent or inRange, trigger nhanh
                             if imminent or inRange then
                                 clickedSounds[sid] = true
                                 if tick() - lastActionTime >= cooldown then
@@ -982,6 +978,7 @@ end
             end
         end
     end
+end
 end)
       
 -- UI      
