@@ -900,6 +900,8 @@ NetworkEvent.OnClientEvent:Connect(function(action, ability)
 end)
 
 -- Main loop: animation + sound + predictive detection
+-- Main loop: animation + sound + predictive detection
+-- Main loop: animation + sound + predictive detection
 RunService.Heartbeat:Connect(function()
     if not isGuestSurvivor() then return end
     local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
@@ -912,71 +914,65 @@ RunService.Heartbeat:Connect(function()
         local root = killer:FindFirstChild("HumanoidRootPart")
         local humanoid = killer:FindFirstChildOfClass("Humanoid")
         if not root or not humanoid or (humanoid.Health or 0) <= 0 then
-            -- skip
-        else
-            local kpos = root.Position
-            local dist = (kpos - myRoot.Position).Magnitude
-            local inRange = (dist <= _G.AutoBlockPunch_Range)
+            continue
+        end
 
-            -- ignore fake noli (if any) - as requested earlier we can skip; here omit that logic if not needed
+        local kpos = root.Position
+        local dist = (kpos - myRoot.Position).Magnitude
+        local inRange = (dist <= _G.AutoBlockPunch_Range)
 
-            -- Predictive approach detection
-            local approachSpeed = 0
-            local ok, vel = pcall(function() return root.AssemblyLinearVelocity end)
-            if ok and vel then
-                local toMe = (myRoot.Position - kpos)
-                if toMe.Magnitude > 0.001 then
-                    approachSpeed = toMe.Unit:Dot(vel) -- positive if moving toward you
-                end
+        -- Predictive approach detection
+        local approachSpeed, imminent = 0, false
+        local ok, vel = pcall(function() return root.AssemblyLinearVelocity end)
+        if ok and vel then
+            local toMe = (myRoot.Position - kpos)
+            if toMe.Magnitude > 0.001 then
+                approachSpeed = toMe.Unit:Dot(vel) -- positive if moving toward you
             end
-            local timeToReach = math.huge
-            if approachSpeed > 0.001 then
-                timeToReach = dist / approachSpeed
-            end
-            local imminent = (approachSpeed >= MIN_APPROACH_SPEED and timeToReach <= IMMINENT_MAX_TIME)
+        end
+        local timeToReach = math.huge
+        if approachSpeed > 0.001 then
+            timeToReach = dist / approachSpeed
+        end
+        if approachSpeed >= MIN_APPROACH_SPEED and timeToReach <= IMMINENT_MAX_TIME then
+            imminent = true
+        end
 
-            -- effectiveInRange: true if either actually in range or imminent (approaching fast)
-            local effectiveInRange = inRange or imminent
-
-            if effectiveInRange then
-                -- =========== Animation-based (only specialAnimIds) ===========
-                for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
-    if not clickedTracks[track] then
-        local anim = track.Animation
-        local aid = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")
-        if aid then
-            -- Nếu là anim đặc biệt
-            if specialAnimIds[aid] then
-                if dist <= 100 then -- fixed 100 stud
+        -------------------------------------------------------------------
+        -- Animation-based detection
+        -------------------------------------------------------------------
+        for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
+            if not clickedTracks[track] then
+                local anim = track.Animation
+                local aid = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")
+                if aid then
                     local ok2,tp = pcall(function() return track.TimePosition end)
                     local timePos = (ok2 and tp) and tp or 0
-                    if timePos <= 0.25 then
-                        -- luôn facing check strict, không phụ thuộc toggle
-                        if killerFacingPlayer(root,myRoot,true) then
-                            clickedTracks[track] = true
-                            if tick() - lastActionTime >= cooldown then
-                                lastActionTime = tick()
-                                if _G.AutoBlock_Enabled then
-                                    remoteBlock()
-                                    task.wait(0.2)
+
+                    -- ===== Special Animations =====
+                    if specialAnimIds[aid] then
+                        if (inRange or imminent) and timePos <= 0.25 then
+                            if killerFacingPlayer(root, myRoot, true) then
+                                clickedTracks[track] = true
+                                if tick() - lastActionTime >= cooldown then
+                                    lastActionTime = tick()
+                                    if _G.AutoBlock_Enabled then
+                                        remoteBlock()
+                                        task.wait(0.2)
+                                    end
+                                    if _G.AutoPunch_Enabled then
+                                        remotePunch(root)
+                                    end
                                 end
-                                if _G.AutoPunch_Enabled then
-                                    remotePunch(root)
-                                end
+                                task.spawn(function() track.Stopped:Wait() clickedTracks[track] = nil end)
                             end
-                            task.spawn(function() track.Stopped:Wait() clickedTracks[track] = nil end)
                         end
-                    end
-                end
-            else
-                -- Anim thường → vẫn dùng toggle
-                if (inRange or imminent) then
-                    local ok2,tp = pcall(function() return track.TimePosition end)
-                    local timePos = (ok2 and tp) and tp or 0
-                    if timePos <= 0.25 then
+
+                    -- ===== Normal Animations =====
+                    elseif inRange and timePos <= 0.25 then
                         local canBlock = true
                         if facingCheckEnabled then
-                            canBlock = killerFacingPlayer(root,myRoot,false)
+                            canBlock = killerFacingPlayer(root, myRoot, false)
                         end
                         if canBlock then
                             clickedTracks[track] = true
@@ -996,49 +992,43 @@ RunService.Heartbeat:Connect(function()
                 end
             end
         end
-    end
-end
 
-                -- =========== Sound-based detection ===========
-                for _, sound in ipairs(killer:GetDescendants()) do
-                    if sound:IsA("Sound") and sound.IsPlaying then
-                        local sid = sound.SoundId and sound.SoundId:match("%d+")
-                        if sid and autoBlockTriggerSounds[sid] and not clickedSounds[sid] then
-                            -- only trigger if imminent OR actually in range
-                            if imminent or inRange then
-                                -- facing check (if enabled)
-                                if facingCheckEnabled then
-                                    if not killerFacingPlayer(root, myRoot) then
-                                        -- skip sound trigger
-                                    else
-                                        clickedSounds[sid] = true
-                                        if tick() - lastActionTime >= cooldown then
-                                            lastActionTime = tick()
-                                            if _G.AutoBlock_Enabled then
-                                                remoteBlock()
-                                                task.wait(0.2)
-                                            end
-                                            if _G.AutoPunch_Enabled then
-                                                remotePunch(root)
-                                            end
-                                        end
-                                        task.delay(2, function() clickedSounds[sid] = nil end)
+        -------------------------------------------------------------------
+        -- Sound-based detection (giữ nguyên logic inRange OR imminent)
+        -------------------------------------------------------------------
+        for _, sound in ipairs(killer:GetDescendants()) do
+            if sound:IsA("Sound") and sound.IsPlaying then
+                local sid = sound.SoundId and sound.SoundId:match("%d+")
+                if sid and autoBlockTriggerSounds[sid] and not clickedSounds[sid] then
+                    if (inRange or imminent) then
+                        if facingCheckEnabled then
+                            if killerFacingPlayer(root, myRoot, false) then
+                                clickedSounds[sid] = true
+                                if tick() - lastActionTime >= cooldown then
+                                    lastActionTime = tick()
+                                    if _G.AutoBlock_Enabled then
+                                        remoteBlock()
+                                        task.wait(0.2)
                                     end
-                                else
-                                    clickedSounds[sid] = true
-                                    if tick() - lastActionTime >= cooldown then
-                                        lastActionTime = tick()
-                                        if _G.AutoBlock_Enabled then
-                                            remoteBlock()
-                                            task.wait(0.2)
-                                        end
-                                        if _G.AutoPunch_Enabled then
-                                            remotePunch(root)
-                                        end
+                                    if _G.AutoPunch_Enabled then
+                                        remotePunch(root)
                                     end
-                                    task.delay(2, function() clickedSounds[sid] = nil end)
+                                end
+                                task.delay(2, function() clickedSounds[sid] = nil end)
+                            end
+                        else
+                            clickedSounds[sid] = true
+                            if tick() - lastActionTime >= cooldown then
+                                lastActionTime = tick()
+                                if _G.AutoBlock_Enabled then
+                                    remoteBlock()
+                                    task.wait(0.2)
+                                end
+                                if _G.AutoPunch_Enabled then
+                                    remotePunch(root)
                                 end
                             end
+                            task.delay(2, function() clickedSounds[sid] = nil end)
                         end
                     end
                 end
@@ -1046,6 +1036,8 @@ end
         end
     end
 end)
+
+
       
 -- UI      
 Main1Group:AddToggle("AutoBlockToggle", {  
