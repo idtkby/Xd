@@ -914,45 +914,47 @@ RunService.Heartbeat:Connect(function()
 
             if effectiveInRange then
                 -- Animation-based detection
-                for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
-                    -- skip nếu đã xử lý track này
-                    if not clickedTracks[track] then
-                        local anim = track.Animation
-                        local aid = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")
-                        if aid and animationIds[aid] then
-                            local ok2, tp = pcall(function() return track.TimePosition end)
-                            local timePos = (ok2 and tp) and tp or 0
+                -- danh sách animation đặc biệt: chỉ khi track này xuất hiện mới kích hoạt auto-block
+local specialAnimIds = {
+    ["18885906143"] = true,
+    ["98456918873918"] = true
+}
 
-                            -- nếu imminent thì trigger bất kể track bắt đầu lúc nào
-                            local allowTrigger = imminent
+-- ... trong vòng Heartbeat, thay phần Animation-based detection bằng:
+-- 1) Animation-based detection (CHỈ xem các specialAnimIds)
+for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
+    if not clickedTracks[track] then
+        local anim = track.Animation
+        local aid = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")
+        -- chỉ quan tâm khi aid nằm trong specialAnimIds
+        if aid and specialAnimIds[aid] then
+            -- timePosition có thể giúp tránh trigger khi anim đã chạy lâu (tránh false positive)
+            local ok2, tp = pcall(function() return track.TimePosition end)
+            local timePos = (ok2 and tp) and tp or 0
 
-                            -- nếu không imminent thì trigger khi track vừa bắt đầu (timePos nhỏ)
-                            if not allowTrigger then
-                                if timePos <= 0.25 then
-                                    allowTrigger = true
-                                end
-                            end
+            -- nếu imminent (tiến về phía bạn nhanh) thì trigger ngay; nếu không thì chỉ trigger khi anim mới bắt đầu
+            local allowTrigger = imminent or (timePos <= 0.25)
 
-                            if allowTrigger then
-                                clickedTracks[track] = true
-                                if tick() - lastActionTime >= cooldown then
-                                    lastActionTime = tick()
-                                    if _G.AutoBlock_Enabled then
-                                        remoteBlock()
-                                        task.wait(0.2)
-                                    end
-                                    if _G.AutoPunch_Enabled then
-                                        remotePunch(root)
-                                    end
-                                end
-                                task.spawn(function()
-                                    track.Stopped:Wait()
-                                    clickedTracks[track] = nil
-                                end)
-                            end
-                        end
+            if allowTrigger then
+                clickedTracks[track] = true
+                if tick() - lastActionTime >= cooldown then
+                    lastActionTime = tick()
+                    if _G.AutoBlock_Enabled then
+                        remoteBlock()
+                        task.wait(0.2)
+                    end
+                    if _G.AutoPunch_Enabled then
+                        remotePunch(root)
                     end
                 end
+                task.spawn(function()
+                    track.Stopped:Wait()
+                    clickedTracks[track] = nil
+                end)
+            end
+        end
+    end
+end
 
                 -- Sound-based detection
                 for _, sound in ipairs(killer:GetDescendants()) do
