@@ -1132,17 +1132,7 @@ Main1Group:AddToggle("AutoAimCharge", {
 
 
 -- Charge Ignore Objectables
-Main1Group:AddToggle("IgnoreCharge", {
-    Text = "Ignore collision [Charge]",
-    Default = false,
-    Callback = function(v)
-        if v then
-            getgenv().EnableCharge()
-        else
-            getgenv().DisableCharge()
-        end
-    end
-})
+
 
 
 
@@ -2555,11 +2545,11 @@ task.spawn(function()
 end)
 
 -- Toggle obsidian
-M205One:CreateToggle({
-    Name = "Auto Touch Pizza",
-    CurrentValue = false,
-    Callback = function(Value)
-        getgenv().AutoTouchPizza = Value
+M205One:AddToggle("AutoTouchPizza", {
+    Text = "Auto Touch Pizza",
+    Default = false,
+    Callback = function(v)
+        getgenv().AutoTouchPizza = v
     end
 })
 
@@ -3594,22 +3584,6 @@ M305Two:AddInput("Range404", {
 
 
 
-local M305Three = Main3o5Group:AddTab("[ cOOlkidd ]")
-M305Three:AddDivider()
-
-
--- Walkspeed-Override Ignore Objectables
-M305Three:AddToggle("IgnoreC00lkidd", {
-    Text = "Ignore collision [Walkspeedoveride]",
-    Default = false,
-    Callback = function(v)
-        if v then
-            getgenv().EnableC00lkidd()
-        else
-            getgenv().DisableC00lkidd()
-        end
-    end
-})
 
 
 
