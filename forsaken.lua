@@ -1027,7 +1027,7 @@ Main1Group:AddInput("AutoBlockPunchRange", {
 
 end)
 
-Main1Group:AddLabel("Request 170< ping")
+Main1Group:AddLabel("Request 150< ping [Block Jason, cOOlkidd")
 
 Main1Group:AddDivider()
 
