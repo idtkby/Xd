@@ -912,7 +912,7 @@ end
             end
 
             -- Reset để bắt lại lần sau
-            task.delay(2, function()
+            task.delay(1, function()
                 clickedSounds[sid] = nil
             end)
         end
