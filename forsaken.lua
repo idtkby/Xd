@@ -751,7 +751,7 @@ _G.AutoBlockPunch_Range = 18
 _G.AutoBlock_Enabled = false  
 _G.AutoPunch_Enabled = false  
 _G.AutoPunchAimbot_Enabled = false  
-local cooldown = 1 -- giây      
+local cooldown = 0.1 -- giây      
 local lastActionTime = 0      
 
 local clickedTracks = {}      
@@ -852,55 +852,72 @@ RunService.Heartbeat:Connect(function()
 
                 -- 1) Kiểm tra Animation  
                 for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do  
-                    local anim = track.Animation  
-                    local id = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")  
-                    if id and animationIds[id] and not clickedTracks[track] then  
-                        clickedTracks[track] = true  
+    local anim = track.Animation  
+    local id = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")  
 
-                        if tick() - lastActionTime >= cooldown then  
-                            lastActionTime = tick()  
+   if id and animationIds[id] and not clickedTracks[track] then
+    local tp = track.TimePosition or 0
+    if tp <= 0.1 and dist <= _G.AutoBlockPunch_Range then
+        clickedTracks[track] = true
 
-                            if _G.AutoBlock_Enabled then  
-                                remoteBlock()  
-                                task.wait(0.2)  
-                            end  
-                            if _G.AutoPunch_Enabled then  
-                                remotePunch(root)  
-                            end  
-                        end  
+        -- block luôn không delay
+        if _G.AutoBlock_Enabled then
+            remoteBlock()
+        end
 
-                        task.spawn(function()  
-                            track.Stopped:Wait()  
-                            clickedTracks[track] = nil  
-                        end)  
-                    end  
-                end  
+        -- sau 0.2s mới punch
+        if _G.AutoPunch_Enabled and (tick() - lastActionTime >= cooldown) then
+            lastActionTime = tick()
+            task.delay(0.2, function()
+                if root and humanoid and humanoid.Health > 0 then
+                    remotePunch(root)
+                end
+            end)
+        end
+
+        task.spawn(function()
+            track.Stopped:Wait()
+            clickedTracks[track] = nil
+        end)
+    end
+end
+end
 
                 -- 2) Kiểm tra Sound  
-                for _, sound in ipairs(killer:GetDescendants()) do  
-                    if sound:IsA("Sound") and sound.IsPlaying then  
-                        local sid = sound.SoundId and sound.SoundId:match("%d+")  
-                        if sid and autoBlockTriggerSounds[sid] and not clickedSounds[sid] then  
-                            clickedSounds[sid] = true  
+                for _, sound in ipairs(killer:GetDescendants()) do
+    if sound:IsA("Sound") and sound.IsPlaying then
+        local sid = sound.SoundId and sound.SoundId:match("%d+")
+        if sid and autoBlockTriggerSounds[sid] and not clickedSounds[sid] then
+            local ok, tp = pcall(function() return sound.TimePosition end)
+            local timePos = (ok and tp) or 0
 
-                            if tick() - lastActionTime >= cooldown then  
-                                lastActionTime = tick()  
+            -- Block tức thì khi sound vừa phát
+            if timePos <= 0.1 and dist <= _G.AutoBlockPunch_Range then
+                clickedSounds[sid] = true
 
-                                if _G.AutoBlock_Enabled then  
-                                    remoteBlock()  
-                                    task.wait(0.2)  
-                                end  
-                                if _G.AutoPunch_Enabled then  
-                                    remotePunch(root)  
-                                end  
-                            end  
+                -- Block ngay lập tức (không chờ delay)
+                if _G.AutoBlock_Enabled then
+                    remoteBlock()
+                end
 
-                            task.delay(2, function()  
-                                clickedSounds[sid] = nil  
-                            end)  
-                        end  
-                    end  
-                end  
+                -- Punch giữ delay 0.2s và có cooldown
+                if _G.AutoPunch_Enabled and (tick() - lastActionTime >= cooldown) then
+                    lastActionTime = tick()
+                    task.delay(0.2, function()
+                        if root and humanoid and humanoid.Health > 0 then
+                            remotePunch(root)
+                        end
+                    end)
+                end
+            end
+
+            -- Reset để bắt lại lần sau
+            task.delay(2, function()
+                clickedSounds[sid] = nil
+            end)
+        end
+    end
+end
 
             end  
         end  
@@ -908,6 +925,79 @@ RunService.Heartbeat:Connect(function()
 end)
 
     
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+local lp = Players.LocalPlayer
+local NetworkEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
+
+-- Toggle obsidian
+local walkspeedOverrideEnabled = false
+
+Main1Group:AddToggle("WalkspeedOverrideToggle", {
+    Text = "Walkspeed Override Block",
+    Default = false,
+    Callback = function(Value)
+        walkspeedOverrideEnabled = Value
+    end
+})
+
+-- Danh sách anim Walkspeed Override
+local walkspeedAnimIds = {
+    ["106776364623742"] = true,
+    ["98456918873918"] = true
+}
+
+-- Hàm block
+local function remoteBlock()
+    pcall(function()
+        NetworkEvent:FireServer("UseActorAbility", "Block")
+    end)
+end
+
+-- Kiểm tra killer có lao về phía localp
+local function isApproaching(killerRoot, myRoot)
+    if not killerRoot or not myRoot then return false end
+    local toPlayer = myRoot.Position - killerRoot.Position
+    if toPlayer.Magnitude < 1 then return false end
+    local vel = killerRoot.AssemblyLinearVelocity
+    if vel.Magnitude < 1 then return false end
+    local dirToPlayer = toPlayer.Unit
+    local velDir = Vector3.new(vel.X, 0, vel.Z).Unit
+    return dirToPlayer:Dot(velDir) > 0.6 -- lao khá thẳng về phía localp
+end
+
+-- Loop riêng cho Walkspeed Override
+RunService.Heartbeat:Connect(function()
+    if not walkspeedOverrideEnabled then return end
+    if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
+
+    local myRoot = lp.Character.HumanoidRootPart
+    local killersFolder = Workspace:FindFirstChild("Players") and Workspace.Players:FindFirstChild("Killers")
+    if not killersFolder then return end
+
+    for _, killer in ipairs(killersFolder:GetChildren()) do
+        local root = killer:FindFirstChild("HumanoidRootPart")
+        local humanoid = killer:FindFirstChildOfClass("Humanoid")
+        if root and humanoid and humanoid.Health > 0 then
+            local dist = (root.Position - myRoot.Position).Magnitude
+            if dist <= 100 then
+                for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
+                    local anim = track.Animation
+                    local id = anim and anim.AnimationId and anim.AnimationId:match("%d+")
+                    if id and walkspeedAnimIds[id] then
+                        if isApproaching(root, myRoot) then
+                            remoteBlock()
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
 
 end)
 
@@ -2353,6 +2443,7 @@ local soundLibrary = {
     ["Compass"] = "127298326178102",
     ["Vanity"]  = "137266220091579",
     ["Creation of hatred"] = "115884097233860",
+    ["GET READY TO DIE"] = "122146196733152",
 }
 
 -- Mặc định chọn Burnout
@@ -2433,7 +2524,7 @@ end
 
 -- Dropdown chọn nhạc
 M205One:AddDropdown("LastSoundChoice", {
-    Values = {"Burnout","Plead","Compass","Creation of hatred","Vanity"},
+    Values = {"Burnout","Plead","Compass","Creation of hatred","Vanity","GET READY TO DIE"},
     Default = 1,
     Multi = false,
     Text = "Choose Sound",
