@@ -751,7 +751,7 @@ _G.AutoBlockPunch_Range = 18
 _G.AutoBlock_Enabled = false  
 _G.AutoPunch_Enabled = false  
 _G.AutoPunchAimbot_Enabled = false  
-local cooldown = 0.1 -- giây      
+local cooldown = 1 -- giây      
 local lastActionTime = 0      
 
 local clickedTracks = {}      
@@ -938,7 +938,7 @@ local NetworkEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net
 local walkspeedOverrideEnabled = false
 
 Main1Group:AddToggle("WalkspeedOverrideToggle", {
-    Text = "Walkspeed Override Block",
+    Text = "Walkspeed Override Block [Alpha]",
     Default = false,
     Callback = function(Value)
         walkspeedOverrideEnabled = Value
