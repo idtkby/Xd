@@ -883,73 +883,85 @@ RunService.Heartbeat:Connect(function()
             local dist = (root.Position - myRoot.Position).Magnitude  
             if dist <= _G.AutoBlockPunch_Range then  
 
-                -- 1) Kiểm tra Animation  
-                for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do  
-    local anim = track.Animation  
-    local id = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")  
-
-   if id and animationIds[id] and not clickedTracks[track] then
-    local tp = track.TimePosition or 0
-    if tp <= 0.1 and dist <= _G.AutoBlockPunch_Range then
-        clickedTracks[track] = true
-
-        -- block luôn không delay
-        if _G.AutoBlock_Enabled then
-            remoteBlock()
-        end
-
-        -- sau 0.2s mới punch
-        if _G.AutoPunch_Enabled and (tick() - lastActionTime >= cooldown) then
-            lastActionTime = tick()
-            task.delay(0.2, function()
-                if root and humanoid and humanoid.Health > 0 then
-                    remotePunch(root)
-                end
-            end)
-        end
-
-        task.spawn(function()
-            track.Stopped:Wait()
-            clickedTracks[track] = nil
-        end)
-    end
-end
-end
-
-                -- 2) Kiểm tra Sound  
-                for _, sound in ipairs(killer:GetDescendants()) do
-    if sound:IsA("Sound") and sound.IsPlaying then
-        local sid = sound.SoundId and sound.SoundId:match("%d+")
-        if sid and autoBlockTriggerSounds[sid] and not clickedSounds[sid] then
-            local ok, tp = pcall(function() return sound.TimePosition end)
-            local timePos = (ok and tp) or 0
-
-            -- Block tức thì khi sound vừa phát
-            if timePos <= 0.1 and dist <= _G.AutoBlockPunch_Range then
-                clickedSounds[sid] = true
-
-                -- Block ngay lập tức (không chờ delay)
-                if _G.AutoBlock_Enabled then
-                    remoteBlock()
-                end
-
-                -- Punch giữ delay 0.2s và có cooldown
-                if _G.AutoPunch_Enabled and (tick() - lastActionTime >= cooldown) then
-                    lastActionTime = tick()
-                    task.delay(0.2, function()
-                        if root and humanoid and humanoid.Health > 0 then
-                            remotePunch(root)
-                        end
-                    end)
-                end
-            end
-
-            -- Reset để bắt lại lần sau
-            task.delay(1, function()
-                clickedSounds[sid] = nil
-            end)
-        end
-    end
+                local hrp = killer:FindFirstChild("HumanoidRootPart")  
+local humanoid = killer:FindFirstChildOfClass("Humanoid")  
+if root and humanoid and humanoid.Health > 0 then  
+    local dist = (root.Position - myRoot.Position).Magnitude  
+  
+    -- check vận tốc của killer  
+    local isStill = (root.AssemblyLinearVelocity.Magnitude <= 1) -- coi như đứng yên nếu tốc độ < 1  
+  
+    -- nếu đứng yên thì dist phải <= 8 mới cho block  
+    if (isStill and dist <= 8) or (not isStill and dist <= _G.AutoBlockPunch_Range) then  
+        -- 1) Kiểm tra Animation    
+                for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do    
+    local anim = track.Animation    
+    local id = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")    
+  
+   if id and animationIds[id] and not clickedTracks[track] then  
+    local tp = track.TimePosition or 0  
+    if tp <= 0.1 and dist <= _G.AutoBlockPunch_Range then  
+        clickedTracks[track] = true  
+  
+        -- block luôn không delay  
+        if _G.AutoBlock_Enabled then  
+            remoteBlock()  
+        end  
+  
+        -- sau 0.2s mới punch  
+        if _G.AutoPunch_Enabled and (tick() - lastActionTime >= cooldown) then  
+            lastActionTime = tick()  
+            task.delay(0.2, function()  
+                if root and humanoid and humanoid.Health > 0 then  
+                    remotePunch(root)  
+                end  
+            end)  
+        end  
+  
+        task.spawn(function()  
+            track.Stopped:Wait()  
+            clickedTracks[track] = nil  
+        end)  
+    end  
+end  
+end  
+  
+                -- 2) Kiểm tra Sound    
+                for _, sound in ipairs(killer:GetDescendants()) do  
+    if sound:IsA("Sound") and sound.IsPlaying then  
+        local sid = sound.SoundId and sound.SoundId:match("%d+")  
+        if sid and autoBlockTriggerSounds[sid] and not clickedSounds[sid] then  
+            local ok, tp = pcall(function() return sound.TimePosition end)  
+            local timePos = (ok and tp) or 0  
+  
+            -- Block tức thì khi sound vừa phát  
+            if timePos <= 0.1 and dist <= _G.AutoBlockPunch_Range then  
+                clickedSounds[sid] = true  
+  
+                -- Block ngay lập tức (không chờ delay)  
+                if _G.AutoBlock_Enabled then  
+                    remoteBlock()  
+                end  
+  
+                -- Punch giữ delay 0.2s và có cooldown  
+                if _G.AutoPunch_Enabled and (tick() - lastActionTime >= cooldown) then  
+                    lastActionTime = tick()  
+                    task.delay(0.2, function()  
+                        if root and humanoid and humanoid.Health > 0 then  
+                            remotePunch(root)  
+                        end  
+                    end)  
+                end  
+            end  
+  
+            -- Reset để bắt lại lần sau  
+            task.delay(1, function()  
+                clickedSounds[sid] = nil  
+            end)  
+        end  
+    end  
+end  
+    end  
 end
 
             end  
