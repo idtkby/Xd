@@ -892,7 +892,7 @@ if root and humanoid and humanoid.Health > 0 then
     local isStill = (root.AssemblyLinearVelocity.Magnitude <= 1) -- coi như đứng yên nếu tốc độ < 1  
   
     -- nếu đứng yên thì dist phải <= 8 mới cho block  
-    if (isStill and dist <= 8) or (not isStill and dist <= _G.AutoBlockPunch_Range) then  
+    if (isStill and dist <= 4) or (not isStill and dist <= _G.AutoBlockPunch_Range) then  
         -- 1) Kiểm tra Animation    
                 for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do    
     local anim = track.Animation    
