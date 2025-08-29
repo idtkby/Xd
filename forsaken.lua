@@ -2457,7 +2457,7 @@ local soundLibrary = {
     ["Compass"] = "127298326178102",
     ["Vanity"]  = "137266220091579",
     ["Creation of hatred"] = "115884097233860",
-    ["GET READY TO DIE"] = "122146196733152",
+    ["Smile"] = "122146196733152",
 }
 
 -- Mặc định chọn Burnout
@@ -2538,7 +2538,7 @@ end
 
 -- Dropdown chọn nhạc
 M205One:AddDropdown("LastSoundChoice", {
-    Values = {"Burnout","Plead","Compass","Creation of hatred","Vanity","GET READY TO DIE"},
+    Values = {"Burnout","Plead","Compass","Creation of hatred","Vanity","Smile"},
     Default = 1,
     Multi = false,
     Text = "Choose Sound",
