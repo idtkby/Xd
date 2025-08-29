@@ -1029,9 +1029,12 @@ RunService.Heartbeat:Connect(function()
                 for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
                     local anim = track.Animation
                     local id = anim and anim.AnimationId and anim.AnimationId:match("%d+")
+
                     if id and walkspeedAnimIds[id] then
-                        -- phải vừa approaching vừa facing
-                        if isApproaching(root, myRoot) and isFacingTarget(root, myRoot) then
+                        local approaching = isApproaching(root, myRoot)
+                        local facing = isFacingTarget(root, myRoot)
+
+                        if approaching and facing then
                             remoteBlock()
                         end
                     end
