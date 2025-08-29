@@ -1,6 +1,6 @@
 -- Kiểm tra ID game
 if game.PlaceId ~= 18687417158 then
-    return warn("Script only works in the specified game (ID: 18687417158){[NOLI🎭] Forsaken}")
+    return warn("Script only works in the specified game (ID: 18687417158){[NOLI🎭] Fosaken}")
 end
 
 -- Thông báo khi đúng ID game
