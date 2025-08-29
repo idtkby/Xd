@@ -958,6 +958,14 @@ local function remoteBlock()
     end)
 end
 
+-- Hàm check killer facing localplayer
+local function isFacingTarget(killerRoot, myRoot)
+    if not killerRoot or not myRoot then return false end
+    local toPlayer = (myRoot.Position - killerRoot.Position).Unit
+    local lookDir = Vector3.new(killerRoot.CFrame.LookVector.X, 0, killerRoot.CFrame.LookVector.Z).Unit
+    return toPlayer:Dot(lookDir) > 0.7 -- facing tương đối chính diện
+end
+
 -- Kiểm tra killer có lao về phía localp
 local function isApproaching(killerRoot, myRoot)
     if not killerRoot or not myRoot then return false end
@@ -989,7 +997,8 @@ RunService.Heartbeat:Connect(function()
                     local anim = track.Animation
                     local id = anim and anim.AnimationId and anim.AnimationId:match("%d+")
                     if id and walkspeedAnimIds[id] then
-                        if isApproaching(root, myRoot) then
+                        -- phải vừa approaching vừa facing
+                        if isApproaching(root, myRoot) and isFacingTarget(root, myRoot) then
                             remoteBlock()
                         end
                     end
