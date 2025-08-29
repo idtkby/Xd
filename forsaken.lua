@@ -207,6 +207,34 @@ end
     end
 })
 
+Main1Group:AddToggle("InfStamina2", {
+    Text = "Turn off staminaloss",
+    Default = false, 
+    Callback = function(Value) 
+        _G.InfStamina = Value
+        local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
+
+        if Value then
+            -- Bật: loop giữ staminaLoss = 0
+            task.spawn(function()
+                while _G.InfStamina do
+                    if staminaModule then
+                        staminaModule.StaminaLoss = 0
+                        staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
+                    end
+                    task.wait()
+                end
+            end)
+        else
+            -- Tắt: trả lại mặc định 8
+            if staminaModule then
+                staminaModule.StaminaLoss = 8
+                staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
+            end
+        end
+    end
+})
+
 Main1Group:AddToggle("ToggleRestoreGUI", {
     Text = "Rest0re Stamina GUI",
     Default = false,
@@ -261,8 +289,8 @@ Main1Group:AddToggle("ToggleRestoreGUI", {
             :WaitForChild("Sprinting"))
         
         if sprinting and sprinting.DefaultConfig then
-            local maxStamina = sprinting.DefaultConfig.MaxStamina or 696969 -- lấy MaxStamina, fallback = 696969
-            sprinting.Stamina = maxStamina
+            
+            sprinting.Stamina = 696969
             sprinting.__staminaChangedEvent:Fire(sprinting.Stamina)
         end
     end)
