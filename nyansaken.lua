@@ -1,15 +1,15 @@
-local Players = game:GetService("Players")
-local playerData = game:GetService("Players").LocalPlayer:WaitForChild("PlayerData")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local MarketplaceService = game:GetService("MarketplaceService")
-local RemoteEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
-local TweenService = game:GetService("TweenService")
-local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+getgenv().Players = game:GetService("Players")
+getgenv().playerData = game:GetService("Players").LocalPlayer:WaitForChild("PlayerData")
+getgenv().ReplicatedStorage = game:GetService("ReplicatedStorage")
+getgenv().RunService = game:GetService("RunService")
+getgenv().MarketplaceService = game:GetService("MarketplaceService")
+getgenv().RemoteEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
+getgenv().TweenService = game:GetService("TweenService")
+getgenv().PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 local Humanoid, Animator
-local player = Players.LocalPlayer
-local purchasedEmotesFolder = playerData:WaitForChild("Purchased"):WaitForChild("Emotes")
-local Remote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
+getgenv().player = Players.LocalPlayer
+getgenv().purchasedEmotesFolder = playerData:WaitForChild("Purchased"):WaitForChild("Emotes")
+getgenv().Remote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
 
 --=Hub=
 
@@ -595,11 +595,11 @@ local function startGeneratorESP()
         espConnection = RunService.RenderStepped:Connect(function(dt)
             if generatorESPEnabled then
                 updateThrottle += dt
-                if updateThrottle >= 0.25 then
+                if updateThrottle >= 0.5 then
                     updateGenerators()
+            		updateAllESPSizes()
                     updateThrottle = 0
                 end
-                updateAllESPSizes()
             end
         end)
     end
@@ -1044,8 +1044,8 @@ local Camera = workspace.CurrentCamera
 getgenv().AimbotConfig = getgenv().AimbotConfig or {}
 
 getgenv().AimbotConfig.Slash = getgenv().AimbotConfig.Slash or { Enabled = false, Smoothness = 1, Prediction = 0.25, Duration = 2 }
-getgenv().AimbotConfig.Shoot = getgenv().AimbotConfig.Shoot or { Enabled = false, Smoothness = 1, Prediction = 0.25, Duration = 1.3 }
-getgenv().AimbotConfig.TrueShoot = getgenv().AimbotConfig.TrueShoot or { Enabled = false, Smoothness = 1, Prediction = 0.25, Duration = 1.3 }
+getgenv().AimbotConfig.Shoot = getgenv().AimbotConfig.Shoot or { Enabled = false, Smoothness = 1, Prediction = 0.25, Duration = 1.5 }
+getgenv().AimbotConfig.TrueShoot = getgenv().AimbotConfig.TrueShoot or { Enabled = false, Smoothness = 1, Prediction = 0.6, Duration = 1.5 }
 getgenv().AimbotConfig.ThrowPizza = getgenv().AimbotConfig.ThrowPizza or { Enabled = false, Smoothness = 1, Prediction = 0.25, Duration = 1.5 }
 getgenv().AimbotConfig.Killers = getgenv().AimbotConfig.Killers or { Enabled = false, Duration = 3 }
 getgenv().AimbotConfig.SelectedSkills = getgenv().AimbotConfig.SelectedSkills or {
@@ -1094,7 +1094,7 @@ Aimbot:CreateSlider({
 Aimbot:CreateSection("Chance")
 -- Shoot
 Aimbot:CreateToggle({
-    Name = "Aimbot Shoot",
+    Name = "Aimbot One Shot",
     CurrentValue = getgenv().AimbotConfig.Shoot.Enabled,
     Flag = "AutoAimShoot",
     Callback = function(Value)
@@ -1103,7 +1103,7 @@ Aimbot:CreateToggle({
 })
 
 Aimbot:CreateSlider({
-    Name = "Smoothness Shoot",
+    Name = "Smoothness One Shot",
     Range = {0, 101},
     Increment = 1,
     Suffix = "ms",
@@ -1115,7 +1115,7 @@ Aimbot:CreateSlider({
 })
 
 Aimbot:CreateSlider({
-    Name = "Prediction Shoot",
+    Name = "Prediction One Shot",
     Range = {0, 2},
     Increment = 0.05,
     Suffix = "s",
@@ -1130,7 +1130,7 @@ Aimbot:CreateSlider({
 Aimbot:CreateParagraph({Title = "True Shoot Aimbot", Content = "For Chance True Shoot Only"})
 
 Aimbot:CreateToggle({
-    Name = "Aimbot True Shoot",
+    Name = "Aimbot True One Shot",
     CurrentValue = getgenv().AimbotConfig.TrueShoot.Enabled,
     Flag = "AutoAimTrueShoot",
     Callback = function(Value)
@@ -1139,7 +1139,7 @@ Aimbot:CreateToggle({
 })
 
 Aimbot:CreateSlider({
-    Name = "Smoothness True Shoot",
+    Name = "Smoothness True One Shot",
     Range = {0, 101},
     Increment = 1,
     Suffix = "ms",
@@ -1151,7 +1151,7 @@ Aimbot:CreateSlider({
 })
 
 Aimbot:CreateSlider({
-    Name = "Prediction True Shoot",
+    Name = "Prediction True One Shot",
     Range = {0, 2},
     Increment = 0.05,
     Suffix = "s",
@@ -1584,6 +1584,50 @@ getgenv().Players.PlayerAdded:Connect(function(player)
     end
 end)
 
+Miscs:CreateSection("Bright")
+
+getgenv().Lighting = game:GetService("Lighting")
+getgenv().RunService = game:GetService("RunService")
+
+getgenv().brightLoop = nil
+
+Miscs:CreateToggle({
+    Name = "Full Brightness",
+    CurrentValue = false,
+    Flag = "BrightToggle", 
+    Callback = function(Value)
+        if Value then
+            -- Bật chế độ sáng
+            getgenv().brightLoop = RunService.RenderStepped:Connect(function()
+                Lighting.Brightness = 2
+                Lighting.ClockTime = 14
+                Lighting.FogEnd = 100000
+                Lighting.GlobalShadows = false
+                Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+
+                -- Xóa Atmosphere
+                for i,v in pairs(Lighting:GetDescendants()) do
+                    if v:IsA("Atmosphere") then
+                        v:Destroy()
+                    end
+                end
+            end)
+        else
+            -- Tắt chế độ sáng
+            if getgenv().brightLoop then
+                getgenv().brightLoop:Disconnect()
+                getgenv().brightLoop = nil
+            end
+            -- Reset Lighting về mặc định
+            Lighting.Brightness = 1
+            Lighting.ClockTime = 12
+            Lighting.FogEnd = 1000
+            Lighting.GlobalShadows = true
+            Lighting.OutdoorAmbient = Color3.fromRGB(0, 0, 0)
+        end
+    end,
+})
+
 Miscs:CreateSection("Stats")
 Miscs:CreateToggle({
     Name = "Anti Hidden Stats",
@@ -1902,6 +1946,126 @@ for name, config in pairs(AntiSlowConfigs) do
     })
 end
 
+getgenv().Players = game:GetService("Players")
+getgenv().MarketplaceService = game:GetService("MarketplaceService")
+getgenv().RunService = game:GetService("RunService")
+getgenv().player = getgenv().Players.LocalPlayer
+
+-- Animation thay thế
+getgenv().replacementAnimations = {
+    idle = "rbxassetid://134624270247120",
+    walk = "rbxassetid://132377038617766",
+    run = "rbxassetid://115946474977409"
+}
+
+getgenv().animationNameCache = {}
+getgenv().currentTrack = nil
+getgenv().currentType = nil
+getgenv().toggleEnabled = false -- Biến toggle
+
+-- Lấy tên animation từ AssetId
+getgenv().getAnimationNameFromId = function(assetId)
+    if getgenv().animationNameCache[assetId] then
+        return getgenv().animationNameCache[assetId]
+    end
+
+    local success, info = pcall(function()
+        return getgenv().MarketplaceService:GetProductInfo(assetId)
+    end)
+
+    if success and info and info.Name then
+        getgenv().animationNameCache[assetId] = info.Name
+        return info.Name
+    end
+
+    return nil
+end
+
+-- Phát animation thay thế
+getgenv().playReplacementAnimation = function(animator, animType)
+    if getgenv().currentTrack then
+        getgenv().currentTrack:Stop()
+    end
+
+    local anim = Instance.new("Animation")
+    anim.AnimationId = getgenv().replacementAnimations[animType]
+    local track = animator:LoadAnimation(anim)
+    track.Priority = Enum.AnimationPriority.Movement
+    track:Play()
+
+    getgenv().currentTrack = track
+    getgenv().currentType = animType
+end
+
+-- Thiết lập cho nhân vật
+getgenv().setupCharacter = function(char)
+    local humanoid = char:WaitForChild("Humanoid")
+    local animator = humanoid:FindFirstChildOfClass("Animator")
+    if not animator then
+        animator = Instance.new("Animator")
+        animator.Parent = humanoid
+    end
+
+    -- Cập nhật tốc độ animation theo WalkSpeed bằng Heartbeat
+    getgenv().RunService.Heartbeat:Connect(function()
+        if getgenv().toggleEnabled and getgenv().currentTrack then
+            if getgenv().currentType == "idle" then
+                getgenv().currentTrack:AdjustSpeed(1)
+            elseif getgenv().currentType == "walk" then
+                getgenv().currentTrack:AdjustSpeed(humanoid.WalkSpeed / 12)
+            elseif getgenv().currentType == "run" then
+                getgenv().currentTrack:AdjustSpeed(humanoid.WalkSpeed / 26)
+            end
+        end
+    end)
+
+    -- Thay thế animation khi phát
+    animator.AnimationPlayed:Connect(function(track)
+        if getgenv().toggleEnabled then
+            local animationId = track.Animation.AnimationId
+            local assetId = animationId:match("%d+")
+
+            if assetId then
+                local animName = getgenv().getAnimationNameFromId(tonumber(assetId))
+                if animName then
+                    local lowerName = animName:lower()
+
+                    if lowerName:find("idle") then
+                        track:Stop()
+                        getgenv().playReplacementAnimation(animator, "idle")
+                    elseif lowerName:find("walk") then
+                        track:Stop()
+                        getgenv().playReplacementAnimation(animator, "walk")
+                    elseif lowerName:find("run") then
+                        track:Stop()
+                        getgenv().playReplacementAnimation(animator, "run")
+                    end
+                end
+            end
+        end
+    end)
+end
+
+-- Áp dụng khi nhân vật spawn
+if getgenv().player.Character then
+    getgenv().setupCharacter(getgenv().player.Character)
+end
+getgenv().player.CharacterAdded:Connect(getgenv().setupCharacter)
+
+Miscs:CreateSection("Animations")
+
+Miscs:CreateToggle({
+    Name = "Fake Injured Animations",
+    CurrentValue = false,
+    Flag = "CustomAnimationsToggle",
+    Callback = function(value)
+        getgenv().toggleEnabled = value
+        if not value and getgenv().currentTrack then
+            getgenv().currentTrack:Stop() -- Tắt animation khi toggle off
+        end
+    end
+})
+
 Miscs:CreateSection("1x1x1x1")
 
 Miscs:CreateToggle({
@@ -1946,23 +2110,159 @@ Miscs:CreateToggle({
     end
 })
 
-getgenv().LMSSongs = {
-    ["Burnout"] = "rbxassetid://130101085745481",
-    ["Compass"] = "rbxassetid://127298326178102",
-    ["Vanity"] = "rbxassetid://137266220091579",
-    ["Close To Me"] = "rbxassetid://90022574613230",
-    ["Plead"] = "rbxassetid://80564889711353",
-    ["Creation Of Hatred"] = "rbxassetid://115884097233860",
+-- Services
+getgenv().SoundService = game:GetService("SoundService")
+getgenv().RunService = game:GetService("RunService")
+
+-- Ensure folders exist
+local folderPath = "NyansakenHub/Assets"
+if not isfolder("NyansakenHub") then makefolder("NyansakenHub") end
+if not isfolder(folderPath) then makefolder(folderPath) end
+
+-- Track list
+getgenv().tracks = {
+    ["None"] = "",
+    ["----------- UST -----------"] = nil,
+    ["A BRAVE SOUL (MS 4 Killer VS MS 4 Survivor)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/A%20BRAVE%20SOUL%20(MS%204%20Killer%20VS%20MS%204%20Survivor).mp3",
+    ["BEGGED (MS 4 Coolkidd vs MS 4 007n7)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/BEGGED%20(MS%204%20Coolkidd%20vs%20MS%204%20007n7).mp3",
+    ["DOOMSPIRE (HairyTwinkle VS Pedro.EXE)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/DOOMSPIRE%20-%20(HairyTwinkle%20VS%20Pedro.EXE).mp3",
+    ["ECLIPSE (xX4ce0fSpadesXx vs dragondudes3)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/ECLIPSE%20(xX4ce0fSpadesXx%20vs%20dragondudes3).mp3",
+    ["ERROR 264 (Noob Cosplay VS Yourself)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/ERROR%20264%20-%20(Noob%20Cosplay%20VS%20Yourself).mp3",
+    ["GODS SECOND COMING (NOLI VS. 007n7)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/GODS%20SECOND%20COMING%20(NOLI%20VS.%20007n7).mp3",
+    ["Entreat (Bluudude Vs 118o8)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Entreat%20(Bluudude%20Vs%20118o8).mp3",
+    ["Implore (Comic vs Savior)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Implore%20(Comic%20vs%20Savior)%20-%20YouTube.mp3",
+    ["Leftovers (Remix Vanity Jason Vs All)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Leftovers%20(Remix%20Vanity%20Jason%20Vs%20All).mp3",
+    ["ORDER UP (Elliot VS c00lkidd)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/ORDER%20UP%20-%20(Elliot%20VS%20c00lkidd).mp3",
+    ["PARADOX (Guest 666 Vs Guest 1337)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/PARADOX%20(Guest%20666%20Vs%20Guest%201337).mp3",
+    ["TRUE BEAUTY (PRETTYPRINCESS vs 226w6)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/TRUE%20BEAUTY%20(PRETTYPRINCESS%20vs%20226w6).mp3",
+    ["----------- Scrapped LMS -----------"] = nil,
+    ["THE DARKNESS IN YOUR HEART (Old 1x4 Vs Shedletsky)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/THE%20DARKNESS%20IN%20YOUR%20HEART%20(Old%201x4%20Vs%20Shedletsky).mp3",
+    ["MEET YOUR MAKING (c00lkidd ~ 1x4 Vs 007n7 ~ Shedletsky)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/MEET%20YOUR%20MAKING%20(c00lkidd%20~%201x4%20Vs%20007n7%20~%20Shedletsky).mp3",
+    ["A Creation Of Sorrow (Hacklord vs The Heartbroken)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/A%20Creation%20Of%20Sorrow%20(Hacklord%20vs%20The%20Heartbroken).mp3",
+    ["Debth (Natrasha Vs Mafioso)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Debth%20(Natrasha%20Vs%20Mafioso).mp3",
+    ["ETERNAL HOPE, ETERNAL FIGHT (Old LMS)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/ETERNAL%20HOPE,%20ETERNAL%20FIGHT%20(Old%20LMS).mp3",
+    ["Receading Lifespan (Barber Jason Vs Bald Two Time)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Receading%20Lifespan%20(Barber%20Jason%20Vs%20Bald%20Two%20Time).mp3",
+    ["VIP Jason LMS (VIP Jason Vs All)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/VIP%20Jason%20LMS%20(VIP%20Jason%20Vs%20All).mp3",
+    ["----------- Official LMS -----------"] = nil,
+    ["A GRAVE SOUL (NOW, RUN) [All Killers Vs All Survivors]"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/A%20GRAVE%20SOUL%20(NOW,%20RUN)%20%5BAll%20Killers%20Vs%20All%20Survivors%5D.mp3",
+    ["Plead (c00lkidd Vs 007n7)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Plead%20(c00lkidd%20Vs%20007n7).mp3",
+    ["SMILE (Cupcakes Vs All)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/SMILE%20(Cupcakes%20Vs%20All)%20.mp3",
+    ["Vanity (Vanity Jason Vs All)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Vanity%20(Vanity%20Jason%20Vs%20All).mp3",
+    ["Obsession (Gasharpoon Vs All)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Obsession%20(Gasharpoon%20Vs%20All).MP3",
+    ["Burnout (Diva Vs Ghoul)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Burnout%20(Diva%20Vs%20Ghoul).mp3",
+    ["Close To Me (Annihilation Vs Friend)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Close%20To%20Me%20(Annihilation%20Vs%20Friend).mp3",
+    ["Creation Of Hatred (1X4 Vs Shedletsky)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Creation%20Of%20Hatred%20(1X4%20Vs%20Shedletsky).mp3"
 }
 
-getgenv().selectedSong = "Compass"
+-- Options giữ thứ tự gốc
+local options = {
+    "None",
+    "----------- UST -----------",
+    "A BRAVE SOUL (MS 4 Killer VS MS 4 Survivor)",
+    "BEGGED (MS 4 Coolkidd vs MS 4 007n7)",
+    "DOOMSPIRE (HairyTwinkle VS Pedro.EXE)",
+    "ECLIPSE (xX4ce0fSpadesXx vs dragondudes3)",
+    "ERROR 264 (Noob Cosplay VS Yourself)",
+    "GODS SECOND COMING (NOLI VS. 007n7)",
+    "Entreat (Bluudude Vs 118o8)",
+    "Implore (Comic vs Savior)",
+    "Leftovers (Remix Vanity Jason Vs All)",
+    "ORDER UP (Elliot VS c00lkidd)",
+    "PARADOX (Guest 666 Vs Guest 1337)",
+    "TRUE BEAUTY (PRETTYPRINCESS vs 226w6)",
+    "----------- Scrapped LMS -----------",
+    "THE DARKNESS IN YOUR HEART (Old 1x4 Vs Shedletsky)",
+    "MEET YOUR MAKING (c00lkidd ~ 1x4 Vs 007n7 ~ Shedletsky)",
+    "A Creation Of Sorrow (Hacklord vs The Heartbroken)",
+    "Debth (Natrasha Vs Mafioso)",
+    "ETERNAL HOPE, ETERNAL FIGHT (Old LMS)",
+    "Receading Lifespan (Barber Jason Vs Bald Two Time)",
+    "VIP Jason LMS (VIP Jason Vs All)",
+    "----------- Official LMS -----------",
+    "A GRAVE SOUL (NOW, RUN) [All Killers Vs All Survivors]",
+    "Plead (c00lkidd Vs 007n7)",
+    "SMILE (Cupcakes Vs All)",
+    "Vanity (Vanity Jason Vs All)",
+    "Obsession (Gasharpoon Vs All)",
+    "Burnout (Diva Vs Ghoul)",
+    "Close To Me (Annihilation Vs Friend)",
+    "Creation Of Hatred (1X4 Vs Shedletsky)"
+}
 
+-- Globals
 getgenv().currentLastSurvivor = nil
 getgenv().currentSongId = nil
 getgenv().originalSongId = nil
-
+getgenv().isPlaying = false
+getgenv().songStartTime = 0
+getgenv().currentSongDuration = 0
 getgenv().isToggleOn = false
 
+-- Download track function
+function downloadTrack(name, audioUrl)
+    local fullPath = folderPath .. "/" .. name:gsub("[^%w]", "_") .. ".mp3"
+
+    if not isfile(fullPath) then
+        local request = http_request or syn.request or request
+        if not request then error("Executor does not support HTTP requests.") end
+
+        local response = request({
+            Url = audioUrl,
+            Method = "GET",
+            Headers = {
+                ["User-Agent"] = "Mozilla/5.0",
+                ["Accept"] = "*/*"
+            }
+        })
+
+        -- Try BodyRaw if Body is empty
+        local fileData = response.Body
+        if (not fileData or #fileData == 0) and response.BodyRaw then
+            fileData = response.BodyRaw
+        end
+
+        if fileData and #fileData > 0 then
+            writefile(fullPath, fileData)
+        end
+    end
+
+    return fullPath
+end
+
+-- Get LastSurvivor function
+function getLastSurvivor()
+    local theme = workspace:FindFirstChild("Themes")
+    if theme then
+        return theme:FindFirstChild("LastSurvivor")
+    end
+    return nil
+end
+
+function setLastSurvivorSong(songName)
+    local lastSurvivor = getLastSurvivor()
+    if not lastSurvivor then return end
+    local url = tracks[songName]
+    if not url then return end
+
+    local path = downloadTrack(songName, url)
+    local soundAsset = getcustomasset(path)
+
+    if getgenv().isToggleOn and not getgenv().originalSongId then
+        getgenv().originalSongId = lastSurvivor.SoundId
+    end
+
+    lastSurvivor.SoundId = soundAsset
+    lastSurvivor.Loaded:Wait()      -- <--- chờ Sound load xong
+    getgenv().currentSongDuration = lastSurvivor.TimeLength
+    lastSurvivor:Play()
+
+    getgenv().songStartTime = tick()
+    getgenv().isPlaying = true
+    getgenv().currentLastSurvivor = lastSurvivor
+end
+
+
+-- GUI Section
 Miscs:CreateSection("Last Man Standing")
 
 Miscs:CreateToggle({
@@ -1971,61 +2271,79 @@ Miscs:CreateToggle({
     Flag = "LMS_Toggle",
     Callback = function(value)
         getgenv().isToggleOn = value
-        local theme = game.Workspace:FindFirstChild("Themes")
-        if not theme then return end
-        local lastSurvivor = theme:FindFirstChild("LastSurvivor")
-        if not lastSurvivor then return end
 
-        if value then
-
-            if not getgenv().originalSongId then
-                getgenv().originalSongId = lastSurvivor.SoundId
-            end
-            local songId = getgenv().LMSSongs[getgenv().selectedSong]
-            if songId then
-                lastSurvivor.SoundId = songId
-                lastSurvivor:Play()
-                getgenv().currentLastSurvivor = lastSurvivor
-                getgenv().currentSongId = songId
-            end
-        else
-
-            if getgenv().originalSongId then
+        local lastSurvivor = getLastSurvivor()
+        if not value then
+            -- Reset về bài hát gốc
+            if lastSurvivor and getgenv().originalSongId then
                 lastSurvivor.SoundId = getgenv().originalSongId
                 lastSurvivor:Play()
             end
+            -- Reset globals
             getgenv().currentLastSurvivor = nil
             getgenv().currentSongId = nil
             getgenv().originalSongId = nil
+            getgenv().isPlaying = false
         end
     end,
 })
 
+-- Dropdown LMS song
 Miscs:CreateDropdown({
-    Name = "LMS Song",
-    Options = {"Burnout", "Compass", "Vanity", "Close To Me", "Plead", "Creation Of Hatred"},
-    CurrentOption = selectedSong,
+    Name = "Custom LMS Song",
+    Options = options,
     MultipleOptions = false,
-    Callback = function(mysongslist)
-        if type(mysongslist) == "table" then
-            getgenv().selectedSong = mysongslist[1]
+    Callback = function(selected)
+        if type(selected) == "table" then
+            getgenv().selectedSong = selected[1]
         else
-            getgenv().selectedSong = mysongslist
+            getgenv().selectedSong = selected
         end
 
-        if getgenv().isToggleOn then
-            local theme = game.Workspace:FindFirstChild("Themes")
-            if theme then
-                local lastSurvivor = theme:FindFirstChild("LastSurvivor")
-                if lastSurvivor then
-                    local songId = getgenv().LMSSongs[getgenv().selectedSong]
-                    if songId then
-                        lastSurvivor.SoundId = songId
-                        lastSurvivor:Play()
-                        getgenv().currentLastSurvivor = lastSurvivor
-                        getgenv().currentSongId = songId
-                    end
+    end,
+})
+
+-- Heartbeat loop
+RunService.Heartbeat:Connect(function()
+    if getgenv().isToggleOn and not getgenv().isPlaying and getLastSurvivor() then
+        setLastSurvivorSong(getgenv().selectedSong)
+    elseif not getLastSurvivor() and getgenv().isPlaying then
+            getgenv().isPlaying = false
+        end
+
+    if getgenv().isPlaying and lastSurvivor then
+        if tick() - getgenv().songStartTime >= getgenv().currentSongDuration then
+            getgenv().isPlaying = false
+        end
+    end
+end)
+
+-- Input box cho LMS custom
+Miscs:CreateInput({
+    Name = "Custom LMS Song URL",
+    PlaceholderText = "Raw Link MP3",
+    Callback = function(input)
+        if input and input ~= "" then
+            getgenv().customSongUrl = input
+
+            local lastSurvivor = getLastSurvivor()
+            if lastSurvivor and getgenv().isToggleOn then
+                -- Nếu toggle đang bật, set bài nhạc mới ngay lập tức
+                local path = downloadTrack("Custom_LMS_Song", getgenv().customSongUrl)
+                local soundAsset = getcustomasset(path)
+
+                if not getgenv().originalSongId then
+                    getgenv().originalSongId = lastSurvivor.SoundId
                 end
+
+                lastSurvivor.SoundId = soundAsset
+                lastSurvivor.Loaded:Wait()
+                lastSurvivor:Play()
+
+                getgenv().songStartTime = tick()
+                getgenv().currentSongDuration = lastSurvivor.TimeLength
+                getgenv().isPlaying = true
+                getgenv().currentLastSurvivor = lastSurvivor
             end
         end
     end,
@@ -2045,7 +2363,7 @@ Miscs:CreateToggle({
         getgenv().chatEnabled = value
         if getgenv().chatEnabled then
             -- Kết nối Heartbeat để bật liên tục
-            getgenv().connection = game:GetService("RunService").RenderStepped:Connect(function()
+            getgenv().connection = game:GetService("RunService").Heartbeat:Connect(function()
                 getgenv().chatWindow.Enabled = true
             end)
         else
@@ -2076,7 +2394,6 @@ globalEnv.Player = globalEnv.Players.LocalPlayer
 
 -- Biến cấu hình
 globalEnv.walkSpeed = 100 -- tốc độ di chuyển
-globalEnv.blockAnimationId = {18885940850, 18885937766}
 globalEnv.toggle = false -- trạng thái bật/tắt
 globalEnv.connection = nil
 
@@ -2509,16 +2826,13 @@ game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function(char)
 	HumanoidRootPart = char:WaitForChild("HumanoidRootPart")
 end)
 
-local Enabled = false
-local MaxRange = 120
-
 Combat:CreateSection("Hitbox")
 
 Combat:CreateToggle({
 	Name = "Killers/Survivors Slient Aim (Work With Guest 1337, Shedletsky, And Crouch Stab Two Time)",
 	CurrentValue = false,
 	Callback = function(Value)
-		Enabled = Value
+		SlientAimHitbox = Value
 	end,
 })
 
@@ -2534,80 +2848,195 @@ Combat:CreateInput({
 	end,
 })
 
---// Animation ID list
-local AttackAnimations = {
-	"rbxassetid://131430497821198", "rbxassetid://83829782357897", "rbxassetid://126830014841198",
-	"rbxassetid://126355327951215", "rbxassetid://121086746534252", "rbxassetid://105458270463374",
-	"rbxassetid://127172483138092", "rbxassetid://18885919947", "rbxassetid://18885909645",
-	"rbxassetid://87259391926321", "rbxassetid://106014898528300", "rbxassetid://86545133269813",
-	"rbxassetid://89448354637442", "rbxassetid://90499469533503", "rbxassetid://116618003477002",
-	"rbxassetid://106086955212611", "rbxassetid://107640065977686", "rbxassetid://77124578197357",
-	"rbxassetid://101771617803133", "rbxassetid://134958187822107", "rbxassetid://111313169447787",
-	"rbxassetid://71685573690338", "rbxassetid://129843313690921", "rbxassetid://97623143664485",
-	"rbxassetid://136007065400978", "rbxassetid://86096387000557", "rbxassetid://108807732150251",
-	"rbxassetid://138040001965654", "rbxassetid://73502073176819", "rbxassetid://86709774283672",
-	"rbxassetid://140703210927645", "rbxassetid://96173857867228", "rbxassetid://121255898612475",
-	"rbxassetid://98031287364865", "rbxassetid://119462383658044", "rbxassetid://77448521277146",
-	"rbxassetid://103741352379819", "rbxassetid://131696603025265", "rbxassetid://122503338277352",
-	"rbxassetid://97648548303678", "rbxassetid://94162446513587", "rbxassetid://84426150435898",
-	"rbxassetid://93069721274110", "rbxassetid://114620047310688", "rbxassetid://97433060861952",
-	"rbxassetid://82183356141401", "rbxassetid://100592913030351", "rbxassetid://121293883585738",
-	"rbxassetid://70447634862911", "rbxassetid://92173139187970", "rbxassetid://106847695270773",
-	"rbxassetid://125403313786645", "rbxassetid://81639435858902", "rbxassetid://137314737492715",
-	"rbxassetid://120112897026015", "rbxassetid://82113744478546", "rbxassetid://118298475669935",
-	"rbxassetid://126681776859538", "rbxassetid://129976080405072", "rbxassetid://109667959938617",
-	"rbxassetid://74707328554358", "rbxassetid://133336594357903", "rbxassetid://86204001129974",
-	"rbxassetid://124243639579224", "rbxassetid://70371667919898", "rbxassetid://131543461321709",
-	"rbxassetid://136323728355613", "rbxassetid://109230267448394"
+getgenv().Players = game:GetService('Players')
+getgenv().Player = Players.LocalPlayer
+getgenv().Character = Player.Character or Player.CharacterAdded:Wait()
+getgenv().Humanoid = Character:WaitForChild("Humanoid")
+getgenv().HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+
+Player.CharacterAdded:Connect(function(NewCharacter)
+    Character = NewCharacter
+    Humanoid = Character:WaitForChild("Humanoid")
+    HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+end)
+
+getgenv().RNG = Random.new()
+
+getgenv().AttackAnimations = {
+    'rbxassetid://131430497821198', --// MassInfection, 1x1x1x1
+	'rbxassetid://83829782357897', --// Slash, 1x1x1x1
+	'rbxassetid://126830014841198', --// Slash, Jason
+	'rbxassetid://126355327951215', --// Behead, Jason
+	'rbxassetid://121086746534252', --// GashingWoundStart, Jason
+	'rbxassetid://105458270463374', --// Slash, JohnDoe
+	'rbxassetid://127172483138092', --// CorruptEnergy, JohnDoe
+	'rbxassetid://18885919947', --// CorruptNature, c00lkidd
+	'rbxassetid://18885909645', --// Attack, c00lkidd
+	'rbxassetid://87259391926321', --// ParryPunch, Guest1337
+	'rbxassetid://106014898528300', --// Charge, Guest1337
+	'rbxassetid://87259391926321', --// Punch, Guest1337
+	'rbxassetid://86545133269813', --// Stab, TwoTime
+	'rbxassetid://89448354637442', --// LungeStart, TwoTime
+	'rbxassetid://90499469533503', --// GunFire, Chance
+	'rbxassetid://116618003477002', --// Slash, Shedletsky
+	'rbxassetid://106086955212611', --// Stab, TwoTime, Skin: PhilosopherTwotime
+	'rbxassetid://107640065977686', --// LungeStart, TwoTime, Skin: PhilosopherTwotime
+	'rbxassetid://77124578197357', --// GunFire, Chance, Skin: OutlawChance
+	'rbxassetid://101771617803133', --// GunFire, Chance, Skin: #CassidyChance
+	'rbxassetid://134958187822107', --// GunFire, Chance, Skin: RetroChance
+	'rbxassetid://111313169447787', --// GunFire, Chance, Skin: MLGChance
+	'rbxassetid://71685573690338', --// GunFire, Chance, Skin: Milestone100Chance
+	'rbxassetid://71685573690338', --// GunFire, Chance, Skin: Milestone75Chance
+	'rbxassetid://129843313690921', --// ParryPunch, Guest1337, Skin: #NerfedDemomanGuest
+	'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: #NerfedDemomanGuest
+	'rbxassetid://129843313690921', --// Punch, Guest1337, Skin: #NerfedDemomanGuest
+	'rbxassetid://136007065400978', --// ParryPunch, Guest1337, Skin: LittleBrotherGuest
+	'rbxassetid://136007065400978', --// Punch, Guest1337, Skin: LittleBrotherGuest
+	'rbxassetid://86096387000557', --// ParryPunch, Guest1337, Skin: Milestone100Guest
+	'rbxassetid://86096387000557', --// ParryPunch, Guest1337, Skin: Milestone75Guest
+	'rbxassetid://108807732150251', --// ParryPunch, Guest1337, Skin: GreenbeltGuest
+	'rbxassetid://138040001965654', --// Punch, Guest1337, Skin: GreenbeltGuest
+	'rbxassetid://73502073176819', --// Charge, Guest1337, Skin: GreenbeltGuest
+	'rbxassetid://129843313690921', --// ParryPunch, Guest1337, Skin: #DemomanGuest
+	'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: #DemomanGuest
+	'rbxassetid://129843313690921', --// Punch, Guest1337, Skin: #DemomanGuest
+	'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: GunnerGuest
+	'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: BobbyGuest
+	'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: !JuggernautGuest
+	'rbxassetid://86709774283672', --// ParryPunch, Guest1337, Skin: SorcererGuest
+	'rbxassetid://106014898528300', --// Charge, Guest1337, Skin: SorcererGuest
+	'rbxassetid://87259391926321', --// Punch, Guest1337, Skin: SorcererGuest
+	'rbxassetid://140703210927645', --// ParryPunch, Guest1337, Skin: DragonGuest
+	'rbxassetid://96173857867228', --// Charge, Guest1337, Skin: AllyGuest
+	'rbxassetid://121255898612475', --// Slash, Shedletsky, Skin: RetroShedletsky
+	'rbxassetid://98031287364865', --// Slash, Shedletsky, Skin: BrightEyesShedletsky
+	'rbxassetid://119462383658044', --// Slash, Shedletsky, Skin: NessShedletsky
+	'rbxassetid://77448521277146', --// Slash, Shedletsky, Skin: Milestone100Shedletsky
+	'rbxassetid://77448521277146', --// Slash, Shedletsky, Skin: Milestone75Shedletsky
+	'rbxassetid://103741352379819', --// Slash, Shedletsky, Skin: #RolandShedletsky
+	'rbxassetid://119462383658044', --// Slash, Shedletsky, Skin: HeartbrokenShedletsky
+	'rbxassetid://131696603025265', --// Slash, Shedletsky, Skin: JamesSunderlandShedletsky
+	'rbxassetid://122503338277352', --// Slash, Shedletsky, Skin: SkiesShedletsky
+	'rbxassetid://97648548303678', --// Slash, Shedletsky, Skin: #JohnWardShedletsky
+	'rbxassetid://94162446513587', --// Slash, JohnDoe, Skin: !Joner
+	'rbxassetid://84426150435898', --// CorruptEnergy, JohnDoe, Skin: !Joner
+	'rbxassetid://93069721274110', --// Slash, JohnDoe, Skin: AnnihilationJohnDoe
+	'rbxassetid://114620047310688', --// CorruptEnergy, JohnDoe, Skin: AnnihilationJohnDoe
+	'rbxassetid://97433060861952', --// Slash, JohnDoe, Skin: #SK
+	'rbxassetid://82183356141401', --// CorruptEnergy, JohnDoe, Skin: #SK
+	'rbxassetid://100592913030351', --// MassInfection, 1x1x1x1, Skin: Fleskhjerta1x1x1x1
+	'rbxassetid://121293883585738', --// Slash, 1x1x1x1, Skin: Fleskhjerta1x1x1x1
+	'rbxassetid://100592913030351', --// MassInfection, 1x1x1x1, Skin: AceOfSpades1x1x1x1
+	'rbxassetid://121293883585738', --// Slash, 1x1x1x1, Skin: AceOfSpades1x1x1x1
+	'rbxassetid://100592913030351', --// MassInfection, 1x1x1x1, Skin: Lancer1x1x1x1
+	'rbxassetid://121293883585738', --// Slash, 1x1x1x1, Skin: Lancer1x1x1x1
+	'rbxassetid://70447634862911', --// MassInfection, 1x1x1x1, Skin: Hacklord1x1x1x1
+	'rbxassetid://92173139187970', --// Slash, 1x1x1x1, Skin: Hacklord1x1x1x1
+	'rbxassetid://106847695270773', --// GashingWoundStart, Jason, Skin: Subject0Jason
+	'rbxassetid://125403313786645', --// Slash, Jason, Skin: Subject0Jason
+	'rbxassetid://81639435858902', --// Behead, Jason, Skin: WhitePumpkinJason
+	'rbxassetid://137314737492715', --// GashingWoundStart, Jason, Skin: WhitePumpkinJason
+	'rbxassetid://120112897026015', --// Slash, Jason, Skin: WhitePumpkinJason
+	'rbxassetid://82113744478546', --// Behead, Jason, Skin: KillerKyleJason
+	'rbxassetid://118298475669935', --// Slash, Jason, Skin: KillerKyleJason
+	'rbxassetid://82113744478546', --// Behead, Jason, Skin: #SmartestJason
+	'rbxassetid://118298475669935', --// Slash, Jason, Skin: #SmartestJason
+	'rbxassetid://126681776859538', --// Behead, Jason, Skin: PursuerJason
+	'rbxassetid://129976080405072', --// GashingWoundStart, Jason, Skin: PursuerJason
+	'rbxassetid://109667959938617', --// Slash, Jason, Skin: PursuerJason
+	'rbxassetid://74707328554358', --// Slash, Jason, Skin: #DeadRabbitsJason
+	'rbxassetid://133336594357903', --// Behead, Jason, Skin: #DeadRabbitsJason
+	'rbxassetid://86204001129974', --// GashingWoundStart, Jason, Skin: #DeadRabbitsJason
+	'rbxassetid://82113744478546', --// Behead, Jason, Skin: RetroJason
+	'rbxassetid://118298475669935', --// Slash, Jason, Skin: RetroJason
+	'rbxassetid://124243639579224', --// CorruptNature, c00lkidd, Skin: MafiosoC00l
+	'rbxassetid://70371667919898', --// Attack, c00lkidd, Skin: MafiosoC00l
+	'rbxassetid://131543461321709', --// Attack, c00lkidd, Skin: SaviorC00l
+	'rbxassetid://136323728355613', --// Swing, Noli
+    'rbxassetid://109230267448394', --// Swing, Noli, Skin: Devesto
+    'rbxassetid://109230267448394', --// Swing, Noli, Skin: Yourself
+    'rbxassetid://109230267448394', --// Swing, Noli, Skin: YAAI
+    'rbxassetid://109230267448394', --// Swing, Noli, Skin: Toolbox
+    'rbxassetid://109230267448394', --// Swing, Noli, Skin: ASPX
+    'rbxassetid://109230267448394', --// Swing, Noli, Skin: RedRoomCurse
+    'rbxassetid://109230267448394', --// Swing, Noli, Skin: Saggitial
+    'rbxassetid://109230267448394', --// Swing, Noli, Skin: Quimera
+    'rbxassetid://109230267448394', --// Swing, Noli, Skin: 035
+    'rbxassetid://109230267448394', --// Swing, Noli, Skin: Artful
+    'rbxassetid://109230267448394', --// Swing, Noli, Skin: Robert
+    'rbxassetid://109230267448394', --// Swing, Noli, Skin: Ephialtes
+    'rbxassetid://109230267448394', --// Swing, Noli, Skin: Umbra
+    'rbxassetid://139835501033932', --// VoidRush, Noli, Skin: Devesto
+    'rbxassetid://139835501033932', --// VoidRush, Noli, Skin: Yourself
+    'rbxassetid://139835501033932', --// VoidRush, Noli, Skin: YAAI
+    'rbxassetid://139835501033932', --// VoidRush, Noli, Skin: Toolbox
+    'rbxassetid://139835501033932', --// VoidRush, Noli, Skin: ASPX
+    'rbxassetid://139835501033932', --// VoidRush, Noli, Skin: RedRoomCurse
+    'rbxassetid://139835501033932', --// VoidRush, Noli, Skin: Saggitial 
+    'rbxassetid://139835501033932', --// VoidRush, Noli, Skin: Quimera
+    'rbxassetid://139835501033932', --// VoidRush, Noli, Skin: 035
+    'rbxassetid://139835501033932', --// VoidRush, Noli, Skin: Artful
+    'rbxassetid://139835501033932', --// VoidRush, Noli, Skin: Robert
+    'rbxassetid://139835501033932', --// VoidRush, Noli, Skin: Ephialtes
+    'rbxassetid://139835501033932' --// VoidRush, Noli, Skin: Umbra
+
 }
 
---// Hitbox ride logic
-RunService.Heartbeat:Connect(function()
-	if not Enabled then return end
-	if not HumanoidRootPart then return end
+game:GetService('RunService').Heartbeat:Connect(function()
+    if not SlientAimHitbox or not HumanoidRootPart then
+        return
+    end
 
-	local playing = false
-	for _, track in ipairs(Humanoid:GetPlayingAnimationTracks()) do
-		if table.find(AttackAnimations, track.Animation.AnimationId)
-			and (track.TimePosition / track.Length < 0.75) then
-			playing = true
-			break
-		end
-	end
+    getgenv(). Playing = false
+    for _,v in Humanoid:GetPlayingAnimationTracks() do
+        if table.find(AttackAnimations, v.Animation.AnimationId) and (v.TimePosition / v.Length < 0.75) then
+            Playing = true
+        end
+    end
 
-	if not playing then return end
+    if not Playing then
+        return
+    end
 
-	local Target
-	local NearestDist = MaxRange
+    local Target
+    getgenv(). CurrentNearestDist = MaxRange
 
-	local function scanGroup(group)
-		for _, obj in ipairs(group) do
-			if obj == Character or not obj:FindFirstChild("HumanoidRootPart") then continue end
-			local dist = (obj.HumanoidRootPart.Position - HumanoidRootPart.Position).Magnitude
-			if dist < NearestDist then
-				NearestDist = dist
-				Target = obj
-			end
-		end
-	end
+    getgenv().loop = function(t)
+        for _,v in t do
+            if v == Character or not v:FindFirstChild("HumanoidRootPart") then
+                continue
+            end
+            getgenv(). Dist = (v.HumanoidRootPart.Position - HumanoidRootPart.Position).Magnitude
+            if Dist < CurrentNearestDist then
+                CurrentNearestDist = Dist
+                Target = v
+            end
+        end
+    end
 
-	scanGroup(workspace.Players:GetDescendants())
-	local npcs = workspace:FindFirstChild("Map", true) and workspace.Map:FindFirstChild("NPCs", true)
-	if npcs then
-		scanGroup(npcs:GetChildren())
-	end
+    loop(workspace.Players:GetDescendants())
+    getgenv(). npcsFolder = workspace.Map:FindFirstChild("NPCs", true)
+    if npcsFolder then
+        loop(npcsFolder:GetChildren())
+    end
 
-	if not Target then return end
+    if not Target then
+        return
+    end
 
-	local ping = game:GetService("Players").LocalPlayer:GetNetworkPing()
-	local randomOffset = Vector3.new(RNG:NextNumber(-1.5, 1.5), 0, RNG:NextNumber(-1.5, 1.5))
-	local predicted = Target.HumanoidRootPart.Position + randomOffset + (Target.HumanoidRootPart.Velocity * (ping * 1.25))
-	local neededVelocity = (predicted - HumanoidRootPart.Position) / (ping * 2)
+    getgenv(). OldVelocity = HumanoidRootPart.Velocity
+    getgenv(). NeededVelocity =
+    (Target.HumanoidRootPart.Position + Vector3.new(
+        RNG:NextNumber(-1.5, 1.5),
+        0,
+        RNG:NextNumber(-1.5, 1.5)
+    ) + (Target.HumanoidRootPart.Velocity * (Player:GetNetworkPing() * 1.25))
+        - HumanoidRootPart.Position
+    ) / (Player:GetNetworkPing() * 2)
 
-	local oldVelocity = HumanoidRootPart.Velocity
-	HumanoidRootPart.Velocity = neededVelocity
-	RunService.RenderStepped:Wait()
-	HumanoidRootPart.Velocity = oldVelocity
+    HumanoidRootPart.Velocity = NeededVelocity
+    game:GetService('RunService').RenderStepped:Wait()
+    HumanoidRootPart.Velocity = OldVelocity
 end)
 
 getgenv().Lighting = game:GetService("Lighting")
@@ -2793,7 +3222,7 @@ getgenv().deactivateHook = function(targetRemote)
 end
 
 Combat:CreateToggle({
-    Name = "Chance True Shoot",
+    Name = "Chance True One Shot",
     CurrentValue = false,
     Flag = "ChanceTrueShoot",
     Callback = function(value)
