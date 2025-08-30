@@ -308,6 +308,11 @@ end)
 
 Main1Group:AddDivider()
 
+Main1Group:AddLabel("--== Surviv: [ 007n7 ] ==--", true) 
+Main1Group:AddLabel("In progress...", true) 
+
+Main1Group:AddDivider()
+
 
 Main1Group:AddLabel("--== Surviv: [ Shedletsky ] ==--", true) 
 Main1Group:AddToggle("AutoSlash (Passive)", {
