@@ -309,15 +309,13 @@ end)
 Main1Group:AddDivider()
 
 Main1Group:AddLabel("--== Surviv: [ 007n7 ] ==--", true) 
-Main1Group:AddToggle("AutoAimChance", {
-    Text = "Auto Clone block",
+Main1Group:AddToggle("Auto007Block", {
+    Text = "Auto Clone block [In progress...]",
     Default = false,
     Callback = function(Value)
         getgenv().AutoClone007n7 = Value
     end
 })
-Main1Group:AddLabel("In progress...", true)
-
 Main1Group:AddDivider()
 
 
