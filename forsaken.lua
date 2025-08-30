@@ -92,12 +92,12 @@ if _G.NotificationSound then
 Library:SetDPIScale(85)
 
 local Window = Library:CreateWindow({
-    Title = "        [NOLI🎭] Forsaken",
+    Title = "        [🔪Slasher] Forsaken",
     Center = true,
     AutoShow = true,
     Resizable = true,
     Footer = "Script by IganhK [Beta Version]",
-	   Icon = 117744101166950, -- ID logo
+	   Icon = 87797185808589, -- ID logo
 
     AutoLock = false,
     ShowCustomCursor = true,
