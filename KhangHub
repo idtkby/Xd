@@ -80,7 +80,7 @@ InfoTab:CreateParagraph({
 
 InfoTab:CreateParagraph({
 	Title = "[NOLI🎭] Forsaken",
-	Content = "[+] Add anti tab\n[+] Upgrade twotime tab [Aimbot Dagger]\n[+] Add Esp Outline\n-- Version 1.1.0 --",
+	Content = "[+] Upgrade AutoBlock\\n-- Version 1.1.0 --",
 })
 
 InfoTab:CreateSection("GameHub")
@@ -159,6 +159,16 @@ tp:CreateButton({
    Name = "Teleport to School",
    Callback = function()
       local gameId = 110280222997707
+      game:GetService("TeleportService"):Teleport(gameId)
+   end
+})
+
+
+tp:CreateSection("Forsaken")
+tp:CreateButton({
+   Name = "Teleport to Game",
+   Callback = function()
+      local gameId = 18687417158
       game:GetService("TeleportService"):Teleport(gameId)
    end
 })
