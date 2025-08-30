@@ -857,7 +857,7 @@ NetworkEvent.OnClientEvent:Connect(function(action, ability)
             local start = tick()  
             local aimConn  
             aimConn = RunService.Heartbeat:Connect(function()  
-                if tick() - start > 1.2 or not nearest.Parent or not myRoot.Parent then  
+                if tick() - start > 0.8 or not nearest.Parent or not myRoot.Parent then  
                     if aimConn then aimConn:Disconnect() end  
                     return  
                 end  
