@@ -2511,6 +2511,7 @@ local soundLibrary = {
     ["Vanity"]  = "137266220091579",
     ["Creation of hatred"] = "115884097233860",
     ["Smile"] = "122146196733152",
+    ["Through Patches of Violet"] = "134062685653533",
 }
 
 -- Mặc định chọn Burnout
@@ -2591,7 +2592,7 @@ end
 
 -- Dropdown chọn nhạc
 M205One:AddDropdown("LastSoundChoice", {
-    Values = {"Burnout","Plead","Compass","Creation of hatred","Vanity","Smile"},
+    Values = {"Burnout","Plead","Compass","Creation of hatred","Vanity","Smile","Through Patches of Violet"},
     Default = 1,
     Multi = false,
     Text = "Choose Sound",
