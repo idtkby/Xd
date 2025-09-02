@@ -1096,94 +1096,131 @@ Main1Group:AddToggle("AutoPunchAimbotToggle", {
 })  
 
 
-  
+  task.spawn(function()
 -- Input chỉnh range
-Main1Group:AddInput("AutoBlockPunchRange", {        
-    Default = tostring(_G.AutoBlockPunch_Range),        
-    Numeric = true,        
-    Text = "Detection Range",        
-    Placeholder = "5 ~ 50",        
-    Callback = function(value)        
-        local num = tonumber(value)        
-        if num and num >= 5 and num <= 50 then        
-            _G.AutoBlockPunch_Range = num    
+-- ==== CONFIG (Obsidian style) ====
+local Players = game:GetService("Players")
+_G.AutoBlockPunch_Range = tonumber(_G.AutoBlockPunch_Range) or 18
+_G.ShowRangeEnabled = _G.ShowRangeEnabled or false
 
-            -- Nếu đang bật ShowRange thì update size ngay
-            if _G.ShowRangeEnabled then
-                for _, characterModel in ipairs(workspace:GetChildren()) do
-                    local part = characterModel:FindFirstChild("RangePart")
-                    if part then
-                        part.Size = Vector3.new(_G.AutoBlockPunch_Range, 1, _G.AutoBlockPunch_Range)
-                    end
-                end
+-- ==== HELPERS ====
+local function killersFolder()
+    return workspace:FindFirstChild("Killers")
+end
+
+local function isKillerModel(m)
+    if not m or not m:IsA("Model") then return false end
+    local p = m.Parent
+    return p and p.Name == "Killers"
+end
+
+local function isFakeNoli(m)
+    if not isKillerModel(m) then return false end
+    return (Players:GetPlayerFromCharacter(m) == nil)
+        and string.find(string.lower(m.Name), "noli")
+end
+
+local function getHRP(m)
+    return m and m:FindFirstChild("HumanoidRootPart")
+end
+
+local function ensureRangeBox(m)
+    local hrp = getHRP(m); if not hrp then return end
+    local box = hrp:FindFirstChild("RangeBox")
+    if not box then
+        box = Instance.new("BoxHandleAdornment")
+        box.Name = "RangeBox"
+        box.Adornee = hrp
+        box.AlwaysOnTop = true
+        box.ZIndex = 0
+        box.Color3 = Color3.fromRGB(0,255,0)
+        box.Transparency = 0 -- chỉ viền, không fill
+        box.Parent = hrp
+    end
+    box.CFrame = CFrame.new(0, -2, 0) -- hạ xuống sàn
+    box.Size = Vector3.new(_G.AutoBlockPunch_Range, 0.05, _G.AutoBlockPunch_Range) -- Range x Range
+end
+
+local function clearAllRangeBoxes()
+    local kf = killersFolder(); if not kf then return end
+    for _, m in ipairs(kf:GetChildren()) do
+        local hrp = getHRP(m)
+        if hrp then
+            local b = hrp:FindFirstChild("RangeBox")
+            if b then b:Destroy() end
+        end
+    end
+end
+
+local function updateAllBoxSizes()
+    local kf = killersFolder(); if not kf then return end
+    for _, m in ipairs(kf:GetChildren()) do
+        local hrp = getHRP(m)
+        if hrp then
+            local b = hrp:FindFirstChild("RangeBox")
+            if b then
+                b.Size = Vector3.new(_G.AutoBlockPunch_Range, 0.05, _G.AutoBlockPunch_Range)
             end
+        end
+    end
+end
 
-        else        
-            Library:Notify("Invalid range (5-50)", 5)        
-        end        
-    end        
-})        
+-- ==== INPUT: Detection Range ====
+Main1Group:AddInput("AutoBlockPunchRange", {
+    Default = tostring(_G.AutoBlockPunch_Range),
+    Numeric = true,
+    Text = "Detection Range",
+    Placeholder = "5 ~ 50",
+    Callback = function(value)
+        local num = tonumber(value)
+        if num and num >= 5 and num <= 50 then
+            _G.AutoBlockPunch_Range = num
+            -- đang bật thì resize ngay
+            if _G.ShowRangeEnabled then
+                updateAllBoxSizes()
+            end
+        else
+            Library:Notify("Invalid range (5-50)", 5)
+        end
+    end
+})
 
--- Toggle show range
+-- ==== TOGGLE: Show Range ====
 Main1Group:AddToggle("ShowRange", {
     Text = "Show Range",
     Default = false,
     Callback = function(state)
         _G.ShowRangeEnabled = state
 
-        -- Xoá part cũ khi tắt
-        for _, model in ipairs(workspace:GetChildren()) do
-            local part = model:FindFirstChild("RangePart")
-            if part then part:Destroy() end
+        if not state then
+            clearAllRangeBoxes()
+            return
         end
 
-        if state then
-            task.spawn(function()
-                while _G.ShowRangeEnabled do
-                    task.wait(0.1)
-
-                    for _, characterModel in ipairs(workspace:GetChildren()) do
-                        local isInKillers = (characterModel.Parent and characterModel.Parent.Name == "Killers")
-                        local isPlayer = (Players:GetPlayerFromCharacter(characterModel) ~= nil)
-                        local isFakeNoli = isInKillers and not isPlayer and characterModel.Name:lower():find("noli")
-
-                        if isInKillers and not isFakeNoli then
-                            local hrp = characterModel:FindFirstChild("HumanoidRootPart")
-                            if hrp then
-                                local part = characterModel:FindFirstChild("RangePart")
-
-                                if not part then
-    part = Instance.new("Part")
-    part.Name = "RangePart"
-    part.Anchored = true
-    part.CanCollide = false
-    part.Transparency = 1 -- part ẩn hoàn toàn, chỉ để làm Adornee
-    part.Size = Vector3.new(_G.AutoBlockPunch_Range, 1, _G.AutoBlockPunch_Range)
-    part.CFrame = hrp.CFrame * CFrame.new(0, -2, 0)
-    part.Parent = characterModel
-
-    local highlight = Instance.new("Highlight")
-    highlight.Name = "RangeOutline"
-    highlight.Adornee = part
-    highlight.FillColor = Color3.fromRGB(0, 255, 0)
-    highlight.FillTransparency = 1 -- trong suốt phần trong
-    highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
-    highlight.OutlineTransparency = 0 -- viền rõ
-    highlight.Parent = part
-end
-
--- Update size + vị trí liên tục
-part.Size = Vector3.new(_G.AutoBlockPunch_Range, 1, _G.AutoBlockPunch_Range)
-part.CFrame = hrp.CFrame * CFrame.new(0, -2, 0)
+        task.spawn(function()
+            while _G.ShowRangeEnabled do
+                local kf = killersFolder()
+                if kf then
+                    for _, model in ipairs(kf:GetChildren()) do
+                        if isKillerModel(model) and not isFakeNoli(model) then
+                            ensureRangeBox(model) -- tạo nếu thiếu + sync size/offset
+                            -- Không cần update CFrame liên tục vì BoxHandleAdornment bám HRP (Adornee)
+                            -- Nếu muốn “chắc cú”, có thể set lại offset mỗi vòng:
+                            local hrp = getHRP(model)
+                            local b = hrp and hrp:FindFirstChild("RangeBox")
+                            if b then
+                                b.CFrame = CFrame.new(0, -2, 0)
+                                b.Size   = Vector3.new(_G.AutoBlockPunch_Range, 0.05, _G.AutoBlockPunch_Range)
                             end
                         end
                     end
                 end
-            end)
-        end
+                task.wait(0.2)
+            end
+        end)
     end
 })
-
+	end)
 
 Main1Group:AddLabel("Request 150< ping [Block Jason, cOOlkidd")
 
