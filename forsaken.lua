@@ -1098,58 +1098,50 @@ Main1Group:AddToggle("AutoPunchAimbotToggle", {
 
   task.spawn(function()
 local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
 
--- clear toàn bộ range box
-local function clearAllRangeBoxes()
-    local killers = workspace:FindFirstChild("Killers")
-    if not killers then return end
-    for _, m in ipairs(killers:GetChildren()) do
-        local hrp = m:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            local b = hrp:FindFirstChild("RangeBox")
-            if b then b:Destroy() end
+-- clear circle
+local function clearAllRangeCircles()
+    for _, v in ipairs(CoreGui:GetChildren()) do
+        if v:IsA("CylinderHandleAdornment") and v.Name:find("_RangeCircle") then
+            v:Destroy()
         end
     end
 end
 
--- update size tất cả box
-local function updateAllBoxSizes()
-    local killers = workspace:FindFirstChild("Killers")
-    if not killers then return end
-    for _, m in ipairs(killers:GetChildren()) do
-        local hrp = m:FindFirstChild("HumanoidRootPart")
-        local b = hrp and hrp:FindFirstChild("RangeBox")
-        if b then
-            b.Size = Vector3.new(_G.AutoBlockPunch_Range, 0.05, _G.AutoBlockPunch_Range)
+-- update màu và size tất cả circle
+local function updateAllCircleProps()
+    for _, v in ipairs(CoreGui:GetChildren()) do
+        if v:IsA("CylinderHandleAdornment") and v.Name:find("_RangeCircle") then
+            v.Size = Vector3.new(_G.AutoBlockPunch_Range, 0.05, _G.AutoBlockPunch_Range)
+            v.Color3 = _G.RangeCircleColor or Color3.fromRGB(0,255,0)
         end
     end
 end
 
--- tạo box cho 1 killer
-local function ensureRangeBox(m)
-    local isInKillers = (m.Parent and m.Parent.Name == "Killers")
-    local isPlayer = (Players:GetPlayerFromCharacter(m) ~= nil)
-    local isFakeNoli = isInKillers and not isPlayer and m.Name:lower():find("noli")
+-- tạo circle cho killer
+local function ensureRangeCircle(model)
+    local isInKillers = (model.Parent and model.Parent.Name == "Killers")
+    local isPlayer = (Players:GetPlayerFromCharacter(model) ~= nil)
+    local isFakeNoli = isInKillers and not isPlayer and model.Name:lower():find("noli")
     if not (isInKillers and not isFakeNoli) then return end
 
-    local hrp = m:FindFirstChild("HumanoidRootPart")
+    local hrp = model:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
 
-    local box = hrp:FindFirstChild("RangeBox")
-    if not box then
-        box = Instance.new("BoxHandleAdornment")
-        box.Name = "RangeBox"
-        box.Adornee = hrp
-        box.AlwaysOnTop = true
-        box.ZIndex = 0
-        box.Color3 = Color3.fromRGB(0,255,0)
-        box.Transparency = 0
-        box.Size = Vector3.new(_G.AutoBlockPunch_Range, 0.05, _G.AutoBlockPunch_Range)
-        box.CFrame = CFrame.new(0, -2, 0)
-        box.Parent = hrp
+    local circle = CoreGui:FindFirstChild(model.Name.."_RangeCircle")
+    if not circle then
+        circle = Instance.new("CylinderHandleAdornment")
+        circle.Name = model.Name.."_RangeCircle"
+        circle.AlwaysOnTop = true
+        circle.ZIndex = 0
+        circle.Adornee = hrp
+        circle.Parent = CoreGui
     end
-    box.Size = Vector3.new(_G.AutoBlockPunch_Range, 0.05, _G.AutoBlockPunch_Range)
-    box.CFrame = CFrame.new(0, -2, 0)
+
+    circle.Size = Vector3.new(_G.AutoBlockPunch_Range, 0.05, _G.AutoBlockPunch_Range)
+    circle.CFrame = CFrame.new(0, -2, 0) * CFrame.Angles(math.rad(90), 0, 0)
+    circle.Color3 = _G.RangeCircleColor or Color3.fromRGB(0,255,0)
 end
 
 -- input chỉnh range
@@ -1163,7 +1155,7 @@ Main1Group:AddInput("AutoBlockPunchRange", {
         if num and num >= 5 and num <= 50 then
             _G.AutoBlockPunch_Range = num
             if _G.ShowRangeEnabled then
-                updateAllBoxSizes()
+                updateAllCircleProps()
             end
         else
             Library:Notify("Invalid range (5-50)", 5)
@@ -1171,14 +1163,14 @@ Main1Group:AddInput("AutoBlockPunchRange", {
     end
 })
 
--- toggle show range
+-- toggle + colorpicker
 Main1Group:AddToggle("ShowRange", {
     Text = "Show Range",
     Default = false,
     Callback = function(state)
         _G.ShowRangeEnabled = state
         if not state then
-            clearAllRangeBoxes()
+            clearAllRangeCircles()
             return
         end
 
@@ -1188,14 +1180,23 @@ Main1Group:AddToggle("ShowRange", {
                 local killers = workspace:FindFirstChild("Killers")
                 if killers then
                     for _, m in ipairs(killers:GetChildren()) do
-                        ensureRangeBox(m)
+                        ensureRangeCircle(m)
                     end
                 end
             end
         end)
     end
+}):AddColorPicker("RangeCircleColor", {
+    Default = Color3.fromRGB(0,255,0),
+    Transparency = 0,
+    Callback = function(color)
+        _G.RangeCircleColor = color
+        if _G.ShowRangeEnabled then
+            updateAllCircleProps()
+        end
+    end
 })
-	end)
+			end)
 
 Main1Group:AddLabel("Request 150< ping [Block Jason, cOOlkidd")
 
