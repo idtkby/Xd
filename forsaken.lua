@@ -890,7 +890,7 @@ RunService.Heartbeat:Connect(function()
         local root = killer:FindFirstChild("HumanoidRootPart")  
         local humanoid = killer:FindFirstChildOfClass("Humanoid")  
         if root and humanoid and humanoid.Health > 0 then  
-            local dist = (root.Position - myRoot.Position).Magnitude  
+            local dist = (root.Position - myRoot.Positin).Magnitude  
             if dist <= _G.AutoBlockPunch_Range then  
 
                 local hrp = killer:FindFirstChild("HumanoidRootPart")  
@@ -1095,6 +1095,23 @@ Main1Group:AddToggle("AutoPunchAimbotToggle", {
     end  
 })  
 
+		Main1Group:AddInput("AutoBlockPunchRange", {
+    Default = tostring(_G.AutoBlockPunch_Range),
+    Numeric = true,
+    Text = "Detection Range",
+    Placeholder = "5 ~ 50",
+    Callback = function(value)
+        local num = tonumber(value)
+        if num and num >= 5 and num <= 50 then
+            _G.AutoBlockPunch_Range = num
+            if _G.ShowRangeEnabled then
+                updateAllCircleProps()
+            end
+        else
+            Library:Notify("Invalid range (5-50)", 5)
+        end
+    end
+})
 
   task.spawn(function()
 				local Players = game:GetService("Players")
@@ -1193,24 +1210,7 @@ KillersFolder.ChildRemoved:Connect(function(killer)
     removeKillerCircle(killer)
 end)
 
--- input chỉnh range
-Main1Group:AddInput("AutoBlockPunchRange", {
-    Default = tostring(_G.AutoBlockPunch_Range),
-    Numeric = true,
-    Text = "Detection Range",
-    Placeholder = "5 ~ 50",
-    Callback = function(value)
-        local num = tonumber(value)
-        if num and num >= 5 and num <= 50 then
-            _G.AutoBlockPunch_Range = num
-            if _G.ShowRangeEnabled then
-                updateAllCircleProps()
-            end
-        else
-            Library:Notify("Invalid range (5-50)", 5)
-        end
-    end
-})
+
 			end)
 
 Main1Group:AddLabel("Request 150< ping [Block Jason, cOOlkidd")
