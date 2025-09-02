@@ -1094,24 +1094,22 @@ Main1Group:AddToggle("AutoPunchAimbotToggle", {
         _G.AutoPunchAimbot_Enabled = v  
     end  
 })  
-		task.spawn(function()
--- ========= Logic: Range Part + Outline (ổn định, tham khảo scr.txt) =========
-local Players = game:GetService("Players")
+--// Range Visual (Killer Detection Circle)
 local RunService = game:GetService("RunService")
-local KillersFolder = workspace:FindFirstChild("Killers")
+local KillersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
 
-local detectionCircles = {} -- [killer] = circle
+local detectionCircles = {} -- [killer] = adornment
 local killerCirclesVisible = false
 local detectionRange = tonumber(_G.AutoBlockPunch_Range) or 18
 
--- ===== Logic =====
+-- Add circle
 local function addKillerCircle(killer)
-    local hrp = killer:FindFirstChild("HumanoidRootPart")
-    if not hrp or detectionCircles[killer] then return end
+    if not killer:FindFirstChild("HumanoidRootPart") then return end
+    if detectionCircles[killer] then return end
 
     local circle = Instance.new("CylinderHandleAdornment")
     circle.Name = "KillerDetectionCircle"
-    circle.Adornee = hrp
+    circle.Adornee = killer.HumanoidRootPart
     circle.AlwaysOnTop = true
     circle.ZIndex = 0
     circle.Transparency = 0.7
@@ -1119,11 +1117,12 @@ local function addKillerCircle(killer)
     circle.CFrame = CFrame.Angles(math.rad(90), 0, 0)
     circle.Height = 0.1
     circle.Radius = detectionRange / 2
-    circle.Parent = hrp
+    circle.Parent = killer.HumanoidRootPart
 
     detectionCircles[killer] = circle
 end
 
+-- Remove circle
 local function removeKillerCircle(killer)
     if detectionCircles[killer] then
         detectionCircles[killer]:Destroy()
@@ -1131,8 +1130,8 @@ local function removeKillerCircle(killer)
     end
 end
 
+-- Refresh
 local function refreshKillerCircles()
-    if not KillersFolder then return end
     for _, killer in ipairs(KillersFolder:GetChildren()) do
         if killerCirclesVisible then
             addKillerCircle(killer)
@@ -1142,6 +1141,7 @@ local function refreshKillerCircles()
     end
 end
 
+-- Update radius + color
 RunService.RenderStepped:Connect(function()
     if not killerCirclesVisible then return end
     detectionRange = tonumber(_G.AutoBlockPunch_Range) or detectionRange
@@ -1153,21 +1153,21 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-if KillersFolder then
-    KillersFolder.ChildAdded:Connect(function(killer)
-        if killerCirclesVisible then
-            task.spawn(function()
-                local hrp = killer:WaitForChild("HumanoidRootPart", 5)
-                if hrp then addKillerCircle(killer) end
-            end)
-        end
-    end)
-    KillersFolder.ChildRemoved:Connect(function(killer)
-        removeKillerCircle(killer)
-    end)
-end
+-- Hook KillersFolder changes
+KillersFolder.ChildAdded:Connect(function(killer)
+    if killerCirclesVisible then
+        task.spawn(function()
+            local hrp = killer:WaitForChild("HumanoidRootPart", 5)
+            if hrp then addKillerCircle(killer) end
+        end)
+    end
+end)
 
--- ===== GUI (Obsidian style) =====
+KillersFolder.ChildRemoved:Connect(function(killer)
+    removeKillerCircle(killer)
+end)
+
+-- GUI
 Main1Group:AddToggle("ShowRange", {
     Text = "Show Range",
     Default = false,
@@ -1202,8 +1202,7 @@ Main1Group:AddInput("AutoBlockPunchRange", {
             Library:Notify("Invalid range (5-50)", 5)
         end
     end
-})-- =======================================================================
-			end)
+})
 
 Main1Group:AddLabel("Request 150< ping [Block Jason, cOOlkidd")
 
