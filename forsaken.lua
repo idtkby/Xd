@@ -1153,27 +1153,28 @@ Main1Group:AddToggle("ShowRange", {
                                 local part = characterModel:FindFirstChild("RangePart")
 
                                 if not part then
-                                    part = Instance.new("Part")
-                                    part.Name = "RangePart"
-                                    part.Anchored = true
-                                    part.CanCollide = false
-                                    part.Transparency = 0.9
-                                    part.Color = Color3.fromRGB(0, 255, 0)
-                                    part.Size = Vector3.new(_G.AutoBlockPunch_Range, 1, _G.AutoBlockPunch_Range)
+    part = Instance.new("Part")
+    part.Name = "RangePart"
+    part.Anchored = true
+    part.CanCollide = false
+    part.Transparency = 1 -- part ẩn hoàn toàn, chỉ để làm Adornee
+    part.Size = Vector3.new(_G.AutoBlockPunch_Range, 1, _G.AutoBlockPunch_Range)
+    part.CFrame = hrp.CFrame * CFrame.new(0, -2, 0)
+    part.Parent = characterModel
 
-                                    local sel = Instance.new("SelectionBox")
-                                    sel.Name = "RangeOutline"
-                                    sel.LineThickness = 0.05
-                                    sel.Color3 = Color3.fromRGB(0, 255, 0)
-                                    sel.Adornee = part
-                                    sel.Parent = part
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "RangeOutline"
+    highlight.Adornee = part
+    highlight.FillColor = Color3.fromRGB(0, 255, 0)
+    highlight.FillTransparency = 1 -- trong suốt phần trong
+    highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+    highlight.OutlineTransparency = 0 -- viền rõ
+    highlight.Parent = part
+end
 
-                                    part.Parent = characterModel
-                                end
-
-                                -- Update size + vị trí liên tục
-                                part.Size = Vector3.new(_G.AutoBlockPunch_Range, 1, _G.AutoBlockPunch_Range)
-                                part.CFrame = hrp.CFrame * CFrame.new(0, -2, 0)
+-- Update size + vị trí liên tục
+part.Size = Vector3.new(_G.AutoBlockPunch_Range, 1, _G.AutoBlockPunch_Range)
+part.CFrame = hrp.CFrame * CFrame.new(0, -2, 0)
                             end
                         end
                     end
