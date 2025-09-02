@@ -1098,191 +1098,92 @@ Main1Group:AddToggle("AutoPunchAimbotToggle", {
 -- ========= Logic: Range Part + Outline (ổn định, tham khảo scr.txt) =========
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
+local KillersFolder = workspace:FindFirstChild("Killers")
 
-local rangeEntries = {} -- [model] = { part = Part, destroyConn = conn, ancestryConn = conn }
+local detectionCircles = {} -- [killer] = circle
+local killerCirclesVisible = false
 local detectionRange = tonumber(_G.AutoBlockPunch_Range) or 18
-local rangeColor = Color3.fromRGB(0, 255, 0)
-local showRange = false
 
--- sử dụng cùng check với ESP player của bạn
-local function isKillerModel(model)
-    if not model or not model:IsA("Model") then return false end
-    local isInKillers = (model.Parent and model.Parent.Name == "Killers")
-    local isPlayer = (Players:GetPlayerFromCharacter(model) ~= nil)
-    local isFakeNoli = isInKillers and not isPlayer and model.Name:lower():find("noli")
-    return isInKillers and not isFakeNoli
+-- ===== Logic =====
+local function addKillerCircle(killer)
+    local hrp = killer:FindFirstChild("HumanoidRootPart")
+    if not hrp or detectionCircles[killer] then return end
+
+    local circle = Instance.new("CylinderHandleAdornment")
+    circle.Name = "KillerDetectionCircle"
+    circle.Adornee = hrp
+    circle.AlwaysOnTop = true
+    circle.ZIndex = 0
+    circle.Transparency = 0.7
+    circle.Color3 = Options.RangeCircleColor.Value or Color3.fromRGB(0,255,0)
+    circle.CFrame = CFrame.Angles(math.rad(90), 0, 0)
+    circle.Height = 0.1
+    circle.Radius = detectionRange / 2
+    circle.Parent = hrp
+
+    detectionCircles[killer] = circle
 end
 
-local function removeRangePart(model)
-    local entry = rangeEntries[model]
-    if not entry then return end
-    -- safe destroy / disconnect
-    pcall(function()
-        if entry.part and entry.part.Parent then
-            entry.part:Destroy()
-        end
-    end)
-    if entry.destroyConn and entry.destroyConn.Connected then
-        entry.destroyConn:Disconnect()
-    end
-    if entry.ancestryConn and entry.ancestryConn.Connected then
-        entry.ancestryConn:Disconnect()
-    end
-    rangeEntries[model] = nil
-end
-
-local function addRangePart(model)
-    if not isKillerModel(model) then return end
-    if rangeEntries[model] then return end -- đã có
-    -- chờ HRP tối đa 5s (không chờ vô hạn)
-    local hrp = model:FindFirstChild("HumanoidRootPart") or model:WaitForChild("HumanoidRootPart", 5)
-    if not hrp or not hrp:IsA("BasePart") then return end
-
-    -- tạo part (ẩn) và highlight
-    local ok, part = pcall(function()
-        local p = Instance.new("Part")
-        p.Name = "RangePart"
-        p.Anchored = true
-        p.CanCollide = false
-        p.Transparency = 1
-        p.Size = Vector3.new(detectionRange, 1, detectionRange)
-        p.CFrame = hrp.CFrame * CFrame.new(0, -2, 0)
-        p.Parent = Workspace
-        return p
-    end)
-    if not ok or not part then return end
-
-    local success, hl = pcall(function()
-        local h = Instance.new("Highlight")
-        h.Name = "RangeOutline"
-        h.Adornee = part
-        h.FillTransparency = 1
-        h.OutlineTransparency = 0
-        h.OutlineColor = rangeColor
-        h.Parent = part
-        return h
-    end)
-    if not success then
-        -- nếu highlight lỗi thì vẫn giữ part, nhưng bỏ entry
-        pcall(function() part:Destroy() end)
-        return
-    end
-
-    -- connect cleanup: Destroying & AncestryChanged
-    local destroyConn
-    destroyConn = model.Destroying:Connect(function()
-        removeRangePart(model)
-    end)
-    local ancestryConn
-    ancestryConn = model.AncestryChanged:Connect(function()
-        -- nếu model không còn trong workspace thì cleanup
-        if not model:IsDescendantOf(Workspace) then
-            removeRangePart(model)
-        end
-    end)
-
-    rangeEntries[model] = {
-        part = part,
-        destroyConn = destroyConn,
-        ancestryConn = ancestryConn,
-    }
-end
-
--- scan ban đầu (an toàn)
-for _, obj in ipairs(Workspace:GetDescendants()) do
-    if obj:IsA("Model") and isKillerModel(obj) then
-        -- spawn để không block; addRangePart sẽ wait HRP tối đa 5s
-        task.spawn(function() addRangePart(obj) end)
+local function removeKillerCircle(killer)
+    if detectionCircles[killer] then
+        detectionCircles[killer]:Destroy()
+        detectionCircles[killer] = nil
     end
 end
 
--- bắt sự kiện model mới (không rely vào folder wait)
-Workspace.DescendantAdded:Connect(function(desc)
-    if desc:IsA("Model") and isKillerModel(desc) then
-        task.spawn(function() addRangePart(desc) end)
-        return
-    end
-    -- trường hợp HRP được thêm sau model: nếu là HRP và ancestor là killer model
-    if desc.Name == "HumanoidRootPart" and desc:IsA("BasePart") then
-        local model = desc:FindFirstAncestorOfClass("Model")
-        if model and isKillerModel(model) then
-            task.spawn(function() addRangePart(model) end)
-        end
-    end
-end)
-
--- nếu model bị xoá ở mức parent khác, cũng cleanup (an extra safe net)
-Workspace.DescendantRemoving:Connect(function(desc)
-    -- nếu một phần tử trong model bị remove thì kiểm tra ancestor model
-    local model = desc:FindFirstAncestorOfClass("Model")
-    if model and rangeEntries[model] and (not isKillerModel(model)) then
-        removeRangePart(model)
-    end
-end)
-
--- vòng update: vị trí + size + màu
-RunService.Heartbeat:Connect(function()
-    if not showRange then return end
-    detectionRange = tonumber(_G.AutoBlockPunch_Range) or detectionRange
-    for model, entry in pairs(rangeEntries) do
-        -- validate
-        if not model or not model.Parent or not entry or not entry.part or not entry.part.Parent then
-            removeRangePart(model)
+local function refreshKillerCircles()
+    if not KillersFolder then return end
+    for _, killer in ipairs(KillersFolder:GetChildren()) do
+        if killerCirclesVisible then
+            addKillerCircle(killer)
         else
-            local hrp = model:FindFirstChild("HumanoidRootPart")
-            if hrp and hrp:IsA("BasePart") then
-                -- dùng pcall để an toàn khi hrp biến mất giữa chừng
-                local ok, pos = pcall(function() return hrp.Position end)
-                if ok and pos then
-                    -- update size + vị trí
-                    entry.part.Size = Vector3.new(detectionRange, 1, detectionRange)
-                    entry.part.CFrame = CFrame.new(pos.X, pos.Y - 2, pos.Z)
-                    local hl = entry.part:FindFirstChild("RangeOutline")
-                    if hl then
-                        pcall(function() hl.OutlineColor = rangeColor end)
-                    end
-                else
-                    removeRangePart(model)
-                end
-            else
-                removeRangePart(model)
-            end
+            removeKillerCircle(killer)
+        end
+    end
+end
+
+RunService.RenderStepped:Connect(function()
+    if not killerCirclesVisible then return end
+    detectionRange = tonumber(_G.AutoBlockPunch_Range) or detectionRange
+    for killer, circle in pairs(detectionCircles) do
+        if circle and circle.Parent then
+            circle.Radius = detectionRange / 2
+            circle.Color3 = Options.RangeCircleColor.Value or Color3.fromRGB(0,255,0)
         end
     end
 end)
 
--- ====== GUI hooks (giữ style bạn muốn, chỉ update các biến dùng trong logic) ======
--- Toggle + ColorPicker + Input (giữ style Obsidian)
+if KillersFolder then
+    KillersFolder.ChildAdded:Connect(function(killer)
+        if killerCirclesVisible then
+            task.spawn(function()
+                local hrp = killer:WaitForChild("HumanoidRootPart", 5)
+                if hrp then addKillerCircle(killer) end
+            end)
+        end
+    end)
+    KillersFolder.ChildRemoved:Connect(function(killer)
+        removeKillerCircle(killer)
+    end)
+end
+
+-- ===== GUI (Obsidian style) =====
 Main1Group:AddToggle("ShowRange", {
     Text = "Show Range",
     Default = false,
     Callback = function(state)
-        showRange = state
-        if not state then
-            -- clear all
-            for model, _ in pairs(rangeEntries) do
-                removeRangePart(model)
-            end
-        else
-            -- bật lại: scan hiện tại
-            for _, obj in ipairs(Workspace:GetDescendants()) do
-                if obj:IsA("Model") and isKillerModel(obj) then
-                    task.spawn(function() addRangePart(obj) end)
-                end
-            end
-        end
+        killerCirclesVisible = state
+        refreshKillerCircles()
     end
 })
 :AddColorPicker("RangeCircleColor", {
-    Default = Color3.fromRGB(0, 255, 0),
+    Default = Color3.fromRGB(0,255,0),
     Transparency = 0,
     Callback = function(color)
-        rangeColor = color or rangeColor
-        -- update ngay
-        for _, entry in pairs(rangeEntries) do
-            local hl = entry.part and entry.part:FindFirstChild("RangeOutline")
-            if hl then pcall(function() hl.OutlineColor = rangeColor end) end
+        for _, circle in pairs(detectionCircles) do
+            if circle and circle.Parent then
+                circle.Color3 = color
+            end
         end
     end
 })
@@ -1295,20 +1196,13 @@ Main1Group:AddInput("AutoBlockPunchRange", {
     Callback = function(value)
         local num = tonumber(value)
         if num and num >= 5 and num <= 50 then
-            detectionRange = num
             _G.AutoBlockPunch_Range = num
-            -- resize ngay
-            for _, entry in pairs(rangeEntries) do
-                if entry.part and entry.part.Parent then
-                    entry.part.Size = Vector3.new(detectionRange, 1, detectionRange)
-                end
-            end
+            detectionRange = num
         else
             Library:Notify("Invalid range (5-50)", 5)
         end
     end
-})
--- =======================================================================
+})-- =======================================================================
 			end)
 
 Main1Group:AddLabel("Request 150< ping [Block Jason, cOOlkidd")
