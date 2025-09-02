@@ -1129,14 +1129,16 @@ local function ensureRangeCircle(model)
     local hrp = model:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
 
-    local circle = CoreGui:FindFirstChild(model.Name.."_RangeCircle")
+    local circle = hrp:FindFirstChild("RangeCircle")
     if not circle then
         circle = Instance.new("CylinderHandleAdornment")
-        circle.Name = model.Name.."_RangeCircle"
+        circle.Name = "RangeCircle"
+        circle.Adornee = hrp
         circle.AlwaysOnTop = true
         circle.ZIndex = 0
-        circle.Adornee = hrp
-        circle.Parent = CoreGui
+        circle.Color3 = _G.RangeCircleColor or Color3.fromRGB(0,255,0)
+        circle.Transparency = 0
+        circle.Parent = hrp -- ✅ parent vào BasePart
     end
 
     circle.Size = Vector3.new(_G.AutoBlockPunch_Range, 0.05, _G.AutoBlockPunch_Range)
