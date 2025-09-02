@@ -1097,20 +1097,91 @@ Main1Group:AddToggle("AutoPunchAimbotToggle", {
 
 
   
-Main1Group:AddInput("AutoBlockPunchRange", {      
-    Default = tostring(_G.AutoBlockPunch_Range),      
-    Numeric = true,      
-    Text = "Detection Range",      
-    Placeholder = "5 ~ 50",      
-    Callback = function(value)      
-        local num = tonumber(value)      
-        if num and num >= 5 and num <= 50 then      
-            _G.AutoBlockPunch_Range = num  
-        else      
-            Library:Notify("Invalid range (5-50)", 5)      
-        end      
-    end      
-})      
+-- Input chỉnh range
+Main1Group:AddInput("AutoBlockPunchRange", {        
+    Default = tostring(_G.AutoBlockPunch_Range),        
+    Numeric = true,        
+    Text = "Detection Range",        
+    Placeholder = "5 ~ 50",        
+    Callback = function(value)        
+        local num = tonumber(value)        
+        if num and num >= 5 and num <= 50 then        
+            _G.AutoBlockPunch_Range = num    
+
+            -- Nếu đang bật ShowRange thì update size ngay
+            if _G.ShowRangeEnabled then
+                for _, characterModel in ipairs(workspace:GetChildren()) do
+                    local part = characterModel:FindFirstChild("RangePart")
+                    if part then
+                        part.Size = Vector3.new(_G.AutoBlockPunch_Range, 1, _G.AutoBlockPunch_Range)
+                    end
+                end
+            end
+
+        else        
+            Library:Notify("Invalid range (5-50)", 5)        
+        end        
+    end        
+})        
+
+-- Toggle show range
+Main1Group:AddToggle("ShowRange", {
+    Text = "Show Range",
+    Default = false,
+    Callback = function(state)
+        _G.ShowRangeEnabled = state
+
+        -- Xoá part cũ khi tắt
+        for _, model in ipairs(workspace:GetChildren()) do
+            local part = model:FindFirstChild("RangePart")
+            if part then part:Destroy() end
+        end
+
+        if state then
+            task.spawn(function()
+                while _G.ShowRangeEnabled do
+                    task.wait(0.1)
+
+                    for _, characterModel in ipairs(workspace:GetChildren()) do
+                        local isInKillers = (characterModel.Parent and characterModel.Parent.Name == "Killers")
+                        local isPlayer = (Players:GetPlayerFromCharacter(characterModel) ~= nil)
+                        local isFakeNoli = isInKillers and not isPlayer and characterModel.Name:lower():find("noli")
+
+                        if isInKillers and not isFakeNoli then
+                            local hrp = characterModel:FindFirstChild("HumanoidRootPart")
+                            if hrp then
+                                local part = characterModel:FindFirstChild("RangePart")
+
+                                if not part then
+                                    part = Instance.new("Part")
+                                    part.Name = "RangePart"
+                                    part.Anchored = true
+                                    part.CanCollide = false
+                                    part.Transparency = 0.9
+                                    part.Color = Color3.fromRGB(0, 255, 0)
+                                    part.Size = Vector3.new(_G.AutoBlockPunch_Range, 1, _G.AutoBlockPunch_Range)
+
+                                    local sel = Instance.new("SelectionBox")
+                                    sel.Name = "RangeOutline"
+                                    sel.LineThickness = 0.05
+                                    sel.Color3 = Color3.fromRGB(0, 255, 0)
+                                    sel.Adornee = part
+                                    sel.Parent = part
+
+                                    part.Parent = characterModel
+                                end
+
+                                -- Update size + vị trí liên tục
+                                part.Size = Vector3.new(_G.AutoBlockPunch_Range, 1, _G.AutoBlockPunch_Range)
+                                part.CFrame = hrp.CFrame * CFrame.new(0, -2, 0)
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+    end
+})
 
 
 Main1Group:AddLabel("Request 150< ping [Block Jason, cOOlkidd")
