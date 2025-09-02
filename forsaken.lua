@@ -1098,7 +1098,7 @@ Main1Group:AddToggle("AutoPunchAimbotToggle", {
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
-local detectionCircles = {}
+local rangeParts = {}
 local detectionRange = _G.AutoBlockPunch_Range or 18
 local killerCirclesVisible = false
 
@@ -1111,46 +1111,69 @@ local function isKillerModel(model)
     return isInKillers and not isFakeNoli
 end
 
--- ==================== CIRCLE ====================
-local function addKillerCircle(model)
+-- ==================== ADD RANGE PART ====================
+local function addRangePart(model)
     if not isKillerModel(model) then return end
     local hrp = model:FindFirstChild("HumanoidRootPart")
-    if not hrp or detectionCircles[model] then return end
+    if not hrp or rangeParts[model] then return end
 
-    local circle = Instance.new("CylinderHandleAdornment")
-    circle.Name = "KillerDetectionCircle"
-    circle.Adornee = hrp
-    circle.AlwaysOnTop = true
-    circle.ZIndex = 0
-    circle.Transparency = 0.3
-    circle.Color3 = Options.RangeCircleColor.Value or Color3.fromRGB(0,255,0)
-    circle.CFrame = CFrame.Angles(math.rad(90), 0, 0) * CFrame.new(0, -2, 0)
-    circle.Height = 0.1
-    circle.Radius = detectionRange / 2
-    circle.Parent = hrp
+    local part = Instance.new("Part")
+    part.Name = "RangePart"
+    part.Anchored = true
+    part.CanCollide = false
+    part.Transparency = 1
+    part.Size = Vector3.new(detectionRange, 1, detectionRange)
+    part.CFrame = hrp.CFrame * CFrame.new(0, -2, 0)
+    part.Parent = workspace
 
-    detectionCircles[model] = circle
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "RangeOutline"
+    highlight.Adornee = part
+    highlight.FillTransparency = 1
+    highlight.OutlineTransparency = 0
+    highlight.OutlineColor = Options.RangeCircleColor.Value or Color3.fromRGB(0,255,0)
+    highlight.Parent = part
+
+    rangeParts[model] = part
 end
 
-local function removeKillerCircle(model)
-    if detectionCircles[model] then
-        detectionCircles[model]:Destroy()
-        detectionCircles[model] = nil
+local function removeRangePart(model)
+    if rangeParts[model] then
+        rangeParts[model]:Destroy()
+        rangeParts[model] = nil
     end
 end
 
-local function refreshCircles()
-    for model, circle in pairs(detectionCircles) do
-        if not model.Parent then
-            removeKillerCircle(model)
+-- ==================== GUI Toggle + Color ====================
+Main1Group:AddToggle("ShowRange", {
+    Text = "Show Range",
+    Default = false,
+    Callback = function(state)
+        killerCirclesVisible = state
+        if not state then
+            for model, part in pairs(rangeParts) do
+                if part then part:Destroy() end
+            end
+            rangeParts = {}
+        else
+            for _, m in ipairs(workspace:GetChildren()) do
+                if isKillerModel(m) then
+                    addRangePart(m)
+                end
+            end
         end
     end
-    for _, m in ipairs(workspace:GetChildren()) do
-        if isKillerModel(m) then
-            addKillerCircle(m)
+})
+:AddColorPicker("RangeCircleColor", {
+    Default = Color3.fromRGB(0,255,0),
+    Transparency = 0,
+    Callback = function(color)
+        for _, part in pairs(rangeParts) do
+            local hl = part:FindFirstChild("RangeOutline")
+            if hl then hl.OutlineColor = color end
         end
     end
-end
+})
 
 -- ==================== Input chỉnh Range ====================
 Main1Group:AddInput("AutoBlockPunchRange", {
@@ -1168,43 +1191,22 @@ Main1Group:AddInput("AutoBlockPunchRange", {
         end
     end
 })
-				
--- ==================== GUI Toggle + Color ====================
-Main1Group:AddToggle("ShowRange", {
-    Text = "Show Range",
-    Default = false,
-    Callback = function(state)
-        killerCirclesVisible = state
-        if not state then
-            for model, circle in pairs(detectionCircles) do
-                if circle then circle:Destroy() end
-            end
-            detectionCircles = {}
-        else
-            refreshCircles()
-        end
-    end
-}):AddColorPicker("RangeCircleColor", {
-    Default = Color3.fromRGB(0,255,0),
-    Transparency = 0,
-    Callback = function(color)
-        for _, circle in pairs(detectionCircles) do
-            if circle and circle.Parent then
-                circle.Color3 = color
-            end
-        end
-    end
-})
-
 
 -- ==================== LOOP ====================
 RunService.RenderStepped:Connect(function()
     if not killerCirclesVisible then return end
     detectionRange = _G.AutoBlockPunch_Range or detectionRange
-    for model, circle in pairs(detectionCircles) do
-        if model.Parent and circle and circle.Parent then
-            circle.Radius = detectionRange / 2
-            circle.Color3 = Options.RangeCircleColor.Value or Color3.fromRGB(0,255,0)
+    for model, part in pairs(rangeParts) do
+        local hrp = model:FindFirstChild("HumanoidRootPart")
+        if model.Parent and hrp and part and part.Parent then
+            part.Size = Vector3.new(detectionRange, 1, detectionRange)
+            part.CFrame = hrp.CFrame * CFrame.new(0, -2, 0)
+            local hl = part:FindFirstChild("RangeOutline")
+            if hl then
+                hl.OutlineColor = Options.RangeCircleColor.Value or Color3.fromRGB(0,255,0)
+            end
+        else
+            removeRangePart(model)
         end
     end
 end)
@@ -1213,13 +1215,13 @@ end)
 workspace.ChildAdded:Connect(function(obj)
     if killerCirclesVisible and isKillerModel(obj) then
         task.delay(0.2, function()
-            addKillerCircle(obj)
+            addRangePart(obj)
         end)
     end
 end)
 
 workspace.ChildRemoved:Connect(function(obj)
-    removeKillerCircle(obj)
+    removeRangePart(obj)
 end)
 
 			end)
