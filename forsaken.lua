@@ -1094,8 +1094,66 @@ Main1Group:AddToggle("AutoPunchAimbotToggle", {
         _G.AutoPunchAimbot_Enabled = v  
     end  
 })  
+		task.spawn(function()
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
-		Main1Group:AddInput("AutoBlockPunchRange", {
+local detectionCircles = {}
+local detectionRange = _G.AutoBlockPunch_Range or 18
+local killerCirclesVisible = false
+
+-- ==================== CHECK ====================
+local function isKillerModel(model)
+    if not model or not model:IsA("Model") then return false end
+    local isInKillers = (model.Parent and model.Parent.Name == "Killers")
+    local isPlayer = (Players:GetPlayerFromCharacter(model) ~= nil)
+    local isFakeNoli = isInKillers and not isPlayer and model.Name:lower():find("noli")
+    return isInKillers and not isFakeNoli
+end
+
+-- ==================== CIRCLE ====================
+local function addKillerCircle(model)
+    if not isKillerModel(model) then return end
+    local hrp = model:FindFirstChild("HumanoidRootPart")
+    if not hrp or detectionCircles[model] then return end
+
+    local circle = Instance.new("CylinderHandleAdornment")
+    circle.Name = "KillerDetectionCircle"
+    circle.Adornee = hrp
+    circle.AlwaysOnTop = true
+    circle.ZIndex = 0
+    circle.Transparency = 0.3
+    circle.Color3 = Options.RangeCircleColor.Value or Color3.fromRGB(0,255,0)
+    circle.CFrame = CFrame.Angles(math.rad(90), 0, 0) * CFrame.new(0, -2, 0)
+    circle.Height = 0.1
+    circle.Radius = detectionRange / 2
+    circle.Parent = hrp
+
+    detectionCircles[model] = circle
+end
+
+local function removeKillerCircle(model)
+    if detectionCircles[model] then
+        detectionCircles[model]:Destroy()
+        detectionCircles[model] = nil
+    end
+end
+
+local function refreshCircles()
+    for model, circle in pairs(detectionCircles) do
+        if not model.Parent then
+            removeKillerCircle(model)
+        end
+    end
+    for _, m in ipairs(workspace:GetChildren()) do
+        if isKillerModel(m) then
+            addKillerCircle(m)
+        end
+    end
+end
+
+-- ==================== Input chỉnh Range ====================
+Main1Group:AddInput("AutoBlockPunchRange", {
     Default = tostring(_G.AutoBlockPunch_Range),
     Numeric = true,
     Text = "Detection Range",
@@ -1104,48 +1162,30 @@ Main1Group:AddToggle("AutoPunchAimbotToggle", {
         local num = tonumber(value)
         if num and num >= 5 and num <= 50 then
             _G.AutoBlockPunch_Range = num
-            if _G.ShowRangeEnabled then
-                updateAllCircleProps()
-            end
+            detectionRange = num
         else
             Library:Notify("Invalid range (5-50)", 5)
         end
     end
 })
-
-  task.spawn(function()
-				local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local KillersFolder = workspace:WaitForChild("Killers")
-
-local detectionCircles = {}
-local detectionRange = _G.AutoBlockPunch_Range or 18
-local killerCirclesVisible = false
-
--- === GUI Toggle + ColorPicker (Obsidian style) ===
+				
+-- ==================== GUI Toggle + Color ====================
 Main1Group:AddToggle("ShowRange", {
     Text = "Show Range",
     Default = false,
     Callback = function(state)
         killerCirclesVisible = state
         if not state then
-            -- clear all
-            for killer, circle in pairs(detectionCircles) do
+            for model, circle in pairs(detectionCircles) do
                 if circle then circle:Destroy() end
             end
             detectionCircles = {}
         else
-            -- refresh ngay khi bật
-            for _, killer in ipairs(KillersFolder:GetChildren()) do
-                local hrp = killer:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    addKillerCircle(killer)
-                end
-            end
+            refreshCircles()
         end
     end
 }):AddColorPicker("RangeCircleColor", {
-    Default = Color3.fromRGB(0, 255, 0),
+    Default = Color3.fromRGB(0,255,0),
     Transparency = 0,
     Callback = function(color)
         for _, circle in pairs(detectionCircles) do
@@ -1156,60 +1196,31 @@ Main1Group:AddToggle("ShowRange", {
     end
 })
 
--- === Circle logic ===
-local function addKillerCircle(killer)
-    if not killer:FindFirstChild("HumanoidRootPart") then return end
-    if detectionCircles[killer] then return end -- đã có rồi
 
-    local circle = Instance.new("CylinderHandleAdornment")
-    circle.Name = "KillerDetectionCircle"
-    circle.Adornee = killer.HumanoidRootPart
-    circle.AlwaysOnTop = true
-    circle.ZIndex = 0
-    circle.Transparency = 0.3
-    circle.Color3 = Toggles.RangeCircleColor.Value or Color3.fromRGB(0,255,0)
-    circle.CFrame = CFrame.Angles(math.rad(90), 0, 0) * CFrame.new(0, -2, 0)
-    circle.Height = 0.1
-    circle.Radius = detectionRange / 2 -- radius = range/2
-    circle.Parent = killer.HumanoidRootPart
-
-    detectionCircles[killer] = circle
-end
-
-local function removeKillerCircle(killer)
-    if detectionCircles[killer] then
-        detectionCircles[killer]:Destroy()
-        detectionCircles[killer] = nil
-    end
-end
-
--- === Update radius liên tục ===
+-- ==================== LOOP ====================
 RunService.RenderStepped:Connect(function()
     if not killerCirclesVisible then return end
     detectionRange = _G.AutoBlockPunch_Range or detectionRange
-    for killer, circle in pairs(detectionCircles) do
-        if killer.Parent and circle and circle.Parent then
+    for model, circle in pairs(detectionCircles) do
+        if model.Parent and circle and circle.Parent then
             circle.Radius = detectionRange / 2
+            circle.Color3 = Options.RangeCircleColor.Value or Color3.fromRGB(0,255,0)
         end
     end
 end)
 
--- === Hook Killer add/remove ===
-KillersFolder.ChildAdded:Connect(function(killer)
-    if killerCirclesVisible then
-        task.spawn(function()
-            local hrp = killer:WaitForChild("HumanoidRootPart", 5)
-            if hrp then
-                addKillerCircle(killer)
-            end
+-- ==================== HOOK thêm / xoá Killer ====================
+workspace.ChildAdded:Connect(function(obj)
+    if killerCirclesVisible and isKillerModel(obj) then
+        task.delay(0.2, function()
+            addKillerCircle(obj)
         end)
     end
 end)
 
-KillersFolder.ChildRemoved:Connect(function(killer)
-    removeKillerCircle(killer)
+workspace.ChildRemoved:Connect(function(obj)
+    removeKillerCircle(obj)
 end)
-
 
 			end)
 
