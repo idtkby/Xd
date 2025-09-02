@@ -1097,54 +1097,101 @@ Main1Group:AddToggle("AutoPunchAimbotToggle", {
 
 
   task.spawn(function()
-local Players = game:GetService("Players")
-local CoreGui = game:GetService("CoreGui")
+				local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local KillersFolder = workspace:WaitForChild("Killers")
 
--- clear circle
-local function clearAllRangeCircles()
-    for _, v in ipairs(CoreGui:GetChildren()) do
-        if v:IsA("CylinderHandleAdornment") and v.Name:find("_RangeCircle") then
-            v:Destroy()
+local detectionCircles = {}
+local detectionRange = _G.AutoBlockPunch_Range or 18
+local killerCirclesVisible = false
+
+-- === GUI Toggle + ColorPicker (Obsidian style) ===
+Main1Group:AddToggle("ShowRange", {
+    Text = "Show Range",
+    Default = false,
+    Callback = function(state)
+        killerCirclesVisible = state
+        if not state then
+            -- clear all
+            for killer, circle in pairs(detectionCircles) do
+                if circle then circle:Destroy() end
+            end
+            detectionCircles = {}
+        else
+            -- refresh ngay khi bật
+            for _, killer in ipairs(KillersFolder:GetChildren()) do
+                local hrp = killer:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    addKillerCircle(killer)
+                end
+            end
         end
     end
-end
-
--- update màu và size tất cả circle
-local function updateAllCircleProps()
-    for _, v in ipairs(CoreGui:GetChildren()) do
-        if v:IsA("CylinderHandleAdornment") and v.Name:find("_RangeCircle") then
-            v.Size = Vector3.new(_G.AutoBlockPunch_Range, 0.05, _G.AutoBlockPunch_Range)
-            v.Color3 = _G.RangeCircleColor or Color3.fromRGB(0,255,0)
+}):AddColorPicker("RangeCircleColor", {
+    Default = Color3.fromRGB(0, 255, 0),
+    Transparency = 0,
+    Callback = function(color)
+        for _, circle in pairs(detectionCircles) do
+            if circle and circle.Parent then
+                circle.Color3 = color
+            end
         end
     end
+})
+
+-- === Circle logic ===
+local function addKillerCircle(killer)
+    if not killer:FindFirstChild("HumanoidRootPart") then return end
+    if detectionCircles[killer] then return end -- đã có rồi
+
+    local circle = Instance.new("CylinderHandleAdornment")
+    circle.Name = "KillerDetectionCircle"
+    circle.Adornee = killer.HumanoidRootPart
+    circle.AlwaysOnTop = true
+    circle.ZIndex = 0
+    circle.Transparency = 0.3
+    circle.Color3 = Toggles.RangeCircleColor.Value or Color3.fromRGB(0,255,0)
+    circle.CFrame = CFrame.Angles(math.rad(90), 0, 0) * CFrame.new(0, -2, 0)
+    circle.Height = 0.1
+    circle.Radius = detectionRange / 2 -- radius = range/2
+    circle.Parent = killer.HumanoidRootPart
+
+    detectionCircles[killer] = circle
 end
 
--- tạo circle cho killer
-local function ensureRangeCircle(model)
-    local isInKillers = (model.Parent and model.Parent.Name == "Killers")
-    local isPlayer = (Players:GetPlayerFromCharacter(model) ~= nil)
-    local isFakeNoli = isInKillers and not isPlayer and model.Name:lower():find("noli")
-    if not (isInKillers and not isFakeNoli) then return end
-
-    local hrp = model:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-
-    local circle = hrp:FindFirstChild("RangeCircle")
-    if not circle then
-        circle = Instance.new("CylinderHandleAdornment")
-        circle.Name = "RangeCircle"
-        circle.Adornee = hrp
-        circle.AlwaysOnTop = true
-        circle.ZIndex = 0
-        circle.Color3 = _G.RangeCircleColor or Color3.fromRGB(0,255,0)
-        circle.Transparency = 0
-        circle.Parent = hrp -- ✅ parent vào BasePart
+local function removeKillerCircle(killer)
+    if detectionCircles[killer] then
+        detectionCircles[killer]:Destroy()
+        detectionCircles[killer] = nil
     end
-
-    circle.Size = Vector3.new(_G.AutoBlockPunch_Range, 0.05, _G.AutoBlockPunch_Range)
-    circle.CFrame = CFrame.new(0, -2, 0) * CFrame.Angles(math.rad(90), 0, 0)
-    circle.Color3 = _G.RangeCircleColor or Color3.fromRGB(0,255,0)
 end
+
+-- === Update radius liên tục ===
+RunService.RenderStepped:Connect(function()
+    if not killerCirclesVisible then return end
+    detectionRange = _G.AutoBlockPunch_Range or detectionRange
+    for killer, circle in pairs(detectionCircles) do
+        if killer.Parent and circle and circle.Parent then
+            circle.Radius = detectionRange / 2
+        end
+    end
+end)
+
+-- === Hook Killer add/remove ===
+KillersFolder.ChildAdded:Connect(function(killer)
+    if killerCirclesVisible then
+        task.spawn(function()
+            local hrp = killer:WaitForChild("HumanoidRootPart", 5)
+            if hrp then
+                addKillerCircle(killer)
+            end
+        end)
+    end
+end)
+
+KillersFolder.ChildRemoved:Connect(function(killer)
+    removeKillerCircle(killer)
+end)
 
 -- input chỉnh range
 Main1Group:AddInput("AutoBlockPunchRange", {
@@ -1161,40 +1208,6 @@ Main1Group:AddInput("AutoBlockPunchRange", {
             end
         else
             Library:Notify("Invalid range (5-50)", 5)
-        end
-    end
-})
-
--- toggle + colorpicker
-Main1Group:AddToggle("ShowRange", {
-    Text = "Show Range",
-    Default = false,
-    Callback = function(state)
-        _G.ShowRangeEnabled = state
-        if not state then
-            clearAllRangeCircles()
-            return
-        end
-
-        task.spawn(function()
-            while _G.ShowRangeEnabled do
-                task.wait(0.2)
-                local killers = workspace:FindFirstChild("Killers")
-                if killers then
-                    for _, m in ipairs(killers:GetChildren()) do
-                        ensureRangeCircle(m)
-                    end
-                end
-            end
-        end)
-    end
-}):AddColorPicker("RangeCircleColor", {
-    Default = Color3.fromRGB(0,255,0),
-    Transparency = 0,
-    Callback = function(color)
-        _G.RangeCircleColor = color
-        if _G.ShowRangeEnabled then
-            updateAllCircleProps()
         end
     end
 })
