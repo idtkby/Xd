@@ -31,7 +31,7 @@ local Window = Rayfield:CreateWindow({
       FileName = "Nyansaken Hub"
    },
    Discord = {
-      Enabled = false,
+      Enabled = true,
       Invite = "dsc.gg/nyansaken-hub",
       RememberJoins = true
    },
@@ -43,17 +43,14 @@ local Window = Rayfield:CreateWindow({
       FileName = "nyansakenkey", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
       SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
       GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
-      Key = {"HELLNAHMAN", "ARTISTDOOFUS", "ADMINYANCIEL", "PDKLLISCOOL", "FREESCHLEP", "CHANCEMS4", "GENSUPDATE"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+      Key = {"HELLNAHMAN", "ARTISTDOOFUS", "ADMINYANCIEL", "PDKLLISCOOL", "FREESCHLEP", "CHANCEMS4", "IgnahK Script Is Best", "GENSUPDATE"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
    }
 })
 
--- Helpers
-local detectionRange = 18
-local facingCheckEnabled = false
-local looseFacing = true
-local predictionValue = 4
+-- IDs.
 
-local autoBlockTriggerSounds = {
+-- Audio-based Auto Block IDs
+getgenv().autoBlockTriggerSounds = {
     ["102228729296384"] = true,
     ["140242176732868"] = true,
     ["112809109188560"] = true,
@@ -66,7 +63,60 @@ local autoBlockTriggerSounds = {
     ["95079963655241"] = true,
     ["101199185291628"] = true,
     ["119942598489800"] = true,
-    ["84307400688050"] = true
+    ["84307400688050"] = true,
+    ["113037804008732"] = true,
+    ["105200830849301"] = true,
+    ["75330693422988"] = true,
+    ["82221759983649"] = true,
+    ["81702359653578"] = true,
+    ["108610718831698"] = true,
+    ["112395455254818"] = true,
+    ["136323728355613"] = true,
+    ["81702359653578"] = true,
+    ["86174610237192"] = true,
+    ["95079963655241"] = true,
+    ["101199185291628"] = true,
+    ["109431876587852"] = true,
+    ["115026634746636"] = true,
+    ["119942598489800"] = true
+}
+
+-- Prevent repeated aim triggers for the same animation track
+getgenv().lastAimTrigger = {}   -- keys = AnimationTrack, value = timestamp when we triggered
+getgenv().AIM_WINDOW = 0.5      -- how long to aim (seconds)
+getgenv().AIM_COOLDOWN = 0.6    -- don't retrigger within this many seconds
+
+-- State Variables
+getgenv().autoBlockAudioOn = false
+getgenv().doubleblocktech = false
+getgenv().detectionRange = 18
+getgenv().predictionValue = 4
+
+getgenv().killerNames = {"c00lkidd", "Jason", "JohnDoe", "1x1x1x1", "Noli", "Slasher"}
+getgenv().autoPunchOn = false
+getgenv().aimPunch = false
+
+getgenv().KillersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
+
+getgenv().blockAnimIds = {
+    "72722244508749",
+    "96959123077498"
+}
+getgenv().punchAnimIds = {
+    "87259391926321",
+    "140703210927645",
+    "136007065400978",
+    "136007065400978",
+    "129843313690921",
+    "129843313690921",
+    "86709774283672",
+    "87259391926321",
+    "129843313690921",
+    "129843313690921",
+    "108807732150251",
+    "138040001965654",
+    "86096387000557",
+    "86096387000557"
 }
 
 -- Tabs
@@ -1046,6 +1096,13 @@ getgenv().AimbotConfig = getgenv().AimbotConfig or {}
 getgenv().AimbotConfig.Slash = getgenv().AimbotConfig.Slash or { Enabled = false, Smoothness = 1, Prediction = 0.25, Duration = 2 }
 getgenv().AimbotConfig.Shoot = getgenv().AimbotConfig.Shoot or { Enabled = false, Smoothness = 1, Prediction = 0.25, Duration = 1.5 }
 getgenv().AimbotConfig.TrueShoot = getgenv().AimbotConfig.TrueShoot or { Enabled = false, Smoothness = 1, Prediction = 0.6, Duration = 1.5 }
+getgenv().AimbotConfig = getgenv().AimbotConfig or {}
+getgenv().AimbotConfig["360Shoot"] = getgenv().AimbotConfig["360Shoot"] or {
+    Enabled = false,
+    Smoothness = 1,
+    Prediction = 0.3,
+    Duration = 1.5
+}
 getgenv().AimbotConfig.ThrowPizza = getgenv().AimbotConfig.ThrowPizza or { Enabled = false, Smoothness = 1, Prediction = 0.25, Duration = 1.5 }
 getgenv().AimbotConfig.Killers = getgenv().AimbotConfig.Killers or { Enabled = false, Duration = 3 }
 getgenv().AimbotConfig.SelectedSkills = getgenv().AimbotConfig.SelectedSkills or {
@@ -1127,7 +1184,7 @@ Aimbot:CreateSlider({
 })
 
 ------------------------------------------------
-Aimbot:CreateParagraph({Title = "True Shoot Aimbot", Content = "For Chance True Shoot Only"})
+Aimbot:CreateParagraph({Title = "True One Shot Aimbot", Content = "For Chance True One Shot Only"})
 
 Aimbot:CreateToggle({
     Name = "Aimbot True One Shot",
@@ -1159,6 +1216,41 @@ Aimbot:CreateSlider({
     Flag = "PredictionTrueShoot",
     Callback = function(Value)
         getgenv().AimbotConfig.TrueShoot.Prediction = Value
+    end,
+})
+
+Aimbot:CreateParagraph({Title = "360 One Shot Aimbot", Content = "For Chance 360 One Shot Only"})
+
+Aimbot:CreateToggle({
+    Name = "Aimbot 360 One Shot",
+    CurrentValue = getgenv().AimbotConfig["360Shoot"].Enabled,
+    Flag = "AutoAim360Shoot",
+    Callback = function(Value)
+        getgenv().AimbotConfig["360Shoot"].Enabled = Value
+    end,
+})
+
+Aimbot:CreateSlider({
+    Name = "Smoothness 360 One Shot",
+    Range = {0, 101},
+    Increment = 1,
+    Suffix = "ms",
+    CurrentValue = getgenv().AimbotConfig["360Shoot"].Smoothness * 100,
+    Flag = "Smoothness360Shoot",
+    Callback = function(Value)
+        getgenv().AimbotConfig["360Shoot"].Smoothness = Value / 100
+    end,
+})
+
+Aimbot:CreateSlider({
+    Name = "Prediction 360 One Shot",
+    Range = {0, 2},
+    Increment = 0.05,
+    Suffix = "s",
+    CurrentValue = getgenv().AimbotConfig["360Shoot"].Prediction,
+    Flag = "Prediction360Shoot",
+    Callback = function(Value)
+        getgenv().AimbotConfig["360Shoot"].Prediction = Value
     end,
 })
 
@@ -1270,6 +1362,44 @@ local function aimrootpart(target, duration, prediction, smoothness)
     end)
 end
 
+local function aimrootpart360(target, duration, prediction, smoothness)
+    local myChar = LocalPlayer.Character
+    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    if not target or not target.Character then return end
+    local root = target.Character:FindFirstChild("HumanoidRootPart")
+    local humanoid = target.Character:FindFirstChild("Humanoid")
+    if not root or not myRoot or not humanoid then return end
+    
+    -- Chỉ aim vào player có HP > 300
+    if humanoid.Health <= 300 then return end
+    local predictedPos = root.Position + (root.Velocity * prediction)
+    local targetCFrame = CFrame.lookAt(myRoot.Position, predictedPos)
+    myRoot.CFrame = myRoot.CFrame:Lerp(targetCFrame, math.clamp(smoothness, 0, 1))
+            
+    task.spawn(function()
+        -- Xoay 360° trong 0.4 giây
+        local spinDuration = 0.4
+        local spinStart = tick()
+        local initialCFrame = myRoot.CFrame
+
+        while tick() - spinStart < spinDuration and myRoot.Parent do
+            local alpha = (tick() - spinStart) / spinDuration
+            local angle = math.rad(360) * alpha
+            myRoot.CFrame = initialCFrame * CFrame.Angles(0, angle, 0)
+            task.wait()
+        end
+
+        -- Sau đó aim vào mục tiêu
+        local start = tick()
+        while tick() - start < duration and root.Parent and myRoot.Parent do
+            local predictedPos = root.Position + (root.Velocity * prediction)
+            local targetCFrame = CFrame.lookAt(myRoot.Position, predictedPos)
+            myRoot.CFrame = myRoot.CFrame:Lerp(targetCFrame, math.clamp(smoothness, 0, 1))
+            task.wait()
+        end
+    end)
+end
+
 -- Aimlock vào camera (dùng cho kỹ năng bắn xa)
 local function aimlock(target, duration, prediction, smoothness)
     local start = tick()
@@ -1326,8 +1456,19 @@ RemoteEvent.OnClientEvent:Connect(function(...)
                     aimlock(target, getgenv().AimbotConfig.TrueShoot.Duration, getgenv().AimbotConfig.TrueShoot.Prediction, getgenv().AimbotConfig.TrueShoot.Smoothness)
                 end
             end
-        end
-
+        
+if getgenv().AimbotConfig["360Shoot"].Enabled then
+    local target = getNearestTargetByMaxHP()
+    if target then
+        aimrootpart360(
+            target,
+            getgenv().AimbotConfig["360Shoot"].Duration,
+            getgenv().AimbotConfig["360Shoot"].Prediction,
+            getgenv().AimbotConfig["360Shoot"].Smoothness
+        )
+    end
+end
+end
         -- ThrowPizza
         if skill == "ThrowPizza" and getgenv().AimbotConfig.ThrowPizza.Enabled then
             local target = getNearestTargetByDistance()
@@ -1459,407 +1600,7 @@ task.spawn(function()
    end
 end)
 
-local char = Players.LocalPlayer.Character or Players.LocalPlayer.CharacterAdded:Wait()
 
-Players.LocalPlayer.CharacterAdded:Connect(function(v)
-	char = v
-end)
-
--- Khởi tạo genv biến toàn cục
-getgenv().Players = game:GetService("Players")
-getgenv().ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-getgenv().player = getgenv().Players.LocalPlayer
-getgenv().device = getgenv().player:GetAttribute("Device")
-
--- Nếu device là table, lấy phần tử đầu tiên
-if type(getgenv().device) == "table" then
-    getgenv().device = genv().device[1]
-end
-
-getgenv().device = tostring(getgenv().device or "PC") -- đảm bảo là string và có giá trị mặc định
-
--- Tạo section cho GUI
-Miscs:CreateSection("Device")
-
--- Tạo dropdown
-Miscs:CreateDropdown({
-    Name = "Spoof Device",
-    Options = {"PC", "Mobile", "Console"},
-    CurrentOption = getgenv().device,
-    MultipleOptions = false,
-    Callback = function(selectedOption)
-        local selected = selectedOption[1]
-        RemoteEvent:FireServer("SetDevice", selected)
-    end,
-})
-
-
-Miscs:CreateSection("Footsteps")
-Miscs:CreateToggle({
-    Name = "Anti Footsteps",
-    CurrentValue = false,
-    Flag = "AntiFootsteps",
-    Callback = function(value)
-		if value then
-			getgenv().HookFootstepPlayed(true)
-		else
-			getgenv().HookFootstepPlayed(false)
-        end
-    end,
-})
-
--- Dùng getgenv() để lưu biến toàn cục
-getgenv().Players = game:GetService("Players")
-getgenv().originalValues = {}
-getgenv().paths = {
-    "HideKillerWins",
-    "HidePlaytime",
-    "HideSurvivorWins"
-}
-getgenv().toggleState = false
-
--- Hàm lưu giá trị gốc của một player
-getgenv().saveOriginalValues = function(player)
-    if not getgenv().originalValues[player.UserId] then
-        getgenv().originalValues[player.UserId] = {}
-    end
-    for _, key in ipairs(getgenv().paths) do
-        local value = player:FindFirstChild("PlayerData")
-            and player.PlayerData:FindFirstChild("Settings")
-            and player.PlayerData.Settings:FindFirstChild("Privacy")
-            and player.PlayerData.Settings.Privacy:FindFirstChild(key)
-        if value then
-            getgenv().originalValues[player.UserId][key] = value.Value
-        end
-    end
-end
-
--- Hàm đặt tất cả value = false
-getgenv().setAllFalse = function(player)
-    for _, key in ipairs(getgenv().paths) do
-        local value = player:FindFirstChild("PlayerData")
-            and player.PlayerData:FindFirstChild("Settings")
-            and player.PlayerData.Settings:FindFirstChild("Privacy")
-            and player.PlayerData.Settings.Privacy:FindFirstChild(key)
-        if value then
-            value.Value = false
-        end
-    end
-end
-
--- Hàm khôi phục giá trị gốc
-getgenv().restoreValues = function(player)
-    if getgenv().originalValues[player.UserId] then
-        for key, val in pairs(getgenv().originalValues[player.UserId]) do
-            local value = player:FindFirstChild("PlayerData")
-                and player.PlayerData:FindFirstChild("Settings")
-                and player.PlayerData.Settings:FindFirstChild("Privacy")
-                and player.PlayerData.Settings.Privacy:FindFirstChild(key)
-            if value then
-                value.Value = val
-            end
-        end
-    end
-end
-
--- Hàm toggle
-getgenv().togglePrivacy = function(disable)
-    for _, player in ipairs(getgenv().Players:GetPlayers()) do
-        if disable then
-            getgenv().saveOriginalValues(player)
-            getgenv().setAllFalse(player)
-        else
-            getgenv().restoreValues(player)
-        end
-    end
-    getgenv().toggleState = disable
-end
-
--- Khi có player mới vào, nếu toggle đang bật thì set false luôn
-getgenv().Players.PlayerAdded:Connect(function(player)
-    if getgenv().toggleState == true then
-        getgenv().saveOriginalValues(player)
-        getgenv().setAllFalse(player)
-    end
-end)
-
-Miscs:CreateSection("Bright")
-
-getgenv().Lighting = game:GetService("Lighting")
-getgenv().RunService = game:GetService("RunService")
-
-getgenv().brightLoop = nil
-
-Miscs:CreateToggle({
-    Name = "Full Brightness",
-    CurrentValue = false,
-    Flag = "BrightToggle", 
-    Callback = function(Value)
-        if Value then
-            -- Bật chế độ sáng
-            getgenv().brightLoop = RunService.RenderStepped:Connect(function()
-                Lighting.Brightness = 2
-                Lighting.ClockTime = 14
-                Lighting.FogEnd = 100000
-                Lighting.GlobalShadows = false
-                Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
-
-                -- Xóa Atmosphere
-                for i,v in pairs(Lighting:GetDescendants()) do
-                    if v:IsA("Atmosphere") then
-                        v:Destroy()
-                    end
-                end
-            end)
-        else
-            -- Tắt chế độ sáng
-            if getgenv().brightLoop then
-                getgenv().brightLoop:Disconnect()
-                getgenv().brightLoop = nil
-            end
-            -- Reset Lighting về mặc định
-            Lighting.Brightness = 1
-            Lighting.ClockTime = 12
-            Lighting.FogEnd = 1000
-            Lighting.GlobalShadows = true
-            Lighting.OutdoorAmbient = Color3.fromRGB(0, 0, 0)
-        end
-    end,
-})
-
-Miscs:CreateSection("Stats")
-Miscs:CreateToggle({
-    Name = "Anti Hidden Stats",
-    CurrentValue = false,
-    Flag = "AntiHiddenStats",
-    Callback = function(value)
-		if value then
-			getgenv().togglePrivacy(true)
-		else
-			getgenv().togglePrivacy(false)
-        end
-    end,
-})
-
-Miscs:CreateSection("FOV")
-Miscs:CreateInput({
-    Name = "Input FOV",
-    PlaceholderText = "80", -- text gợi ý mặc định
-    RemoveTextAfterFocusLost = false,
-    Flag = "FOVInput",
-    Callback = function(thefoxtext)
-        -- chuyển chuỗi nhập thành số
-        local fovvalueinput = tonumber(thefoxtext)
-        if fovvalueinput then
-            game:GetService("ReplicatedStorage")
-                :WaitForChild("Modules")
-                :WaitForChild("Network")
-                :WaitForChild("RemoteEvent")
-                :FireServer(
-                    "UpdateSettings",
-                    game:GetService("Players").LocalPlayer
-                        :WaitForChild("PlayerData")
-                        :WaitForChild("Settings")
-                        :WaitForChild("Game")
-                        :WaitForChild("FieldOfView"),
-                    fovvalueinput
-                )
-        end
-    end,
-})
-
-Miscs:CreateSection("Items")
-
-local RoundTimer = ReplicatedStorage:WaitForChild("RoundTimer")
-local autoPickupEnabled = true
-
--- Check còn sống
-local function isAlive(char)
-	return char and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0
-end
-
--- Khi TimeLeft = 0
-local hasDropped = false
-RoundTimer:GetAttributeChangedSignal("TimeLeft"):Connect(function()
-	if not autoPickupEnabled or hasDropped then return end
-
-	local timeLeft = RoundTimer:GetAttribute("TimeLeft")
-	if timeLeft and timeLeft <= 0.2 then
-		local char = game:GetService("Players").LocalPlayer.Character
-		if not char then return end
-
-		-- Equip tất cả tool từ Backpack
-		for _, v in pairs(game:GetService("Players").LocalPlayer.Backpack:GetChildren()) do
-			if v:IsA("Tool") then
-				v.Parent = char
-			end
-		end
-		task.wait()
-
-		-- Drop tool ra workspace
-		for _, v in pairs(char:GetChildren()) do
-			if v:IsA("Tool") then
-				v.Parent = workspace
-			end
-		end
-
-		hasDropped = true
-	end
-end)
-
--- Auto Pickup Tool khi còn sống
-task.spawn(function()
-	while task.wait(1) do
-		local char = game:GetService("Players").LocalPlayer.Character
-		if autoPickupEnabled and isAlive(char) then
-			local mapIngame = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
-			if mapIngame then
-				for _, tool in ipairs(mapIngame:GetChildren()) do
-					if tool:IsA("Tool") then
-						char.Humanoid:EquipTool(tool)
-					end
-				end
-			end
-		end
-	end
-end)
-
-Miscs:CreateToggle({
-	Name = "Auto Pickup Drop Items (Working Ingame/Lobby)",
-	CurrentValue = false,
-	Flag = "AutoPickupTool",
-	Callback = function(Value)
-		autoPickupEnabled = Value
-	end,
-})
-
-_G.pickUpNear = false
-_G.pickUpAll = false
-
-local function autoPickUpLoop()
-    while task.wait(0.2) do
-        if not _G.pickUpNear and not _G.pickUpAll then break end
-
-        pcall(function()
-            local items = {}
-            for _, v in pairs(workspace.Map.Ingame:GetDescendants()) do
-                if v:IsA("Tool") then
-                    table.insert(items, v.ItemRoot)
-                end
-            end
-
-            for _, v in pairs(items) do
-                if _G.pickUpNear then
-                    local magnitude = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.Position).magnitude
-                    if magnitude <= 10 then
-                        fireproximityprompt(v.ProximityPrompt)
-                    end
-                end
-
-                if _G.pickUpAll then
-                    if not game.Players.LocalPlayer.Backpack:FindFirstChild(v.Parent.Name) then
-                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.CFrame
-                        task.wait(0.3)
-                        fireproximityprompt(v.ProximityPrompt)
-                    end
-                end
-            end
-        end)
-    end
-end
-
-Miscs:CreateToggle({
-    Name = "Auto Pick Up Near Items",
-    CurrentValue = false,
-    Flag = "AutoPickUpItems",
-    Callback = function(call)
-        _G.pickUpNear = call
-        if call then
-            task.spawn(autoPickUpLoop)
-        end
-    end,
-})
-
-Miscs:CreateToggle({
-    Name = "Auto Pick Up All Items",
-    CurrentValue = false,
-    Flag = "AutoPickUpAll",
-    Callback = function(call)
-        _G.pickUpAll = call
-        if call then
-            task.spawn(autoPickUpLoop)
-        end
-    end,
-})
-
--- === Section Creation ===
-Miscs:CreateSection("Invisibility")
-
-
--- === Animation Loop ===
-local animationId = "75804462760596"
-local animationSpeed = 0
-local loopRunning = false
-local loopThread
-local currentAnim = nil
-
-Miscs:CreateToggle({
-   Name = "Invisibility",
-   CurrentValue = false,
-   Flag = "ToggleAnimLoop",
-   Callback = function(Value)
-      loopRunning = Value
-
-      local speaker = Players.LocalPlayer
-      if not speaker or not speaker.Character then return end
-
-      local humanoid = speaker.Character:FindFirstChildOfClass("Humanoid")
-      if not humanoid or humanoid.RigType ~= Enum.HumanoidRigType.R6 then
-         Rayfield:Notify({
-            Title = "R6 Required",
-            Content = "This only works with R6 rig!",
-            Duration = 5
-         })
-         return
-      end
-
-      if Value then
-         loopThread = task.spawn(function()
-            while loopRunning do
-               local anim = Instance.new("Animation")
-               anim.AnimationId = "rbxassetid://" .. animationId
-               local loadedAnim = humanoid:LoadAnimation(anim)
-               currentAnim = loadedAnim
-               loadedAnim.Looped = false
-               loadedAnim:Play()
-               loadedAnim:AdjustSpeed(animationSpeed)
-               task.wait(0.000001)
-            end
-         end)
-      else
-         if loopThread then
-            loopRunning = false
-            task.cancel(loopThread)
-         end
-         if currentAnim then
-            currentAnim:Stop()
-            currentAnim = nil
-         end
-         local Humanoid = speaker.Character:FindFirstChildOfClass("Humanoid") or speaker.Character:FindFirstChildOfClass("AnimationController")
-         if Humanoid then
-            for _, v in pairs(Humanoid:GetPlayingAnimationTracks()) do
-               v:AdjustSpeed(100000)
-            end
-         end
-         local animateScript = speaker.Character:FindFirstChild("Animate")
-         if animateScript then
-            animateScript.Disabled = true
-            animateScript.Disabled = false
-         end
-      end
-   end,
-})
 
 local Survivors = workspace:WaitForChild("Players"):WaitForChild("Survivors")
 
@@ -1945,438 +1686,6 @@ for name, config in pairs(AntiSlowConfigs) do
         end
     })
 end
-
-getgenv().Players = game:GetService("Players")
-getgenv().MarketplaceService = game:GetService("MarketplaceService")
-getgenv().RunService = game:GetService("RunService")
-getgenv().player = getgenv().Players.LocalPlayer
-
--- Animation thay thế
-getgenv().replacementAnimations = {
-    idle = "rbxassetid://134624270247120",
-    walk = "rbxassetid://132377038617766",
-    run = "rbxassetid://115946474977409"
-}
-
-getgenv().animationNameCache = {}
-getgenv().currentTrack = nil
-getgenv().currentType = nil
-getgenv().toggleEnabled = false -- Biến toggle
-
--- Lấy tên animation từ AssetId
-getgenv().getAnimationNameFromId = function(assetId)
-    if getgenv().animationNameCache[assetId] then
-        return getgenv().animationNameCache[assetId]
-    end
-
-    local success, info = pcall(function()
-        return getgenv().MarketplaceService:GetProductInfo(assetId)
-    end)
-
-    if success and info and info.Name then
-        getgenv().animationNameCache[assetId] = info.Name
-        return info.Name
-    end
-
-    return nil
-end
-
--- Phát animation thay thế
-getgenv().playReplacementAnimation = function(animator, animType)
-    if getgenv().currentTrack then
-        getgenv().currentTrack:Stop()
-    end
-
-    local anim = Instance.new("Animation")
-    anim.AnimationId = getgenv().replacementAnimations[animType]
-    local track = animator:LoadAnimation(anim)
-    track.Priority = Enum.AnimationPriority.Movement
-    track:Play()
-
-    getgenv().currentTrack = track
-    getgenv().currentType = animType
-end
-
--- Thiết lập cho nhân vật
-getgenv().setupCharacter = function(char)
-    local humanoid = char:WaitForChild("Humanoid")
-    local animator = humanoid:FindFirstChildOfClass("Animator")
-    if not animator then
-        animator = Instance.new("Animator")
-        animator.Parent = humanoid
-    end
-
-    -- Cập nhật tốc độ animation theo WalkSpeed bằng Heartbeat
-    getgenv().RunService.Heartbeat:Connect(function()
-        if getgenv().toggleEnabled and getgenv().currentTrack then
-            if getgenv().currentType == "idle" then
-                getgenv().currentTrack:AdjustSpeed(1)
-            elseif getgenv().currentType == "walk" then
-                getgenv().currentTrack:AdjustSpeed(humanoid.WalkSpeed / 12)
-            elseif getgenv().currentType == "run" then
-                getgenv().currentTrack:AdjustSpeed(humanoid.WalkSpeed / 26)
-            end
-        end
-    end)
-
-    -- Thay thế animation khi phát
-    animator.AnimationPlayed:Connect(function(track)
-        if getgenv().toggleEnabled then
-            local animationId = track.Animation.AnimationId
-            local assetId = animationId:match("%d+")
-
-            if assetId then
-                local animName = getgenv().getAnimationNameFromId(tonumber(assetId))
-                if animName then
-                    local lowerName = animName:lower()
-
-                    if lowerName:find("idle") then
-                        track:Stop()
-                        getgenv().playReplacementAnimation(animator, "idle")
-                    elseif lowerName:find("walk") then
-                        track:Stop()
-                        getgenv().playReplacementAnimation(animator, "walk")
-                    elseif lowerName:find("run") then
-                        track:Stop()
-                        getgenv().playReplacementAnimation(animator, "run")
-                    end
-                end
-            end
-        end
-    end)
-end
-
--- Áp dụng khi nhân vật spawn
-if getgenv().player.Character then
-    getgenv().setupCharacter(getgenv().player.Character)
-end
-getgenv().player.CharacterAdded:Connect(getgenv().setupCharacter)
-
-Miscs:CreateSection("Animations")
-
-Miscs:CreateToggle({
-    Name = "Fake Injured Animations",
-    CurrentValue = false,
-    Flag = "CustomAnimationsToggle",
-    Callback = function(value)
-        getgenv().toggleEnabled = value
-        if not value and getgenv().currentTrack then
-            getgenv().currentTrack:Stop() -- Tắt animation khi toggle off
-        end
-    end
-})
-
-Miscs:CreateSection("1x1x1x1")
-
-Miscs:CreateToggle({
-    Name = "Auto Close 1x1x1x1 Popups",
-    CurrentValue = false,
-    Flag = "Toggle_1x1Popup",
-    Callback = function(Value)
-        DoLoop = Value
-        task.spawn(function()
-            local player = game:GetService("Players").LocalPlayer
-            local Survivors = workspace:WaitForChild("Players"):WaitForChild("Survivors")
-            while DoLoop and task.wait() do
-                -- Auto Close 1x1x1x1 Popups
-                local temp = player.PlayerGui:FindFirstChild("TemporaryUI")
-                if temp and temp:FindFirstChild("1x1x1x1Popup") then
-                    temp["1x1x1x1Popup"]:Destroy()
-                end
-
-                -- Anti-Slow SlowedStatus
-                for _, survivor in pairs(Survivors:GetChildren()) do
-                    if survivor:GetAttribute("Username") == player.Name then
-                        -- SpeedMultipliers
-                        local speedMultipliers = survivor:FindFirstChild("SpeedMultipliers")
-                        if speedMultipliers then
-                            local val = speedMultipliers:FindFirstChild("SlowedStatus")
-                            if val and val:IsA("NumberValue") then
-                                val.Value = 1
-                            end
-                        end
-                        -- FOVMultipliers
-                        local fovMultipliers = survivor:FindFirstChild("FOVMultipliers")
-                        if fovMultipliers then
-                            local val = fovMultipliers:FindFirstChild("SlowedStatus")
-                            if val and val:IsA("NumberValue") then
-                                val.Value = 1
-                            end
-                        end
-                    end
-                end
-            end
-        end)
-    end
-})
-
--- Services
-getgenv().SoundService = game:GetService("SoundService")
-getgenv().RunService = game:GetService("RunService")
-
--- Ensure folders exist
-local folderPath = "NyansakenHub/Assets"
-if not isfolder("NyansakenHub") then makefolder("NyansakenHub") end
-if not isfolder(folderPath) then makefolder(folderPath) end
-
--- Track list
-getgenv().tracks = {
-    ["None"] = "",
-    ["----------- UST -----------"] = nil,
-    ["A BRAVE SOUL (MS 4 Killer VS MS 4 Survivor)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/A%20BRAVE%20SOUL%20(MS%204%20Killer%20VS%20MS%204%20Survivor).mp3",
-    ["BEGGED (MS 4 Coolkidd vs MS 4 007n7)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/BEGGED%20(MS%204%20Coolkidd%20vs%20MS%204%20007n7).mp3",
-    ["DOOMSPIRE (HairyTwinkle VS Pedro.EXE)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/DOOMSPIRE%20-%20(HairyTwinkle%20VS%20Pedro.EXE).mp3",
-    ["ECLIPSE (xX4ce0fSpadesXx vs dragondudes3)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/ECLIPSE%20(xX4ce0fSpadesXx%20vs%20dragondudes3).mp3",
-    ["ERROR 264 (Noob Cosplay VS Yourself)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/ERROR%20264%20-%20(Noob%20Cosplay%20VS%20Yourself).mp3",
-    ["GODS SECOND COMING (NOLI VS. 007n7)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/GODS%20SECOND%20COMING%20(NOLI%20VS.%20007n7).mp3",
-    ["Entreat (Bluudude Vs 118o8)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Entreat%20(Bluudude%20Vs%20118o8).mp3",
-    ["Implore (Comic vs Savior)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Implore%20(Comic%20vs%20Savior)%20-%20YouTube.mp3",
-    ["Leftovers (Remix Vanity Jason Vs All)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Leftovers%20(Remix%20Vanity%20Jason%20Vs%20All).mp3",
-    ["ORDER UP (Elliot VS c00lkidd)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/ORDER%20UP%20-%20(Elliot%20VS%20c00lkidd).mp3",
-    ["PARADOX (Guest 666 Vs Guest 1337)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/PARADOX%20(Guest%20666%20Vs%20Guest%201337).mp3",
-    ["TRUE BEAUTY (PRETTYPRINCESS vs 226w6)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/TRUE%20BEAUTY%20(PRETTYPRINCESS%20vs%20226w6).mp3",
-    ["----------- Scrapped LMS -----------"] = nil,
-    ["THE DARKNESS IN YOUR HEART (Old 1x4 Vs Shedletsky)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/THE%20DARKNESS%20IN%20YOUR%20HEART%20(Old%201x4%20Vs%20Shedletsky).mp3",
-    ["MEET YOUR MAKING (c00lkidd ~ 1x4 Vs 007n7 ~ Shedletsky)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/MEET%20YOUR%20MAKING%20(c00lkidd%20~%201x4%20Vs%20007n7%20~%20Shedletsky).mp3",
-    ["A Creation Of Sorrow (Hacklord vs The Heartbroken)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/A%20Creation%20Of%20Sorrow%20(Hacklord%20vs%20The%20Heartbroken).mp3",
-    ["Debth (Natrasha Vs Mafioso)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Debth%20(Natrasha%20Vs%20Mafioso).mp3",
-    ["ETERNAL HOPE, ETERNAL FIGHT (Old LMS)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/ETERNAL%20HOPE,%20ETERNAL%20FIGHT%20(Old%20LMS).mp3",
-    ["Receading Lifespan (Barber Jason Vs Bald Two Time)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Receading%20Lifespan%20(Barber%20Jason%20Vs%20Bald%20Two%20Time).mp3",
-    ["VIP Jason LMS (VIP Jason Vs All)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/VIP%20Jason%20LMS%20(VIP%20Jason%20Vs%20All).mp3",
-    ["----------- Official LMS -----------"] = nil,
-    ["A GRAVE SOUL (NOW, RUN) [All Killers Vs All Survivors]"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/A%20GRAVE%20SOUL%20(NOW,%20RUN)%20%5BAll%20Killers%20Vs%20All%20Survivors%5D.mp3",
-    ["Plead (c00lkidd Vs 007n7)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Plead%20(c00lkidd%20Vs%20007n7).mp3",
-    ["SMILE (Cupcakes Vs All)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/SMILE%20(Cupcakes%20Vs%20All)%20.mp3",
-    ["Vanity (Vanity Jason Vs All)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Vanity%20(Vanity%20Jason%20Vs%20All).mp3",
-    ["Obsession (Gasharpoon Vs All)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Obsession%20(Gasharpoon%20Vs%20All).MP3",
-    ["Burnout (Diva Vs Ghoul)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Burnout%20(Diva%20Vs%20Ghoul).mp3",
-    ["Close To Me (Annihilation Vs Friend)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Close%20To%20Me%20(Annihilation%20Vs%20Friend).mp3",
-    ["Creation Of Hatred (1X4 Vs Shedletsky)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Creation%20Of%20Hatred%20(1X4%20Vs%20Shedletsky).mp3"
-}
-
--- Options giữ thứ tự gốc
-local options = {
-    "None",
-    "----------- UST -----------",
-    "A BRAVE SOUL (MS 4 Killer VS MS 4 Survivor)",
-    "BEGGED (MS 4 Coolkidd vs MS 4 007n7)",
-    "DOOMSPIRE (HairyTwinkle VS Pedro.EXE)",
-    "ECLIPSE (xX4ce0fSpadesXx vs dragondudes3)",
-    "ERROR 264 (Noob Cosplay VS Yourself)",
-    "GODS SECOND COMING (NOLI VS. 007n7)",
-    "Entreat (Bluudude Vs 118o8)",
-    "Implore (Comic vs Savior)",
-    "Leftovers (Remix Vanity Jason Vs All)",
-    "ORDER UP (Elliot VS c00lkidd)",
-    "PARADOX (Guest 666 Vs Guest 1337)",
-    "TRUE BEAUTY (PRETTYPRINCESS vs 226w6)",
-    "----------- Scrapped LMS -----------",
-    "THE DARKNESS IN YOUR HEART (Old 1x4 Vs Shedletsky)",
-    "MEET YOUR MAKING (c00lkidd ~ 1x4 Vs 007n7 ~ Shedletsky)",
-    "A Creation Of Sorrow (Hacklord vs The Heartbroken)",
-    "Debth (Natrasha Vs Mafioso)",
-    "ETERNAL HOPE, ETERNAL FIGHT (Old LMS)",
-    "Receading Lifespan (Barber Jason Vs Bald Two Time)",
-    "VIP Jason LMS (VIP Jason Vs All)",
-    "----------- Official LMS -----------",
-    "A GRAVE SOUL (NOW, RUN) [All Killers Vs All Survivors]",
-    "Plead (c00lkidd Vs 007n7)",
-    "SMILE (Cupcakes Vs All)",
-    "Vanity (Vanity Jason Vs All)",
-    "Obsession (Gasharpoon Vs All)",
-    "Burnout (Diva Vs Ghoul)",
-    "Close To Me (Annihilation Vs Friend)",
-    "Creation Of Hatred (1X4 Vs Shedletsky)"
-}
-
--- Globals
-getgenv().currentLastSurvivor = nil
-getgenv().currentSongId = nil
-getgenv().originalSongId = nil
-getgenv().isPlaying = false
-getgenv().songStartTime = 0
-getgenv().currentSongDuration = 0
-getgenv().isToggleOn = false
-
--- Download track function
-function downloadTrack(name, audioUrl)
-    local fullPath = folderPath .. "/" .. name:gsub("[^%w]", "_") .. ".mp3"
-
-    if not isfile(fullPath) then
-        local request = http_request or syn.request or request
-        if not request then error("Executor does not support HTTP requests.") end
-
-        local response = request({
-            Url = audioUrl,
-            Method = "GET",
-            Headers = {
-                ["User-Agent"] = "Mozilla/5.0",
-                ["Accept"] = "*/*"
-            }
-        })
-
-        -- Try BodyRaw if Body is empty
-        local fileData = response.Body
-        if (not fileData or #fileData == 0) and response.BodyRaw then
-            fileData = response.BodyRaw
-        end
-
-        if fileData and #fileData > 0 then
-            writefile(fullPath, fileData)
-        end
-    end
-
-    return fullPath
-end
-
--- Get LastSurvivor function
-function getLastSurvivor()
-    local theme = workspace:FindFirstChild("Themes")
-    if theme then
-        return theme:FindFirstChild("LastSurvivor")
-    end
-    return nil
-end
-
-function setLastSurvivorSong(songName)
-    local lastSurvivor = getLastSurvivor()
-    if not lastSurvivor then return end
-    local url = tracks[songName]
-    if not url then return end
-
-    local path = downloadTrack(songName, url)
-    local soundAsset = getcustomasset(path)
-
-    if getgenv().isToggleOn and not getgenv().originalSongId then
-        getgenv().originalSongId = lastSurvivor.SoundId
-    end
-
-    lastSurvivor.SoundId = soundAsset
-    lastSurvivor.Loaded:Wait()      -- <--- chờ Sound load xong
-    getgenv().currentSongDuration = lastSurvivor.TimeLength
-    lastSurvivor:Play()
-
-    getgenv().songStartTime = tick()
-    getgenv().isPlaying = true
-    getgenv().currentLastSurvivor = lastSurvivor
-end
-
-
--- GUI Section
-Miscs:CreateSection("Last Man Standing")
-
-Miscs:CreateToggle({
-    Name = "LMS Replacer Song",
-    CurrentValue = false,
-    Flag = "LMS_Toggle",
-    Callback = function(value)
-        getgenv().isToggleOn = value
-
-        local lastSurvivor = getLastSurvivor()
-        if not value then
-            -- Reset về bài hát gốc
-            if lastSurvivor and getgenv().originalSongId then
-                lastSurvivor.SoundId = getgenv().originalSongId
-                lastSurvivor:Play()
-            end
-            -- Reset globals
-            getgenv().currentLastSurvivor = nil
-            getgenv().currentSongId = nil
-            getgenv().originalSongId = nil
-            getgenv().isPlaying = false
-        end
-    end,
-})
-
--- Dropdown LMS song
-Miscs:CreateDropdown({
-    Name = "Custom LMS Song",
-    Options = options,
-    MultipleOptions = false,
-    Callback = function(selected)
-        if type(selected) == "table" then
-            getgenv().selectedSong = selected[1]
-        else
-            getgenv().selectedSong = selected
-        end
-
-    end,
-})
-
--- Heartbeat loop
-RunService.Heartbeat:Connect(function()
-    if getgenv().isToggleOn and not getgenv().isPlaying and getLastSurvivor() then
-        setLastSurvivorSong(getgenv().selectedSong)
-    elseif not getLastSurvivor() and getgenv().isPlaying then
-            getgenv().isPlaying = false
-        end
-
-    if getgenv().isPlaying and lastSurvivor then
-        if tick() - getgenv().songStartTime >= getgenv().currentSongDuration then
-            getgenv().isPlaying = false
-        end
-    end
-end)
-
--- Input box cho LMS custom
-Miscs:CreateInput({
-    Name = "Custom LMS Song URL",
-    PlaceholderText = "Raw Link MP3",
-    Callback = function(input)
-        if input and input ~= "" then
-            getgenv().customSongUrl = input
-
-            local lastSurvivor = getLastSurvivor()
-            if lastSurvivor and getgenv().isToggleOn then
-                -- Nếu toggle đang bật, set bài nhạc mới ngay lập tức
-                local path = downloadTrack("Custom_LMS_Song", getgenv().customSongUrl)
-                local soundAsset = getcustomasset(path)
-
-                if not getgenv().originalSongId then
-                    getgenv().originalSongId = lastSurvivor.SoundId
-                end
-
-                lastSurvivor.SoundId = soundAsset
-                lastSurvivor.Loaded:Wait()
-                lastSurvivor:Play()
-
-                getgenv().songStartTime = tick()
-                getgenv().currentSongDuration = lastSurvivor.TimeLength
-                getgenv().isPlaying = true
-                getgenv().currentLastSurvivor = lastSurvivor
-            end
-        end
-    end,
-})
-
--- Sử dụng getgenv() để lưu biến toàn cục
-getgenv().chatWindow = game:GetService("TextChatService"):WaitForChild("ChatWindowConfiguration")
-getgenv().chatEnabled = false
-getgenv().connection = nil
-
-Miscs:CreateSection("Chat")
-Miscs:CreateToggle({
-    Name = "Toggle Chat Visibility",
-    CurrentValue = false,
-    Flag = "ChatWindowToggle",
-    Callback = function(value)
-        getgenv().chatEnabled = value
-        if getgenv().chatEnabled then
-            -- Kết nối Heartbeat để bật liên tục
-            getgenv().connection = game:GetService("RunService").Heartbeat:Connect(function()
-                getgenv().chatWindow.Enabled = true
-            end)
-        else
-            -- Ngắt kết nối Heartbeat khi toggle tắt
-            if getgenv().connection then
-                getgenv().connection:Disconnect()
-                getgenv().connection = nil
-            end
-            -- Tắt chat window khi toggle off
-            getgenv().chatWindow.Enabled = false
-        end
-    end
-})
 
 -- Variables
 getgenv().Players = game:GetService("Players")
@@ -2553,6 +1862,44 @@ getgenv().HookFootstepPlayed = function(enable)
         getgenv().blockFootstepPlayed = true
     else
         getgenv().blockFootstepPlayed = false
+    end
+end
+
+-- Tạo hook chung, chặn theo tên remote và args[1]
+getgenv().setupRemoteHook = function(targetRemoteName, blockedFirstArg)
+    getgenv()["savedHook_" .. targetRemoteName] = hookmetamethod(game, "__namecall", function(self, ...)
+        local methodName = getnamecallmethod()
+        local arguments = {...}
+
+        -- Chặn nếu trùng remote và args[1] là blockedFirstArg
+        if self.Name == targetRemoteName and methodName == "FireServer" then
+            if arguments[1] == blockedFirstArg then
+                return -- chặn
+            end
+        end
+
+        return getgenv()["savedHook_" .. targetRemoteName](self, ...) -- gọi hook gốc
+    end)
+    return getgenv()["savedHook_" .. targetRemoteName]
+end
+
+-- Bật hook
+getgenv().activateRemoteHook = function(targetRemoteName, blockedFirstArg)
+    if not getgenv()["activeHook_" .. targetRemoteName] then
+        getgenv()["activeHook_" .. targetRemoteName] = getgenv().setupRemoteHook(targetRemoteName, blockedFirstArg)
+    end
+end
+
+-- Tắt hook
+getgenv().deactivateRemoteHook = function(targetRemoteName, blockedFirstArg)
+    local hookKey = "savedHook_" .. targetRemoteName
+    if getgenv()[hookKey] then
+        -- Phục hồi hook gốc
+        hookmetamethod(game, "__namecall", getgenv()[hookKey])
+
+        -- Xóa hook đã lưu
+        getgenv()[hookKey] = nil
+        getgenv()["activeHook_" .. targetRemoteName] = nil
     end
 end
 
@@ -2810,58 +2157,20 @@ Combat:CreateToggle({
     end
 })
 
---// Services
-local RNG = Random.new()
+-- // Full Hitbox Extender + Remote Hook with Prediction (Animation-Based Target)
 
---// Character references
-local Character = game:GetService("Players").LocalPlayer.Character or game:GetService("Players").LocalPlayer.CharacterAdded:Wait()
-local Humanoid = Character:WaitForChild("Humanoid")
-local Animator = Humanoid:WaitForChild("Animator")
-local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+-- Services
+getgenv().rs = game:GetService("RunService")
+getgenv().plrs = game:GetService("Players")
+getgenv().lp = getgenv().plrs.LocalPlayer
 
-game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function(char)
-	Character = char
-	Humanoid = char:WaitForChild("Humanoid")
-	Animator = Humanoid:WaitForChild("Animator")
-	HumanoidRootPart = char:WaitForChild("HumanoidRootPart")
-end)
+-- Settings
+getgenv().HitboxRange = 120
+getgenv().PredictionEnabled = true
+getgenv().PredictionTime = 0.3
+getgenv().emergency_stop = false
 
-Combat:CreateSection("Hitbox")
-
-Combat:CreateToggle({
-	Name = "Killers/Survivors Slient Aim (Work With Guest 1337, Shedletsky, And Crouch Stab Two Time)",
-	CurrentValue = false,
-	Callback = function(Value)
-		SlientAimHitbox = Value
-	end,
-})
-
-Combat:CreateInput({
-	Name = "Slient Aim Distance",
-	PlaceholderText = "120",
-	RemoveTextAfterFocusLost = false,
-	Callback = function(Value)
-		local num = tonumber(Value)
-		if num then
-			MaxRange = num
-		end
-	end,
-})
-
-getgenv().Players = game:GetService('Players')
-getgenv().Player = Players.LocalPlayer
-getgenv().Character = Player.Character or Player.CharacterAdded:Wait()
-getgenv().Humanoid = Character:WaitForChild("Humanoid")
-getgenv().HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-
-Player.CharacterAdded:Connect(function(NewCharacter)
-    Character = NewCharacter
-    Humanoid = Character:WaitForChild("Humanoid")
-    HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-end)
-
-getgenv().RNG = Random.new()
-
+-- Attack Animations for Killers (Closest)
 getgenv().AttackAnimations = {
     'rbxassetid://131430497821198', --// MassInfection, 1x1x1x1
 	'rbxassetid://83829782357897', --// Slash, 1x1x1x1
@@ -2872,52 +2181,6 @@ getgenv().AttackAnimations = {
 	'rbxassetid://127172483138092', --// CorruptEnergy, JohnDoe
 	'rbxassetid://18885919947', --// CorruptNature, c00lkidd
 	'rbxassetid://18885909645', --// Attack, c00lkidd
-	'rbxassetid://87259391926321', --// ParryPunch, Guest1337
-	'rbxassetid://106014898528300', --// Charge, Guest1337
-	'rbxassetid://87259391926321', --// Punch, Guest1337
-	'rbxassetid://86545133269813', --// Stab, TwoTime
-	'rbxassetid://89448354637442', --// LungeStart, TwoTime
-	'rbxassetid://90499469533503', --// GunFire, Chance
-	'rbxassetid://116618003477002', --// Slash, Shedletsky
-	'rbxassetid://106086955212611', --// Stab, TwoTime, Skin: PhilosopherTwotime
-	'rbxassetid://107640065977686', --// LungeStart, TwoTime, Skin: PhilosopherTwotime
-	'rbxassetid://77124578197357', --// GunFire, Chance, Skin: OutlawChance
-	'rbxassetid://101771617803133', --// GunFire, Chance, Skin: #CassidyChance
-	'rbxassetid://134958187822107', --// GunFire, Chance, Skin: RetroChance
-	'rbxassetid://111313169447787', --// GunFire, Chance, Skin: MLGChance
-	'rbxassetid://71685573690338', --// GunFire, Chance, Skin: Milestone100Chance
-	'rbxassetid://71685573690338', --// GunFire, Chance, Skin: Milestone75Chance
-	'rbxassetid://129843313690921', --// ParryPunch, Guest1337, Skin: #NerfedDemomanGuest
-	'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: #NerfedDemomanGuest
-	'rbxassetid://129843313690921', --// Punch, Guest1337, Skin: #NerfedDemomanGuest
-	'rbxassetid://136007065400978', --// ParryPunch, Guest1337, Skin: LittleBrotherGuest
-	'rbxassetid://136007065400978', --// Punch, Guest1337, Skin: LittleBrotherGuest
-	'rbxassetid://86096387000557', --// ParryPunch, Guest1337, Skin: Milestone100Guest
-	'rbxassetid://86096387000557', --// ParryPunch, Guest1337, Skin: Milestone75Guest
-	'rbxassetid://108807732150251', --// ParryPunch, Guest1337, Skin: GreenbeltGuest
-	'rbxassetid://138040001965654', --// Punch, Guest1337, Skin: GreenbeltGuest
-	'rbxassetid://73502073176819', --// Charge, Guest1337, Skin: GreenbeltGuest
-	'rbxassetid://129843313690921', --// ParryPunch, Guest1337, Skin: #DemomanGuest
-	'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: #DemomanGuest
-	'rbxassetid://129843313690921', --// Punch, Guest1337, Skin: #DemomanGuest
-	'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: GunnerGuest
-	'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: BobbyGuest
-	'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: !JuggernautGuest
-	'rbxassetid://86709774283672', --// ParryPunch, Guest1337, Skin: SorcererGuest
-	'rbxassetid://106014898528300', --// Charge, Guest1337, Skin: SorcererGuest
-	'rbxassetid://87259391926321', --// Punch, Guest1337, Skin: SorcererGuest
-	'rbxassetid://140703210927645', --// ParryPunch, Guest1337, Skin: DragonGuest
-	'rbxassetid://96173857867228', --// Charge, Guest1337, Skin: AllyGuest
-	'rbxassetid://121255898612475', --// Slash, Shedletsky, Skin: RetroShedletsky
-	'rbxassetid://98031287364865', --// Slash, Shedletsky, Skin: BrightEyesShedletsky
-	'rbxassetid://119462383658044', --// Slash, Shedletsky, Skin: NessShedletsky
-	'rbxassetid://77448521277146', --// Slash, Shedletsky, Skin: Milestone100Shedletsky
-	'rbxassetid://77448521277146', --// Slash, Shedletsky, Skin: Milestone75Shedletsky
-	'rbxassetid://103741352379819', --// Slash, Shedletsky, Skin: #RolandShedletsky
-	'rbxassetid://119462383658044', --// Slash, Shedletsky, Skin: HeartbrokenShedletsky
-	'rbxassetid://131696603025265', --// Slash, Shedletsky, Skin: JamesSunderlandShedletsky
-	'rbxassetid://122503338277352', --// Slash, Shedletsky, Skin: SkiesShedletsky
-	'rbxassetid://97648548303678', --// Slash, Shedletsky, Skin: #JohnWardShedletsky
 	'rbxassetid://94162446513587', --// Slash, JohnDoe, Skin: !Joner
 	'rbxassetid://84426150435898', --// CorruptEnergy, JohnDoe, Skin: !Joner
 	'rbxassetid://93069721274110', --// Slash, JohnDoe, Skin: AnnihilationJohnDoe
@@ -2979,65 +2242,242 @@ getgenv().AttackAnimations = {
     'rbxassetid://139835501033932', --// VoidRush, Noli, Skin: Robert
     'rbxassetid://139835501033932', --// VoidRush, Noli, Skin: Ephialtes
     'rbxassetid://139835501033932' --// VoidRush, Noli, Skin: Umbra
-
 }
 
-game:GetService('RunService').Heartbeat:Connect(function()
-    if not SlientAimHitbox or not HumanoidRootPart then
-        return
-    end
+-- Attack Animations for Survivors (MaxHP > 300)
+getgenv().SurvivorsAttackAnimations = {
+	'rbxassetid://87259391926321', --// ParryPunch, Guest1337
+	'rbxassetid://106014898528300', --// Charge, Guest1337
+	'rbxassetid://87259391926321', --// Punch, Guest1337
+	'rbxassetid://86545133269813', --// Stab, TwoTime
+	'rbxassetid://89448354637442', --// LungeStart, TwoTime
+	'rbxassetid://116618003477002', --// Slash, Shedletsky
+	'rbxassetid://106086955212611', --// Stab, TwoTime, Skin: PhilosopherTwotime
+	'rbxassetid://107640065977686', --// LungeStart, TwoTime, Skin: PhilosopherTwotime
+	'rbxassetid://129843313690921', --// ParryPunch, Guest1337, Skin: #NerfedDemomanGuest
+	'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: #NerfedDemomanGuest
+	'rbxassetid://129843313690921', --// Punch, Guest1337, Skin: #NerfedDemomanGuest
+	'rbxassetid://136007065400978', --// ParryPunch, Guest1337, Skin: LittleBrotherGuest
+	'rbxassetid://136007065400978', --// Punch, Guest1337, Skin: LittleBrotherGuest
+	'rbxassetid://86096387000557', --// ParryPunch, Guest1337, Skin: Milestone100Guest
+	'rbxassetid://86096387000557', --// ParryPunch, Guest1337, Skin: Milestone75Guest
+	'rbxassetid://108807732150251', --// ParryPunch, Guest1337, Skin: GreenbeltGuest
+	'rbxassetid://138040001965654', --// Punch, Guest1337, Skin: GreenbeltGuest
+	'rbxassetid://73502073176819', --// Charge, Guest1337, Skin: GreenbeltGuest
+	'rbxassetid://129843313690921', --// ParryPunch, Guest1337, Skin: #DemomanGuest
+        'rbxassetid://72722244508749', --// Block, Guest1337
+        'rbxassetid://96959123077498', --// Block, Guest1337, Skin: Milestone IV
+	'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: #DemomanGuest
+	'rbxassetid://129843313690921', --// Punch, Guest1337, Skin: #DemomanGuest
+	'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: GunnerGuest
+	'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: BobbyGuest
+	'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: !JuggernautGuest
+	'rbxassetid://86709774283672', --// ParryPunch, Guest1337, Skin: SorcererGuest
+	'rbxassetid://106014898528300', --// Charge, Guest1337, Skin: SorcererGuest
+	'rbxassetid://87259391926321', --// Punch, Guest1337, Skin: SorcererGuest
+	'rbxassetid://140703210927645', --// ParryPunch, Guest1337, Skin: DragonGuest
+	'rbxassetid://96173857867228', --// Charge, Guest1337, Skin: AllyGuest
+	'rbxassetid://121255898612475', --// Slash, Shedletsky, Skin: RetroShedletsky
+	'rbxassetid://98031287364865', --// Slash, Shedletsky, Skin: BrightEyesShedletsky
+	'rbxassetid://119462383658044', --// Slash, Shedletsky, Skin: NessShedletsky
+	'rbxassetid://77448521277146', --// Slash, Shedletsky, Skin: Milestone100Shedletsky
+	'rbxassetid://77448521277146', --// Slash, Shedletsky, Skin: Milestone75Shedletsky
+	'rbxassetid://103741352379819', --// Slash, Shedletsky, Skin: #RolandShedletsky
+	'rbxassetid://119462383658044', --// Slash, Shedletsky, Skin: HeartbrokenShedletsky
+	'rbxassetid://131696603025265', --// Slash, Shedletsky, Skin: JamesSunderlandShedletsky
+	'rbxassetid://122503338277352', --// Slash, Shedletsky, Skin: SkiesShedletsky
+	'rbxassetid://97648548303678' --// Slash, Shedletsky, Skin: #JohnWardShedletsky
+}
 
-    getgenv(). Playing = false
-    for _,v in Humanoid:GetPlayingAnimationTracks() do
-        if table.find(AttackAnimations, v.Animation.AnimationId) and (v.TimePosition / v.Length < 0.75) then
-            Playing = true
+-- Chuẩn hóa animation ID
+local function NormalizeAnimationTable(tbl)
+    local normalized = {}
+    for _, v in ipairs(tbl) do
+        local id = v:match("%d+")
+        if id then table.insert(normalized, id) end
+    end
+    return normalized
+end
+
+getgenv().NormalizedAttackAnimations = NormalizeAnimationTable(getgenv().AttackAnimations)
+getgenv().NormalizedSurvivorsAnimations = NormalizeAnimationTable(getgenv().SurvivorsAttackAnimations)
+
+-- Get closest Humanoid
+local function GetClosestHumanoidHRP(ignoreCharacter, range)
+    local closestHRP, closestDist = nil, math.huge
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("Humanoid") and obj.Health > 0 then
+            local targetHRP = obj.Parent:FindFirstChild("HumanoidRootPart")
+            if targetHRP and obj.Parent ~= ignoreCharacter then
+                local myHRP = ignoreCharacter:FindFirstChild("HumanoidRootPart")
+                if myHRP then
+                    local dist = (myHRP.Position - targetHRP.Position).Magnitude
+                    if dist <= range and dist < closestDist then
+                        closestDist = dist
+                        closestHRP = targetHRP
+                    end
+                end
+            end
         end
     end
+    return closestHRP
+end
 
-    if not Playing then
-        return
-    end
-
-    local Target
-    getgenv(). CurrentNearestDist = MaxRange
-
-    getgenv().loop = function(t)
-        for _,v in t do
-            if v == Character or not v:FindFirstChild("HumanoidRootPart") then
-                continue
-            end
-            getgenv(). Dist = (v.HumanoidRootPart.Position - HumanoidRootPart.Position).Magnitude
-            if Dist < CurrentNearestDist then
-                CurrentNearestDist = Dist
-                Target = v
+-- Get closest Humanoid with MaxHealth > 300
+local function GetClosestMaxHPHumanoidHRP(ignoreCharacter, range)
+    local closestHRP, closestDist = nil, math.huge
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("Humanoid") and obj.Health > 0 and obj.MaxHealth > 300 then
+            local targetHRP = obj.Parent:FindFirstChild("HumanoidRootPart")
+            if targetHRP and obj.Parent ~= ignoreCharacter then
+                local myHRP = ignoreCharacter:FindFirstChild("HumanoidRootPart")
+                if myHRP then
+                    local dist = (myHRP.Position - targetHRP.Position).Magnitude
+                    if dist <= range and dist < closestDist then
+                        closestDist = dist
+                        closestHRP = targetHRP
+                    end
+                end
             end
         end
     end
+    return closestHRP
+end
 
-    loop(workspace.Players:GetDescendants())
-    getgenv(). npcsFolder = workspace.Map:FindFirstChild("NPCs", true)
-    if npcsFolder then
-        loop(npcsFolder:GetChildren())
+-- Extend Hitbox with Prediction
+getgenv().ExtendHitbox = function(range)
+    getgenv().emergency_stop = false
+    local lp = getgenv().lp
+    local rs = getgenv().rs
+
+    -- Camera follow (optional)
+    local camConnection
+    camConnection = rs.RenderStepped:Connect(function()
+        if getgenv().emergency_stop then
+            if camConnection then camConnection:Disconnect() end
+            return
+        end
+
+        local char = lp.Character
+        if not char then return end
+        local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+        local head = char:FindFirstChild("Head")
+        if not (humanoid and head) then return end
+
+        for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
+            local animId = track.Animation and track.Animation.AnimationId:match("%d+")
+            if animId and (table.find(getgenv().NormalizedAttackAnimations, animId) or table.find(getgenv().NormalizedSurvivorsAnimations, animId)) and (track.TimePosition / track.Length < 0.75) then
+                workspace.Camera.CFrame = head.CFrame * CFrame.new(0,3,13)
+            end
+        end
+    end)
+
+    -- Heartbeat loop
+    while not getgenv().emergency_stop do
+        rs.Heartbeat:Wait()
+        local char = lp.Character
+        if not char then continue end
+        local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not (humanoid and hrp) then continue end
+
+        for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
+            local animId = track.Animation and track.Animation.AnimationId:match("%d+")
+            if animId and (track.TimePosition / track.Length < 0.75) then
+                local closestHRP = nil
+
+                if table.find(getgenv().NormalizedAttackAnimations, animId) then
+                    closestHRP = GetClosestHumanoidHRP(char, range)
+                elseif table.find(getgenv().NormalizedSurvivorsAnimations, animId) then
+                    closestHRP = GetClosestMaxHPHumanoidHRP(char, range)
+                end
+
+                if closestHRP then
+                    -- Debug
+                    print("Target found:", closestHRP.Parent.Name, "MaxHealth:", closestHRP.Parent:FindFirstChildWhichIsA("Humanoid").MaxHealth)
+
+                    -- Prediction
+                    local predictedPosition = closestHRP.Position
+                    if getgenv().PredictionEnabled then
+local humanoid = closestHRP.Parent:FindFirstChildWhichIsA("Humanoid")
+if humanoid then
+    local moveDir = humanoid.MoveDirection
+    predictedPosition = closestHRP.Position + moveDir * humanoid.WalkSpeed * getgenv().PredictionTime
+end
+                    end
+
+                    -- Lưu originalCFrame
+                    local originalCFrame = hrp.CFrame
+
+local originalCFrame = hrp.CFrame
+
+-- Số frame/giây muốn “tele” liên tục
+local teleportFrames = 3 -- có thể tăng nếu vẫn đơ
+for i = 1, teleportFrames do
+    hrp.CFrame = CFrame.new(predictedPosition)
+    rs.RenderStepped:Wait()
+end
+
+-- Reset về vị trí cũ
+hrp.CFrame = originalCFrame
+                end
+            end
+        end
     end
+end
 
-    if not Target then
-        return
+-- Stop extending hitbox
+getgenv().StopExtendingHitbox = function()
+    getgenv().emergency_stop = true
+end
+
+-- GUI
+Combat:CreateSection("Hitbox Settings")
+
+Combat:CreateToggle({
+    Name = "Silent Hitbox",
+    CurrentValue = false,
+    Callback = function(state)
+        if state then
+            task.spawn(function()
+                getgenv().ExtendHitbox(getgenv().HitboxRange)
+            end)
+        else
+            getgenv().StopExtendingHitbox()
+        end
     end
+})
 
-    getgenv(). OldVelocity = HumanoidRootPart.Velocity
-    getgenv(). NeededVelocity =
-    (Target.HumanoidRootPart.Position + Vector3.new(
-        RNG:NextNumber(-1.5, 1.5),
-        0,
-        RNG:NextNumber(-1.5, 1.5)
-    ) + (Target.HumanoidRootPart.Velocity * (Player:GetNetworkPing() * 1.25))
-        - HumanoidRootPart.Position
-    ) / (Player:GetNetworkPing() * 2)
+Combat:CreateInput({
+    Name = "Silent Hitbox Distance",
+    PlaceholderText = "120",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Value)
+        local num = tonumber(Value)
+        if num then
+            getgenv().HitboxRange = num
+        end
+    end
+})
 
-    HumanoidRootPart.Velocity = NeededVelocity
-    game:GetService('RunService').RenderStepped:Wait()
-    HumanoidRootPart.Velocity = OldVelocity
-end)
+Combat:CreateToggle({
+    Name = "Prediction Silent Hitbox",
+    CurrentValue = true,
+    Callback = function(state)
+        getgenv().PredictionEnabled = state
+    end
+})
+
+Combat:CreateInput({
+    Name = "Prediction (s)",
+    PlaceholderText = "0.3",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Value)
+        local num = tonumber(Value)
+        if num then getgenv().PredictionTime = num end
+    end
+})
+
 
 getgenv().Lighting = game:GetService("Lighting")
 getgenv().Workspace = game:GetService("Workspace")
@@ -3461,6 +2901,45 @@ game:GetService("RunService").RenderStepped:Connect(function()
     end
 end)
 
+
+
+-- ===== performance improvements for Sound Auto Block =====
+-- cached UI / refs
+getgenv().cachedPlayerGui = PlayerGui
+getgenv().cachedPunchBtn, getgenv().cachedBlockBtn, getgenv().cachedCharges, getgenv().cachedCooldown = nil, nil, nil, nil
+getgenv().detectionRangeSq = getgenv().detectionRange * getgenv().detectionRange
+
+getgenv().refreshUIRefs = function()
+    -- ensure we have the most up-to-date references for MainUI and ability buttons
+    getgenv().cachedPlayerGui = lp:FindFirstChild("PlayerGui") or PlayerGui
+    local main = getgenv().cachedPlayerGui and getgenv().cachedPlayerGui:FindFirstChild("MainUI")
+    if main then
+        local ability = main:FindFirstChild("AbilityContainer")
+        getgenv().cachedPunchBtn = ability and ability:FindFirstChild("Punch")
+        getgenv().cachedBlockBtn = ability and ability:FindFirstChild("Block")
+        getgenv().cachedCharges = getgenv().cachedPunchBtn and getgenv().cachedPunchBtn:FindFirstChild("Charges")
+        getgenv().cachedCooldown = getgenv().cachedBlockBtn and getgenv().cachedBlockBtn:FindFirstChild("CooldownTime")
+    else
+        getgenv().cachedPunchBtn, getgenv().cachedBlockBtn, getgenv().cachedCharges, getgenv().cachedCooldown = nil, nil, nil, nil
+    end
+end
+
+-- call once at startup
+getgenv().refreshUIRefs()
+
+-- refresh on GUI or character changes (keeps caches fresh)
+if getgenv().cachedPlayerGui then
+    getgenv().cachedPlayerGui.ChildAdded:Connect(function(child)
+        if child.Name == "MainUI" then
+            task.delay(0.02, getgenv().refreshUIRefs)
+        end
+    end)
+end
+
+lp.CharacterAdded:Connect(function()
+    task.delay(0.5, getgenv().refreshUIRefs)
+end)
+
 Combat:CreateSection("Guest 1337 -- Auto Block")
 
 Combat:CreateToggle({
@@ -3468,31 +2947,120 @@ Combat:CreateToggle({
     CurrentValue = false,
     Flag = "AutoBlockAudio",
     Callback = function(state)
-        autoBlockAudioOn = state
+        getgenv().autoBlockAudioOn = state
+    end,
+})
+
+Combat:CreateToggle({
+    Name = "Double Punch Tech",
+    CurrentValue = false,
+    Flag = "doubleblockTechtoggle",
+    Callback = function(state)
+        getgenv().doubleblocktech = state
     end,
 })
 
 Combat:CreateInput({
-Name = "Block Range",
-PlaceholderText = "18",
-RemoveTextAfterFocusLost = false,
-Callback = function(Text)
-detectionRange = tonumber(Text) or detectionRange
+    Name = "Block Range",
+    PlaceholderText = "18",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Text)
+        getgenv().detectionRange = tonumber(Text) or getgenv().detectionRange
+        getgenv().detectionRangeSq = getgenv().detectionRange * getgenv().detectionRange
+    end
+})
+
+getgenv().detectionCircles = {} -- store all killer circles
+getgenv().killerCirclesVisible = false
+
+-- Function to add circle to a killer
+getgenv().addKillerCircle = function(killer)
+    if not killer:FindFirstChild("HumanoidRootPart") then return end
+    if getgenv().detectionCircles[killer] then return end -- already has one
+
+    getgenv().circle = Instance.new("CylinderHandleAdornment")
+    getgenv().circle.Name = "KillerDetectionCircle"
+    getgenv().circle.Adornee = killer.HumanoidRootPart
+    getgenv().circle.Color3 = Color3.fromRGB(255, 0, 0) -- red
+    getgenv().circle.AlwaysOnTop = true
+    getgenv().circle.ZIndex = 0
+    getgenv().circle.Transparency = 0.7
+    getgenv().circle.Radius = getgenv().detectionRange / 1.5 -- diameter matches detectionRange
+    getgenv().circle.Height = 0.1 -- flat like a circle
+    getgenv().circle.CFrame = CFrame.Angles(math.rad(90), 0, 0) -- lay flat
+    getgenv().circle.Parent = killer.HumanoidRootPart
+
+    getgenv().detectionCircles[killer] = getgenv().circle
 end
+
+-- Function to remove circle from a killer
+getgenv().removeKillerCircle = function(killer)
+    if getgenv().detectionCircles[killer] then
+        getgenv().detectionCircles[killer]:Destroy()
+        getgenv().detectionCircles[killer] = nil
+    end
+end
+
+-- Refresh all circles
+getgenv().refreshKillerCircles = function()
+    for _, killer in ipairs(getgenv().KillersFolder:GetChildren()) do
+        if getgenv().killerCirclesVisible then
+            getgenv().addKillerCircle(killer)
+        else
+            getgenv().removeKillerCircle(killer)
+        end
+    end
+end
+
+-- Keep radius updated
+RunService.RenderStepped:Connect(function()
+    for killer, circle in pairs(getgenv().detectionCircles) do
+        if circle and circle.Parent then
+            circle.Radius = getgenv().detectionRange / 1.5
+        end
+    end
+end)
+
+-- Hook into killers being added/removed
+getgenv().KillersFolder.ChildAdded:Connect(function(killer)
+    if getgenv().killerCirclesVisible then
+        task.spawn(function()
+            -- Wait until HRP exists (max 5s timeout)
+            getgenv().hrp = killer:WaitForChild("HumanoidRootPart", 5)
+            if getgenv().hrp then
+                getgenv().addKillerCircle(killer)
+            end
+        end)
+    end
+end)
+
+getgenv().KillersFolder.ChildRemoved:Connect(function(killer)
+    getgenv().removeKillerCircle(killer)
+end)
+
+-- Rayfield toggle
+Combat:CreateToggle({
+    Name = "Range Visual",
+    CurrentValue = false,
+    Flag = "KillerCircleToggle",
+    Callback = function(state)
+        getgenv().killerCirclesVisible = state
+        getgenv().refreshKillerCircles()
+    end
 })
 
 Combat:CreateSection("Guest 1337 -- Auto Punch")
 
 Combat:CreateToggle({
-Name = "Auto Punch",
-CurrentValue = false,
-Callback = function(Value) autoPunchOn = Value end
+    Name = "Auto Punch",
+    CurrentValue = false,
+    Callback = function(Value) getgenv().autoPunchOn = Value end
 })
 
 Combat:CreateToggle({
-Name = "Punch Aimbot",
-CurrentValue = false,
-Callback = function(Value) aimPunch = Value end
+    Name = "Punch Aimbot",
+    CurrentValue = false,
+    Callback = function(Value) getgenv().aimPunch = Value end
 })
 
 Combat:CreateSlider({
@@ -3500,12 +3068,291 @@ Combat:CreateSlider({
     Range = {0, 10},
     Increment = 0.1,
     Suffix = "studs",
-    CurrentValue = predictionValue,
+    CurrentValue = getgenv().predictionValue,
     Flag = "PredictionSlider",
     Callback = function(Value)
-        predictionValue = Value
+        getgenv().predictionValue = Value
     end,
 })
+
+-- Helpers
+getgenv().fireRemoteBlock = function()
+    local args = {"UseActorAbility", "Block"}
+    ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+end
+
+getgenv().fireRemotePunch = function()
+    local args = {"UseActorAbility", "Punch"}
+    ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+end
+
+getgenv().cachedAnimator = nil
+getgenv().refreshAnimator = function()
+    local char = lp.Character
+    if not char then
+        getgenv().cachedAnimator = nil
+        return
+    end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if hum then
+        local anim = hum:FindFirstChildOfClass("Animator")
+        getgenv().cachedAnimator = anim or nil
+    else
+        getgenv().cachedAnimator = nil
+    end
+end
+
+lp.CharacterAdded:Connect(function(char)
+    task.wait(0.5) -- allow Humanoid/Animator to be created
+    getgenv().refreshAnimator()
+end)
+
+-- ===== Robust Sound Auto Block =====
+getgenv().soundHooks = {}     -- [Sound] = {playedConn, propConn, destroyConn}
+getgenv().soundBlockedUntil = {} -- [Sound] = timestamp when we can block again (throttle)
+
+getgenv().getNearestKillerRoot = function(maxDist)
+    local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+    if not killersFolder then return nil end
+
+    local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+    if not myRoot then return nil end
+
+    local closest, closestDist = nil, maxDist or math.huge
+    for _, killer in ipairs(killersFolder:GetChildren()) do
+        local hrp = killer:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            local dist = (hrp.Position - myRoot.Position).Magnitude
+            if dist < closestDist then
+                closest, closestDist = hrp, dist
+            end
+        end
+    end
+    return closest
+end
+
+getgenv().extractNumericSoundId = function(sound)
+    if not sound or not sound.SoundId then return nil end
+    local sid = tostring(sound.SoundId)
+
+    -- Prefer numeric id if present
+    local num = sid:match("%d+")
+    if num then return num end
+
+    -- Fallbacks (these won't match your numeric whitelist, but kept for completeness)
+    local hash = sid:match("[&%?]hash=([^&]+)")
+    if hash then return "&hash="..hash end
+    local path = sid:match("rbxasset://sounds/.+")
+    if path then return path end
+
+    return nil
+end
+
+getgenv().getSoundWorldPosition = function(sound)
+    if not sound then return nil end
+    if sound.Parent and sound.Parent:IsA("BasePart") then
+        return sound.Parent.Position, sound.Parent
+    end
+    if sound.Parent and sound.Parent:IsA("Attachment") and sound.Parent.Parent and sound.Parent.Parent:IsA("BasePart") then
+        return sound.Parent.Parent.Position, sound.Parent.Parent
+    end
+    local found = sound.Parent and sound.Parent:FindFirstChildWhichIsA("BasePart", true)
+    if found then
+        return found.Position, found
+    end
+    return nil, nil
+end
+
+getgenv().getCharacterFromDescendant = function(inst)
+    if not inst then return nil end
+    local model = inst:FindFirstAncestorOfClass("Model")
+    if model and model:FindFirstChildOfClass("Humanoid") then
+        return model
+    end
+    return nil
+end
+
+getgenv().attemptBlockForSound = function(sound)
+    if not getgenv().autoBlockAudioOn then return end
+    if not sound or not sound:IsA("Sound") then return end
+    if not sound.IsPlaying then return end
+
+    local id = getgenv().extractNumericSoundId(sound)
+    if not id or not getgenv().autoBlockTriggerSounds[id] then return end
+
+    local t = tick()
+    if getgenv().soundBlockedUntil[sound] and t < getgenv().soundBlockedUntil[sound] then return end
+
+    local myChar = lp.Character
+    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    if not myRoot then return end
+
+    local soundPos, soundPart = getgenv().getSoundWorldPosition(sound)
+    if not soundPos or not soundPart then return end
+
+    local char = getgenv().getCharacterFromDescendant(soundPart)
+    local plr = char and Players:GetPlayerFromCharacter(char)
+    if not plr or plr == lp then return end
+
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    local dvec = hrp.Position - myRoot.Position
+    local distSq = dvec.X * dvec.X + dvec.Y * dvec.Y + dvec.Z * dvec.Z
+    if distSq > getgenv().detectionRangeSq then return end
+
+    if getgenv().cachedCooldown and getgenv().cachedCooldown.Text ~= "" then return end
+
+    -- facing check (optional)
+    if facingCheckEnabled and not isFacing(myRoot, hrp) then return end
+
+    getgenv().fireRemoteBlock()
+
+    if getgenv().doubleblocktech and getgenv().cachedCharges and getgenv().cachedCharges.Text == "1" then
+        getgenv().fireRemotePunch()
+    end
+
+    getgenv().soundBlockedUntil[sound] = t + 1.2
+end
+
+getgenv().hookSound = function(sound)
+    if not sound or not sound:IsA("Sound") then return end
+    if getgenv().soundHooks[sound] then return end
+
+    local playedConn = sound.Played:Connect(function()
+        pcall(getgenv().attemptBlockForSound, sound)
+    end)
+
+    local propConn = sound:GetPropertyChangedSignal("IsPlaying"):Connect(function()
+        if sound.IsPlaying then
+            pcall(getgenv().attemptBlockForSound, sound)
+        end
+    end)
+
+    local destroyConn
+    destroyConn = sound.Destroying:Connect(function()
+        if playedConn and playedConn.Connected then playedConn:Disconnect() end
+        if propConn and propConn.Connected then propConn:Disconnect() end
+        if destroyConn and destroyConn.Connected then destroyConn:Disconnect() end
+        getgenv().soundHooks[sound] = nil
+        getgenv().soundBlockedUntil[sound] = nil
+    end)
+
+    getgenv().soundHooks[sound] = {playedConn, propConn, destroyConn}
+
+    if sound.IsPlaying then
+        task.spawn(function() pcall(getgenv().attemptBlockForSound, sound) end)
+    end
+end
+
+-- Hook existing Sounds
+for _, desc in ipairs(game:GetDescendants()) do
+    if desc:IsA("Sound") then
+        pcall(getgenv().hookSound, desc)
+    end
+end
+
+-- Hook future Sounds
+game.DescendantAdded:Connect(function(desc)
+    if desc:IsA("Sound") then
+        pcall(getgenv().hookSound, desc)
+    end
+end)
+
+-- Auto block + punch detection loop
+RunService.RenderStepped:Connect(function()
+    local gui = getgenv().cachedPlayerGui and getgenv().cachedPlayerGui:FindFirstChild("MainUI")
+    local punchBtn = gui and gui:FindFirstChild("AbilityContainer") and gui.AbilityContainer:FindFirstChild("Punch")
+    local charges = punchBtn and punchBtn:FindFirstChild("Charges")
+    local blockBtn = gui and gui:FindFirstChild("AbilityContainer") and gui.AbilityContainer:FindFirstChild("Block")
+    local cooldown = blockBtn and blockBtn:FindFirstChild("CooldownTime")
+
+    local myChar = lp.Character
+    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+
+    -- Auto Punch
+    if getgenv().autoPunchOn then
+        if charges and charges.Text == "1" then
+            for _, name in ipairs(getgenv().killerNames) do
+                local killer = workspace:FindFirstChild("Players")
+                    and workspace.Players:FindFirstChild("Killers")
+                    and workspace.Players.Killers:FindFirstChild(name)
+                if killer and killer:FindFirstChild("HumanoidRootPart") then
+                    local root = killer.HumanoidRootPart
+                    if root and myRoot and (root.Position - myRoot.Position).Magnitude <= 10 then
+                        -- Trigger punch GUI button
+                        for _, conn in ipairs(getconnections(punchBtn.MouseButton1Click)) do
+                            pcall(function()
+                                conn:Fire()
+                            end)
+                        end
+                        break -- Only punch one killer per frame
+                    end
+                end
+            end
+        end
+    end
+
+    -- Aim Punch
+    if getgenv().aimPunch then
+        if not getgenv().cachedAnimator then
+            getgenv().refreshAnimator()
+        end
+        local animator = getgenv().cachedAnimator
+        if animator and myRoot and myChar then
+            for _, name in ipairs(getgenv().killerNames) do
+                local killer = workspace:FindFirstChild("Players")
+                    and workspace.Players:FindFirstChild("Killers")
+                    and workspace.Players.Killers:FindFirstChild(name)
+                if killer and killer:FindFirstChild("HumanoidRootPart") then
+                    local root = killer.HumanoidRootPart
+
+                    for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+                        local animId = tostring(track.Animation.AnimationId):match("%d+")
+                        if table.find(getgenv().punchAnimIds, animId) or (getgenv().customPunchAnimId ~= "" and animId == tostring(getgenv().customPunchAnimId)) then
+                            -- Avoid retriggering within cooldown
+                            local last = getgenv().lastAimTrigger[track]
+                            if last and tick() - last < getgenv().AIM_COOLDOWN then
+                                -- skip
+                            else
+                                local timePos = 0
+                                pcall(function() timePos = track.TimePosition or 0 end)
+                                if timePos <= 0.1 then
+                                    -- Lock it
+                                    getgenv().lastAimTrigger[track] = tick()
+
+                                    local humanoid = myChar:FindFirstChild("Humanoid")
+                                    if humanoid then
+                                        humanoid.AutoRotate = false
+                                    end
+
+                                    task.spawn(function()
+                                        local start = tick()
+                                        while tick() - start < getgenv().AIM_WINDOW do
+                                            if myRoot and root and root.Parent then
+                                                local predictedPos = root.Position + (root.CFrame.LookVector * getgenv().predictionValue)
+                                                myRoot.CFrame = CFrame.lookAt(myRoot.Position, predictedPos)
+                                            end
+                                            task.wait()
+                                        end
+                                        if humanoid then
+                                            humanoid.AutoRotate = true
+                                        end
+
+                                        task.delay(getgenv().AIM_COOLDOWN - getgenv().AIM_WINDOW, function()
+                                            getgenv().lastAimTrigger[track] = nil
+                                        end)
+                                    end)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
 
 --== Persistent Storage ==--
 local savedRangeRaging = game:GetService("Players").LocalPlayer:FindFirstChild("RagingPaceRange")
@@ -3671,6 +3518,862 @@ Combat:CreateInput({
     end,
 })
 
+local char = Players.LocalPlayer.Character or Players.LocalPlayer.CharacterAdded:Wait()
+
+Players.LocalPlayer.CharacterAdded:Connect(function(v)
+	char = v
+end)
+
+-- Khởi tạo genv biến toàn cục
+getgenv().Players = game:GetService("Players")
+getgenv().ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+getgenv().player = getgenv().Players.LocalPlayer
+getgenv().device = getgenv().player:GetAttribute("Device")
+
+-- Nếu device là table, lấy phần tử đầu tiên
+if type(getgenv().device) == "table" then
+    getgenv().device = genv().device[1]
+end
+
+getgenv().device = tostring(getgenv().device or "PC") -- đảm bảo là string và có giá trị mặc định
+
+-- Tạo section cho GUI
+Miscs:CreateSection("Device")
+
+-- Tạo dropdown
+Miscs:CreateDropdown({
+    Name = "Spoof Device",
+    Options = {"PC", "Mobile", "Console"},
+    CurrentOption = getgenv().device,
+    MultipleOptions = false,
+    Callback = function(selectedOption)
+        local selected = selectedOption[1]
+        RemoteEvent:FireServer("SetDevice", selected)
+    end,
+})
+
+
+Miscs:CreateSection("Footsteps")
+Miscs:CreateToggle({
+    Name = "Anti Footsteps",
+    CurrentValue = false,
+    Flag = "AntiFootsteps",
+    Callback = function(value)
+		if value then
+			getgenv().HookFootstepPlayed(true)
+		else
+			getgenv().HookFootstepPlayed(false)
+        end
+    end,
+})
+
+-- Dùng getgenv() để lưu biến toàn cục
+getgenv().Players = game:GetService("Players")
+getgenv().originalValues = {}
+getgenv().paths = {
+    "HideKillerWins",
+    "HidePlaytime",
+    "HideSurvivorWins"
+}
+getgenv().toggleState = false
+
+-- Hàm lưu giá trị gốc của một player
+getgenv().saveOriginalValues = function(player)
+    if not getgenv().originalValues[player.UserId] then
+        getgenv().originalValues[player.UserId] = {}
+    end
+    for _, key in ipairs(getgenv().paths) do
+        local value = player:FindFirstChild("PlayerData")
+            and player.PlayerData:FindFirstChild("Settings")
+            and player.PlayerData.Settings:FindFirstChild("Privacy")
+            and player.PlayerData.Settings.Privacy:FindFirstChild(key)
+        if value then
+            getgenv().originalValues[player.UserId][key] = value.Value
+        end
+    end
+end
+
+-- Hàm đặt tất cả value = false
+getgenv().setAllFalse = function(player)
+    for _, key in ipairs(getgenv().paths) do
+        local value = player:FindFirstChild("PlayerData")
+            and player.PlayerData:FindFirstChild("Settings")
+            and player.PlayerData.Settings:FindFirstChild("Privacy")
+            and player.PlayerData.Settings.Privacy:FindFirstChild(key)
+        if value then
+            value.Value = false
+        end
+    end
+end
+
+-- Hàm khôi phục giá trị gốc
+getgenv().restoreValues = function(player)
+    if getgenv().originalValues[player.UserId] then
+        for key, val in pairs(getgenv().originalValues[player.UserId]) do
+            local value = player:FindFirstChild("PlayerData")
+                and player.PlayerData:FindFirstChild("Settings")
+                and player.PlayerData.Settings:FindFirstChild("Privacy")
+                and player.PlayerData.Settings.Privacy:FindFirstChild(key)
+            if value then
+                value.Value = val
+            end
+        end
+    end
+end
+
+-- Hàm toggle
+getgenv().togglePrivacy = function(disable)
+    for _, player in ipairs(getgenv().Players:GetPlayers()) do
+        if disable then
+            getgenv().saveOriginalValues(player)
+            getgenv().setAllFalse(player)
+        else
+            getgenv().restoreValues(player)
+        end
+    end
+    getgenv().toggleState = disable
+end
+
+-- Khi có player mới vào, nếu toggle đang bật thì set false luôn
+getgenv().Players.PlayerAdded:Connect(function(player)
+    if getgenv().toggleState == true then
+        getgenv().saveOriginalValues(player)
+        getgenv().setAllFalse(player)
+    end
+end)
+
+Miscs:CreateSection("Bright")
+
+getgenv().Lighting = game:GetService("Lighting")
+getgenv().RunService = game:GetService("RunService")
+
+getgenv().brightLoop = nil
+
+Miscs:CreateToggle({
+    Name = "Full Brightness",
+    CurrentValue = false,
+    Flag = "BrightToggle", 
+    Callback = function(Value)
+        if Value then
+            -- Bật chế độ sáng
+            getgenv().brightLoop = RunService.RenderStepped:Connect(function()
+                Lighting.Brightness = 2
+                Lighting.ClockTime = 14
+                Lighting.FogEnd = 100000
+                Lighting.GlobalShadows = false
+                Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+
+                -- Xóa Atmosphere
+                for i,v in pairs(Lighting:GetDescendants()) do
+                    if v:IsA("Atmosphere") then
+                        v:Destroy()
+                    end
+                end
+            end)
+        else
+            -- Tắt chế độ sáng
+            if getgenv().brightLoop then
+                getgenv().brightLoop:Disconnect()
+                getgenv().brightLoop = nil
+            end
+            -- Reset Lighting về mặc định
+            Lighting.Brightness = 1
+            Lighting.ClockTime = 12
+            Lighting.FogEnd = 1000
+            Lighting.GlobalShadows = true
+            Lighting.OutdoorAmbient = Color3.fromRGB(0, 0, 0)
+        end
+    end,
+})
+
+Miscs:CreateSection("Stats")
+Miscs:CreateToggle({
+    Name = "Anti Hidden Stats",
+    CurrentValue = false,
+    Flag = "AntiHiddenStats",
+    Callback = function(value)
+		if value then
+			getgenv().togglePrivacy(true)
+		else
+			getgenv().togglePrivacy(false)
+        end
+    end,
+})
+
+Miscs:CreateSection("FOV")
+Miscs:CreateInput({
+    Name = "Input FOV",
+    PlaceholderText = "80", -- text gợi ý mặc định
+    RemoveTextAfterFocusLost = false,
+    Flag = "FOVInput",
+    Callback = function(thefoxtext)
+        -- chuyển chuỗi nhập thành số
+        local fovvalueinput = tonumber(thefoxtext)
+        if fovvalueinput then
+            game:GetService("ReplicatedStorage")
+                :WaitForChild("Modules")
+                :WaitForChild("Network")
+                :WaitForChild("RemoteEvent")
+                :FireServer(
+                    "UpdateSettings",
+                    game:GetService("Players").LocalPlayer
+                        :WaitForChild("PlayerData")
+                        :WaitForChild("Settings")
+                        :WaitForChild("Game")
+                        :WaitForChild("FieldOfView"),
+                    fovvalueinput
+                )
+        end
+    end,
+})
+
+Miscs:CreateSection("Items")
+
+local RoundTimer = ReplicatedStorage:WaitForChild("RoundTimer")
+local autoPickupEnabled = true
+
+-- Check còn sống
+local function isAlive(char)
+	return char and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0
+end
+
+-- Khi TimeLeft = 0
+local hasDropped = false
+RoundTimer:GetAttributeChangedSignal("TimeLeft"):Connect(function()
+	if not autoPickupEnabled or hasDropped then return end
+
+	local timeLeft = RoundTimer:GetAttribute("TimeLeft")
+	if timeLeft and timeLeft <= 0.2 then
+		local char = game:GetService("Players").LocalPlayer.Character
+		if not char then return end
+
+		-- Equip tất cả tool từ Backpack
+		for _, v in pairs(game:GetService("Players").LocalPlayer.Backpack:GetChildren()) do
+			if v:IsA("Tool") then
+				v.Parent = char
+			end
+		end
+		task.wait()
+
+		-- Drop tool ra workspace
+		for _, v in pairs(char:GetChildren()) do
+			if v:IsA("Tool") then
+				v.Parent = workspace
+			end
+		end
+
+		hasDropped = true
+	end
+end)
+
+-- Auto Pickup Tool khi còn sống
+task.spawn(function()
+	while task.wait(1) do
+		local char = game:GetService("Players").LocalPlayer.Character
+		if autoPickupEnabled and isAlive(char) then
+			local mapIngame = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
+			if mapIngame then
+				for _, tool in ipairs(mapIngame:GetChildren()) do
+					if tool:IsA("Tool") then
+						char.Humanoid:EquipTool(tool)
+					end
+				end
+			end
+		end
+	end
+end)
+
+Miscs:CreateToggle({
+	Name = "Auto Pickup Drop Items (Working Ingame/Lobby)",
+	CurrentValue = false,
+	Flag = "AutoPickupTool",
+	Callback = function(Value)
+		autoPickupEnabled = Value
+	end,
+})
+
+_G.pickUpNear = false
+_G.pickUpAll = false
+
+local function autoPickUpLoop()
+    while task.wait(0.2) do
+        if not _G.pickUpNear and not _G.pickUpAll then break end
+
+        pcall(function()
+            local items = {}
+            for _, v in pairs(workspace.Map.Ingame:GetDescendants()) do
+                if v:IsA("Tool") then
+                    table.insert(items, v.ItemRoot)
+                end
+            end
+
+            for _, v in pairs(items) do
+                if _G.pickUpNear then
+                    local magnitude = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.Position).magnitude
+                    if magnitude <= 10 then
+                        fireproximityprompt(v.ProximityPrompt)
+                    end
+                end
+
+                if _G.pickUpAll then
+                    if not game.Players.LocalPlayer.Backpack:FindFirstChild(v.Parent.Name) then
+                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.CFrame
+                        task.wait(0.3)
+                        fireproximityprompt(v.ProximityPrompt)
+                    end
+                end
+            end
+        end)
+    end
+end
+
+Miscs:CreateToggle({
+    Name = "Auto Pick Up Near Items",
+    CurrentValue = false,
+    Flag = "AutoPickUpItems",
+    Callback = function(call)
+        _G.pickUpNear = call
+        if call then
+            task.spawn(autoPickUpLoop)
+        end
+    end,
+})
+
+Miscs:CreateToggle({
+    Name = "Auto Pick Up All Items",
+    CurrentValue = false,
+    Flag = "AutoPickUpAll",
+    Callback = function(call)
+        _G.pickUpAll = call
+        if call then
+            task.spawn(autoPickUpLoop)
+        end
+    end,
+})
+
+-- === Section Creation ===
+Miscs:CreateSection("Invisibility")
+
+
+-- === Animation Loop ===
+local animationId = "75804462760596"
+local animationSpeed = 0
+local loopRunning = false
+local loopThread
+local currentAnim = nil
+
+Miscs:CreateToggle({
+   Name = "Invisibility",
+   CurrentValue = false,
+   Flag = "ToggleAnimLoop",
+   Callback = function(Value)
+      loopRunning = Value
+
+      local speaker = Players.LocalPlayer
+      if not speaker or not speaker.Character then return end
+
+      local humanoid = speaker.Character:FindFirstChildOfClass("Humanoid")
+      if not humanoid or humanoid.RigType ~= Enum.HumanoidRigType.R6 then
+         Rayfield:Notify({
+            Title = "R6 Required",
+            Content = "This only works with R6 rig!",
+            Duration = 5
+         })
+         return
+      end
+
+      if Value then
+         loopThread = task.spawn(function()
+            while loopRunning do
+               local anim = Instance.new("Animation")
+               anim.AnimationId = "rbxassetid://" .. animationId
+               local loadedAnim = humanoid:LoadAnimation(anim)
+               currentAnim = loadedAnim
+               loadedAnim.Looped = false
+               loadedAnim:Play()
+               loadedAnim:AdjustSpeed(animationSpeed)
+               task.wait(0.000001)
+            end
+         end)
+      else
+         if loopThread then
+            loopRunning = false
+            task.cancel(loopThread)
+         end
+         if currentAnim then
+            currentAnim:Stop()
+            currentAnim = nil
+         end
+         local Humanoid = speaker.Character:FindFirstChildOfClass("Humanoid") or speaker.Character:FindFirstChildOfClass("AnimationController")
+         if Humanoid then
+            for _, v in pairs(Humanoid:GetPlayingAnimationTracks()) do
+               v:AdjustSpeed(100000)
+            end
+         end
+         local animateScript = speaker.Character:FindFirstChild("Animate")
+         if animateScript then
+            animateScript.Disabled = true
+            animateScript.Disabled = false
+         end
+      end
+   end,
+})
+
+Miscs:CreateToggle({
+    Name = "CFrame Invisibility {Before Round Begins} (OP)",
+    CurrentValue = false,
+    Callback = function(state)
+        if state then
+            getgenv().activateRemoteHook("UnreliableRemoteEvent", "UpdCF")
+        else
+            getgenv().deactivateRemoteHook("UnreliableRemoteEvent", "UpdCF")
+        end
+    end
+})
+
+getgenv().Players = game:GetService("Players")
+getgenv().MarketplaceService = game:GetService("MarketplaceService")
+getgenv().RunService = game:GetService("RunService")
+getgenv().player = getgenv().Players.LocalPlayer
+
+-- Animation thay thế
+getgenv().replacementAnimations = {
+    idle = "rbxassetid://134624270247120",
+    walk = "rbxassetid://132377038617766",
+    run = "rbxassetid://115946474977409"
+}
+
+getgenv().animationNameCache = {}
+getgenv().currentTrack = nil
+getgenv().currentType = nil
+getgenv().toggleEnabled = false -- Biến toggle
+
+-- Lấy tên animation từ AssetId
+getgenv().getAnimationNameFromId = function(assetId)
+    if getgenv().animationNameCache[assetId] then
+        return getgenv().animationNameCache[assetId]
+    end
+
+    local success, info = pcall(function()
+        return getgenv().MarketplaceService:GetProductInfo(assetId)
+    end)
+
+    if success and info and info.Name then
+        getgenv().animationNameCache[assetId] = info.Name
+        return info.Name
+    end
+
+    return nil
+end
+
+-- Phát animation thay thế
+getgenv().playReplacementAnimation = function(animator, animType)
+    if getgenv().currentTrack then
+        getgenv().currentTrack:Stop()
+    end
+
+    local anim = Instance.new("Animation")
+    anim.AnimationId = getgenv().replacementAnimations[animType]
+    local track = animator:LoadAnimation(anim)
+    track.Priority = Enum.AnimationPriority.Movement
+    track:Play()
+
+    getgenv().currentTrack = track
+    getgenv().currentType = animType
+end
+
+-- Thiết lập cho nhân vật
+getgenv().setupCharacter = function(char)
+    local humanoid = char:WaitForChild("Humanoid")
+    local animator = humanoid:FindFirstChildOfClass("Animator")
+    if not animator then
+        animator = Instance.new("Animator")
+        animator.Parent = humanoid
+    end
+
+    -- Cập nhật tốc độ animation theo WalkSpeed bằng Heartbeat
+    getgenv().RunService.Heartbeat:Connect(function()
+        if getgenv().toggleEnabled and getgenv().currentTrack then
+            if getgenv().currentType == "idle" then
+                getgenv().currentTrack:AdjustSpeed(1)
+            elseif getgenv().currentType == "walk" then
+                getgenv().currentTrack:AdjustSpeed(humanoid.WalkSpeed / 12)
+            elseif getgenv().currentType == "run" then
+                getgenv().currentTrack:AdjustSpeed(humanoid.WalkSpeed / 26)
+            end
+        end
+    end)
+
+    -- Thay thế animation khi phát
+    animator.AnimationPlayed:Connect(function(track)
+        if getgenv().toggleEnabled then
+            local animationId = track.Animation.AnimationId
+            local assetId = animationId:match("%d+")
+
+            if assetId then
+                local animName = getgenv().getAnimationNameFromId(tonumber(assetId))
+                if animName then
+                    local lowerName = animName:lower()
+
+                    if lowerName:find("idle") then
+                        track:Stop()
+                        getgenv().playReplacementAnimation(animator, "idle")
+                    elseif lowerName:find("walk") then
+                        track:Stop()
+                        getgenv().playReplacementAnimation(animator, "walk")
+                    elseif lowerName:find("run") then
+                        track:Stop()
+                        getgenv().playReplacementAnimation(animator, "run")
+                    end
+                end
+            end
+        end
+    end)
+end
+
+-- Áp dụng khi nhân vật spawn
+if getgenv().player.Character then
+    getgenv().setupCharacter(getgenv().player.Character)
+end
+getgenv().player.CharacterAdded:Connect(getgenv().setupCharacter)
+
+Miscs:CreateSection("Animations")
+
+Miscs:CreateToggle({
+    Name = "Fake Injured Animations",
+    CurrentValue = false,
+    Flag = "CustomAnimationsToggle",
+    Callback = function(value)
+        getgenv().toggleEnabled = value
+        if not value and getgenv().currentTrack then
+            getgenv().currentTrack:Stop() -- Tắt animation khi toggle off
+        end
+    end
+})
+
+Miscs:CreateSection("1x1x1x1")
+
+Miscs:CreateToggle({
+    Name = "Auto Close 1x1x1x1 Popups",
+    CurrentValue = false,
+    Flag = "Toggle_1x1Popup",
+    Callback = function(Value)
+        DoLoop = Value
+        task.spawn(function()
+            local player = game:GetService("Players").LocalPlayer
+            local Survivors = workspace:WaitForChild("Players"):WaitForChild("Survivors")
+            while DoLoop and task.wait() do
+                -- Auto Close 1x1x1x1 Popups
+                local temp = player.PlayerGui:FindFirstChild("TemporaryUI")
+                if temp and temp:FindFirstChild("1x1x1x1Popup") then
+                    temp["1x1x1x1Popup"]:Destroy()
+                end
+
+                -- Anti-Slow SlowedStatus
+                for _, survivor in pairs(Survivors:GetChildren()) do
+                    if survivor:GetAttribute("Username") == player.Name then
+                        -- SpeedMultipliers
+                        local speedMultipliers = survivor:FindFirstChild("SpeedMultipliers")
+                        if speedMultipliers then
+                            local val = speedMultipliers:FindFirstChild("SlowedStatus")
+                            if val and val:IsA("NumberValue") then
+                                val.Value = 1
+                            end
+                        end
+                        -- FOVMultipliers
+                        local fovMultipliers = survivor:FindFirstChild("FOVMultipliers")
+                        if fovMultipliers then
+                            local val = fovMultipliers:FindFirstChild("SlowedStatus")
+                            if val and val:IsA("NumberValue") then
+                                val.Value = 1
+                            end
+                        end
+                    end
+                end
+            end
+        end)
+    end
+})
+
+-- Services
+getgenv().SoundService = game:GetService("SoundService")
+getgenv().RunService = game:GetService("RunService")
+
+-- Ensure folders exist
+local folderPath = "NyansakenHub/Assets"
+if not isfolder("NyansakenHub") then makefolder("NyansakenHub") end
+if not isfolder(folderPath) then makefolder(folderPath) end
+
+-- Track list
+getgenv().tracks = {
+    ["None"] = "",
+    ["----------- UST -----------"] = nil,
+    ["A BRAVE SOUL (MS 4 Killer VS MS 4 Survivor)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/A%20BRAVE%20SOUL%20(MS%204%20Killer%20VS%20MS%204%20Survivor).mp3",
+    ["BEGGED (MS 4 Coolkidd vs MS 4 007n7)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/BEGGED%20(MS%204%20Coolkidd%20vs%20MS%204%20007n7).mp3",
+    ["DOOMSPIRE (HairyTwinkle VS Pedro.EXE)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/DOOMSPIRE%20-%20(HairyTwinkle%20VS%20Pedro.EXE).mp3",
+    ["ECLIPSE (xX4ce0fSpadesXx vs dragondudes3)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/ECLIPSE%20(xX4ce0fSpadesXx%20vs%20dragondudes3).mp3",
+    ["ERROR 264 (Noob Cosplay VS Yourself)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/ERROR%20264%20-%20(Noob%20Cosplay%20VS%20Yourself).mp3",
+    ["GODS SECOND COMING (NOLI VS. 007n7)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/GODS%20SECOND%20COMING%20(NOLI%20VS.%20007n7).mp3",
+    ["Entreat (Bluudude Vs 118o8)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Entreat%20(Bluudude%20Vs%20118o8).mp3",
+    ["Implore (Comic vs Savior)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Implore%20(Comic%20vs%20Savior)%20-%20YouTube.mp3",
+    ["Leftovers (Remix Vanity Jason Vs All)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Leftovers%20(Remix%20Vanity%20Jason%20Vs%20All).mp3",
+    ["ORDER UP (Elliot VS c00lkidd)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/ORDER%20UP%20-%20(Elliot%20VS%20c00lkidd).mp3",
+    ["PARADOX (Guest 666 Vs Guest 1337)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/PARADOX%20(Guest%20666%20Vs%20Guest%201337).mp3",
+    ["TRUE BEAUTY (PRETTYPRINCESS vs 226w6)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/TRUE%20BEAUTY%20(PRETTYPRINCESS%20vs%20226w6).mp3",
+    ["Fall of a Hero (SLASHER vs GUEST 1337)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/%5BSLASHER%20vs%20GUEST%201337%20-%20LAST%20MAN%20STANDING%5D%20Fall%20of%20a%20Hero%20-%20Forsaken%20UST.mp3",
+    ["21ST CENTURY HUMOR (MLG Chance vs Hood Irony Whistle Occurrence)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/21ST%20CENTURY%20HUMOR%20-%20Last%20Man%20Standing%20(MLG%20Chance%20vs%20Hood%20Irony%20Whistle%20Occurrence)%20%20Forsaken%20UST.mp3",
+    ["SHATTERED GRACE (GR1MX 1x1x1x1 vs. ANGEL SHEDLETSKY)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/SHATTERED%20GRACE%20%5BGR1MX%201x1x1x1%20vs.%20ANGEL%20SHEDLETSKY%20LAST%20MAN%20STANDING%5D%20(Roblox%20Forsaken%20UST).mp3",
+    ["----------- Scrapped LMS -----------"] = nil,
+    ["THE DARKNESS IN YOUR HEART (Old 1x4 Vs Shedletsky)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/THE%20DARKNESS%20IN%20YOUR%20HEART%20(Old%201x4%20Vs%20Shedletsky).mp3",
+    ["MEET YOUR MAKING (c00lkidd ~ 1x4 Vs 007n7 ~ Shedletsky)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/MEET%20YOUR%20MAKING%20(c00lkidd%20~%201x4%20Vs%20007n7%20~%20Shedletsky).mp3",
+    ["A Creation Of Sorrow (Hacklord vs The Heartbroken)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/A%20Creation%20Of%20Sorrow%20(Hacklord%20vs%20The%20Heartbroken).mp3",
+    ["Debth (Natrasha Vs Mafioso)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Debth%20(Natrasha%20Vs%20Mafioso).mp3",
+    ["ETERNAL HOPE, ETERNAL FIGHT (Old LMS)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/ETERNAL%20HOPE,%20ETERNAL%20FIGHT%20(Old%20LMS).mp3",
+    ["Receading Lifespan (Barber Jason Vs Bald Two Time)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Receading%20Lifespan%20(Barber%20Jason%20Vs%20Bald%20Two%20Time).mp3",
+    ["VIP Jason LMS (VIP Jason Vs All)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/VIP%20Jason%20LMS%20(VIP%20Jason%20Vs%20All).mp3",
+    ["Jason Hate This Song"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/California%20Gurls%20%20Audio%20Edit%20-%20Neonick.mp3",
+    ["----------- Official LMS -----------"] = nil,
+    ["A GRAVE SOUL (NOW, RUN) [All Killers Vs All Survivors]"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/A%20GRAVE%20SOUL%20(NOW,%20RUN)%20%5BAll%20Killers%20Vs%20All%20Survivors%5D.mp3",
+    ["Plead (c00lkidd Vs 007n7)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Plead%20(c00lkidd%20Vs%20007n7).mp3",
+    ["SMILE (Cupcakes Vs All)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/SMILE%20(Cupcakes%20Vs%20All)%20.mp3",
+    ["Vanity (Vanity Jason Vs All)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Vanity%20(Vanity%20Jason%20Vs%20All).mp3",
+    ["Obsession (Gasharpoon Vs All)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Obsession%20(Gasharpoon%20Vs%20All).MP3",
+    ["Burnout (Diva Vs Ghoul)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Burnout%20(Diva%20Vs%20Ghoul).mp3",
+    ["Close To Me (Annihilation Vs Friend)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Close%20To%20Me%20(Annihilation%20Vs%20Friend).mp3",
+    ["Creation Of Hatred (1X4 Vs Shedletsky)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Creation%20Of%20Hatred%20(1X4%20Vs%20Shedletsky).mp3",
+    ["Through Patches of Violet (Hacklord vs The Heartbroken)"] = "https://github.com/NyansakenHub/NyansakenHub/raw/refs/heads/main/Through%20Patches%20of%20Violet%20(Hacklord%20vs%20The%20Heartbroken).mp3"
+}
+
+-- Options giữ thứ tự gốc
+local options = {
+    "None",
+    "----------- UST -----------",
+    "A BRAVE SOUL (MS 4 Killer VS MS 4 Survivor)",
+    "BEGGED (MS 4 Coolkidd vs MS 4 007n7)",
+    "DOOMSPIRE (HairyTwinkle VS Pedro.EXE)",
+    "ECLIPSE (xX4ce0fSpadesXx vs dragondudes3)",
+    "ERROR 264 (Noob Cosplay VS Yourself)",
+    "GODS SECOND COMING (NOLI VS. 007n7)",
+    "Entreat (Bluudude Vs 118o8)",
+    "Implore (Comic vs Savior)",
+    "Leftovers (Remix Vanity Jason Vs All)",
+    "ORDER UP (Elliot VS c00lkidd)",
+    "PARADOX (Guest 666 Vs Guest 1337)",
+    "TRUE BEAUTY (PRETTYPRINCESS vs 226w6)",
+    "Fall of a Hero (SLASHER vs GUEST 1337)",
+    "21ST CENTURY HUMOR (MLG Chance vs Hood Irony Whistle Occurrence)",
+    "SHATTERED GRACE (GR1MX 1x1x1x1 vs. ANGEL SHEDLETSKY)",
+    "----------- Scrapped LMS -----------",
+    "THE DARKNESS IN YOUR HEART (Old 1x4 Vs Shedletsky)",
+    "MEET YOUR MAKING (c00lkidd ~ 1x4 Vs 007n7 ~ Shedletsky)",
+    "A Creation Of Sorrow (Hacklord vs The Heartbroken)",
+    "Debth (Natrasha Vs Mafioso)",
+    "ETERNAL HOPE, ETERNAL FIGHT (Old LMS)",
+    "Receading Lifespan (Barber Jason Vs Bald Two Time)",
+    "VIP Jason LMS (VIP Jason Vs All)",
+    "Jason Hate This Song",
+    "----------- Official LMS -----------",
+    "A GRAVE SOUL (NOW, RUN) [All Killers Vs All Survivors]",
+    "Plead (c00lkidd Vs 007n7)",
+    "SMILE (Cupcakes Vs All)",
+    "Vanity (Vanity Jason Vs All)",
+    "Obsession (Gasharpoon Vs All)",
+    "Burnout (Diva Vs Ghoul)",
+    "Close To Me (Annihilation Vs Friend)",
+    "Creation Of Hatred (1X4 Vs Shedletsky)",
+    "Through Patches of Violet (Hacklord vs The Heartbroken)"
+}
+
+-- Globals
+getgenv().currentLastSurvivor = nil
+getgenv().currentSongId = nil
+getgenv().originalSongId = nil
+getgenv().isPlaying = false
+getgenv().songStartTime = 0
+getgenv().currentSongDuration = 0
+getgenv().isToggleOn = false
+
+-- Download track function
+function downloadTrack(name, audioUrl)
+    local fullPath = folderPath .. "/" .. name:gsub("[^%w]", "_") .. ".mp3"
+
+    if not isfile(fullPath) then
+        local request = http_request or syn.request or request
+        if not request then error("Executor does not support HTTP requests.") end
+
+        local response = request({
+            Url = audioUrl,
+            Method = "GET",
+            Headers = {
+                ["User-Agent"] = "Mozilla/5.0",
+                ["Accept"] = "*/*"
+            }
+        })
+
+        -- Try BodyRaw if Body is empty
+        local fileData = response.Body
+        if (not fileData or #fileData == 0) and response.BodyRaw then
+            fileData = response.BodyRaw
+        end
+
+        if fileData and #fileData > 0 then
+            writefile(fullPath, fileData)
+        end
+    end
+
+    return fullPath
+end
+
+-- Get LastSurvivor function
+function getLastSurvivor()
+    local theme = workspace:FindFirstChild("Themes")
+    if theme then
+        return theme:FindFirstChild("LastSurvivor")
+    end
+    return nil
+end
+
+function setLastSurvivorSong(songName)
+    local lastSurvivor = getLastSurvivor()
+    if not lastSurvivor then return end
+    local url = tracks[songName]
+    if not url then return end
+
+    local path = downloadTrack(songName, url)
+    local soundAsset = getcustomasset(path)
+
+    if getgenv().isToggleOn and not getgenv().originalSongId then
+        getgenv().originalSongId = lastSurvivor.SoundId
+    end
+
+    lastSurvivor.SoundId = soundAsset
+    lastSurvivor.Loaded:Wait()      -- <--- chờ Sound load xong
+    getgenv().currentSongDuration = lastSurvivor.TimeLength
+    lastSurvivor:Play()
+
+    getgenv().songStartTime = tick()
+    getgenv().isPlaying = true
+    getgenv().currentLastSurvivor = lastSurvivor
+end
+
+
+-- GUI Section
+Miscs:CreateSection("Last Man Standing")
+
+Miscs:CreateToggle({
+    Name = "LMS Replacer Song",
+    CurrentValue = false,
+    Flag = "LMS_Toggle",
+    Callback = function(value)
+        getgenv().isToggleOn = value
+
+        local lastSurvivor = getLastSurvivor()
+        if not value then
+            -- Reset về bài hát gốc
+            if lastSurvivor and getgenv().originalSongId then
+                lastSurvivor.SoundId = getgenv().originalSongId
+                lastSurvivor:Play()
+            end
+            -- Reset globals
+            getgenv().currentLastSurvivor = nil
+            getgenv().currentSongId = nil
+            getgenv().originalSongId = nil
+            getgenv().isPlaying = false
+        end
+    end,
+})
+
+-- Dropdown LMS song
+Miscs:CreateDropdown({
+    Name = "Custom LMS Song",
+    Options = options,
+    MultipleOptions = false,
+    Callback = function(selected)
+        if type(selected) == "table" then
+            getgenv().selectedSong = selected[1]
+        else
+            getgenv().selectedSong = selected
+        end
+
+    end,
+})
+
+-- Heartbeat loop
+RunService.Heartbeat:Connect(function()
+    if getgenv().isToggleOn and not getgenv().isPlaying and getLastSurvivor() then
+        setLastSurvivorSong(getgenv().selectedSong)
+    elseif not getLastSurvivor() and getgenv().isPlaying then
+            getgenv().isPlaying = false
+        end
+
+    if getgenv().isPlaying and lastSurvivor then
+        if tick() - getgenv().songStartTime >= getgenv().currentSongDuration then
+            getgenv().isPlaying = false
+        end
+    end
+end)
+
+-- Input box cho LMS custom
+Miscs:CreateInput({
+    Name = "Custom LMS Song URL",
+    PlaceholderText = "Raw Link MP3",
+    Callback = function(input)
+        if input and input ~= "" then
+            getgenv().customSongUrl = input
+
+            local lastSurvivor = getLastSurvivor()
+            if lastSurvivor and getgenv().isToggleOn then
+                -- Nếu toggle đang bật, set bài nhạc mới ngay lập tức
+                local path = downloadTrack("Custom_LMS_Song", getgenv().customSongUrl)
+                local soundAsset = getcustomasset(path)
+
+                if not getgenv().originalSongId then
+                    getgenv().originalSongId = lastSurvivor.SoundId
+                end
+
+                lastSurvivor.SoundId = soundAsset
+                lastSurvivor.Loaded:Wait()
+                lastSurvivor:Play()
+
+                getgenv().songStartTime = tick()
+                getgenv().currentSongDuration = lastSurvivor.TimeLength
+                getgenv().isPlaying = true
+                getgenv().currentLastSurvivor = lastSurvivor
+            end
+        end
+    end,
+})
+
+-- Sử dụng getgenv() để lưu biến toàn cục
+getgenv().chatWindow = game:GetService("TextChatService"):WaitForChild("ChatWindowConfiguration")
+getgenv().chatEnabled = false
+getgenv().connection = nil
+
+Miscs:CreateSection("Chat")
+Miscs:CreateToggle({
+    Name = "Toggle Chat Visibility",
+    CurrentValue = false,
+    Flag = "ChatWindowToggle",
+    Callback = function(value)
+        getgenv().chatEnabled = value
+        if getgenv().chatEnabled then
+            -- Kết nối Heartbeat để bật liên tục
+            getgenv().connection = game:GetService("RunService").Heartbeat:Connect(function()
+                getgenv().chatWindow.Enabled = true
+            end)
+        else
+            -- Ngắt kết nối Heartbeat khi toggle tắt
+            if getgenv().connection then
+                getgenv().connection:Disconnect()
+                getgenv().connection = nil
+            end
+            -- Tắt chat window khi toggle off
+            getgenv().chatWindow.Enabled = false
+        end
+    end
+})
+
 -- ==== ACHIEVEMENTS SECTION ====
 AchieveTab:CreateSection("Fun")
 
@@ -3739,203 +4442,6 @@ task.spawn(function()
     end
 end)
 
-local function fireRemoteBlock()
-local args = {"UseActorAbility", "Block"}
-ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
-end
-
-
--- ===== Robust Sound Auto Block (replace your current Sound Auto Block) =====
-local soundHooks = {}     -- [Sound] = {playedConn, propConn, destroyConn}
-local soundBlockedUntil = {} -- [Sound] = timestamp when we can block again (throttle)
-
-local function extractNumericSoundId(sound)
-    if not sound or not sound.SoundId then return nil end
-    local sid = tostring(sound.SoundId)
-
-    -- Prefer numeric id if present
-    local num = sid:match("%d+")
-    if num then return num end
-
-    -- Fallbacks (these won't match your numeric whitelist, but kept for completeness)
-    local hash = sid:match("[&%?]hash=([^&]+)")
-    if hash then return "&hash="..hash end
-    local path = sid:match("rbxasset://sounds/.+")
-    if path then return path end
-
-    return nil
-end
-
-local function getSoundWorldPosition(sound)
-    if not sound then return nil end
-    if sound.Parent and sound.Parent:IsA("BasePart") then
-        return sound.Parent.Position, sound.Parent
-    end
-    if sound.Parent and sound.Parent:IsA("Attachment") and sound.Parent.Parent and sound.Parent.Parent:IsA("BasePart") then
-        return sound.Parent.Parent.Position, sound.Parent.Parent
-    end
-    -- deep search for any BasePart ancestor/descendant
-    local found = sound.Parent and sound.Parent:FindFirstChildWhichIsA("BasePart", true)
-    if found then
-        return found.Position, found
-    end
-    return nil, nil
-end
-
-local function attemptBlockForSound(sound)
-    if not autoBlockAudioOn then return end
-    if not sound or not sound:IsA("Sound") then return end
-
-    -- Only care when actually playing
-    if not sound.IsPlaying then return end
-
-    local id = extractNumericSoundId(sound)
-    if not id or not autoBlockTriggerSounds[id] then return end
-
-    local myRoot = Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not myRoot then return end
-
-    -- Throttle one block per sound for a short window
-    if soundBlockedUntil[sound] and tick() < soundBlockedUntil[sound] then
-        return
-    end
-
-    local soundPos, soundPart = getSoundWorldPosition(sound)
-    local shouldBlock = false
-    local facingOK = true
-
-    if soundPos then
-        local dist = (myRoot.Position - soundPos).Magnitude
-        if dist <= detectionRange then
-            shouldBlock = true
-            -- Only do facing check if we have a BasePart to use (soundPart)
-            if facingCheckEnabled and soundPart and soundPart:IsA("BasePart") then
-                facingOK = isFacing(myRoot, soundPart)
-            end
-        end
-    else
-        -- No position available -> block anyway (per your request)
-        shouldBlock = true
-        facingOK = true
-    end
-
-    if shouldBlock and facingOK then
-        fireRemoteBlock()
-        soundBlockedUntil[sound] = tick() + 1.2
-    end
-end
-
-local function hookSound(sound)
-    if not sound or not sound:IsA("Sound") then return end
-    if soundHooks[sound] then return end -- already hooked
-
-    local playedConn = sound.Played:Connect(function()
-        -- handle immediate play
-        pcall(attemptBlockForSound, sound)
-    end)
-
-    local propConn = sound:GetPropertyChangedSignal("IsPlaying"):Connect(function()
-        if sound.IsPlaying then
-            pcall(attemptBlockForSound, sound)
-        end
-    end)
-
-    local destroyConn
-    destroyConn = sound.Destroying:Connect(function()
-        -- cleanup
-        if playedConn and playedConn.Connected then playedConn:Disconnect() end
-        if propConn and propConn.Connected then propConn:Disconnect() end
-        if destroyConn and destroyConn.Connected then destroyConn:Disconnect() end
-        soundHooks[sound] = nil
-        soundBlockedUntil[sound] = nil
-    end)
-
-    soundHooks[sound] = {playedConn, propConn, destroyConn}
-
-    -- If it's already playing right now, check it immediately
-    if sound.IsPlaying then
-        task.spawn(function() pcall(attemptBlockForSound, sound) end)
-    end
-end
-
--- Hook existing Sounds across the game (covers workspace, SoundService, Lighting, etc.)
-for _, desc in ipairs(game:GetDescendants()) do
-    if desc:IsA("Sound") then
-        pcall(hookSound, desc)
-    end
-end
-
--- Hook any future Sounds
-game.DescendantAdded:Connect(function(desc)
-    if desc:IsA("Sound") then
-        pcall(hookSound, desc)
-    end
-end)
--- ===== End Robust Sound Auto Block =====
-
--- Auto Punch
-local autoPunchLoop
-local punchCooldown = 0.005 -- delay giữa các lần punch để tránh spam quá nhanh
-local lastPunch = 0
-
-autoPunchLoop = RunService.RenderStepped:Connect(function()
-    if not autoPunchOn then
-        return
-    end
-
-    local gui = PlayerGui:FindFirstChild("MainUI")
-    local punchBtn = gui and gui:FindFirstChild("AbilityContainer") and gui.AbilityContainer:FindFirstChild("Punch")
-    local charges = punchBtn and punchBtn:FindFirstChild("Charges")
-
-    if charges and charges.Text == "1" then
-        local myChar = Players.LocalPlayer.Character
-        local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-        local humanoid = myChar and myChar:FindFirstChild("Humanoid")
-
-        for _, obj in ipairs(workspace:GetDescendants()) do
-            if obj:IsA("Model") and obj:FindFirstChild("Humanoid") 
-            and obj.Humanoid.MaxHealth > 300 
-            and obj:FindFirstChild("HumanoidRootPart") then
-
-                local root = obj.HumanoidRootPart
-                if myRoot and (root.Position - myRoot.Position).Magnitude <= 10 then
-                    -- Cooldown check
-                    if tick() - lastPunch >= punchCooldown then
-                        lastPunch = tick()
-
-                        -- Aim Punch
-                        if aimPunch and humanoid then
-                            humanoid.AutoRotate = false
-                            task.spawn(function()
-                                local start = tick()
-                                while tick() - start < 2 and root and root.Parent do
-                                    if myRoot then
-                                        local predictedPos = root.Position + (root.CFrame.LookVector * predictionValue)
-                                        myRoot.CFrame = CFrame.lookAt(myRoot.Position, predictedPos)
-                                    end
-                                    task.wait()
-                                end
-                                if humanoid then
-                                    humanoid.AutoRotate = true
-                                end
-                            end)
-                        end
-
-                        -- Trigger punch
-                        for _, conn in ipairs(getconnections(punchBtn.MouseButton1Click)) do
-                            pcall(function()
-                                conn:Fire()
-                            end)
-                        end
-                    end
-                    break -- chỉ punch 1 target mỗi vòng loop
-                end
-            end
-        end
-    end
-end)
-
-
 -- Global environment
 genv = {}
 genv.running = false
@@ -3981,16 +4487,16 @@ local survivorValue = playerData:WaitForChild("Equipped"):WaitForChild("Survivor
 
 function genv.updateToggle()
     local character, humanoid = genv.getCharacterHumanoid()
-    local isTarget = survivorValue.Value == "007n7" and humanoid and humanoid.MaxHealth < 300
+    local isTarget = (survivorValue.Value == "007n7" or survivorValue.Value == "Noob" or survivorValue.Value == "TwoTime") and humanoid and humanoid.MaxHealth < 300
     genv.handleToggle(isTarget)
 end
 
 -- Rayfield Combat UI
-Combat:CreateSection("007n7")
+Combat:CreateSection("Invisible Effect")
 
 -- Toggle thủ công
 Combat:CreateToggle({
-    Name = "Invisible Upon Cloning (007n7)",
+    Name = "Fully Invisible (Invisible Effect)",
     CurrentValue = false,
     Flag = "InvisibleToggle",
     Callback = function(Value)
@@ -4036,15 +4542,16 @@ RunService.Heartbeat:Connect(function()
             animation.AnimationId = "rbxassetid://75804462760596"
             genv.animTrack = animator:LoadAnimation(animation)
             genv.animTrack.Looped = true
-            genv.animTrack:Play()
+            genv.animTrack:Play(0) -- blendTime = 0 để tránh chuyển động mượt quay lại idle
             genv.animTrack:AdjustSpeed(0)
+            genv.animTrack.TimePosition = 0 -- cố định frame đầu
             if rootPart then
                 rootPart.Transparency = 0.4
             end
         end
     else
         if genv.animTrack and genv.animTrack.IsPlaying then
-            genv.animTrack:Stop()
+            genv.animTrack:Stop(0) -- dừng ngay
             genv.animTrack = nil
             if rootPart then
                 rootPart.Transparency = 1
