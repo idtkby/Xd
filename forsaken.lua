@@ -890,7 +890,7 @@ RunService.Heartbeat:Connect(function()
         local root = killer:FindFirstChild("HumanoidRootPart")  
         local humanoid = killer:FindFirstChildOfClass("Humanoid")  
         if root and humanoid and humanoid.Health > 0 then  
-            local dist = (root.Position - myRoot.Positin).Magnitude  
+            local dist = (root.Position - myRoot.Position).Magnitude  
             if dist <= _G.AutoBlockPunch_Range then  
 
                 local hrp = killer:FindFirstChild("HumanoidRootPart")  
