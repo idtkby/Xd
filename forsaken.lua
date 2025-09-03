@@ -953,17 +953,19 @@ NetworkEvent.OnClientEvent:Connect(function(action, ability)
             end  
         end  
 
-        if nearest then  
-            local start = tick()  
-            local aimConn  
-            aimConn = RunService.Heartbeat:Connect(function()  
-                if tick() - start > 0.8 or not nearest.Parent or not myRoot.Parent then  
-                    if aimConn then aimConn:Disconnect() end  
-                    return  
-                end  
-                myRoot.CFrame = CFrame.new(myRoot.Position, nearest.Position)  
-            end)  
-        end  
+        if nearest then
+    local start = tick()
+    local aimConn
+    aimConn = RunService.Heartbeat:Connect(function()
+        if tick() - start > 0.8 or not nearest.Parent or not myRoot.Parent then
+            if aimConn then aimConn:Disconnect() end
+            return
+        end
+        -- Giữ Y bằng localplayer, chỉ xoay ngang
+        local lookPos = Vector3.new(nearest.Position.X, myRoot.Position.Y, nearest.Position.Z)
+        myRoot.CFrame = CFrame.new(myRoot.Position, lookPos)
+    end)
+end  
     end  
 end)
 
