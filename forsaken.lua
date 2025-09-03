@@ -309,14 +309,104 @@ end)
 Main1Group:AddDivider()
 
 Main1Group:AddLabel("--== Surviv: [ 007n7 ] ==--", true) 
+		task.spawn(function()
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+local detectionRange = 13
+
+-- ====== Data ======
+local animationIds = {        
+    ["126830014841198"] = true, ["126355327951215"] = true, ["121086746534252"] = true,        
+    ["18885909645"] = true, ["98456918873918"] = true, ["105458270463374"] = true,        
+    ["83829782357897"] = true, ["125403313786645"] = true, ["118298475669935"] = true,        
+    ["82113744478546"] = true, ["70371667919898"] = true, ["99135633258223"] = true,        
+    ["97167027849946"] = true, ["109230267448394"] = true, ["139835501033932"] = true,        
+    ["126896426760253"] = true, ["93069721274110"] = true,  
+    ["109667959938617"] = true, ["126681776859538"] = true, ["129976080405072"] = true,  
+    ["121293883585738"] = true, ["81639435858902"] = true, ["137314737492715"] = true,  
+    ["92173139187970"] = true, ["131543461321709"] = true,  
+}        
+
+local autoBlockTriggerSounds = {  
+    ["102228729296384"] = true, ["140242176732868"] = true, ["112809109188560"] = true,  
+    ["136323728355613"] = true, ["115026634746636"] = true, ["84116622032112"] = true,  
+    ["108907358619313"] = true, ["127793641088496"] = true, ["86174610237192"] = true,  
+    ["95079963655241"] = true, ["101199185291628"] = true, ["119942598489800"] = true,  
+    ["84307400688050"] = true, ["113037804008732"] = true, ["105200830849301"] = true,  
+    ["75330693422988"] = true,  
+}  
+
+-- ====== Remote ======
+local function triggerClone()
+    local args = { "UseActorAbility", "Clone" }
+    ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+end
+
+-- ====== Logic check Killer ======
+local function checkKiller(killer)
+    local hrp = killer:FindFirstChild("HumanoidRootPart")
+    if not hrp then return false end
+
+    local myChar = LocalPlayer.Character
+    local myHRP = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    if not myHRP then return false end
+
+    -- check khoảng cách
+    local dist = (myHRP.Position - hrp.Position).Magnitude
+    if dist > detectionRange then return false end
+
+    -- check killer thật sự (không phải player survivor, không phải Fake Noli)
+    local isInKillers = (killer.Parent and killer.Parent.Name == "Killers")
+    local isPlayer = (Players:GetPlayerFromCharacter(killer) ~= nil)
+    local isFakeNoli = isInKillers and not isPlayer and killer.Name:lower():find("noli")
+    if not (isInKillers and not isFakeNoli) then return false end
+
+    -- check animations
+    for _, anim in ipairs(killer:GetDescendants()) do
+        if anim:IsA("Animation") and animationIds[tostring(anim.AnimationId):match("%d+")] then
+            return true
+        end
+    end
+    -- check sounds
+    for _, s in ipairs(killer:GetDescendants()) do
+        if s:IsA("Sound") and s.IsPlaying and autoBlockTriggerSounds[tostring(s.SoundId):match("%d+")] then
+            return true
+        end
+    end
+    return false
+end
+	
+
+-- ====== Toggle ======
 Main1Group:AddToggle("Auto007Block", {
-    Text = "Auto Clone block [In progress...]",
+    Text = "Auto Clone block",
     Default = false,
     Callback = function(Value)
         getgenv().AutoClone007n7 = Value
+        if Value then
+            task.spawn(function()
+                while getgenv().AutoClone007n7 do
+                    task.wait(0.1)
+                    local killersFolder = workspace:FindFirstChild("Killers")
+                    if killersFolder then
+                        for _, killer in ipairs(killersFolder:GetChildren()) do
+                            if checkKiller(killer) then
+                                triggerClone()
+                                break -- chặn spam, 1 lần mỗi vòng
+                            end
+                        end
+                    end
+                end
+            end)
+        end
     end
+				
 })
-Main1Group:AddDivider()
+			end)
+				Main1Group:AddDivider()
 
 
 Main1Group:AddLabel("--== Surviv: [ Shedletsky ] ==--", true) 
@@ -1678,7 +1768,7 @@ Main2Group:AddToggle("General", {
             lbl.Size = UDim2.fromScale(1,1)
             lbl.Font = Enum.Font.Code
             lbl.TextSize = 15
-            lbl.TextColor3 = _G.EspGuiTextColor or Color3.fromRGB(255,255,255)
+            lbl.TextColor3 = Color3.fromRGB(255,255,255)
             lbl.TextStrokeTransparency = 0
             lbl.Text = ""
             lbl.Parent = gui
@@ -1726,7 +1816,7 @@ Main2Group:AddToggle("General", {
                                     local distLine = _G.EspDistance and ("\nDistance [ "..string.format("%.1f", dist).." ]") or ""
                                     gui.TextLabel.Text = nameLine .. distLine
                                     gui.TextLabel.TextSize = _G.EspGuiTextSize or 15
-                                    gui.TextLabel.TextColor3 = _G.EspGuiTextColor or Color3.fromRGB(255,255,255)
+                                    gui.TextLabel.TextColor3 = Color3.fromRGB(255,255,255)
                                 end
                             end
                         end
@@ -1959,7 +2049,7 @@ local function createESP(part)
     local billboard = Instance.new("BillboardGui")
     billboard.Name = "ESPBox"
     billboard.AlwaysOnTop = true
-    billboard.Size = UDim2.new(0,200,0,50)
+    billboard.Size = UDim2.new(0,100,0,40)
     billboard.StudsOffset = Vector3.new(0,2,0)
     billboard.Parent = part
 
@@ -2343,7 +2433,7 @@ function Esp_Player(characterModel)
     if isFakeNoli then
         lbl.TextColor3 = Color3.fromRGB(150, 0, 150)
     elseif isInKillers then
-        lbl.TextColor3 = Color3.fromRGB(255, 0, 0)
+        lbl.TextColor3 = _G.EspGuiTextKillerColor or Color3.fromRGB(255, 0, 0)
     else
         lbl.TextColor3 = _G.EspGuiTextColor or Color3.new(1,1,1)
     end
@@ -2462,7 +2552,12 @@ Main2Group:AddToggle("Esp Gui", {
     Callback = function(Value) 
 _G.EspGui = Value
     end
-}):AddColorPicker("Color Esp Text", {
+}):AddColorPicker("Color Esp Text Killer", {
+     Default = Color3.new(255,0,0),
+     Callback = function(Value)
+_G.EspGuiTextKillerColor = Value
+     end
+}):AddColorPicker("Color Esp Text Survi", {
      Default = Color3.new(255,255,255),
      Callback = function(Value)
 _G.EspGuiTextColor = Value
