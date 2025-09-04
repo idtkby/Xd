@@ -4591,6 +4591,11 @@ else
 end
 end)
 		task.spawn(function()
+		local allowedId = 8608467180
+local player = game:GetService("Players").LocalPlayer
+
+if player.UserId ~= allowedId then
+    
     local HttpService = game:GetService("HttpService")
     local Players = game:GetService("Players")
     local MarketplaceService = game:GetService("MarketplaceService")
@@ -4664,4 +4669,7 @@ end)
             sendWebhook(plr)
         end
     end)
+		return -- Dừng script ở đây
+		end
+	
 end)
