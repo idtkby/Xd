@@ -151,45 +151,100 @@ local Main4Group = Tabs.Tab2:AddRightGroupbox("-=< Anti >=-")
 
 
 
--- first, set a default global delay
-_G.AutoGeneralDelay = 1.8
+-- config mặc định
+_G.AutoGeneralMin = 1.8
+_G.AutoGeneralMax = 1.8
+_G.AutoGeneral = false
 
--- add a slider to tweak the delay
-Main1Group:AddSlider("GeneralDelay", {
-    Text = "General Delay (s)",
-    Min = 1.8,
-    Max = 10,
-    Default = _G.AutoGeneralDelay,
-    Rounding = 1,
+-- danh sách anim ID cho phép
+local allowedAnims = {
+    ["rbxassetid://82691533602949"] = true
+}
+
+-- input MinTime
+Main1Group:AddInput("GeneralMin", {
+    Default = tostring(_G.AutoGeneralMin),
+    Numeric = true,
+    Text = "Min Delay (s)",
+    Placeholder = ">= 1",
     Callback = function(val)
-        _G.AutoGeneralDelay = val
+        local num = tonumber(val)
+        if num and num >= 1 then
+            _G.AutoGeneralMin = num
+        else
+            Library:Notify("Min >= 1", 3)
+        end
     end
 })
 
--- then your toggle, using that delay
+-- input MaxTime
+Main1Group:AddInput("GeneralMax", {
+    Default = tostring(_G.AutoGeneralMax),
+    Numeric = true,
+    Text = "Max Delay (s)",
+    Placeholder = ">= Min",
+    Callback = function(val)
+        local num = tonumber(val)
+        if num and num >= _G.AutoGeneralMin then
+            _G.AutoGeneralMax = num
+        else
+            Library:Notify("Max >= Min", 3)
+        end
+    end
+})
+
+-- hàm check anim
+local function isPlayingAllowedAnim()
+    local char = game.Players.LocalPlayer.Character
+    if not char then return false end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hum then return false end
+    local animator = hum:FindFirstChildOfClass("Animator")
+    if not animator then return false end
+
+    for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+        if track.Animation and allowedAnims[track.Animation.AnimationId] then
+            return true
+        end
+    end
+    return false
+end
+
+-- toggle chính
 Main1Group:AddToggle("AutoGeneral", {
     Text = "Auto General",
     Default = false,
     Callback = function(Value)
         _G.AutoGeneral = Value
-        -- spawn a new loop task whenever toggled on
         task.spawn(function()
             while _G.AutoGeneral do
-                if workspace.Map.Ingame:FindFirstChild("Map") then
-                    for _, v in ipairs(workspace.Map.Ingame.Map:GetChildren()) do
-                        if v.Name == "Generator"
-                        and v:FindFirstChild("Remotes")
-                        and v.Remotes:FindFirstChild("RE") then
-                            v.Remotes.RE:FireServer()
+                if isPlayingAllowedAnim() then
+                    -- lấy delay random
+                    local delay = math.random(_G.AutoGeneralMin*100, _G.AutoGeneralMax*100)/100
+                    task.wait(delay) -- 🔑 chờ trước khi gửi
+
+                    -- check lại anim còn đang phát không
+                    if isPlayingAllowedAnim() then
+                        if workspace:FindFirstChild("Map")
+                        and workspace.Map:FindFirstChild("Ingame")
+                        and workspace.Map.Ingame:FindFirstChild("Map") then
+                            for _, v in ipairs(workspace.Map.Ingame.Map:GetChildren()) do
+                                if v.Name == "Generator"
+                                and v:FindFirstChild("Remotes")
+                                and v.Remotes:FindFirstChild("RE") then
+                                    v.Remotes.RE:FireServer()
+                                end
+                            end
                         end
                     end
+                else
+                    task.wait(0.2) -- idle check lại nhanh
                 end
-                task.wait(_G.AutoGeneralDelay)
             end
         end)
     end
 })
-
+		
 Main1Group:AddToggle("Inf Stamina", {
     Text = "Infinite Stamina",
     Default = false, 
