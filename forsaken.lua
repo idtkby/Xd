@@ -239,7 +239,7 @@ Main1Group:AddToggle("AutoGeneral", {
                                 and v:FindFirstChild("Remotes")
                                 and v.Remotes:FindFirstChild("RE") then
                                     v.Remotes.RE:FireServer()
-                                    Library:Notify(("⚡ AutoGeneral -> Delay: %.2fs"):format(delay), 2)
+                                    Library:Notify(("Delay: %.2fs"):format(delay), 2)
                                 end
                             end
                         end
