@@ -159,12 +159,12 @@ local Main4Group = Tabs.Tab2:AddRightGroupbox("-=< Anti >=-")
 _G.AutoGeneralMin = 1.8
 _G.AutoGeneralMax = 1.8
 _G.AutoGeneral = false
-		
+
 -- danh sách anim ID cho phép
 local allowedAnims = {
     ["rbxassetid://130355934640695"] = true,
-			["rbxassetid://82691533602949"] = true,
-			["rbxassetid://122604262087779"] = true
+    ["rbxassetid://82691533602949"] = true,
+    ["rbxassetid://122604262087779"] = true
 }
 
 -- input MinTime
@@ -225,8 +225,8 @@ Main1Group:AddToggle("AutoGeneral", {
         task.spawn(function()
             while _G.AutoGeneral do
                 if isPlayingAllowedAnim() then
-                    -- lấy delay random
-                    local delay = math.random(_G.AutoGeneralMin*100, _G.AutoGeneralMax*100)/100
+                    -- random float giữa Min và Max
+                    local delay = _G.AutoGeneralMin + math.random() * (_G.AutoGeneralMax - _G.AutoGeneralMin)
                     task.wait(delay) -- 🔑 chờ trước khi gửi
 
                     -- check lại anim còn đang phát không
@@ -239,6 +239,7 @@ Main1Group:AddToggle("AutoGeneral", {
                                 and v:FindFirstChild("Remotes")
                                 and v.Remotes:FindFirstChild("RE") then
                                     v.Remotes.RE:FireServer()
+                                    Library:Notify(("⚡ AutoGeneral -> Delay: %.2fs"):format(delay), 2)
                                 end
                             end
                         end
