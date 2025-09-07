@@ -155,10 +155,10 @@ local Main4Group = Tabs.Tab2:AddRightGroupbox("-=< Anti >=-")
 _G.AutoGeneralMin = 1.8
 _G.AutoGeneralMax = 1.8
 _G.AutoGeneral = false
-
+		
 -- danh sách anim ID cho phép
 local allowedAnims = {
-    ["rbxassetid://82691533602949"] = true
+    ["rbxassetid://130355934640695"] = true
 }
 
 -- input MinTime
