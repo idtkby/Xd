@@ -159,6 +159,7 @@ local Main4Group = Tabs.Tab2:AddRightGroupbox("-=< Anti >=-")
 _G.AutoGeneralMin = 1.8
 _G.AutoGeneralMax = 1.8
 _G.AutoGeneral = false
+local sendCount = 0
 
 -- danh sách anim ID cho phép
 local allowedAnims = {
@@ -227,9 +228,17 @@ Main1Group:AddToggle("AutoGeneral", {
                 if isPlayingAllowedAnim() then
                     -- random float giữa Min và Max
                     local delay = _G.AutoGeneralMin + math.random() * (_G.AutoGeneralMax - _G.AutoGeneralMin)
-                    task.wait(delay) -- 🔑 chờ trước khi gửi
 
-                    -- check lại anim còn đang phát không
+                    -- chờ trước, nhưng vẫn kiểm tra anim trong lúc chờ
+                    local start = tick()
+                    while tick() - start < delay and _G.AutoGeneral do
+                        if not isPlayingAllowedAnim() then
+                            break -- anim dừng -> bỏ vòng này
+                        end
+                        task.wait(0.1)
+                    end
+
+                    -- nếu anim vẫn còn sau delay thì gửi
                     if isPlayingAllowedAnim() then
                         if workspace:FindFirstChild("Map")
                         and workspace.Map:FindFirstChild("Ingame")
@@ -239,9 +248,10 @@ Main1Group:AddToggle("AutoGeneral", {
                                 and v:FindFirstChild("Remotes")
                                 and v.Remotes:FindFirstChild("RE") then
                                     v.Remotes.RE:FireServer()
-                                    Library:Notify(("Delay: %.2fs"):format(delay), 2)
                                 end
                             end
+                            sendCount += 1
+                            Library:Notify(("#%d | Delay: %.2fs"):format(sendCount, delay), 2)
                         end
                     end
                 else
@@ -250,8 +260,7 @@ Main1Group:AddToggle("AutoGeneral", {
             end
         end)
     end
-})
-		
+})		
 Main1Group:AddToggle("Inf Stamina", {
     Text = "Infinite Stamina",
     Default = false, 
