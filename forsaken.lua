@@ -158,7 +158,8 @@ _G.AutoGeneral = false
 		
 -- danh sách anim ID cho phép
 local allowedAnims = {
-    ["rbxassetid://130355934640695"] = true
+    ["rbxassetid://130355934640695"] = true,
+			["rbxassetid://82691533602949"] = true
 }
 
 -- input MinTime
@@ -3009,8 +3010,89 @@ end
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ivannetta/ShitScripts/main/forsaken.lua"))()
 end)
+M205Two:AddDivider()
+task.spawn(function()
+		local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
+local Players = game:GetService("Players")
+local PlaceId = game.PlaceId
+local JobId = game.JobId
 
+-- 🔹 Server Hop
+M205Two:AddButton("Server Hop", function()
+    local servers = {}
+    local success, result = pcall(function()
+        local req = game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Desc&limit=100&excludeFullGames=true")
+        return HttpService:JSONDecode(req)
+    end)
 
+    if success and result and result.data then
+        for _, v in next, result.data do
+            if tonumber(v.playing) < tonumber(v.maxPlayers) and v.id ~= JobId then
+                table.insert(servers, v.id)
+            end
+        end
+    end
+
+    if #servers > 0 then
+        TeleportService:TeleportToPlaceInstance(PlaceId, servers[math.random(1, #servers)], Players.LocalPlayer)
+    else
+        Library:Notify("Server Not Found.", 3)
+    end
+end)
+
+-- 🔹 Low Server
+M205Two:AddButton("Low Server", function()
+    local function getLowestPlayerServer()
+        local servers = {}
+        local cursor = ""
+
+        repeat
+            local url = "https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100&cursor=" .. cursor
+            local success, response = pcall(function()
+                return HttpService:JSONDecode(game:HttpGet(url))
+            end)
+
+            if success and response and response.data then
+                for _, server in ipairs(response.data) do
+                    if server.playing < server.maxPlayers and server.id ~= JobId then
+                        table.insert(servers, server)
+                    end
+                end
+                cursor = response.nextPageCursor or ""
+            else
+                cursor = ""
+            end
+
+            task.wait(1)
+        until cursor == ""
+
+        table.sort(servers, function(a, b)
+            return a.playing < b.playing
+        end)
+
+        return #servers > 0 and servers[1].id or nil
+    end
+
+    local serverId = getLowestPlayerServer()
+    if serverId then
+        TeleportService:TeleportToPlaceInstance(PlaceId, serverId, Players.LocalPlayer)
+    else
+        Library:Notify("Server Not Found", 3)
+    end
+end)
+
+-- 🔹 Rejoin
+M205Two:AddButton("Rejoin", function()
+    if #Players:GetPlayers() <= 1 then
+        Players.LocalPlayer:Kick("\nRejoining...")
+        task.wait(1)
+        TeleportService:Teleport(PlaceId, Players.LocalPlayer)
+    else
+        TeleportService:TeleportToPlaceInstance(PlaceId, JobId, Players.LocalPlayer)
+    end
+end)
+			end)
 
 
 
