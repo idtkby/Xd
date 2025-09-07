@@ -149,7 +149,11 @@ local Main4Group = Tabs.Tab2:AddRightGroupbox("-=< Anti >=-")
 
 
 
-
+--[[
+		[MessageOutput] [Anim] rbxassetid://122604262087779
+		[MessageOutput] [Anim] rbxassetid://82691533602949
+		[MessageOutput] [Anim] rbxassetid://130355934640695
+		]]
 
 -- config mặc định
 _G.AutoGeneralMin = 1.8
@@ -159,7 +163,8 @@ _G.AutoGeneral = false
 -- danh sách anim ID cho phép
 local allowedAnims = {
     ["rbxassetid://130355934640695"] = true,
-			["rbxassetid://82691533602949"] = true
+			["rbxassetid://82691533602949"] = true,
+			["rbxassetid://122604262087779"] = true
 }
 
 -- input MinTime
