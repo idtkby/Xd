@@ -1040,7 +1040,7 @@ RunService.RenderStepped:Connect(function()
     detectionRange = tonumber(_G.AutoBlockPunch_Range) or detectionRange
     for killer, circle in pairs(detectionCircles) do
         if circle and circle.Parent then
-            circle.Radius = detectionRange / 2
+            circle.Radius = detectionRange -- 🔑 không chia 2 nữa
             circle.Color3 = Options.RangeCircleColor.Value or Color3.fromRGB(0,255,0)
         end
     end
