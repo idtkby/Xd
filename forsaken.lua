@@ -4280,8 +4280,146 @@ do
     end)
 end
 
+task.spawn(function()
+				-- Biến FakeLag
+getgenv().FakeLag = {
+    Active = false,
+    targetRemoteName = "UnreliableRemoteEvent",
+    blockedFirstArg = "UpdCF",
+    MinDelay = 0.1,
+    MaxDelay = 0.3,
+    lastSendTime = 0,
+    Hooked = false
+}
+
+-- Hàm lấy random delay
+local function getRandomDelay()
+    return getgenv().FakeLag.MinDelay + math.random() * (getgenv().FakeLag.MaxDelay - getgenv().FakeLag.MinDelay)
+end
+
+-- Setup hook 1 lần
+getgenv().FakeLag.Setup = function()
+    if getgenv().FakeLag.Hooked then return end
+
+    getgenv().FakeLag.SavedHook = hookmetamethod(game, "__namecall", function(self, ...)
+        local methodName = getnamecallmethod()
+        local arguments = {...}
+
+        if self.Name == getgenv().FakeLag.targetRemoteName and methodName == "FireServer" and arguments[1] == getgenv().FakeLag.blockedFirstArg then
+            if getgenv().FakeLag.Active then
+                local currentTime = tick()
+                if currentTime - getgenv().FakeLag.lastSendTime < getRandomDelay() then
+                    return -- chặn nếu chưa đủ interval
+                else
+                    getgenv().FakeLag.lastSendTime = currentTime
+                end
+            end
+        end
+
+        return getgenv().FakeLag.SavedHook(self, ...)
+    end)
+
+    getgenv().FakeLag.Hooked = true
+end
+
+-- Kích hoạt FakeLag
+getgenv().FakeLag.Activate = function()
+    getgenv().FakeLag.Active = true
+end
+
+-- Tắt FakeLag
+getgenv().FakeLag.Deactivate = function()
+    getgenv().FakeLag.Active = false
+end
+
+-- Khởi tạo hook ngay khi load script
+getgenv().FakeLag.Setup()
+
+-- ================== GUI (Obsidian) ==================
+
+-- Toggle chính
+Dotab:AddToggle("FakeLagToggle", {
+    Text = "Enable Fake Lag",
+    Default = false,
+    Callback = function(Value)
+        if Value then
+            getgenv().FakeLag.Activate()
+            local args = {
+                "UpdateSettings",
+                game:GetService("Players").LocalPlayer:WaitForChild("PlayerData"):WaitForChild("Settings"):WaitForChild("Advanced"):WaitForChild("ShowPlayerHitboxes"),
+                true
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+        else
+            getgenv().FakeLag.Deactivate()
+            local args = {
+                "UpdateSettings",
+                game:GetService("Players").LocalPlayer:WaitForChild("PlayerData"):WaitForChild("Settings"):WaitForChild("Advanced"):WaitForChild("ShowPlayerHitboxes"),
+                false
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+        end
+    end
+})
+
+-- Input MinDelay
+Dotab:AddInput("FakeLagMin", {
+    Default = tostring(getgenv().FakeLag.MinDelay),
+    Numeric = true,
+    Text = "Min Delay (s)",
+    Placeholder = ">= 0.05",
+    Callback = function(val)
+        local num = tonumber(val)
+        if num and num >= 0.05 then
+            getgenv().FakeLag.MinDelay = num
+        else
+            Library:Notify(">= 0.05", 3)
+        end
+    end
+})
+
+-- Input MaxDelay
+Dotab:AddInput("FakeLagMax", {
+    Default = tostring(getgenv().FakeLag.MaxDelay),
+    Numeric = true,
+    Text = "Max Delay (s)",
+    Placeholder = ">= Min",
+    Callback = function(val)
+        local num = tonumber(val)
+        if num and num >= getgenv().FakeLag.MinDelay then
+            getgenv().FakeLag.MaxDelay = num
+        else
+            Library:Notify(">= Min", 3)
+        end
+    end
+})
+
+			end)
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
 
 end)
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4475,3 +4613,9 @@ if player.UserId ~= allowedId then
 		end
 	
 end)
+
+
+
+warn("--------------------")
+print("<==> Khang <==>")
+warn("--------------------")
