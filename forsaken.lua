@@ -3911,7 +3911,11 @@ local Survivors = workspace:WaitForChild("Players"):WaitForChild("Survivors")
 -- Cấu hình các loại Anti-Slow
 local AntiSlowConfigs = {
     ["if using Items"] = {Values = {"BloxyColaItem", "Medkit"}, Connection = nil, Enabled = false},
-    ["Builderman Ability"] = {Values = {"DispenserConstruction", "SentryConstruction"}, Connection = nil, Enabled = false}
+    ["Builderman Ability"] = {Values = {"DispenserConstruction", "SentryConstruction"}, Connection = nil, Enabled = false},
+			["c00lgui using 007n7"] = {Values = {"c00lgui"}, Connection = nil, Enabled = false},
+		["block&punch guest1337"] = {Values = {"PunchAbility", "GuestBlocking"}, Connection = nil, Enabled = false},
+			["taph skill"] = {Values = {"TaphTripwire", "SubspaceTripmine"}, Connection = nil, Enabled = false},
+			["noob skill"] = {Values = {"EatingGhostburger", "DrinkingCola", "DrinkingSlateskin"}, Connection = nil, Enabled = false},
 }
 
 -- Hàm ẩn UI báo slow
