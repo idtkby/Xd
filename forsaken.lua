@@ -4282,14 +4282,11 @@ do
 end
 
 task.spawn(function()-- FakeLag Config (local, không dùng getgenv)
--- === FakeLag (sạch, local, random delay) ===
+-- FakeLag Config
 local FakeLag = {
     Active = false,
-    targetRemoteName = "UnreliableRemoteEvent",
-    blockedFirstArg = "UpdCF",
     MinDelay = 0.1,
     MaxDelay = 0.3,
-    lastSendTime = 0,
     Hooked = false
 }
 
@@ -4297,72 +4294,42 @@ local function getRandomDelay()
     return FakeLag.MinDelay + math.random() * (FakeLag.MaxDelay - FakeLag.MinDelay)
 end
 
--- Hook an toàn: lưu hàm gốc vào oldNamecall và gọi nó mọi lúc nếu có lỗi
-local oldNamecall
 if not FakeLag.Hooked then
-    oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
-        -- luôn wrap toàn bộ check trong pcall để nếu có lỗi vẫn forward về oldNamecall
-        local status, err = pcall(function()
-            local methodName = getnamecallmethod()
+    local old; old = hookmetamethod(game, "__namecall", function(self, ...)
+        local method = getnamecallmethod()
+        local args = {...}
 
-            -- chỉ xử lý khi gọi FireServer
-            if methodName == "FireServer" then
-                -- an toàn: kiểm tra typeof(self) trước khi đọc .Name
-                if typeof(self) == "Instance" then
-                    -- lấy args 1 nhanh gọn
-                    local firstArg = select(1, ...)
+        if method == "FireServer"
+        and typeof(self) == "Instance"
+        and self.Name == "UnreliableRemoteEvent"
+        and args[1] == "UpdCF"
+        and FakeLag.Active then
 
-                    if self.Name == FakeLag.targetRemoteName and firstArg == FakeLag.blockedFirstArg then
-                        if FakeLag.Active then
-                            local currentTime = tick()
-                            local delay = getRandomDelay()
-                            if currentTime - FakeLag.lastSendTime < delay then
-                                -- chặn gọi: trả về nil (FireServer không cần trả về giá trị)
-                                return
-                            else
-                                FakeLag.lastSendTime = currentTime
-                                -- tiếp tục để gọi normal
-                            end
-                        end
-                    end
+            -- giữ lại args rồi gửi trễ
+            local clonedArgs = table.pack(unpack(args))
+            local remote = self
+
+            task.delay(getRandomDelay(), function()
+                if remote and remote.Parent then
+                    old(remote, table.unpack(clonedArgs, 1, clonedArgs.n))
                 end
-            end
-        end)
+            end)
 
-        -- Nếu pcall lỗi, log ngắn gọn (hoặc không), nhưng vẫn phải forward request
-        if not status then
-            -- tránh spam: chỉ warn một lần nếu muốn (bỏ comment nếu cần)
-            -- warn("[FakeLag] hook pcall error:", err)
+            return -- chặn ngay, chỉ gửi bản delay
         end
 
-        -- luôn gọi function gốc sau khi xử lý
-        return oldNamecall(self, ...)
+        return old(self, ...)
     end)
 
     FakeLag.Hooked = true
 end
 
--- GUI Obsidian (Dotab) dùng FakeLag local
+-- Obsidian GUI
 Dotab:AddToggle("FakeLagToggle", {
     Text = "Enable Fake Lag",
     Default = false,
     Callback = function(Value)
         FakeLag.Active = Value
-        if Value then
-            local args = {
-                "UpdateSettings",
-                game:GetService("Players").LocalPlayer:WaitForChild("PlayerData"):WaitForChild("Settings"):WaitForChild("Advanced"):WaitForChild("ShowPlayerHitboxes"),
-                true
-            }
-            game:GetService("ReplicatedStorage"):WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
-        else
-            local args = {
-                "UpdateSettings",
-                game:GetService("Players").LocalPlayer:WaitForChild("PlayerData"):WaitForChild("Settings"):WaitForChild("Advanced"):WaitForChild("ShowPlayerHitboxes"),
-                false
-            }
-            game:GetService("ReplicatedStorage"):WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
-        end
     end
 })
 
@@ -4370,13 +4337,13 @@ Dotab:AddInput("FakeLagMin", {
     Default = tostring(FakeLag.MinDelay),
     Numeric = true,
     Text = "Min Delay (s)",
-    Placeholder = ">= 0.1",
+    Placeholder = ">= 0.01",
     Callback = function(val)
         local num = tonumber(val)
-        if num and num >= 0.1 then
+        if num and num >= 0.01 then
             FakeLag.MinDelay = num
         else
-            Library:Notify(">= 0.1", 3)
+            Library:Notify(" >= 0.01", 3)
         end
     end
 })
@@ -4391,7 +4358,7 @@ Dotab:AddInput("FakeLagMax", {
         if num and num >= FakeLag.MinDelay then
             FakeLag.MaxDelay = num
         else
-            Library:Notify(">= Min", 3)
+            Library:Notify(" >= Min", 3)
         end
     end
 })
