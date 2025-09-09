@@ -2990,7 +2990,8 @@ M205Two:AddDivider()
 
 M205Two:AddButton("Load InfYield Edit", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()  
-end)
+				
+			end)
 M205Two:AddButton("Load c00lgh0st", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Forsaken/main/c00lgh0st"))()  
 end)
@@ -4600,5 +4601,5 @@ end)
 
 
 warn("--------------------")
-print("<==> Khang <==>")
+print("   <==> Khang <==>")
 warn("--------------------")
