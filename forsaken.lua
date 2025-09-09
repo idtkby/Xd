@@ -4282,7 +4282,6 @@ do
 end
 
 task.spawn(function()-- FakeLag Config (local, không dùng getgenv)
--- FakeLag Config
 local FakeLag = {
     Active = false,
     MinDelay = 0.1,
@@ -4299,34 +4298,38 @@ if not FakeLag.Hooked then
         local method = getnamecallmethod()
         local args = {...}
 
-        -- Chỉ xử lý đúng gói UpdCF
+        -- Chỉ fake lag cho gói UpdCF
         if method == "FireServer"
         and typeof(self) == "Instance"
         and self.Name == "UnreliableRemoteEvent"
         and args[1] == "UpdCF"
         and FakeLag.Active then
 
-            -- clone args để gửi lại trễ
             local clonedArgs = table.pack(unpack(args))
             local remote = self
 
             task.delay(getRandomDelay(), function()
                 if remote and remote.Parent then
-                    old(remote, table.unpack(clonedArgs, 1, clonedArgs.n))
+                    local ok, err = pcall(function()
+                        old(remote, table.unpack(clonedArgs, 1, clonedArgs.n))
+                    end)
+                    if not ok then
+                        warn("[FakeLag] resend error:", err)
+                    end
                 end
             end)
 
-            return -- không gọi ngay, chỉ gửi bản delay
+            return -- không gửi ngay
         end
 
-        -- còn lại phải cho qua bình thường
+        -- Forward mặc định cho mọi thứ khác
         return old(self, ...)
     end)
 
     FakeLag.Hooked = true
 end
 
--- Obsidian GUI
+-- GUI
 Dotab:AddToggle("FakeLagToggle", {
     Text = "Enable Fake Lag",
     Default = false,
@@ -4339,7 +4342,6 @@ Dotab:AddInput("FakeLagMin", {
     Default = tostring(FakeLag.MinDelay),
     Numeric = true,
     Text = "Min Delay (s)",
-    Placeholder = ">= 0.01",
     Callback = function(val)
         local num = tonumber(val)
         if num and num >= 0.01 then
@@ -4354,7 +4356,6 @@ Dotab:AddInput("FakeLagMax", {
     Default = tostring(FakeLag.MaxDelay),
     Numeric = true,
     Text = "Max Delay (s)",
-    Placeholder = ">= Min",
     Callback = function(val)
         local num = tonumber(val)
         if num and num >= FakeLag.MinDelay then
