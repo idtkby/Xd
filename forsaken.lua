@@ -4299,27 +4299,27 @@ if not FakeLag.Hooked then
         local method = getnamecallmethod()
         local args = {...}
 
+        -- Chỉ xử lý đúng gói UpdCF
         if method == "FireServer"
         and typeof(self) == "Instance"
         and self.Name == "UnreliableRemoteEvent"
         and args[1] == "UpdCF"
         and FakeLag.Active then
 
+            -- clone args để gửi lại trễ
             local clonedArgs = table.pack(unpack(args))
             local remote = self
 
-            -- gửi lại sau delay bằng FireServer bình thường
             task.delay(getRandomDelay(), function()
                 if remote and remote.Parent then
-                    pcall(function()
-                        remote:FireServer(table.unpack(clonedArgs, 1, clonedArgs.n))
-                    end)
+                    old(remote, table.unpack(clonedArgs, 1, clonedArgs.n))
                 end
             end)
 
-            return -- chặn gói gốc
+            return -- không gọi ngay, chỉ gửi bản delay
         end
 
+        -- còn lại phải cho qua bình thường
         return old(self, ...)
     end)
 
