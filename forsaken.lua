@@ -4305,17 +4305,19 @@ if not FakeLag.Hooked then
         and args[1] == "UpdCF"
         and FakeLag.Active then
 
-            -- giữ lại args rồi gửi trễ
             local clonedArgs = table.pack(unpack(args))
             local remote = self
 
+            -- gửi lại sau delay bằng FireServer bình thường
             task.delay(getRandomDelay(), function()
                 if remote and remote.Parent then
-                    old(remote, table.unpack(clonedArgs, 1, clonedArgs.n))
+                    pcall(function()
+                        remote:FireServer(table.unpack(clonedArgs, 1, clonedArgs.n))
+                    end)
                 end
             end)
 
-            return -- chặn ngay, chỉ gửi bản delay
+            return -- chặn gói gốc
         end
 
         return old(self, ...)
