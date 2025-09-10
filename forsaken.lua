@@ -1028,7 +1028,7 @@ local function addKillerCircle(killer)
     circle.Color3 = Options.RangeCircleColor.Value or Color3.fromRGB(0,255,0)
     circle.CFrame = CFrame.Angles(math.rad(90), 0, 0)
     circle.Height = 0.1
-    circle.Radius = detectionRange / 2
+    circle.Radius = detectionRange / 1.25
     circle.Parent = killer.HumanoidRootPart
 
     detectionCircles[killer] = circle
@@ -1059,7 +1059,7 @@ RunService.RenderStepped:Connect(function()
     detectionRange = tonumber(_G.AutoBlockPunch_Range) or detectionRange
     for killer, circle in pairs(detectionCircles) do
         if circle and circle.Parent then
-            circle.Radius = detectionRange -- 🔑 không chia 2 nữa
+            circle.Radius = detectionRange / 1.25 -- 🔑 không chia 2 nữa
             circle.Color3 = Options.RangeCircleColor.Value or Color3.fromRGB(0,255,0)
         end
     end
