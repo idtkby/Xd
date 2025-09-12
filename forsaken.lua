@@ -4288,6 +4288,40 @@ do
     end)
 end
 
+		task.spawn(function()
+				local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
+local RemoteEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
+
+-- Lấy device attribute
+local device = player:GetAttribute("Device")
+
+if type(device) == "table" then
+    device = device[1]
+end
+
+device = tostring(device or "PC")
+
+-- Nếu không khớp options thì fallback PC
+local validDevices = {"PC", "Mobile", "Console"}
+if not table.find(validDevices, device) then
+    device = "PC"
+end
+
+-- Dropdown spoof device (obsidian)
+Dotab:AddDropdown("SpoofDevice", {
+    Text = "Spoof Device",
+    Default = device,
+    Values = validDevices,
+    Multi = false,
+    Callback = function(selected)
+        RemoteEvent:FireServer("SetDevice", selected)
+    end,
+})
+			end)
+
 
 
 
