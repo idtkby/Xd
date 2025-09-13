@@ -31,38 +31,42 @@ task.wait(1) -- Đợi 1s trước khi thực thi
 
 
 
+
 task.spawn(function()
--- Break maxstamina Loop (standalone version)
-local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems")
-    :WaitForChild("Character")
-    :WaitForChild("Game")
-    :WaitForChild("Sprinting"))
+    -- Lấy module Sprinting
+    local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems")
+        :WaitForChild("Character")
+        :WaitForChild("Game")
+        :WaitForChild("Sprinting"))
 
-if staminaModule then
-    -- Hook thuộc tính MaxStamina để không thể bị thay đổi
-    local mt = getrawmetatable(staminaModule)
-    setreadonly(mt, false)
-    local oldIndex = mt.__newindex
-    mt.__newindex = function(t, k, v)
-        if k == "MaxStamina" then
-            warn("[BlockFunction] Prevented setting MSN:", v)
-            return
+    if staminaModule then
+        -- Hook metatable để chặn thay đổi property quan trọng
+        local mt = getrawmetatable(staminaModule)
+        setreadonly(mt, false)
+
+        local oldIndex = mt.__newindex
+        mt.__newindex = function(t, k, v)
+            if k == "MaxStamina" or k == "StaminaLoss" or k == "StaminaGain" or k == "SprintSpeed" then
+                warn("[BlockFunction] Prevented setting " .. tostring(k) .. ":", v)
+                return
+            end
+            return oldIndex(t, k, v)
         end
-        return oldIndex(t, k, v)
-    end
-    setreadonly(mt, true)
-    
-    -- Hook __staminaChangedEvent:Fire để không cho script khác gọi
-    if staminaModule.__staminaChangedEvent then
-        staminaModule.__staminaChangedEvent.Fire = function() end
-    end
 
-    print("[Forsaken] Are you kidding me?")
-else
-    warn("[BlockInfStamina] staminaModule not found.")
-end
+        setreadonly(mt, true)
+
+        -- Hook __staminaChangedEvent:Fire để chặn call từ script khác
+        if staminaModule.__staminaChangedEvent then
+            staminaModule.__staminaChangedEvent.Fire = function()
+                warn("[BlockFunction] Prevented external Fire on __staminaChangedEvent")
+            end
+        end
+
+        print("[Forsaken] Stamina protections active ✅")
+    else
+        warn("[BlockInfStamina] staminaModule not found ❌")
+    end
 end)
-
 
 task.wait(1)
 
