@@ -1017,34 +1017,54 @@ Main1Group:AddToggle("AutoPunchAimbotToggle", {
 local RunService = game:GetService("RunService")
 local KillersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
 
-local detectionCircles = {} -- [killer] = adornment
+local detectionCircles = {} -- [killer] = {main=Adornment, small=Adornment}
 local killerCirclesVisible = false
 local detectionRange = tonumber(_G.AutoBlockPunch_Range) or 18
 
--- Add circle
-local function addKillerCircle(killer)
+-- === Add circle pair ===
+local function addKillerCircles(killer)
     if not killer:FindFirstChild("HumanoidRootPart") then return end
     if detectionCircles[killer] then return end
 
-    local circle = Instance.new("CylinderHandleAdornment")
-    circle.Name = "KillerDetectionCircle"
-    circle.Adornee = killer.HumanoidRootPart
-    circle.AlwaysOnTop = true
-    circle.ZIndex = 0
-    circle.Transparency = 0.7
-    circle.Color3 = Options.RangeCircleColor.Value or Color3.fromRGB(0,255,0)
-    circle.CFrame = CFrame.Angles(math.rad(90), 0, 0)
-    circle.Height = 0.1
-    circle.Radius = detectionRange / 1.25
-    circle.Parent = killer.HumanoidRootPart
+    local hrp = killer.HumanoidRootPart
+    detectionCircles[killer] = {}
 
-    detectionCircles[killer] = circle
+    -- Main circle (range thật)
+    local mainCircle = Instance.new("CylinderHandleAdornment")
+    mainCircle.Name = "MainDetectionCircle"
+    mainCircle.Adornee = hrp
+    mainCircle.AlwaysOnTop = true
+    mainCircle.ZIndex = 0
+    mainCircle.Transparency = 0.6
+    mainCircle.Color3 = Options.MainCircleColor.Value or Color3.fromRGB(0, 255, 0)
+    mainCircle.CFrame = CFrame.Angles(math.rad(90), 0, 0) * CFrame.new(0, -0.05, 0)
+    mainCircle.Height = 0.1
+    mainCircle.Radius = detectionRange
+    mainCircle.Parent = hrp
+
+    -- Small circle (chia 0.3)
+    local smallCircle = Instance.new("CylinderHandleAdornment")
+    smallCircle.Name = "SmallDetectionCircle"
+    smallCircle.Adornee = hrp
+    smallCircle.AlwaysOnTop = true
+    smallCircle.ZIndex = 0
+    smallCircle.Transparency = 0.6
+    smallCircle.Color3 = Options.SmallCircleColor.Value or Color3.fromRGB(255, 0, 0)
+    smallCircle.CFrame = CFrame.Angles(math.rad(90), 0, 0)
+    smallCircle.Height = 0.1
+    smallCircle.Radius = detectionRange * 0.3
+    smallCircle.Parent = hrp
+
+    detectionCircles[killer].main = mainCircle
+    detectionCircles[killer].small = smallCircle
 end
 
--- Remove circle
-local function removeKillerCircle(killer)
+-- === Remove circle pair ===
+local function removeKillerCircles(killer)
     if detectionCircles[killer] then
-        detectionCircles[killer]:Destroy()
+        for _, circle in pairs(detectionCircles[killer]) do
+            if circle then circle:Destroy() end
+        end
         detectionCircles[killer] = nil
     end
 end
@@ -1053,9 +1073,9 @@ end
 local function refreshKillerCircles()
     for _, killer in ipairs(KillersFolder:GetChildren()) do
         if killerCirclesVisible then
-            addKillerCircle(killer)
+            addKillerCircles(killer)
         else
-            removeKillerCircle(killer)
+            removeKillerCircles(killer)
         end
     end
 end
@@ -1064,10 +1084,14 @@ end
 RunService.RenderStepped:Connect(function()
     if not killerCirclesVisible then return end
     detectionRange = tonumber(_G.AutoBlockPunch_Range) or detectionRange
-    for killer, circle in pairs(detectionCircles) do
-        if circle and circle.Parent then
-            circle.Radius = detectionRange / 1.25 -- 🔑 không chia 2 nữa
-            circle.Color3 = Options.RangeCircleColor.Value or Color3.fromRGB(0,255,0)
+    for _, circles in pairs(detectionCircles) do
+        if circles.main and circles.main.Parent then
+            circles.main.Radius = detectionRange
+            circles.main.Color3 = Options.MainCircleColor.Value or Color3.fromRGB(0, 255, 0)
+        end
+        if circles.small and circles.small.Parent then
+            circles.small.Radius = detectionRange * 0.3
+            circles.small.Color3 = Options.SmallCircleColor.Value or Color3.fromRGB(255, 0, 0)
         end
     end
 end)
@@ -1077,13 +1101,13 @@ KillersFolder.ChildAdded:Connect(function(killer)
     if killerCirclesVisible then
         task.spawn(function()
             local hrp = killer:WaitForChild("HumanoidRootPart", 5)
-            if hrp then addKillerCircle(killer) end
+            if hrp then addKillerCircles(killer) end
         end)
     end
 end)
 
 KillersFolder.ChildRemoved:Connect(function(killer)
-    removeKillerCircle(killer)
+    removeKillerCircles(killer)
 end)
 
 -- GUI
@@ -1095,13 +1119,24 @@ Main1Group:AddToggle("ShowRange", {
         refreshKillerCircles()
     end
 })
-:AddColorPicker("RangeCircleColor", {
-    Default = Color3.fromRGB(0,255,0),
+:AddColorPicker("MainCircleColor", {
+    Default = Color3.fromRGB(0, 255, 0),
     Transparency = 0,
     Callback = function(color)
-        for _, circle in pairs(detectionCircles) do
-            if circle and circle.Parent then
-                circle.Color3 = color
+        for _, circles in pairs(detectionCircles) do
+            if circles.main and circles.main.Parent then
+                circles.main.Color3 = color
+            end
+        end
+    end
+})
+:AddColorPicker("SmallCircleColor", {
+    Default = Color3.fromRGB(255, 0, 0),
+    Transparency = 0,
+    Callback = function(color)
+        for _, circles in pairs(detectionCircles) do
+            if circles.small and circles.small.Parent then
+                circles.small.Color3 = color
             end
         end
     end
