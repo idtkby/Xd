@@ -3014,13 +3014,9 @@ end)
 M205Two:AddButton("Load NOL script", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Syndromehsh/-/refs/heads/ISIS-%E8%A2%AB%E9%81%97%E5%BC%83/%E4%B8%8D%E8%A6%81%E5%91%8A%E8%AF%89%E4%BB%BB%E4%BD%95%E4%BA%BA%E5%93%9F%5B/%E5%B8%8C%E7%9A%AE%E7%AC%91%E8%84%B8%5D"))()
 end)
-M205Two:AddButton("Load Nyansaken", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/NyansakenHub/NyansakenHub/refs/heads/main/nyansakenhub.lua"))()
-end)
 
 M205Two:AddDivider()
-M205Two:AddButton("Load Sigmasaken [Key in discord]", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/sigmaboy-sigma-boy/Stamina-Settings-and-ESP/refs/heads/main/SigmasakenLoader"))()
+M205Two:AddButton("Load Sigmasaken [Key in discord]", function()loadstring(game:HttpGet("https://raw.githubusercontent.com/sigmaboy-sigma-boy/Stamina-Settings-and-ESP/refs/heads/main/SigmasakenLoader"))()
 task.wait(3)
 setclipboard("ESPREWRITED")
 end)
@@ -3983,7 +3979,7 @@ end
 -- Tạo toggle cho từng loại bằng ObsidianLib
 for name, config in pairs(AntiSlowConfigs) do
     Main4Group:AddToggle("AntiSlow_" .. name, {
-        Text = "noslow: " .. name,
+        Text = "noslow " .. name,
         Default = false,
         Callback = function(Value)
             if Value then
