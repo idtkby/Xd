@@ -916,10 +916,13 @@ Main1Group:AddToggle("WalkspeedOverrideToggle", {
     end
 })
 
+				-- [MessageOutput] [Anim] rbxassetid://97167027849946
+
 -- Danh sách anim Walkspeed Override
 local walkspeedAnimIds = {
     ["106776364623742"] = true,
-    ["98456918873918"] = true
+    ["98456918873918"] = true,
+	["97167027849946"] = true
 }
 
 -- Hàm block
