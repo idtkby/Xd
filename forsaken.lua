@@ -760,24 +760,13 @@ local function remotePunch(targetRoot)
     end
 end
 
+-- Punch Aimbot theo remote Punch từ server
 NetworkEvent.OnClientEvent:Connect(function(action, ability)
     if not _G.AutoPunchAimbot_Enabled then return end
     if action == "UseActorAbility" then
-        local abilityName = nil
-
-        -- nếu ability là table chứa buffer
-        if typeof(ability) == "table" and ability[1] then
-            local ok, str = pcall(function()
-                return ability[1]:ToString()
-            end)
-            if ok and str then
-                abilityName = str:gsub("\"", "") -- bỏ dấu " " thừa
-            end
-        elseif typeof(ability) == "string" then
-            abilityName = ability
-        end
-
-        if abilityName == "Punch" then
+        -- ability giờ có thể là buffer, convert sang string để check
+        local abilityStr = tostring(ability)
+        if abilityStr:find("Punch") then
             local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
             if not myRoot then return end
 
@@ -786,7 +775,8 @@ NetworkEvent.OnClientEvent:Connect(function(action, ability)
             if killersFolder then
                 for _, killer in ipairs(killersFolder:GetChildren()) do
                     local root = killer:FindFirstChild("HumanoidRootPart")
-                    if root then
+                    local humanoid = killer:FindFirstChildOfClass("Humanoid")
+                    if root and humanoid and humanoid.Health > 0 then
                         local d = (root.Position - myRoot.Position).Magnitude
                         if d < dist then
                             dist = d
@@ -804,6 +794,7 @@ NetworkEvent.OnClientEvent:Connect(function(action, ability)
                         if aimConn then aimConn:Disconnect() end
                         return
                     end
+                    -- Giữ Y bằng localplayer, chỉ xoay ngang
                     local lookPos = Vector3.new(nearest.Position.X, myRoot.Position.Y, nearest.Position.Z)
                     myRoot.CFrame = CFrame.new(myRoot.Position, lookPos)
                 end)
