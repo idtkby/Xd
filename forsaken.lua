@@ -1047,7 +1047,7 @@ local function addKillerCircle(killer)
     inner.Color3 = Options.RangeCircleColorInner.Value or Color3.fromRGB(255,0,0)
     inner.CFrame = CFrame.new(0, -0.05, 0) * CFrame.Angles(math.rad(90), 0, 0)
     inner.Height = 0.1
-    inner.Radius = detectionRange * 0.3
+    inner.Radius = detectionRange / 1.265
     inner.Parent = killer.HumanoidRootPart
 
     detectionCircles[killer] = {outer = outer, inner = inner}
@@ -1083,7 +1083,7 @@ RunService.RenderStepped:Connect(function()
             circles.outer.Color3 = Options.RangeCircleColorOuter.Value or Color3.fromRGB(0,255,0)
         end
         if circles.inner and circles.inner.Parent then
-            circles.inner.Radius = detectionRange * 0.3
+            circles.inner.Radius = detectionRange / 1.265
             circles.inner.Color3 = Options.RangeCircleColorInner.Value or Color3.fromRGB(255,0,0)
         end
     end
