@@ -1017,7 +1017,7 @@ Main1Group:AddToggle("AutoPunchAimbotToggle", {
 local RunService = game:GetService("RunService")
 local KillersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
 
-local detectionCircles = {} -- [killer] = adornment
+local detectionCircles = {} -- [killer] = {outer = circle1, inner = circle2}
 local killerCirclesVisible = false
 local detectionRange = tonumber(_G.AutoBlockPunch_Range) or 18
 
@@ -1026,25 +1026,38 @@ local function addKillerCircle(killer)
     if not killer:FindFirstChild("HumanoidRootPart") then return end
     if detectionCircles[killer] then return end
 
-    local circle = Instance.new("CylinderHandleAdornment")
-    circle.Name = "KillerDetectionCircle"
-    circle.Adornee = killer.HumanoidRootPart
-    circle.AlwaysOnTop = true
-    circle.ZIndex = 0
-    circle.Transparency = 0.7
-    circle.Color3 = Options.RangeCircleColor.Value or Color3.fromRGB(0,255,0)
-    circle.CFrame = CFrame.Angles(math.rad(90), 0, 0)
-    circle.Height = 0.1
-    circle.Radius = detectionRange * 0.3
-    circle.Parent = killer.HumanoidRootPart
+    local outer = Instance.new("CylinderHandleAdornment")
+    outer.Name = "KillerRangeOuter"
+    outer.Adornee = killer.HumanoidRootPart
+    outer.AlwaysOnTop = true
+    outer.ZIndex = 0
+    outer.Transparency = 0.9
+    outer.Color3 = Options.RangeCircleColorOuter.Value or Color3.fromRGB(0,255,0)
+    outer.CFrame = CFrame.Angles(math.rad(90), 0, 0)
+    outer.Height = 0.1
+    outer.Radius = detectionRange
+    outer.Parent = killer.HumanoidRootPart
 
-    detectionCircles[killer] = circle
+    local inner = Instance.new("CylinderHandleAdornment")
+    inner.Name = "KillerRangeInner"
+    inner.Adornee = killer.HumanoidRootPart
+    inner.AlwaysOnTop = true
+    inner.ZIndex = 0
+    inner.Transparency = 0.9
+    inner.Color3 = Options.RangeCircleColorInner.Value or Color3.fromRGB(255,0,0)
+    inner.CFrame = CFrame.new(0, -0.05, 0) * CFrame.Angles(math.rad(90), 0, 0)
+    inner.Height = 0.1
+    inner.Radius = detectionRange * 0.3
+    inner.Parent = killer.HumanoidRootPart
+
+    detectionCircles[killer] = {outer = outer, inner = inner}
 end
 
 -- Remove circle
 local function removeKillerCircle(killer)
     if detectionCircles[killer] then
-        detectionCircles[killer]:Destroy()
+        if detectionCircles[killer].outer then detectionCircles[killer].outer:Destroy() end
+        if detectionCircles[killer].inner then detectionCircles[killer].inner:Destroy() end
         detectionCircles[killer] = nil
     end
 end
@@ -1064,10 +1077,14 @@ end
 RunService.RenderStepped:Connect(function()
     if not killerCirclesVisible then return end
     detectionRange = tonumber(_G.AutoBlockPunch_Range) or detectionRange
-    for killer, circle in pairs(detectionCircles) do
-        if circle and circle.Parent then
-            circle.Radius = detectionRange * 0.3
-            circle.Color3 = Options.RangeCircleColor.Value or Color3.fromRGB(0,255,0)
+    for killer, circles in pairs(detectionCircles) do
+        if circles.outer and circles.outer.Parent then
+            circles.outer.Radius = detectionRange
+            circles.outer.Color3 = Options.RangeCircleColorOuter.Value or Color3.fromRGB(0,255,0)
+        end
+        if circles.inner and circles.inner.Parent then
+            circles.inner.Radius = detectionRange * 0.3
+            circles.inner.Color3 = Options.RangeCircleColorInner.Value or Color3.fromRGB(255,0,0)
         end
     end
 end)
@@ -1095,13 +1112,24 @@ Main1Group:AddToggle("ShowRange", {
         refreshKillerCircles()
     end
 })
-:AddColorPicker("RangeCircleColor", {
+:AddColorPicker("RangeCircleColorOuter", {
     Default = Color3.fromRGB(0,255,0),
     Transparency = 0,
     Callback = function(color)
-        for _, circle in pairs(detectionCircles) do
-            if circle and circle.Parent then
-                circle.Color3 = color
+        for _, circles in pairs(detectionCircles) do
+            if circles.outer and circles.outer.Parent then
+                circles.outer.Color3 = color
+            end
+        end
+    end
+})
+:AddColorPicker("RangeCircleColorInner", {
+    Default = Color3.fromRGB(255,0,0),
+    Transparency = 0,
+    Callback = function(color)
+        for _, circles in pairs(detectionCircles) do
+            if circles.inner and circles.inner.Parent then
+                circles.inner.Color3 = color
             end
         end
     end
