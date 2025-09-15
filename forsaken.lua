@@ -826,7 +826,7 @@ if root and humanoid and humanoid.Health > 0 then
   
    if id and animationIds[id] and not clickedTracks[track] then  
     local tp = track.TimePosition or 0  
-    if tp <= 0.2 and dist <= _G.AutoBlockPunch_Range then  
+    if tp <= 0.1 and dist <= _G.AutoBlockPunch_Range then  
         clickedTracks[track] = true  
   
         -- block luôn không delay  
@@ -861,7 +861,7 @@ end
             local timePos = (ok and tp) or 0  
   
             -- Block tức thì khi sound vừa phát  
-            if timePos <= 0.2 and dist <= _G.AutoBlockPunch_Range then  
+            if timePos <= 0.1 and dist <= _G.AutoBlockPunch_Range then  
                 clickedSounds[sid] = true  
   
                 -- Block ngay lập tức (không chờ delay)  
