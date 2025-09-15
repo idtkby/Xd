@@ -1031,7 +1031,7 @@ local function addKillerCircle(killer)
     outer.Adornee = killer.HumanoidRootPart
     outer.AlwaysOnTop = true
     outer.ZIndex = 0
-    outer.Transparency = 0.9
+    outer.Transparency = 0.8
     outer.Color3 = Options.RangeCircleColorOuter.Value or Color3.fromRGB(0,255,0)
     outer.CFrame = CFrame.Angles(math.rad(90), 0, 0)
     outer.Height = 0.1
@@ -1043,7 +1043,7 @@ local function addKillerCircle(killer)
     inner.Adornee = killer.HumanoidRootPart
     inner.AlwaysOnTop = true
     inner.ZIndex = 0
-    inner.Transparency = 0.9
+    inner.Transparency = 0.7
     inner.Color3 = Options.RangeCircleColorInner.Value or Color3.fromRGB(255,0,0)
     inner.CFrame = CFrame.new(0, -0.05, 0) * CFrame.Angles(math.rad(90), 0, 0)
     inner.Height = 0.1
