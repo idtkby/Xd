@@ -692,6 +692,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
+local HttpService = game:GetService("HttpService")
 local lp = Players.LocalPlayer
 
 -- Remote
@@ -759,40 +760,54 @@ local function remotePunch(targetRoot)
     end
 end
 
--- Punch Aimbot theo remote Punch từ server
 NetworkEvent.OnClientEvent:Connect(function(action, ability)
     if not _G.AutoPunchAimbot_Enabled then return end
-    if action == "UseActorAbility" and tostring(ability):find("Punch") then
-        local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-        if not myRoot then return end
+    if action == "UseActorAbility" then
+        local abilityName = nil
 
-        local nearest, dist = nil, math.huge
-        local killersFolder = Workspace:FindFirstChild("Players") and Workspace.Players:FindFirstChild("Killers")
-        if killersFolder then
-            for _, killer in ipairs(killersFolder:GetChildren()) do
-                local root = killer:FindFirstChild("HumanoidRootPart")
-                local humanoid = killer:FindFirstChildOfClass("Humanoid")
-                if root and humanoid and humanoid.Health > 0 then
-                    local d = (root.Position - myRoot.Position).Magnitude
-                    if d < dist then
-                        dist = d; nearest = root
+        -- nếu ability là table chứa buffer
+        if typeof(ability) == "table" and ability[1] then
+            local ok, str = pcall(function()
+                return ability[1]:ToString()
+            end)
+            if ok and str then
+                abilityName = str:gsub("\"", "") -- bỏ dấu " " thừa
+            end
+        elseif typeof(ability) == "string" then
+            abilityName = ability
+        end
+
+        if abilityName == "Punch" then
+            local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+            if not myRoot then return end
+
+            local nearest, dist = nil, math.huge
+            local killersFolder = Workspace:FindFirstChild("Players") and Workspace.Players:FindFirstChild("Killers")
+            if killersFolder then
+                for _, killer in ipairs(killersFolder:GetChildren()) do
+                    local root = killer:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        local d = (root.Position - myRoot.Position).Magnitude
+                        if d < dist then
+                            dist = d
+                            nearest = root
+                        end
                     end
                 end
             end
-        end
 
-        if nearest then
-            local start = tick()
-            local aimConn
-            aimConn = RunService.Heartbeat:Connect(function()
-                if tick() - start > 0.8 or not nearest.Parent or not myRoot.Parent then
-                    if aimConn then aimConn:Disconnect() end
-                    return
-                end
-                -- Giữ Y bằng localplayer, chỉ xoay ngang
-                local lookPos = Vector3.new(nearest.Position.X, myRoot.Position.Y, nearest.Position.Z)
-                myRoot.CFrame = CFrame.new(myRoot.Position, lookPos)
-            end)
+            if nearest then
+                local start = tick()
+                local aimConn
+                aimConn = RunService.Heartbeat:Connect(function()
+                    if tick() - start > 0.8 or not nearest.Parent or not myRoot.Parent then
+                        if aimConn then aimConn:Disconnect() end
+                        return
+                    end
+                    local lookPos = Vector3.new(nearest.Position.X, myRoot.Position.Y, nearest.Position.Z)
+                    myRoot.CFrame = CFrame.new(myRoot.Position, lookPos)
+                end)
+            end
         end
     end
 end)
