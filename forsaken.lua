@@ -758,54 +758,75 @@ local function remotePunch(targetRoot)
         }
         NetworkEvent:FireServer(unpack(args))
     end
-end-- check có phải Punch event không
-local function isPunchEvent(args)
-    for _, v in ipairs(args) do
-        local s = tostring(v)
-        if s:find("Punch") then
-            return true
-        end
-    end
-    return false
-end
+				end
 
--- aimbot chỉ chạy khi server báo punch thành công
-NetworkEvent.OnClientEvent:Connect(function(action, data)
-    if not _G.AutoPunchAimbot_Enabled then return end
-    if not isPunchEvent({action, data}) then return end
+				local punchAnimIDs = {
+    ["87259391926321"] = true, ["140703210927645"] = true,
+    ["136007065400978"] = true, ["129843313690921"] = true,
+    ["86709774283672"] = true, ["108807732150251"] = true,
+    ["138040001965654"] = true, ["86096387000557"] = true,
+}
 
-    local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-    if not myRoot then return end
+local function punchAimbotAnimation(humanoid)
+    humanoid.AnimationPlayed:Connect(function(track)
+        local anim = track.Animation
+        if not anim then return end
+        local id = anim.AnimationId and string.match(anim.AnimationId, "%d+")
+        if not id or not punchAnimIDs[id] then return end
+        if not _G.AutoPunchAimbot_Enabled then return end
 
-    -- tìm killer gần nhất
-    local nearest, dist = nil, math.huge
-    local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
-    if killersFolder then
-        for _, killer in ipairs(killersFolder:GetChildren()) do
-            local root = killer:FindFirstChild("HumanoidRootPart")
-            local hum = killer:FindFirstChildOfClass("Humanoid")
-            if root and hum and hum.Health > 0 then
-                local d = (root.Position - myRoot.Position).Magnitude
-                if d < dist then
-                    dist, nearest = d, root
+        local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+        if not myRoot then return end
+
+        -- Tìm nearest killer
+        local nearest, dist = nil, math.huge
+        local killersFolder = Workspace:FindFirstChild("Players") and Workspace.Players:FindFirstChild("Killers")
+        if killersFolder then
+            for _, killer in ipairs(killersFolder:GetChildren()) do
+                local root = killer:FindFirstChild("HumanoidRootPart")
+                local h = killer:FindFirstChildOfClass("Humanoid")
+                if root and h and h.Health > 0 then
+                    local d = (root.Position - myRoot.Position).Magnitude
+                    if d < dist then dist = d; nearest = root end
                 end
             end
         end
-    end
+        if not nearest then return end
 
-    if nearest then
-        -- xoay trong 0.8s
+        -- Lock aim 0.8s
         local start = tick()
-        local conn
-        conn = RunService.Heartbeat:Connect(function()
+        local aimConn
+        aimConn = RunService.Heartbeat:Connect(function()
             if tick() - start > 0.8 or not nearest.Parent or not myRoot.Parent then
-                if conn then conn:Disconnect() end
+                if aimConn then aimConn:Disconnect() end
                 return
             end
             local lookPos = Vector3.new(nearest.Position.X, myRoot.Position.Y, nearest.Position.Z)
             myRoot.CFrame = CFrame.new(myRoot.Position, lookPos)
         end)
+
+        -- Sau khi lock aim, punch
+        task.delay(0.15, function()
+            if nearest and nearest.Parent then
+                remotePunch(nearest)
+            end
+        end)
+    end)
+end
+
+-- Gắn aimbot cho localplayer
+local char = lp.Character
+if char then
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        punchAimbotAnimation(humanoid)
     end
+end
+
+-- Khi respawn, gắn lại
+lp.CharacterAdded:Connect(function(char)
+    local humanoid = char:WaitForChild("Humanoid")
+    punchAimbotAnimation(humanoid)
 end)
 -- Loop chính    
 RunService.Heartbeat:Connect(function()  
