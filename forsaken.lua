@@ -760,50 +760,50 @@ local function remotePunch(targetRoot)
     end
 end
 
-NetworkEvent.OnClientEvent:Connect(function(...)
+-- Punch Aimbot theo RemoteEvent mới
+NetworkEvent.OnClientEvent:Connect(function(a1, a2)
     if not _G.AutoPunchAimbot_Enabled then return end
-    
-    local args = {...}
-    local action = args[1]
-    local abilityData = args[2]
 
-    -- Nếu abilityData là buffer thì tostring sẽ ra kiểu dữ liệu thô
-    if action == "UseActorAbility" and tostring(abilityData):find("Punch") then
-        local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-        if not myRoot then return end
+    -- a1 = "UseActorAbility"
+    -- a2 = buffer.fromstring("\"Punch\"")
+    if a1 == "UseActorAbility" and typeof(a2) == "table" then
+        local raw = tostring(a2[1] or a2) -- lấy phần tử đầu trong buffer
+        if raw:find("Punch") then
+            local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+            if not myRoot then return end
 
-        local nearest, dist = nil, math.huge
-        local killersFolder = Workspace:FindFirstChild("Players") and Workspace.Players:FindFirstChild("Killers")
-        if killersFolder then
-            for _, killer in ipairs(killersFolder:GetChildren()) do
-                local root = killer:FindFirstChild("HumanoidRootPart")
-                local humanoid = killer:FindFirstChildOfClass("Humanoid")
-                if root and humanoid and humanoid.Health > 0 then
-                    local d = (root.Position - myRoot.Position).Magnitude
-                    if d < dist then
-                        dist = d
-                        nearest = root
+            -- tìm killer gần nhất
+            local nearest, dist = nil, math.huge
+            local killersFolder = Workspace:FindFirstChild("Players") and Workspace.Players:FindFirstChild("Killers")
+            if killersFolder then
+                for _, killer in ipairs(killersFolder:GetChildren()) do
+                    local root = killer:FindFirstChild("HumanoidRootPart")
+                    local humanoid = killer:FindFirstChildOfClass("Humanoid")
+                    if root and humanoid and humanoid.Health > 0 then
+                        local d = (root.Position - myRoot.Position).Magnitude
+                        if d < dist then
+                            dist = d; nearest = root
+                        end
                     end
                 end
             end
-        end
 
-        if nearest then
-            local start = tick()
-            local aimConn
-            aimConn = RunService.Heartbeat:Connect(function()
-                if tick() - start > 0.8 or not nearest.Parent or not myRoot.Parent then
-                    if aimConn then aimConn:Disconnect() end
-                    return
-                end
-                -- Giữ nguyên Y, chỉ xoay ngang
-                local lookPos = Vector3.new(nearest.Position.X, myRoot.Position.Y, nearest.Position.Z)
-                myRoot.CFrame = CFrame.new(myRoot.Position, lookPos)
-            end)
+            -- lock vào killer trong 0.8s
+            if nearest then
+                local start = tick()
+                local aimConn
+                aimConn = RunService.Heartbeat:Connect(function()
+                    if tick() - start > 0.8 or not nearest.Parent or not myRoot.Parent then
+                        if aimConn then aimConn:Disconnect() end
+                        return
+                    end
+                    local lookPos = Vector3.new(nearest.Position.X, myRoot.Position.Y, nearest.Position.Z)
+                    myRoot.CFrame = CFrame.new(myRoot.Position, lookPos)
+                end)
+            end
         end
     end
 end)
-
 -- Loop chính    
 RunService.Heartbeat:Connect(function()  
     if not isGuestSurvivor() then return end  
