@@ -925,19 +925,21 @@ Main1Group:AddToggle("WalkspeedOverrideToggle", {
     end
 })
 
-				-- [MessageOutput] [Anim] rbxassetid://97167027849946
-
 -- Danh sách anim Walkspeed Override
 local walkspeedAnimIds = {
     ["106776364623742"] = true,
     ["98456918873918"] = true,
-	["97167027849946"] = true
+    ["97167027849946"] = true
 }
 
--- Hàm block
+-- Hàm block (dùng buffer)
 local function remoteBlock()
     pcall(function()
-        NetworkEvent:FireServer("UseActorAbility", "Block")
+        local args = {
+            "UseActorAbility",
+            { buffer.fromstring("\"Block\"") }
+        }
+        NetworkEvent:FireServer(unpack(args))
     end)
 end
 
@@ -993,7 +995,6 @@ RunService.Heartbeat:Connect(function()
         end
     end
 end)
-
 end)
 
 
