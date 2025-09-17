@@ -3323,16 +3323,22 @@ local function tpBehind(hrp, targetHRP)
 end  
   
 -- Bắt remote để bật cooldown + xử lý TP mode  
--- Bắt remote để bật cooldown + xử lý TP mode
-daggerRemote.OnClientEvent:Connect(function(action, ability)
-    if action == "UseActorAbility" and ability == "Dagger" then
+-- ID anim backstab
+local BACKSTAB_ANIM = "86545133269813"
+
+local function hookBackstabAnim(humanoid)
+    humanoid.AnimationPlayed:Connect(function(track)
+        local anim = track.Animation
+        if not anim then return end
+        local id = anim.AnimationId and anim.AnimationId:match("%d+")
+        if id ~= BACKSTAB_ANIM then return end
         if not _G.AimBackstab_Enabled then return end
         if globalCooldown then return end
         globalCooldown = true
 
-        -- nếu đang ở TP mode thì đợi 0.1s rồi TP
+        -- Nếu chọn TP
         if _G.AimBackstab_Action == "TP" then
-            task.delay(0, function() -- <--- thêm delay
+            task.delay(0, function()
                 local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
                 if hrp then
                     local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
@@ -3348,15 +3354,25 @@ daggerRemote.OnClientEvent:Connect(function(action, ability)
             end)
         end
 
-        -- notify
+        -- notify + cooldown
         Library:Notify("Cooldown 30s", 5)
-
-        -- cooldown reset
         task.delay(30, function()
             globalCooldown = false
             Library:Notify("Cooldown Ended", 5)
         end)
-    end
+    end)
+end
+
+-- Gắn cho nhân vật hiện tại
+if lp.Character then
+    local hum = lp.Character:FindFirstChildOfClass("Humanoid")
+    if hum then hookBackstabAnim(hum) end
+end
+
+-- Khi respawn gắn lại
+lp.CharacterAdded:Connect(function(char)
+    local hum = char:WaitForChild("Humanoid")
+    hookBackstabAnim(hum)
 end)
 
 -- helper: quay cùng hướng killer
