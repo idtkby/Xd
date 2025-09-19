@@ -2480,6 +2480,56 @@ M205One:AddButton("Pick Item", function()
     end
 end)
 
+		local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+
+-- Biến auto collect
+local autoCollect = false
+
+-- Hàm xử lý nhặt item
+local function collectItem(tool)
+    if autoCollect and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        if tool:IsA("Tool") and tool:FindFirstChild("ItemRoot") and tool.ItemRoot:FindFirstChild("ProximityPrompt") then
+            local root = LocalPlayer.Character.HumanoidRootPart
+            local dist = (root.Position - tool.ItemRoot.Position).Magnitude
+            if dist <= 20 then -- range 20 studs
+                pcall(function()
+                    fireproximityprompt(tool.ItemRoot.ProximityPrompt)
+                end)
+            end
+        end
+    end
+end
+
+-- Loop check item sẵn có
+RunService.Heartbeat:Connect(function()
+    if autoCollect and workspace:FindFirstChild("Map") 
+        and workspace.Map:FindFirstChild("Ingame") 
+        and workspace.Map.Ingame:FindFirstChild("Map") then
+        for _, v in ipairs(workspace.Map.Ingame.Map:GetChildren()) do
+            collectItem(v)
+        end
+    end
+end)
+
+-- Tự động theo dõi item spawn thêm
+if workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame") and workspace.Map.Ingame:FindFirstChild("Map") then
+    workspace.Map.Ingame.Map.ChildAdded:Connect(function(child)
+        task.wait() -- đợi 1 frame để chắc chắn ProximityPrompt tạo xong
+        collectItem(child)
+    end)
+end
+
+-- Thêm vào Obsidian UI
+M205One:AddToggle("AutoCollectItems", {
+    Text = "Auto Collect Items",
+    Default = false,
+    Callback = function(state)
+        autoCollect = state
+    end
+})
+
 M205One:AddDivider()
 
 M205One:AddLabel("-= Last Mans Standing Sound =-")
