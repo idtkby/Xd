@@ -2028,14 +2028,18 @@ Main2Group:AddToggle("c00lguiESP", {
 })
 
 		task.spawn(function()
--- Visual Skill Hitbox (fixed Swords issue)
+-- Visual Skill Hitbox (with separate colors)
 local RunService = game:GetService("RunService")
 local KillersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
 
 _G.VisualSkillBox = false
 local SKILL_NAMES = { ["swords"]=true, ["shockwave"]=true } -- check lowercase
 local HITBOX_SIZE = Vector3.new(10,3,1000)
-local HITBOX_TIME = 2.5 -- tồn tại tạm, anim stop sẽ xoá sớm
+local HITBOX_TIME = 2.5 -- shockwave mặc định
+
+-- màu riêng
+local swordsColor = Color3.fromRGB(255,0,0)
+local shockwaveColor = Color3.fromRGB(0,0,255)
 
 local activeHitbox = {} -- [killer] = part
 
@@ -2070,7 +2074,8 @@ local function createHitbox(killer, skill)
     if not dir then return end
 
     -- FIX: nếu skill là swords thì đảo hướng
-    if string.lower(skill.Name) == "swords" then
+    local skillName = string.lower(skill.Name)
+    if skillName == "swords" then
         dir = -dir
     end
 
@@ -2082,9 +2087,16 @@ local function createHitbox(killer, skill)
     part.CanCollide = false
     part.CanQuery = false
     part.Size = HITBOX_SIZE
-    part.Color = Color3.fromRGB(255,0,0)
-    part.Transparency = 0.5
+    part.Transparency = 0.8
     part.Material = Enum.Material.Neon
+
+    -- màu riêng theo skill
+    if skillName == "swords" then
+        part.Color = swordsColor
+    elseif skillName == "shockwave" then
+        part.Color = shockwaveColor
+    end
+
     part.CFrame = CFrame.lookAt(mid, mid + dir)
     part.Parent = workspace
 
@@ -2093,8 +2105,15 @@ local function createHitbox(killer, skill)
     skill.Destroying:Connect(function()
         destroyHitbox(killer)
     end)
-    game:GetService("Debris"):AddItem(part, HITBOX_TIME)
+
+    -- lifetime riêng
+    local lifeTime = HITBOX_TIME
+    if skillName == "swords" then
+        lifeTime = 5
+    end
+    game:GetService("Debris"):AddItem(part, lifeTime)
 end
+
 -- detect spawn skill
 workspace.DescendantAdded:Connect(function(obj)
     if not _G.VisualSkillBox then return end
@@ -2118,13 +2137,13 @@ workspace.DescendantAdded:Connect(function(obj)
     end
 
     if nearest then
-        task.delay(0.05, function() -- đợi velocity update
+        task.delay(0.1, function() -- đợi velocity update
             createHitbox(nearest, obj)
         end)
     end
 end)
 
--- Toggle GUI
+-- GUI
 Main2Group:AddToggle("VisualSkillBox", {
     Text = "Visual Skill Hitbox",
     Default = false,
@@ -2135,6 +2154,20 @@ Main2Group:AddToggle("VisualSkillBox", {
                 destroyHitbox(k)
             end
         end
+    end
+})
+:AddColorPicker("SwordsHitboxColor", {
+    Default = swordsColor,
+    Transparency = 0.8,
+    Callback = function(color)
+        swordsColor = color
+    end
+})
+:AddColorPicker("ShockwaveHitboxColor", {
+    Default = shockwaveColor,
+    Transparency = 0.8,
+    Callback = function(color)
+        shockwaveColor = color
     end
 })
 			end)
