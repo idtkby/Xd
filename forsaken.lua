@@ -2028,7 +2028,7 @@ Main2Group:AddToggle("c00lguiESP", {
 })
 
 		task.spawn(function()
-				local RunService = game:GetService("RunService")
+local RunService = game:GetService("RunService")
 local KillersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
 
 -- Toggle
@@ -2044,7 +2044,7 @@ local SKILL_ANIMS = {
     ["100592913030351"] = true,
 }
 
--- Tạo hitbox visual
+-- Tạo hitbox visual (Part)
 local function createSkillHitbox(killer)
     local hrp = killer:FindFirstChild("HumanoidRootPart")
     if not hrp then return nil end
@@ -2052,11 +2052,10 @@ local function createSkillHitbox(killer)
     local part = Instance.new("Part")
     part.Name = "SkillHitboxVisual"
     part.Size = Vector3.new(10, 3, 1000)
-    part.CFrame = hrp.CFrame * CFrame.new(0, 0, -500) -- kéo ra phía trước 1000 studs
     part.Anchored = true
     part.CanCollide = false
     part.CanQuery = false
-    part.Transparency = 0.5
+    part.Transparency = 0.8
     part.Color = Color3.fromRGB(255, 0, 0)
     part.Material = Enum.Material.Neon
     part.Parent = workspace
@@ -2076,9 +2075,23 @@ local function hookKillerAnim(killer)
         if id and SKILL_ANIMS[id] then
             local hitbox = createSkillHitbox(killer)
             if hitbox then
-                -- Xóa khi anim dừng
+                local conn
+                conn = RunService.RenderStepped:Connect(function()
+                    if not _G.VisualSkillBox or not killer.Parent or not hitbox.Parent then
+                        conn:Disconnect()
+                        if hitbox then hitbox:Destroy() end
+                        return
+                    end
+                    local hrp = killer:FindFirstChild("HumanoidRootPart")
+                    if not hrp then return end
+                    -- hitbox bám hướng HRP
+                    hitbox.CFrame = hrp.CFrame * CFrame.new(0, 0, -500)
+                end)
+
+                -- Xoá khi anim dừng
                 task.spawn(function()
                     track.Stopped:Wait()
+                    if conn then conn:Disconnect() end
                     if hitbox and hitbox.Parent then
                         hitbox:Destroy()
                     end
@@ -2099,15 +2112,14 @@ KillersFolder.ChildAdded:Connect(function(killer)
     hookKillerAnim(killer)
 end)
 
--- GUI toggle
+-- GUI toggle ở Main2Group
 Main2Group:AddToggle("VisualSkill", {
     Text = "Visual Skill Hitbox (1x)",
     Default = false,
     Callback = function(state)
         _G.VisualSkillBox = state
     end
-})
-			end)
+})			end)
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
