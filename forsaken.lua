@@ -2055,6 +2055,17 @@ local function createHitbox(killer, skill)
     if not hrp then return end
     destroyHitbox(killer)
 
+    -- đợi velocity update nếu là swords
+    if string.lower(skill.Name) == "swords" then
+        for i = 1, 4 do -- đợi tối đa 0.2s (4*0.05)
+            task.wait(0.05)
+            local bp = skill:IsA("BasePart") and skill or skill:FindFirstChildWhichIsA("BasePart", true)
+            if bp and (bp.AssemblyLinearVelocity.Magnitude > 1 or bp.CFrame) then
+                break
+            end
+        end
+    end
+
     -- hướng đi
     local dir = nil
     if skill:IsA("BasePart") and skill.AssemblyLinearVelocity.Magnitude > 1 then
@@ -2073,7 +2084,7 @@ local function createHitbox(killer, skill)
     end
     if not dir then return end
 
-    -- FIX: nếu skill là swords thì đảo hướng
+    -- FIX: swords bị ngược
     local skillName = string.lower(skill.Name)
     if skillName == "swords" then
         dir = -dir
@@ -2090,7 +2101,7 @@ local function createHitbox(killer, skill)
     part.Transparency = 0.8
     part.Material = Enum.Material.Neon
 
-    -- màu riêng theo skill
+    -- màu riêng
     if skillName == "swords" then
         part.Color = swordsColor
     elseif skillName == "shockwave" then
@@ -2102,21 +2113,15 @@ local function createHitbox(killer, skill)
 
     activeHitbox[killer] = part
 
-    -- xoá theo loại skill
+    skill.Destroying:Connect(function()
+        destroyHitbox(killer)
+    end)
+
+    local lifeTime = HITBOX_TIME
     if skillName == "swords" then
-        -- KHÔNG xoá theo Destroying, giữ 5s rồi tự xoá
-        task.delay(5, function()
-            if part and part.Parent then
-                destroyHitbox(killer)
-            end
-        end)
-    else
-        -- Shockwave thì để Debris như cũ
-        skill.Destroying:Connect(function()
-            destroyHitbox(killer)
-        end)
-        game:GetService("Debris"):AddItem(part, HITBOX_TIME)
+        lifeTime = 5
     end
+    game:GetService("Debris"):AddItem(part, lifeTime)
 end
 
 -- detect spawn skill
