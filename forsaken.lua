@@ -2119,7 +2119,7 @@ local function createHitbox(killer, skill)
 
     local lifeTime = HITBOX_TIME
     if skillName == "swords" then
-        lifeTime = 5
+        lifeTime = 3.5
     end
     game:GetService("Debris"):AddItem(part, lifeTime)
 end
@@ -2155,7 +2155,7 @@ end)
 
 -- GUI
 Main2Group:AddToggle("VisualSkillBox", {
-    Text = "Visual Skill Hitbox",
+    Text = "Visual Skill Hitbox (1x)",
     Default = false,
     Callback = function(state)
         _G.VisualSkillBox = state
