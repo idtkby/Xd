@@ -2057,7 +2057,7 @@ local function createHitbox(killer, skill)
 
     -- đợi velocity update nếu là swords
     if string.lower(skill.Name) == "swords" then
-        for i = 1, 4 do -- đợi tối đa 0.2s (4*0.05)
+        for i = 1, 8 do -- đợi tối đa 0.2s (4*0.05)
             task.wait(0.05)
             local bp = skill:IsA("BasePart") and skill or skill:FindFirstChildWhichIsA("BasePart", true)
             if bp and (bp.AssemblyLinearVelocity.Magnitude > 1 or bp.CFrame) then
