@@ -2100,7 +2100,7 @@ KillersFolder.ChildAdded:Connect(function(killer)
 end)
 
 -- GUI toggle
-Main1Group:AddToggle("VisualSkill", {
+Main2Group:AddToggle("VisualSkill", {
     Text = "Visual Skill Hitbox (1x)",
     Default = false,
     Callback = function(state)
