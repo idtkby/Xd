@@ -2027,6 +2027,88 @@ Main2Group:AddToggle("c00lguiESP", {
     end
 })
 
+		task.spawn(function()
+				local RunService = game:GetService("RunService")
+local KillersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
+
+-- Toggle
+_G.VisualSkillBox = false
+
+-- Anim IDs cần track
+local SKILL_ANIMS = {
+    ["93491748129367"] = true,
+    ["70447634862911"] = true,
+    ["119181003138006"] = true,
+    ["131430497821198"] = true,
+    ["81935774508746"] = true,
+    ["100592913030351"] = true,
+}
+
+-- Tạo hitbox visual
+local function createSkillHitbox(killer)
+    local hrp = killer:FindFirstChild("HumanoidRootPart")
+    if not hrp then return nil end
+
+    local part = Instance.new("Part")
+    part.Name = "SkillHitboxVisual"
+    part.Size = Vector3.new(10, 3, 1000)
+    part.CFrame = hrp.CFrame * CFrame.new(0, 0, -500) -- kéo ra phía trước 1000 studs
+    part.Anchored = true
+    part.CanCollide = false
+    part.CanQuery = false
+    part.Transparency = 0.5
+    part.Color = Color3.fromRGB(255, 0, 0)
+    part.Material = Enum.Material.Neon
+    part.Parent = workspace
+    return part
+end
+
+-- Hook Animations của killer
+local function hookKillerAnim(killer)
+    local hum = killer:FindFirstChildOfClass("Humanoid")
+    if not hum then return end
+    local animator = hum:FindFirstChildOfClass("Animator")
+    if not animator then return end
+
+    animator.AnimationPlayed:Connect(function(track)
+        if not _G.VisualSkillBox then return end
+        local id = track.Animation and track.Animation.AnimationId:match("%d+")
+        if id and SKILL_ANIMS[id] then
+            local hitbox = createSkillHitbox(killer)
+            if hitbox then
+                -- Xóa khi anim dừng
+                task.spawn(function()
+                    track.Stopped:Wait()
+                    if hitbox and hitbox.Parent then
+                        hitbox:Destroy()
+                    end
+                end)
+            end
+        end
+    end)
+end
+
+-- Hook killers hiện có
+for _, killer in ipairs(KillersFolder:GetChildren()) do
+    hookKillerAnim(killer)
+end
+
+-- Hook killers spawn thêm
+KillersFolder.ChildAdded:Connect(function(killer)
+    task.wait(0.5)
+    hookKillerAnim(killer)
+end)
+
+-- GUI toggle
+Main1Group:AddToggle("VisualSkill", {
+    Text = "Visual Skill Hitbox (1x)",
+    Default = false,
+    Callback = function(state)
+        _G.VisualSkillBox = state
+    end
+})
+			end)
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
