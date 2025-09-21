@@ -2055,11 +2055,20 @@ local function createSkillHitbox(killer)
     part.Anchored = true
     part.CanCollide = false
     part.CanQuery = false
-    part.Transparency = 0.8
+    part.Transparency = 0.5
     part.Color = Color3.fromRGB(255, 0, 0)
     part.Material = Enum.Material.Neon
     part.Parent = workspace
     return part
+end
+
+-- Kiểm tra nếu Map.Ingame có spawn Swords hoặc shockwave
+local function shouldLockDirection()
+    local ingame = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
+    if not ingame then return false end
+    if ingame:FindFirstChild("Swords") then return true end
+    if ingame:FindFirstChild("shockwave") then return true end
+    return false
 end
 
 -- Hook Animations của killer
@@ -2075,6 +2084,7 @@ local function hookKillerAnim(killer)
         if id and SKILL_ANIMS[id] then
             local hitbox = createSkillHitbox(killer)
             if hitbox then
+                local lockedCFrame = nil
                 local conn
                 conn = RunService.RenderStepped:Connect(function()
                     if not _G.VisualSkillBox or not killer.Parent or not hitbox.Parent then
@@ -2084,8 +2094,17 @@ local function hookKillerAnim(killer)
                     end
                     local hrp = killer:FindFirstChild("HumanoidRootPart")
                     if not hrp then return end
-                    -- hitbox bám hướng HRP
-                    hitbox.CFrame = hrp.CFrame * CFrame.new(0, 0, -500)
+
+                    -- nếu phát hiện swords/shockwave -> khóa hướng
+                    if not lockedCFrame and shouldLockDirection() then
+                        lockedCFrame = hrp.CFrame * CFrame.new(0, 0, -500)
+                    end
+
+                    if lockedCFrame then
+                        hitbox.CFrame = lockedCFrame
+                    else
+                        hitbox.CFrame = hrp.CFrame * CFrame.new(0, 0, -500)
+                    end
                 end)
 
                 -- Xoá khi anim dừng
@@ -2119,7 +2138,8 @@ Main2Group:AddToggle("VisualSkill", {
     Callback = function(state)
         _G.VisualSkillBox = state
     end
-})			end)
+})
+			end)
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
