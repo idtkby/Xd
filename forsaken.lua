@@ -2028,115 +2028,113 @@ Main2Group:AddToggle("c00lguiESP", {
 })
 
 		task.spawn(function()
+-- Visual Skill Hitbox (fixed Swords issue)
 local RunService = game:GetService("RunService")
 local KillersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
 
--- Toggle
 _G.VisualSkillBox = false
+local SKILL_NAMES = { ["swords"]=true, ["shockwave"]=true } -- check lowercase
+local HITBOX_SIZE = Vector3.new(10,3,1000)
+local HITBOX_TIME = 2.5 -- tồn tại tạm, anim stop sẽ xoá sớm
 
--- Anim IDs cần track
-local SKILL_ANIMS = {
-    ["93491748129367"] = true,
-    ["70447634862911"] = true,
-    ["119181003138006"] = true,
-    ["131430497821198"] = true,
-    ["81935774508746"] = true,
-    ["100592913030351"] = true,
-}
+local activeHitbox = {} -- [killer] = part
 
--- Tạo hitbox visual (Part)
-local function createSkillHitbox(killer)
+local function destroyHitbox(killer)
+    if activeHitbox[killer] then
+        activeHitbox[killer]:Destroy()
+        activeHitbox[killer] = nil
+    end
+end
+
+local function createHitbox(killer, skill)
     local hrp = killer:FindFirstChild("HumanoidRootPart")
-    if not hrp then return nil end
+    if not hrp then return end
+    destroyHitbox(killer)
+
+    -- hướng đi
+    local dir = nil
+    if skill:IsA("BasePart") and skill.AssemblyLinearVelocity.Magnitude > 1 then
+        dir = skill.AssemblyLinearVelocity.Unit
+    elseif skill:IsA("BasePart") then
+        dir = skill.CFrame.LookVector
+    else
+        local bp = skill:FindFirstChildWhichIsA("BasePart", true)
+        if bp then
+            if bp.AssemblyLinearVelocity.Magnitude > 1 then
+                dir = bp.AssemblyLinearVelocity.Unit
+            else
+                dir = bp.CFrame.LookVector
+            end
+        end
+    end
+    if not dir then return end
+
+    -- FIX: nếu skill là swords thì đảo hướng
+    if string.lower(skill.Name) == "swords" then
+        dir = -dir
+    end
+
+    local start = hrp.Position
+    local mid = start + dir * (HITBOX_SIZE.Z/2)
 
     local part = Instance.new("Part")
-    part.Name = "SkillHitboxVisual"
-    part.Size = Vector3.new(10, 3, 1000)
     part.Anchored = true
     part.CanCollide = false
     part.CanQuery = false
+    part.Size = HITBOX_SIZE
+    part.Color = Color3.fromRGB(255,0,0)
     part.Transparency = 0.5
-    part.Color = Color3.fromRGB(255, 0, 0)
     part.Material = Enum.Material.Neon
+    part.CFrame = CFrame.lookAt(mid, mid + dir)
     part.Parent = workspace
-    return part
+
+    activeHitbox[killer] = part
+
+    skill.Destroying:Connect(function()
+        destroyHitbox(killer)
+    end)
+    game:GetService("Debris"):AddItem(part, HITBOX_TIME)
 end
+-- detect spawn skill
+workspace.DescendantAdded:Connect(function(obj)
+    if not _G.VisualSkillBox then return end
+    if not obj.Name then return end
+    local name = string.lower(obj.Name)
+    if not SKILL_NAMES[name] then return end
 
--- Kiểm tra nếu Map.Ingame có spawn Swords hoặc shockwave
-local function shouldLockDirection()
-    local ingame = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
-    if not ingame then return false end
-    if ingame:FindFirstChild("Swords") then return true end
-    if ingame:FindFirstChild("shockwave") then return true end
-    return false
-end
-
--- Hook Animations của killer
-local function hookKillerAnim(killer)
-    local hum = killer:FindFirstChildOfClass("Humanoid")
-    if not hum then return end
-    local animator = hum:FindFirstChildOfClass("Animator")
-    if not animator then return end
-
-    animator.AnimationPlayed:Connect(function(track)
-        if not _G.VisualSkillBox then return end
-        local id = track.Animation and track.Animation.AnimationId:match("%d+")
-        if id and SKILL_ANIMS[id] then
-            local hitbox = createSkillHitbox(killer)
-            if hitbox then
-                local lockedCFrame = nil
-                local conn
-                conn = RunService.RenderStepped:Connect(function()
-                    if not _G.VisualSkillBox or not killer.Parent or not hitbox.Parent then
-                        conn:Disconnect()
-                        if hitbox then hitbox:Destroy() end
-                        return
-                    end
-                    local hrp = killer:FindFirstChild("HumanoidRootPart")
-                    if not hrp then return end
-
-                    -- nếu phát hiện swords/shockwave -> khóa hướng
-                    if not lockedCFrame and shouldLockDirection() then
-                        lockedCFrame = hrp.CFrame * CFrame.new(0, 0, -500)
-                    end
-
-                    if lockedCFrame then
-                        hitbox.CFrame = lockedCFrame
-                    else
-                        hitbox.CFrame = hrp.CFrame * CFrame.new(0, 0, -500)
-                    end
-                end)
-
-                -- Xoá khi anim dừng
-                task.spawn(function()
-                    track.Stopped:Wait()
-                    if conn then conn:Disconnect() end
-                    if hitbox and hitbox.Parent then
-                        hitbox:Destroy()
-                    end
-                end)
+    -- tìm killer gần nhất
+    local nearest, best = nil, math.huge
+    for _, killer in ipairs(KillersFolder:GetChildren()) do
+        local hrp = killer:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            local pos = obj:IsA("BasePart") and obj.Position or (obj.PrimaryPart and obj.PrimaryPart.Position)
+            if pos then
+                local d = (pos - hrp.Position).Magnitude
+                if d < best then
+                    best, nearest = d, killer
+                end
             end
         end
-    end)
-end
+    end
 
--- Hook killers hiện có
-for _, killer in ipairs(KillersFolder:GetChildren()) do
-    hookKillerAnim(killer)
-end
-
--- Hook killers spawn thêm
-KillersFolder.ChildAdded:Connect(function(killer)
-    task.wait(0.5)
-    hookKillerAnim(killer)
+    if nearest then
+        task.delay(0.05, function() -- đợi velocity update
+            createHitbox(nearest, obj)
+        end)
+    end
 end)
 
--- GUI toggle ở Main2Group
-Main2Group:AddToggle("VisualSkill", {
-    Text = "Visual Skill Hitbox (1x)",
+-- Toggle GUI
+Main2Group:AddToggle("VisualSkillBox", {
+    Text = "Visual Skill Hitbox",
     Default = false,
     Callback = function(state)
         _G.VisualSkillBox = state
+        if not state then
+            for k in pairs(activeHitbox) do
+                destroyHitbox(k)
+            end
+        end
     end
 })
 			end)
