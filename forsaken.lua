@@ -2102,16 +2102,21 @@ local function createHitbox(killer, skill)
 
     activeHitbox[killer] = part
 
-    skill.Destroying:Connect(function()
-        destroyHitbox(killer)
-    end)
-
-    -- lifetime riêng
-    local lifeTime = HITBOX_TIME
+    -- xoá theo loại skill
     if skillName == "swords" then
-        lifeTime = 5
+        -- KHÔNG xoá theo Destroying, giữ 5s rồi tự xoá
+        task.delay(5, function()
+            if part and part.Parent then
+                destroyHitbox(killer)
+            end
+        end)
+    else
+        -- Shockwave thì để Debris như cũ
+        skill.Destroying:Connect(function()
+            destroyHitbox(killer)
+        end)
+        game:GetService("Debris"):AddItem(part, HITBOX_TIME)
     end
-    game:GetService("Debris"):AddItem(part, lifeTime)
 end
 
 -- detect spawn skill
@@ -2137,7 +2142,7 @@ workspace.DescendantAdded:Connect(function(obj)
     end
 
     if nearest then
-        task.delay(0.1, function() -- đợi velocity update
+        task.delay(0.05, function() -- đợi velocity update
             createHitbox(nearest, obj)
         end)
     end
@@ -2158,14 +2163,14 @@ Main2Group:AddToggle("VisualSkillBox", {
 })
 :AddColorPicker("SwordsHitboxColor", {
     Default = swordsColor,
-    Transparency = 0.8,
+    Transparency = 0.3,
     Callback = function(color)
         swordsColor = color
     end
 })
 :AddColorPicker("ShockwaveHitboxColor", {
     Default = shockwaveColor,
-    Transparency = 0.8,
+    Transparency = 0.3,
     Callback = function(color)
         shockwaveColor = color
     end
