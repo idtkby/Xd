@@ -2310,7 +2310,7 @@ local function createESP(target)
 
     local name = target.Name
     if name == "1x1x1x1Zombie" or name == "007n7" or name == "BuildermanSentry"
-       or name == "BuildermanDispenser" or name == "Bacon" or name == "Rig" or name == "SubspaceTripmine"
+       or name == "BuildermanDispenser" or name == "Bacon" or name == "Theater" or name == "TheRing" or name == "MurderKitchen" or name == "Slender" or name == "Rig" or name == "SubspaceTripmine"
        or string.find(name, "TaphTripwire") then return end
 
     local hrp = target:FindFirstChild("HumanoidRootPart") or target:FindFirstChildWhichIsA("BasePart")
