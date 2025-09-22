@@ -2180,6 +2180,88 @@ Main2Group:AddToggle("VisualSkillBox", {
         shockwaveColor = color
     end
 })
+
+				local RunService = game:GetService("RunService")
+local KillersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
+
+_G.VisualHitboxSkill2 = false
+local HITBOX_SIZE = Vector3.new(10, 3, 1000)
+
+local activeHitbox = {} -- [animTrack] = part
+
+-- tạo hitbox theo killer
+local function createHitboxForAnim(killer, animTrack)
+    local hrp = killer:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    local dir = hrp.CFrame.LookVector
+    local start = hrp.Position
+    local mid = start + dir * (HITBOX_SIZE.Z/2)
+
+    local part = Instance.new("Part")
+    part.Anchored = true
+    part.CanCollide = false
+    part.CanQuery = false
+    part.Size = HITBOX_SIZE
+    part.Color = Color3.fromRGB(255, 0, 0)
+    part.Transparency = 0.5
+    part.Material = Enum.Material.Neon
+    part.CFrame = CFrame.lookAt(mid, mid + dir)
+    part.Parent = workspace
+
+    activeHitbox[animTrack] = part
+
+    -- khi anim dừng thì xoá hitbox
+    animTrack.Stopped:Connect(function()
+        if activeHitbox[animTrack] then
+            activeHitbox[animTrack]:Destroy()
+            activeHitbox[animTrack] = nil
+        end
+    end)
+end
+
+-- hook anim
+local function hookKiller(killer)
+    local hum = killer:FindFirstChildOfClass("Humanoid")
+    if not hum then return end
+    local animator = hum:FindFirstChildOfClass("Animator")
+    if not animator then return end
+
+    animator.AnimationPlayed:Connect(function(track)
+        if not _G.VisualHitboxSkill2 then return end
+        if not track or not track.Animation then return end
+
+        -- tạo hitbox khi anim phát
+        createHitboxForAnim(killer, track)
+    end)
+end
+
+-- hook killer hiện có
+for _, killer in ipairs(KillersFolder:GetChildren()) do
+    hookKiller(killer)
+end
+
+-- hook killer mới
+KillersFolder.ChildAdded:Connect(function(killer)
+    task.wait(0.2)
+    hookKiller(killer)
+end)
+
+-- Toggle GUI
+Main2Group:AddToggle("VisualHitboxSkill2", {
+    Text = "Visual Hitbox Skill (1x) 2",
+    Default = false,
+    Callback = function(state)
+        _G.VisualHitboxSkill2 = state
+        if not state then
+            -- xoá toàn bộ hitbox hiện có
+            for anim, part in pairs(activeHitbox) do
+                if part then part:Destroy() end
+            end
+            activeHitbox = {}
+        end
+    end
+})
 			end)
 
 local Players = game:GetService("Players")
@@ -2201,7 +2283,7 @@ local function createESP(target)
 
     local name = target.Name
     if name == "1x1x1x1Zombie" or name == "007n7" or name == "BuildermanSentry"
-       or name == "BuildermanDispenser" or name == "SubspaceTripmine"
+       or name == "BuildermanDispenser" or name == "Bacon" or name == "Rig" or name == "SubspaceTripmine"
        or string.find(name, "TaphTripwire") then return end
 
     local hrp = target:FindFirstChild("HumanoidRootPart") or target:FindFirstChildWhichIsA("BasePart")
