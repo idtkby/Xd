@@ -2086,7 +2086,7 @@ local function createHitbox(killer, skill)
 
     -- FIX: swords bị ngược
     local skillName = string.lower(skill.Name)
-    if skillName == "Swords" then
+    if skillName == "swords" then
         dir = -dir
     end
 
@@ -2102,7 +2102,7 @@ local function createHitbox(killer, skill)
     part.Material = Enum.Material.Neon
 
     -- màu riêng
-    if skillName == "Swords" then
+    if skillName == "swords" then
         part.Color = swordsColor
     elseif skillName == "shockwave" then
         part.Color = shockwaveColor
@@ -2118,7 +2118,7 @@ local function createHitbox(killer, skill)
     end)
 
     local lifeTime = HITBOX_TIME
-    if skillName == "Swords" then
+    if skillName == "swords" then
         lifeTime = 3.5
     end
     game:GetService("Debris"):AddItem(part, lifeTime)
