@@ -2057,7 +2057,7 @@ local function createHitbox(killer, skill)
 
     -- đợi velocity update nếu là swords
     if string.lower(skill.Name) == "swords" then
-        for i = 1, 15 do -- đợi tối đa 0.2s (4*0.05)
+        for i = 1, 30 do -- đợi tối đa 0.2s (4*0.05)
             task.wait(0.05)
             local bp = skill:IsA("BasePart") and skill or skill:FindFirstChildWhichIsA("BasePart", true)
             if bp and (bp.AssemblyLinearVelocity.Magnitude > 1 or bp.CFrame) then
@@ -2086,7 +2086,7 @@ local function createHitbox(killer, skill)
 
     -- FIX: swords bị ngược
     local skillName = string.lower(skill.Name)
-    if skillName == "swords" then
+    if skillName == "Swords" then
         dir = -dir
     end
 
@@ -2102,7 +2102,7 @@ local function createHitbox(killer, skill)
     part.Material = Enum.Material.Neon
 
     -- màu riêng
-    if skillName == "swords" then
+    if skillName == "Swords" then
         part.Color = swordsColor
     elseif skillName == "shockwave" then
         part.Color = shockwaveColor
@@ -2118,7 +2118,7 @@ local function createHitbox(killer, skill)
     end)
 
     local lifeTime = HITBOX_TIME
-    if skillName == "swords" then
+    if skillName == "Swords" then
         lifeTime = 3.5
     end
     game:GetService("Debris"):AddItem(part, lifeTime)
