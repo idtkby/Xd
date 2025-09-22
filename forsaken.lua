@@ -2098,7 +2098,7 @@ local function createHitbox(killer, skill)
     part.CanCollide = false
     part.CanQuery = false
     part.Size = HITBOX_SIZE
-    part.Transparency = 0.8
+    part.Transparency = 0.7
     part.Material = Enum.Material.Neon
 
     -- màu riêng
@@ -2214,7 +2214,7 @@ local function createFollowHitbox(killer, track)
     part.CanQuery = false
     part.Size = HITBOX_SIZE
     part.Color = Color3.fromRGB(255,0,0)
-    part.Transparency = 0.5
+    part.Transparency = 0.8
     part.Material = Enum.Material.Neon
     part.Parent = workspace
 
