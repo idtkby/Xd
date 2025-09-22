@@ -3787,11 +3787,9 @@ local function hookBackstabAnim(humanoid)
             end)
         end
 
-        -- notify + cooldown
-        Library:Notify("Cooldown 30s", 5)
-        task.delay(30, function()
+        task.delay(1, function()
             globalCooldown = false
-            Library:Notify("Cooldown Ended", 5)
+							print("")
         end)
     end)
 end
