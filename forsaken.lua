@@ -2181,84 +2181,111 @@ Main2Group:AddToggle("VisualSkillBox", {
     end
 })
 
-				local RunService = game:GetService("RunService")
+-- Visual Hitbox Skill (1x) 2 - Bám theo killer trong lúc anim
+local RunService = game:GetService("RunService")
 local KillersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
 
-_G.VisualHitboxSkill2 = false
+_G.VisualSkillBox2 = false
+
+-- Anim IDs cần theo dõi
+local SKILL_ANIMS = {
+    ["93491748129367"] = true,
+    ["70447634862911"] = true,
+    ["119181003138006"] = true,
+    ["131430497821198"] = true,
+    ["81935774508746"] = true,
+    ["100592913030351"] = true,
+    ["83685305553364"] = true,
+    ["99030950661794"] = true,
+}
+
 local HITBOX_SIZE = Vector3.new(10, 3, 1000)
+local activeHitboxes = {} -- [animTrack] = {part=Part, conn=RBXScriptConnection}
 
-local activeHitbox = {} -- [animTrack] = part
-
--- tạo hitbox theo killer
-local function createHitboxForAnim(killer, animTrack)
+-- Tạo hitbox và bám theo killer
+local function createFollowHitbox(killer, track)
     local hrp = killer:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
 
-    local dir = hrp.CFrame.LookVector
-    local start = hrp.Position
-    local mid = start + dir * (HITBOX_SIZE.Z/2)
-
+    -- part hitbox
     local part = Instance.new("Part")
     part.Anchored = true
     part.CanCollide = false
     part.CanQuery = false
     part.Size = HITBOX_SIZE
-    part.Color = Color3.fromRGB(255, 0, 0)
+    part.Color = Color3.fromRGB(255,0,0)
     part.Transparency = 0.5
     part.Material = Enum.Material.Neon
-    part.CFrame = CFrame.lookAt(mid, mid + dir)
     part.Parent = workspace
 
-    activeHitbox[animTrack] = part
+    -- cập nhật theo hướng killer trong lúc anim chạy
+    local conn
+    conn = RunService.RenderStepped:Connect(function()
+        if not _G.VisualSkillBox2 then return end
+        if not hrp or not hrp.Parent or not track.IsPlaying then
+            if conn then conn:Disconnect() end
+            if part then part:Destroy() end
+            activeHitboxes[track] = nil
+            return
+        end
 
-    -- khi anim dừng thì xoá hitbox
-    animTrack.Stopped:Connect(function()
-        if activeHitbox[animTrack] then
-            activeHitbox[animTrack]:Destroy()
-            activeHitbox[animTrack] = nil
+        local dir = hrp.CFrame.LookVector
+        local mid = hrp.Position + dir * (HITBOX_SIZE.Z/2)
+        part.CFrame = CFrame.lookAt(mid, mid + dir)
+    end)
+
+    activeHitboxes[track] = {part=part, conn=conn}
+
+    -- cleanup khi anim stop
+    track.Stopped:Connect(function()
+        if activeHitboxes[track] then
+            if activeHitboxes[track].conn then activeHitboxes[track].conn:Disconnect() end
+            if activeHitboxes[track].part then activeHitboxes[track].part:Destroy() end
+            activeHitboxes[track] = nil
         end
     end)
 end
 
--- hook anim
+-- Hook AnimationPlayed cho killer
 local function hookKiller(killer)
     local hum = killer:FindFirstChildOfClass("Humanoid")
     if not hum then return end
+
+    local function onPlayed(track)
+        if not _G.VisualSkillBox2 then return end
+        local animId = track.Animation and track.Animation.AnimationId and track.Animation.AnimationId:match("%d+")
+        if animId and SKILL_ANIMS[animId] then
+            createFollowHitbox(killer, track)
+        end
+    end
+
+    if hum.AnimationPlayed then
+        hum.AnimationPlayed:Connect(onPlayed)
+    end
     local animator = hum:FindFirstChildOfClass("Animator")
-    if not animator then return end
-
-    animator.AnimationPlayed:Connect(function(track)
-        if not _G.VisualHitboxSkill2 then return end
-        if not track or not track.Animation then return end
-
-        -- tạo hitbox khi anim phát
-        createHitboxForAnim(killer, track)
-    end)
+    if animator and animator.AnimationPlayed then
+        animator.AnimationPlayed:Connect(onPlayed)
+    end
 end
 
--- hook killer hiện có
+-- Hook killers hiện có
 for _, killer in ipairs(KillersFolder:GetChildren()) do
     hookKiller(killer)
 end
-
--- hook killer mới
-KillersFolder.ChildAdded:Connect(function(killer)
-    task.wait(0.2)
-    hookKiller(killer)
-end)
+KillersFolder.ChildAdded:Connect(hookKiller)
 
 -- Toggle GUI
-Main2Group:AddToggle("VisualHitboxSkill2", {
+Main2Group:AddToggle("VisualSkillBox2", {
     Text = "Visual Hitbox Skill (1x) 2",
     Default = false,
     Callback = function(state)
-        _G.VisualHitboxSkill2 = state
+        _G.VisualSkillBox2 = state
         if not state then
-            -- xoá toàn bộ hitbox hiện có
-            for anim, part in pairs(activeHitbox) do
-                if part then part:Destroy() end
+            for track, data in pairs(activeHitboxes) do
+                if data.conn then data.conn:Disconnect() end
+                if data.part then data.part:Destroy() end
             end
-            activeHitbox = {}
+            activeHitboxes = {}
         end
     end
 })
