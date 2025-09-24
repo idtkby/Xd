@@ -2088,7 +2088,7 @@ local function createHitbox(killer, skill)
 	part.CanCollide = false
 	part.CanQuery = false
 	part.Size = HITBOX_SIZE
-	part.Transparency = 0.5
+	part.Transparency = 0.8
 	part.Material = Enum.Material.Neon
 
 	if skill.Name:lower() == "swords" then
@@ -2159,7 +2159,7 @@ Main2Group:AddToggle("VisualSkillBox", {
     Callback = function(color) swordsColor = color end
 })
 :AddColorPicker("ShockwaveHitboxColor", {
-    Default = shockwaveColor,
+    Default = shockColor,
     Transparency = 0.3,
     Callback = function(color) shockwaveColor = color end
 })
@@ -2196,8 +2196,8 @@ local function createFollowHitbox(killer, track)
     part.CanCollide = false
     part.CanQuery = false
     part.Size = HITBOX_SIZE
-    part.Color = Color3.fromRGB(255,0,0)
-    part.Transparency = 0.8
+    part.Color = _G.VisualSkillHitbox2CL
+    part.Transparency = 0.9
     part.Material = Enum.Material.Neon
     part.Parent = workspace
 
@@ -2271,7 +2271,11 @@ Main2Group:AddToggle("VisualSkillBox2", {
             activeHitboxes = {}
         end
     end
-})
+}):AddColorPicker("VisualSkillHitbox2Color", {
+     Default = Color3.new(255,0,0),
+     Callback = function(Value)
+_G.VisualSkillHitbox2CL = Value
+						end})
 			end)
 
 local Players = game:GetService("Players")
