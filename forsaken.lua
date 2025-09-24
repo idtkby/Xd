@@ -4672,6 +4672,8 @@ MenuGroup:AddLabel("Menu bind"):AddKeyPicker("MenuKeybind", {Default = "RightShi
 MenuGroup:AddButton("Unload", function() Library:Unload() end)
 
 CreditsGroup:AddLabel("@IgnahKD - Script", true)
+CreditsGroup:AddLabel("@concacrobloxntkphuh", true)
+CreditsGroup:AddLabel("@heh", true)
 CreditsGroup:AddDivider()
 CreditsGroup:AddLabel("-== Request ==-", true)
 
