@@ -2028,157 +2028,140 @@ Main2Group:AddToggle("c00lguiESP", {
 })
 
 		task.spawn(function()
--- Visual Skill Hitbox (with separate colors)
+-- Visual Skill Hitbox (Swords fix)
 local RunService = game:GetService("RunService")
+local Debris = game:GetService("Debris")
 local KillersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
 
 _G.VisualSkillBox = false
-local SKILL_NAMES = { ["swords"]=true, ["shockwave"]=true } -- check lowercase
-local HITBOX_SIZE = Vector3.new(10,3,1000)
-local HITBOX_TIME = 2.5 -- shockwave mặc định
 
--- màu riêng
+local SKILL_NAMES = { swords = true, shockwave = true }
+local HITBOX_SIZE = Vector3.new(10, 3, 1000)
+local LIFE = { swords = 3.5, shockwave = 2.5 }
+
 local swordsColor = Color3.fromRGB(255,0,0)
-local shockwaveColor = Color3.fromRGB(0,0,255)
+local shockColor  = Color3.fromRGB(0,0,255)
 
-local activeHitbox = {} -- [killer] = part
+local activeHitbox = {}
 
 local function destroyHitbox(killer)
-    if activeHitbox[killer] then
-        activeHitbox[killer]:Destroy()
-        activeHitbox[killer] = nil
-    end
+	if activeHitbox[killer] then
+		activeHitbox[killer]:Destroy()
+		activeHitbox[killer] = nil
+	end
+end
+
+local function getSkillDir(skill, hrp)
+	local bp = skill:IsA("BasePart") and skill or skill:FindFirstChildWhichIsA("BasePart", true)
+	if not bp then return nil end
+
+	local dir
+	if bp.AssemblyLinearVelocity.Magnitude > 1 then
+		dir = bp.AssemblyLinearVelocity.Unit
+	else
+		dir = bp.CFrame.LookVector
+	end
+
+	-- swords thường ngược -> fix
+	if skill.Name:lower() == "swords" and dir:Dot(hrp.CFrame.LookVector) < 0 then
+		dir = -dir
+	end
+
+	return dir, bp.Position
 end
 
 local function createHitbox(killer, skill)
-    local hrp = killer:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-    destroyHitbox(killer)
+	local hrp = killer:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
 
-    -- đợi velocity update nếu là swords
-    if string.lower(skill.Name) == "swords" then
-        for i = 1, 100 do -- đợi tối đa 0.2s (4*0.05)
-            task.wait(0.05)
-            local bp = skill:IsA("BasePart") and skill or skill:FindFirstChildWhichIsA("BasePart", true)
-            if bp and (bp.AssemblyLinearVelocity.Magnitude > 1 or bp.CFrame) then
-                break
-            end
-        end
-    end
+	destroyHitbox(killer)
 
-    -- hướng đi
-    local dir = nil
-    if skill:IsA("BasePart") and skill.AssemblyLinearVelocity.Magnitude > 1 then
-        dir = skill.AssemblyLinearVelocity.Unit
-    elseif skill:IsA("BasePart") then
-        dir = skill.CFrame.LookVector
-    else
-        local bp = skill:FindFirstChildWhichIsA("BasePart", true)
-        if bp then
-            if bp.AssemblyLinearVelocity.Magnitude > 1 then
-                dir = bp.AssemblyLinearVelocity.Unit
-            else
-                dir = bp.CFrame.LookVector
-            end
-        end
-    end
-    if not dir then return end
+	local dir, skillPos = getSkillDir(skill, hrp)
+	if not dir then return end
 
-    -- FIX: swords bị ngược
-    local skillName = string.lower(skill.Name)
-    if skillName == "swords" then
-        dir = -dir
-    end
+	local start = hrp.Position
+	local mid = start + dir * (HITBOX_SIZE.Z/2)
 
-    local start = hrp.Position
-    local mid = start + dir * (HITBOX_SIZE.Z/2)
+	local part = Instance.new("Part")
+	part.Name = "SkillHitboxVisual"
+	part.Anchored = true
+	part.CanCollide = false
+	part.CanQuery = false
+	part.Size = HITBOX_SIZE
+	part.Transparency = 0.5
+	part.Material = Enum.Material.Neon
 
-    local part = Instance.new("Part")
-    part.Anchored = true
-    part.CanCollide = false
-    part.CanQuery = false
-    part.Size = HITBOX_SIZE
-    part.Transparency = 0.7
-    part.Material = Enum.Material.Neon
+	if skill.Name:lower() == "swords" then
+		part.Color = swordsColor
+	else
+		part.Color = shockColor
+	end
 
-    -- màu riêng
-    if skillName == "swords" then
-        part.Color = swordsColor
-    elseif skillName == "shockwave" then
-        part.Color = shockwaveColor
-    end
+	part.CFrame = CFrame.lookAt(mid, mid + dir)
+	part.Parent = workspace
 
-    part.CFrame = CFrame.lookAt(mid, mid + dir)
-    part.Parent = workspace
+	activeHitbox[killer] = part
 
-    activeHitbox[killer] = part
+	-- xoá khi skill xoá
+	skill.Destroying:Connect(function()
+		destroyHitbox(killer)
+	end)
 
-    skill.Destroying:Connect(function()
-        destroyHitbox(killer)
-    end)
-
-    local lifeTime = HITBOX_TIME
-    if skillName == "swords" then
-        lifeTime = 3.5
-    end
-    game:GetService("Debris"):AddItem(part, lifeTime)
+	-- tự xoá sau lifetime
+	local life = LIFE[skill.Name:lower()] or 2.5
+	Debris:AddItem(part, life)
 end
 
--- detect spawn skill
 workspace.DescendantAdded:Connect(function(obj)
-    if not _G.VisualSkillBox then return end
-    if not obj.Name then return end
-    local name = string.lower(obj.Name)
-    if not SKILL_NAMES[name] then return end
+	if not _G.VisualSkillBox then return end
+	if not obj.Name then return end
+	if not SKILL_NAMES[obj.Name:lower()] then return end
 
-    -- tìm killer gần nhất
-    local nearest, best = nil, math.huge
-    for _, killer in ipairs(KillersFolder:GetChildren()) do
-        local hrp = killer:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            local pos = obj:IsA("BasePart") and obj.Position or (obj.PrimaryPart and obj.PrimaryPart.Position)
-            if pos then
-                local d = (pos - hrp.Position).Magnitude
-                if d < best then
-                    best, nearest = d, killer
-                end
-            end
-        end
-    end
+	-- tìm killer gần nhất
+	local nearest, best = nil, math.huge
+	for _, killer in ipairs(KillersFolder:GetChildren()) do
+		local hrp = killer:FindFirstChild("HumanoidRootPart")
+		if hrp then
+			local pos = obj:IsA("BasePart") and obj.Position or (obj.PrimaryPart and obj.PrimaryPart.Position)
+			if pos then
+				local d = (pos - hrp.Position).Magnitude
+				if d < best then
+					best, nearest = d, killer
+				end
+			end
+		end
+	end
 
-    if nearest then
-        task.delay(0.05, function() -- đợi velocity update
-            createHitbox(nearest, obj)
-        end)
-    end
+	if nearest then
+		task.delay(0.05, function()
+			createHitbox(nearest, obj)
+		end)
+	end
 end)
 
--- GUI
+-- GUI: toggle + colorpickers
 Main2Group:AddToggle("VisualSkillBox", {
     Text = "Visual Skill Hitbox (1x)",
     Default = false,
     Callback = function(state)
         _G.VisualSkillBox = state
         if not state then
-            for k in pairs(activeHitbox) do
-                destroyHitbox(k)
-            end
+            -- clear all
+            for k in pairs(activeHitbox) do destroyHitbox(k) end
+            -- clear pending map
+            pendingFor = {}
         end
     end
 })
 :AddColorPicker("SwordsHitboxColor", {
     Default = swordsColor,
     Transparency = 0.3,
-    Callback = function(color)
-        swordsColor = color
-    end
+    Callback = function(color) swordsColor = color end
 })
 :AddColorPicker("ShockwaveHitboxColor", {
     Default = shockwaveColor,
     Transparency = 0.3,
-    Callback = function(color)
-        shockwaveColor = color
-    end
+    Callback = function(color) shockwaveColor = color end
 })
 
 -- Visual Hitbox Skill (1x) 2 - Bám theo killer trong lúc anim
