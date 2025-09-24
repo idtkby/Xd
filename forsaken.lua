@@ -2028,155 +2028,140 @@ Main2Group:AddToggle("c00lguiESP", {
 })
 
 		task.spawn(function()
--- Visual Skill Hitbox (Swords fix)
-local RunService = game:GetService("RunService")
-local Debris = game:GetService("Debris")
-local KillersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
-
-_G.VisualSkillBox = false
-
-local SKILL_NAMES = { swords = true, shockwave = true }
-local HITBOX_SIZE = Vector3.new(10, 3, 1000)
-local LIFE = { swords = 3.5, shockwave = 2.5 }
-
-local swordsColor = Color3.fromRGB(255,0,0)
-local shockColor  = Color3.fromRGB(0,0,255)
-
-local activeHitbox = {}
-
-local function destroyHitbox(killer)
-	if activeHitbox[killer] then
-		activeHitbox[killer]:Destroy()
-		activeHitbox[killer] = nil
-	end
-end
-
-local function getSkillDir(skill, hrp)
-	local bp = skill:IsA("BasePart") and skill or skill:FindFirstChildWhichIsA("BasePart", true)
-	if not bp then return nil end
-
-	local dir
-	if bp.AssemblyLinearVelocity.Magnitude > 1 then
-		dir = bp.AssemblyLinearVelocity.Unit
-	else
-		dir = bp.CFrame.LookVector
-	end
-
-	-- swords thường ngược -> fix
-	if skill.Name:lower() == "swords" and dir:Dot(hrp.CFrame.LookVector) < 0 then
-		dir = -dir
-	end
-
-	return dir, bp.Position
-end
-
-local function createHitbox(killer, skill)
-	local hrp = killer:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
-
-	destroyHitbox(killer)
-
-	local dir, skillPos = getSkillDir(skill, hrp)
-	if not dir then return end
-
-	local start = hrp.Position
-	local mid = start + dir * (HITBOX_SIZE.Z/2)
-
-	local part = Instance.new("Part")
-	part.Name = "SkillHitboxVisual"
-	part.Anchored = true
-	part.CanCollide = false
-	part.CanQuery = false
-	part.Size = HITBOX_SIZE
-	part.Transparency = 0.8
-	part.Material = Enum.Material.Neon
-
-	if skill.Name:lower() == "swords" then
-		part.Color = swordsColor
-	else
-		part.Color = shockColor
-	end
-
-	part.CFrame = CFrame.lookAt(mid, mid + dir)
-	part.Parent = workspace
-
-	activeHitbox[killer] = part
-
-	-- xoá khi skill xoá
-	skill.Destroying:Connect(function()
-		destroyHitbox(killer)
-	end)
-
-	-- tự xoá sau lifetime
-	local life = LIFE[skill.Name:lower()] or 2.5
-	Debris:AddItem(part, life)
-end
-
-workspace.DescendantAdded:Connect(function(obj)
-	if not _G.VisualSkillBox then return end
-	if not obj.Name then return end
-	local skillName = obj.Name:lower()
-	if not SKILL_NAMES[skillName] then return end
-
-	-- tìm killer gần nhất
-	local nearest, best = nil, math.huge
-	for _, killer in ipairs(KillersFolder:GetChildren()) do
-		local hrp = killer:FindFirstChild("HumanoidRootPart")
-		if hrp then
-			local pos = obj:IsA("BasePart") and obj.Position or (obj.PrimaryPart and obj.PrimaryPart.Position)
-			if pos then
-				local d = (pos - hrp.Position).Magnitude
-				if d < best then
-					best, nearest = d, killer
-				end
-			end
-		end
-	end
-	if not nearest then return end
-
-	-- nếu là swords → retry liên tục trong 0.4s
-	if skillName == "swords" then
-		task.spawn(function()
-			local t0 = tick()
-			while tick() - t0 < 0.4 and obj.Parent do
-				local ok = pcall(function() createHitbox(nearest, obj) end)
-				if ok and activeHitbox[nearest] then
-					break -- thành công
-				end
-				RunService.Heartbeat:Wait()
-			end
-		end)
-	else
-		-- shockwave bình thường
-		task.delay(0.05, function()
-			createHitbox(nearest, obj)
-		end)
-	end
-end)
-
--- GUI: toggle + colorpickers
-Main2Group:AddToggle("VisualSkillBox", {
-    Text = "Visual Skill Hitbox (1x)",
-    Default = false,
-    Callback = function(state)
-        _G.VisualSkillBox = state
-        if not state then
-            -- clear all
-            for k in pairs(activeHitbox) do destroyHitbox(k) end
-            -- clear pending map
-            pendingFor = {}
-        end
-    end
-})
-:AddColorPicker("SwordsHitboxColor", {
-    Default = swordsColor,
-    Transparency = 0.3,
-    Callback = function(color) swordsColor = color end
-})
-:AddColorPicker("ShockwaveHitboxColor", {
-    Default = shockColor,
-    Transparency = 0.3,
-    Callback = function(color) shockwaveColor = color end
+-- Visual Skill Hitbox (Swords fix)  
+local RunService = game:GetService("RunService")  
+local Debris = game:GetService("Debris")  
+local KillersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")  
+  
+_G.VisualSkillBox = false  
+  
+local SKILL_NAMES = { swords = true, shockwave = true }  
+local HITBOX_SIZE = Vector3.new(10, 3, 1000)  
+local LIFE = { swords = 2.5, shockwave = 2.5 }  
+  
+local swordsColor = Color3.fromRGB(255,0,0)  
+local shockColor  = Color3.fromRGB(0,0,255)  
+  
+local activeHitbox = {}  
+  
+local function destroyHitbox(killer)  
+	if activeHitbox[killer] then  
+		activeHitbox[killer]:Destroy()  
+		activeHitbox[killer] = nil  
+	end  
+end  
+  
+local function getSkillDir(skill, hrp)  
+	local bp = skill:IsA("BasePart") and skill or skill:FindFirstChildWhichIsA("BasePart", true)  
+	if not bp then return nil end  
+  
+	local dir  
+	if bp.AssemblyLinearVelocity.Magnitude > 1 then  
+		dir = bp.AssemblyLinearVelocity.Unit  
+	else  
+		dir = bp.CFrame.LookVector  
+	end  
+  
+	-- swords thường ngược -> fix  
+	if skill.Name:lower() == "swords" and dir:Dot(hrp.CFrame.LookVector) < 0 then  
+		dir = -dir  
+	end  
+  
+	return dir, bp.Position  
+end  
+  
+local function createHitbox(killer, skill)  
+	local hrp = killer:FindFirstChild("HumanoidRootPart")  
+	if not hrp then return end  
+  
+	destroyHitbox(killer)  
+  
+	local dir, skillPos = getSkillDir(skill, hrp)  
+	if not dir then return end  
+  
+	local start = hrp.Position  
+	local mid = start + dir * (HITBOX_SIZE.Z/2)  
+  
+	local part = Instance.new("Part")  
+	part.Name = "SkillHitboxVisual"  
+	part.Anchored = true  
+	part.CanCollide = false  
+	part.CanQuery = false  
+	part.Size = HITBOX_SIZE  
+	part.Transparency = 0.8  
+	part.Material = Enum.Material.Neon  
+  
+	if skill.Name:lower() == "swords" then  
+		part.Color = swordsColor  
+	else  
+		part.Color = shockColor  
+	end  
+  
+	part.CFrame = CFrame.lookAt(mid, mid + dir)  
+	part.Parent = workspace  
+  
+	activeHitbox[killer] = part  
+  
+	-- xoá khi skill xoá  
+	skill.Destroying:Connect(function()  
+		destroyHitbox(killer)  
+	end)  
+  
+	-- tự xoá sau lifetime  
+	local life = LIFE[skill.Name:lower()] or 2.5  
+	Debris:AddItem(part, life)  
+end  
+  
+workspace.DescendantAdded:Connect(function(obj)  
+	if not _G.VisualSkillBox then return end  
+	if not obj.Name then return end  
+	if not SKILL_NAMES[obj.Name:lower()] then return end  
+  
+	-- tìm killer gần nhất  
+	local nearest, best = nil, math.huge  
+	for _, killer in ipairs(KillersFolder:GetChildren()) do  
+		local hrp = killer:FindFirstChild("HumanoidRootPart")  
+		if hrp then  
+			local pos = obj:IsA("BasePart") and obj.Position or (obj.PrimaryPart and obj.PrimaryPart.Position)  
+			if pos then  
+				local d = (pos - hrp.Position).Magnitude  
+				if d < best then  
+					best, nearest = d, killer  
+				end  
+			end  
+		end  
+	end  
+  
+	if nearest then  
+		task.delay(0.15, function()  
+			createHitbox(nearest, obj)  
+		end)  
+	end  
+end)  
+  
+-- GUI: toggle + colorpickers  
+Main2Group:AddToggle("VisualSkillBox", {  
+    Text = "Visual Skill Hitbox (1x)",  
+    Default = false,  
+    Callback = function(state)  
+        _G.VisualSkillBox = state  
+        if not state then  
+            -- clear all  
+            for k in pairs(activeHitbox) do destroyHitbox(k) end  
+            -- clear pending map  
+            pendingFor = {}  
+        end  
+    end  
+})  
+:AddColorPicker("SwordsHitboxColor", {  
+    Default = swordsColor,  
+    Transparency = 0.3,  
+    Callback = function(color) swordsColor = color end  
+})  
+:AddColorPicker("ShockwaveHitboxColor", {  
+    Default = shockColor,  
+    Transparency = 0.3,  
+    Callback = function(color) shockwaveColor = color end  
 })
 
 -- Visual Hitbox Skill (1x) 2 - Bám theo killer trong lúc anim
@@ -2213,7 +2198,7 @@ local function createFollowHitbox(killer, track)
     part.CanQuery = false
     part.Size = HITBOX_SIZE
     part.Color = hitboxColor
-    part.Transparency = 0.7
+    part.Transparency = 0.9
     part.Material = Enum.Material.Neon
     part.Parent = workspace
 
