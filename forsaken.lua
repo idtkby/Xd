@@ -2115,7 +2115,8 @@ end
 workspace.DescendantAdded:Connect(function(obj)
 	if not _G.VisualSkillBox then return end
 	if not obj.Name then return end
-	if not SKILL_NAMES[obj.Name:lower()] then return end
+	local skillName = obj.Name:lower()
+	if not SKILL_NAMES[skillName] then return end
 
 	-- tìm killer gần nhất
 	local nearest, best = nil, math.huge
@@ -2131,8 +2132,22 @@ workspace.DescendantAdded:Connect(function(obj)
 			end
 		end
 	end
+	if not nearest then return end
 
-	if nearest then
+	-- nếu là swords → retry liên tục trong 0.4s
+	if skillName == "swords" then
+		task.spawn(function()
+			local t0 = tick()
+			while tick() - t0 < 0.4 and obj.Parent do
+				local ok = pcall(function() createHitbox(nearest, obj) end)
+				if ok and activeHitbox[nearest] then
+					break -- thành công
+				end
+				RunService.Heartbeat:Wait()
+			end
+		end)
+	else
+		-- shockwave bình thường
 		task.delay(0.05, function()
 			createHitbox(nearest, obj)
 		end)
@@ -2169,6 +2184,7 @@ local RunService = game:GetService("RunService")
 local KillersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
 
 _G.VisualSkillBox2 = false
+local hitboxColor = Color3.fromRGB(255, 0, 0)
 
 -- Anim IDs cần theo dõi
 local SKILL_ANIMS = {
@@ -2196,8 +2212,8 @@ local function createFollowHitbox(killer, track)
     part.CanCollide = false
     part.CanQuery = false
     part.Size = HITBOX_SIZE
-    part.Color = _G.VisualSkillHitbox2CL
-    part.Transparency = 0.9
+    part.Color = hitboxColor
+    part.Transparency = 0.7
     part.Material = Enum.Material.Neon
     part.Parent = workspace
 
@@ -2257,25 +2273,34 @@ for _, killer in ipairs(KillersFolder:GetChildren()) do
 end
 KillersFolder.ChildAdded:Connect(hookKiller)
 
--- Toggle GUI
+-- Toggle + ColorPicker GUI
 Main2Group:AddToggle("VisualSkillBox2", {
     Text = "Visual Hitbox Skill (1x) 2",
     Default = false,
     Callback = function(state)
         _G.VisualSkillBox2 = state
         if not state then
-            for track, data in pairs(activeHitboxes) do
+            for _, data in pairs(activeHitboxes) do
                 if data.conn then data.conn:Disconnect() end
                 if data.part then data.part:Destroy() end
             end
             activeHitboxes = {}
         end
     end
-}):AddColorPicker("VisualSkillHitbox2Color", {
-     Default = Color3.new(255,0,0),
-     Callback = function(Value)
-_G.VisualSkillHitbox2CL = Value
-						end})
+})
+:AddColorPicker("VisualSkillBox2Color", {
+    Default = hitboxColor,
+    Transparency = 0.3,
+    Callback = function(color)
+        hitboxColor = color
+        -- update màu hitbox đang active
+        for _, data in pairs(activeHitboxes) do
+            if data.part then
+                data.part.Color = color
+            end
+        end
+    end
+})
 			end)
 
 local Players = game:GetService("Players")
