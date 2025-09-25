@@ -3332,7 +3332,7 @@ M205One:AddInput("Fak4Duration", {
 })
 
 M205One:AddLabel("FakeBlock Keybind"):AddKeyPicker("FakeBlockBind", {
-    Default = "Unknow", 
+    Default = "F", 
     Mode = "Hold", -- hoặc "Toggle"
     Text = "Fake Block",
     Callback = function()
