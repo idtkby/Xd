@@ -3211,7 +3211,6 @@ local function createMobileGui()
     mobileGui.ResetOnSpawn = false
     mobileGui.Parent = playerGui
 
-    -- Main Frame (giống Rest0re Stamina)
     local mainFrame = Instance.new("Frame")
     mainFrame.Size = UDim2.new(0, 260, 0, 120)
     mainFrame.Position = UDim2.new(0.5, -130, 1, -150)
@@ -3226,7 +3225,7 @@ local function createMobileGui()
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, 0, 0, 30)
     title.BackgroundTransparency = 1
-    title.Text = "fak4 blOck"
+    title.Text = "Fak4 BlOck"
     title.TextColor3 = Color3.new(1, 0, 0)
     title.TextScaled = true
     title.Font = Enum.Font.Code
@@ -3280,16 +3279,14 @@ M205One:AddToggle("Fak4UseAnim", {
     Callback = function(val) options.useAnim = val end
 })
 
--- dropdown for animation selection
-M205One:AddDropdown({
-    Name = "Fak4AnimSelect",
-    Options = {"Ms1-2","Ms3-4"},
-    CurrentOption = {options.selectedAnimKey},
-    MultipleOptions = false,
-    Callback = function(sel)
-        -- sel is a table, first element is string
-        options.selectedAnimKey = sel[1] or "Ms1-2"
-    end
+M205One:AddDropdown("Fak4AnimSelect", {
+    Values = { "Ms1-2", "Ms3-4" },
+    Default = options.selectedAnimKey,
+    Multi = false,
+    Text = "Animation Select",
+    Callback = function(Value)
+        options.selectedAnimKey = Value
+    end,
 })
 
 -- toggle apply speed
@@ -3340,14 +3337,6 @@ M205One:AddLabel("FakeBlock Keybind"):AddKeyPicker("FakeBlockBind", {
     end
 })
 
--- Button to manual trigger (in obsidian UI for mouse users)
-M205One:AddButton({
-    Name = "Fak4Button",
-    Callback = function()
-        doFakeBlock()
-    end,
-    Text = "Fak4 BlOck"
-})
 
 -- optional: small notify that module loaded
 pcall(function()
