@@ -3016,6 +3016,355 @@ M205One:AddDropdown("LastSoundChoice", {
 
 M205One:AddDivider()
 
+M205One:AddLabel("-= FAKE BLOCK (BETA) =-")
+
+		-- Fak4 BlOck (M205One) ----------------------------------------------------
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- GUI / OPTIONS (Obsidian)
+-- Bạn dùng M205One (tab) để add các control
+-- Các keys (IDs) cho dropdown
+local ANIM_IDS = {
+    ["Ms1-2"] = "rbxassetid://72722244508749",  -- Ms1-2
+    ["Ms3-4"] = "rbxassetid://96959123077498",  -- Ms3-4
+}
+
+-- State / defaults
+local options = {
+    showMobileGUI = false,         -- obsidian toggle: show/hide mobile GUI
+    useAnim = true,                -- toggle: có dùng anim không
+    applySpeed = true,             -- toggle: có giảm speed không
+    targetSpeed = 10,              -- input: target walk speed khi fake block
+    duration = 2,                  -- input: số giây giữ tốc độ
+    selectedAnimKey = "Ms1-2",     -- dropdown initial
+    keybind = Enum.KeyCode.F,      -- keybind mặc định
+}
+
+-- Internal human connections (so we can disconnect/reset)
+local HumanModCons = {
+    wsLoop = nil,  -- WalkSpeed property change conn
+    wsCA = nil,    -- CharacterAdded conn
+    currentPart = nil,
+}
+
+-- Helper: disconnect any walk speed enforcement
+local function disconnectWalkEnforce()
+    if HumanModCons.wsLoop then
+        pcall(function() HumanModCons.wsLoop:Disconnect() end)
+        HumanModCons.wsLoop = nil
+    end
+    if HumanModCons.wsCA then
+        pcall(function() HumanModCons.wsCA:Disconnect() end)
+        HumanModCons.wsCA = nil
+    end
+end
+
+-- Apply (temporary) enforced WalkSpeed for `seconds` seconds at `speed`
+-- This uses the pattern bạn đưa (giữ loop + reconnect on CharacterAdded).
+local function enforceWalkSpeedFor(seconds, speed)
+    -- safety param checks
+    seconds = tonumber(seconds) or 0
+    speed = tonumber(speed) or 16
+
+    -- disconnect previous enforcement (we allow immediate reapply)
+    disconnectWalkEnforce()
+
+    local function applyToCharacter(char)
+        if not char then return end
+        local hum = char:FindFirstChildWhichIsA("Humanoid")
+        if not hum then return end
+
+        local function WalkSpeedChange()
+            if hum and hum.Parent then
+                hum.WalkSpeed = speed
+            end
+        end
+
+        -- set immediately:
+        pcall(WalkSpeedChange)
+
+        -- setup property-changed connection to enforce
+        HumanModCons.wsLoop = hum:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)
+
+        -- ensure on respawn we reapply
+        HumanModCons.wsCA = LocalPlayer.CharacterAdded:Connect(function(nChar)
+            char = nChar
+            hum = char:WaitForChild("Humanoid")
+            WalkSpeedChange()
+            if HumanModCons.wsLoop then pcall(function() HumanModCons.wsLoop:Disconnect() end) end
+            HumanModCons.wsLoop = hum:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)
+        end)
+    end
+
+    -- apply to current character
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    applyToCharacter(char)
+
+    -- after seconds, disconnect and allow normal speed
+    task.delay(seconds, function()
+        -- give a small frame to avoid race
+        task.wait(0.05)
+        disconnectWalkEnforce()
+        -- optional: restore default WalkSpeed to 16 if character exists (you can remove if undesired)
+        pcall(function()
+            local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+            if hum then
+                hum.WalkSpeed = 16
+            end
+        end)
+    end)
+end
+
+-- Play local animation (returns track)
+local function playLocalAnim(animId)
+    local char = LocalPlayer.Character
+    if not char then return nil end
+    local hum = char:FindFirstChildWhichIsA("Humanoid")
+    if not hum then return nil end
+
+    -- ensure Animator exists
+    local animator = hum:FindFirstChildOfClass("Animator")
+    if not animator then
+        animator = Instance.new("Animator")
+        animator.Parent = hum
+    end
+
+    local anim = Instance.new("Animation")
+    anim.AnimationId = animId
+    local success, track = pcall(function()
+        return animator:LoadAnimation(anim)
+    end)
+    if not success or not track then
+        pcall(function() anim:Destroy() end)
+        return nil
+    end
+
+    track.Priority = Enum.AnimationPriority.Action
+    track:Play()
+    -- auto destroy Animation instance after load (track keeps playing)
+    task.delay(1, function()
+        pcall(function() anim:Destroy() end)
+    end)
+    return track
+end
+
+-- Core action: fake block
+-- If useAnim true -> play anim (and wait small moment if you want)
+-- If applySpeed true -> enforce speed for duration seconds
+local function doFakeBlock()
+    -- play anim if enabled
+    local track = nil
+    if options.useAnim then
+        local animId = ANIM_IDS[options.selectedAnimKey] or ANIM_IDS["Ms1-2"]
+        track = playLocalAnim(animId)
+        -- we don't block on track:Stopped; speed effect is independent
+    end
+
+    if options.applySpeed then
+        enforceWalkSpeedFor(options.duration, options.targetSpeed)
+    end
+
+    -- For mobile GUI feedback, we can flash a brief local notification (StarterGui)
+    pcall(function()
+        local StarterGui = game:GetService("StarterGui")
+        if StarterGui and StarterGui.SetCore then
+            StarterGui:SetCore("SendNotification", {
+                Title = "Fak4 BlOck",
+                Text = "Activated",
+                Duration = 1
+            })
+        end
+    end)
+
+    return track
+end
+
+-- KEYBIND: activate fake block with a key (PC)
+-- We'll rely on Obsidian's AddKeybind if available; else use UserInputService fallback
+-- But here we wire the keybind callback from obidian control (see GUI section)
+local UserInputService = game:GetService("UserInputService")
+local function setupKeybind(keycode)
+    -- disconnect existing listener if any
+    if HumanModCons.keyListener then
+        pcall(function() HumanModCons.keyListener:Disconnect() end)
+        HumanModCons.keyListener = nil
+    end
+
+    HumanModCons.keyListener = UserInputService.InputBegan:Connect(function(input, gp)
+        if gp then return end
+        if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == keycode then
+            doFakeBlock()
+        end
+    end)
+end
+
+-- BUILD MOBILE GUI (ScreenGui) -> show/hide by obsidian toggle
+local mobileGui = nil
+local function createMobileGui()
+    if mobileGui and mobileGui.Parent then return mobileGui end
+    local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+    mobileGui = Instance.new("ScreenGui")
+    mobileGui.Name = "Fak4BlockMobileGui"
+    mobileGui.ResetOnSpawn = false
+    mobileGui.Parent = playerGui
+
+    -- Main Frame (giống Rest0re Stamina)
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Size = UDim2.new(0, 260, 0, 120)
+    mainFrame.Position = UDim2.new(0.5, -130, 1, -150)
+    mainFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+    mainFrame.BorderColor3 = Color3.new(1, 0, 0)
+    mainFrame.BorderSizePixel = 1
+    mainFrame.Active = true
+    mainFrame.Draggable = true
+    mainFrame.Parent = mobileGui
+
+    -- Title
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 0, 30)
+    title.BackgroundTransparency = 1
+    title.Text = "fak4 blOck"
+    title.TextColor3 = Color3.new(1, 0, 0)
+    title.TextScaled = true
+    title.Font = Enum.Font.Code
+    title.Parent = mainFrame
+
+    -- Button
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -20, 0, 50)
+    button.Position = UDim2.new(0, 10, 0, 50)
+    button.BackgroundColor3 = Color3.new(0, 0, 0)
+    button.BorderColor3 = Color3.new(1, 0, 0)
+    button.BorderSizePixel = 1
+    button.Text = "Activate"
+    button.TextColor3 = Color3.new(1, 0, 0)
+    button.TextScaled = true
+    button.Font = Enum.Font.Code
+    button.Parent = mainFrame
+
+    button.MouseButton1Click:Connect(function()
+        doFakeBlock()
+    end)
+
+    mobileGui.Enabled = false
+    return mobileGui
+end
+
+
+-- Create mobile GUI now (hidden), obsidian toggle will show/hide it
+createMobileGui()
+
+-- -------------------------
+-- Obsidian UI bindings
+-- M205One is the tab / group variable passed earlier; adapt names if different.
+-- Example calls (you already used patterns like Main1Group:AddToggle/AddInput..)
+-- Below we add controls to M205One (replace name if your variable is different)
+
+-- show/hide mobile GUI toggle
+M205One:AddToggle("ShowFak4MobileGUI", {
+    Text = "Show Mobile Fak4 GUI",
+    Default = false,
+    Callback = function(val)
+        options.showMobileGUI = val
+        if mobileGui then mobileGui.Enabled = val end
+    end
+})
+
+-- toggle use animation
+M205One:AddToggle("Fak4UseAnim", {
+    Text = "Use Animation",
+    Default = options.useAnim,
+    Callback = function(val) options.useAnim = val end
+})
+
+-- dropdown for animation selection
+M205One:AddDropdown({
+    Name = "Fak4AnimSelect",
+    Options = {"Ms1-2","Ms3-4"},
+    CurrentOption = {options.selectedAnimKey},
+    MultipleOptions = false,
+    Callback = function(sel)
+        -- sel is a table, first element is string
+        options.selectedAnimKey = sel[1] or "Ms1-2"
+    end
+})
+
+-- toggle apply speed
+M205One:AddToggle("Fak4ApplySpeed", {
+    Text = "Reduce WalkSpeed",
+    Default = options.applySpeed,
+    Callback = function(val) options.applySpeed = val end
+})
+
+-- input: target speed
+M205One:AddInput("Fak4SpeedValue", {
+    Default = tostring(options.targetSpeed),
+    Numeric = true,
+    Text = "Target WalkSpeed",
+    Placeholder = "e.g. 10",
+    Callback = function(val)
+        local n = tonumber(val)
+        if n and n > 0 then
+            options.targetSpeed = n
+        else
+            Library:Notify("Invalid speed", 3)
+        end
+    end
+})
+
+-- input: duration seconds
+M205One:AddInput("Fak4Duration", {
+    Default = tostring(options.duration),
+    Numeric = true,
+    Text = "Duration (s)",
+    Placeholder = "e.g. 2",
+    Callback = function(val)
+        local n = tonumber(val)
+        if n and n > 0 then
+            options.duration = n
+        else
+            Library:Notify("Invalid duration", 3)
+        end
+    end
+})
+
+M205One:AddLabel("FakeBlock Keybind"):AddKeyPicker("FakeBlockBind", {
+    Default = "Unknow", 
+    Mode = "Hold", -- hoặc "Toggle"
+    Text = "Fake Block",
+    Callback = function()
+        FakeBlockActivate()
+    end
+})
+
+-- Button to manual trigger (in obsidian UI for mouse users)
+M205One:AddButton({
+    Name = "Fak4Button",
+    Callback = function()
+        doFakeBlock()
+    end,
+    Text = "Fak4 BlOck"
+})
+
+-- optional: small notify that module loaded
+pcall(function()
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Fak4 BlOck",
+        Text = "Loaded",
+        Duration = 2
+    })
+end)
+
+-- Initialize keybind listener
+setupKeybind(options.keybind)
+
+-- End of Fak4 BlOck module ----------------------------------------------
+
+M205One:AddDivider()
+
 task.spawn(function()
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
