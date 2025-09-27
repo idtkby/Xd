@@ -3016,7 +3016,7 @@ M205One:AddDropdown("LastSoundChoice", {
 
 M205One:AddDivider()
 
-M205One:AddLabel("-= FAKE BLOCK (BETA) =-")
+M205One:AddLabel("-= FAKE BLOCK =-")
 
 		-- Fak4 BlOck (M205One) ----------------------------------------------------
 local Players = game:GetService("Players")
@@ -3329,7 +3329,7 @@ M205One:AddInput("Fak4Duration", {
 })
 
 M205One:AddLabel("FakeBlock Keybind"):AddKeyPicker("FakeBlockBind", {
-    Default = "F", 
+    Default = nil,
     Mode = "Hold", -- hoặc "Toggle"
     Text = "Fake Block",
     Callback = function()
@@ -3352,6 +3352,164 @@ setupKeybind(options.keybind)
 
 -- End of Fak4 BlOck module ----------------------------------------------
 
+M205One:AddDivider()
+
+M205One:AddLabel("-= FAKE LAG (ALPHA) =-")
+
+		-- Fak4 Lag (M205One) ----------------------------------------------------
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+
+-- Anim IDs
+local ANIM_IDS = {
+    ["Walk"] = "rbxassetid://108018357044094",
+    ["Run"]  = "rbxassetid://136252471123500",
+}
+
+-- State / defaults
+local options = {
+    showMobileGUI = false,
+    selectedAnimKey = "Walk",
+    keybind = Enum.KeyCode.F, -- PC keybind
+}
+
+-- Play local animation
+local function playLocalAnim(animId)
+    local char = LocalPlayer.Character
+    if not char then return nil end
+    local hum = char:FindFirstChildWhichIsA("Humanoid")
+    if not hum then return nil end
+
+    local animator = hum:FindFirstChildOfClass("Animator")
+    if not animator then
+        animator = Instance.new("Animator")
+        animator.Parent = hum
+    end
+
+    local anim = Instance.new("Animation")
+    anim.AnimationId = animId
+    local ok, track = pcall(function()
+        return animator:LoadAnimation(anim)
+    end)
+    if not ok or not track then
+        anim:Destroy()
+        return nil
+    end
+
+    track.Priority = Enum.AnimationPriority.Action
+    track:Play()
+    task.delay(1, function() pcall(function() anim:Destroy() end) end)
+    return track
+end
+
+-- Core action
+local function doFakeLag()
+    local animId = ANIM_IDS[options.selectedAnimKey] or ANIM_IDS["Walk"]
+    playLocalAnim(animId)
+
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Fak4 Lag",
+            Text = "Anim: " .. options.selectedAnimKey,
+            Duration = 1
+        })
+    end)
+end
+
+-- Keybind PC
+local keyConn
+local function setupKeybind(keycode)
+    if keyConn then keyConn:Disconnect() end
+    keyConn = UserInputService.InputBegan:Connect(function(input, gp)
+        if gp then return end
+        if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == keycode then
+            doFakeLag()
+        end
+    end)
+end
+
+-- MOBILE GUI
+local mobileGui
+local function createMobileGui()
+    if mobileGui and mobileGui.Parent then return mobileGui end
+    local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+    mobileGui = Instance.new("ScreenGui")
+    mobileGui.Name = "Fak4LagMobileGui"
+    mobileGui.ResetOnSpawn = false
+    mobileGui.Parent = playerGui
+
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Size = UDim2.new(0, 260, 0, 120)
+    mainFrame.Position = UDim2.new(0.5, -130, 1, -150)
+    mainFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+    mainFrame.BorderColor3 = Color3.new(1, 0, 0)
+    mainFrame.BorderSizePixel = 1
+    mainFrame.Active = true
+    mainFrame.Draggable = true
+    mainFrame.Parent = mobileGui
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 0, 30)
+    title.BackgroundTransparency = 1
+    title.Text = "Fak4 Lag"
+    title.TextColor3 = Color3.new(1, 0, 0)
+    title.TextScaled = true
+    title.Font = Enum.Font.Code
+    title.Parent = mainFrame
+
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -20, 0, 50)
+    button.Position = UDim2.new(0, 10, 0, 50)
+    button.BackgroundColor3 = Color3.new(0, 0, 0)
+    button.BorderColor3 = Color3.new(1, 0, 0)
+    button.BorderSizePixel = 1
+    button.Text = "Activate"
+    button.TextColor3 = Color3.new(1, 0, 0)
+    button.TextScaled = true
+    button.Font = Enum.Font.Code
+    button.Parent = mainFrame
+
+    button.MouseButton1Click:Connect(doFakeLag)
+
+    mobileGui.Enabled = false
+    return mobileGui
+end
+
+createMobileGui()
+
+-- OBSIDIAN UI
+M205One:AddToggle("ShowFak4LagGUI", {
+    Text = "Show Mobile Fak4 GUI",
+    Default = false,
+    Callback = function(val)
+        options.showMobileGUI = val
+        if mobileGui then mobileGui.Enabled = val end
+    end
+})
+
+M205One:AddDropdown("Fak4LagAnimSelect", {
+    Values = {"Walk", "Run"},
+    Default = options.selectedAnimKey,
+    Multi = false,
+    Text = "Animation Select",
+    Callback = function(Value)
+        options.selectedAnimKey = Value
+    end,
+})
+
+M205One:AddLabel("FakeLag Keybind"):AddKeyPicker("FakeLagBind", {
+    Default = nil,
+    Mode = "Hold",
+    Text = "Fake Lag",
+    Callback = function()
+        doFakeLag()
+    end
+})
+
+
+setupKeybind(options.keybind)
 M205One:AddDivider()
 
 task.spawn(function()
@@ -4082,6 +4240,9 @@ end
 -- ==========================
 -- HOOK SOUND TRIGGER
 -- ==========================
+-- ==========================
+-- HOOK SOUND TRIGGER FIXED
+-- ==========================
 local triggerSoundId = "86710781315432"
 
 local function extractId(sound)
@@ -4090,50 +4251,53 @@ end
 
 local function hookSound(sound)
     if extractId(sound) == triggerSoundId then
-        sound.Played:Connect(function()
-            if not _G.AimBackstab_Enabled then return end
-            if globalCooldown then return end
-            globalCooldown = true
+        sound:GetPropertyChangedSignal("IsPlaying"):Connect(function()
+            if sound.IsPlaying then
+                -- khi bắt đầu phát
+                if not _G.AimBackstab_Enabled then return end
+                if globalCooldown then return end
+                globalCooldown = true
 
-            -- nếu TP mode
-            if _G.AimBackstab_Action == "TP" then
-                task.delay(0, function()
-                    local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-                    if hrp then
-                        local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
-                        if killersFolder then
-                            for _, killer in ipairs(killersFolder:GetChildren()) do
-                                local kHRP = killer:FindFirstChild("HumanoidRootPart")
-                                if kHRP and (hrp.Position - kHRP.Position).Magnitude <= _G.AimBackstab_Range then
-                                    tpBehind(hrp, kHRP)
+                if _G.AimBackstab_Action == "TP" then
+                    task.delay(0, function()
+                        local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+                            if killersFolder then
+                                for _, killer in ipairs(killersFolder:GetChildren()) do
+                                    local kHRP = killer:FindFirstChild("HumanoidRootPart")
+                                    if kHRP and (hrp.Position - kHRP.Position).Magnitude <= _G.AimBackstab_Range then
+                                        tpBehind(hrp, kHRP)
+                                    end
                                 end
                             end
                         end
-                    end
+                    end)
+                end
+
+                Library:Notify("Cooldown 30s", 5)
+
+                task.delay(30, function()
+                    globalCooldown = false
+                    Library:Notify("Cooldown Ended", 5)
                 end)
             end
-
-            -- notify
-            Library:Notify("Cooldown 30s", 5)
-
-            -- reset cooldown
-            task.delay(30, function()
-                globalCooldown = false
-                Library:Notify("Cooldown Ended", 5)
-            end)
         end)
     end
 end
 
--- Hook sẵn các sound hiện có trong nhân vật localp
-for _, s in ipairs(lp.Character:GetDescendants()) do
-    if s:IsA("Sound") then hookSound(s) end
-end
-lp.CharacterAdded:Connect(function(char)
+-- Hook sound trong localp character
+local function hookChar(char)
+    for _, s in ipairs(char:GetDescendants()) do
+        if s:IsA("Sound") then hookSound(s) end
+    end
     char.DescendantAdded:Connect(function(d)
         if d:IsA("Sound") then hookSound(d) end
     end)
-end)
+end
+
+if lp.Character then hookChar(lp.Character) end
+lp.CharacterAdded:Connect(hookChar)
 
 -- helper: quay cùng hướng killer
 local function faceSameDirection(hrp, targetHRP)
