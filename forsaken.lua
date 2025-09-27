@@ -3403,11 +3403,31 @@ local function playLocalAnim(animId)
     return track
 end
 
--- Core action
+-- Core action: fake lag (anim stop khi move/jump)
 local function doFakeLag()
     local animId = ANIM_IDS[options.selectedAnimKey] or ANIM_IDS["Walk"]
-    playLocalAnim(animId)
+    local track = playLocalAnim(animId)
+    if not track then return end
 
+    -- theo dõi humanoid để stop anim khi move/jump
+    local char = LocalPlayer.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum then
+        local conn
+        conn = RunService.Heartbeat:Connect(function()
+            if not track.IsPlaying then
+                if conn then conn:Disconnect() end
+                return
+            end
+            -- move/jump detection
+            if hum.MoveDirection.Magnitude > 0.1 or hum:GetState() == Enum.HumanoidStateType.Jumping then
+                track:Stop()
+                if conn then conn:Disconnect() end
+            end
+        end)
+    end
+
+    -- notify nhỏ
     pcall(function()
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "Fak4 Lag",
@@ -3416,7 +3436,6 @@ local function doFakeLag()
         })
     end)
 end
-
 -- Keybind PC
 local keyConn
 local function setupKeybind(keycode)
