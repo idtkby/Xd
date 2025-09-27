@@ -3040,7 +3040,7 @@ local options = {
     targetSpeed = 10,              -- input: target walk speed khi fake block
     duration = 2,                  -- input: số giây giữ tốc độ
     selectedAnimKey = "Ms1-2",     -- dropdown initial
-    keybind = Enum.KeyCode.pa,      -- keybind mặc định
+    keybind = Enum.KeyCode.P,      -- keybind mặc định
 }
 
 -- Internal human connections (so we can disconnect/reset)
@@ -3372,7 +3372,7 @@ local ANIM_IDS = {
 local options = {
     showMobileGUI = false,
     selectedAnimKey = "Walk",
-    keybind = Enum.KeyCode.pa,
+    keybind = Enum.KeyCode.P,
 }
 local currentTrack = nil
 local animActive = false
@@ -5356,41 +5356,7 @@ do
         local speed = (hrp and math.floor(hrp.Velocity.Magnitude + 0.5)) or 0
         _G.speedLabel:SetText("Speed: " .. speed)
     end)
-end
-
-		task.spawn(function()
-				local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-local player = Players.LocalPlayer
-local RemoteEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
-
--- Lấy device attribute
-local device = player:GetAttribute("Device")
-
-if type(device) == "table" then
-    device = device[1]
-end
-
-device = tostring(device or "PC")
-
--- Nếu không khớp options thì fallback PC
-local validDevices = {"PC", "Mobile", "Console"}
-if not table.find(validDevices, device) then
-    device = "PC"
-end
-
--- Dropdown spoof device (obsidian)
-Dotab:AddDropdown("SpoofDevice", {
-    Text = "Spoof Device",
-    Default = device,
-    Values = validDevices,
-    Multi = false,
-    Callback = function(selected)
-        RemoteEvent:FireServer("SetDevice", selected)
-    end,
-})
-			end)
+		end
 
 
 
