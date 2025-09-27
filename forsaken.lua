@@ -3040,7 +3040,7 @@ local options = {
     targetSpeed = 10,              -- input: target walk speed khi fake block
     duration = 2,                  -- input: số giây giữ tốc độ
     selectedAnimKey = "Ms1-2",     -- dropdown initial
-    keybind = Enum.KeyCode.F,      -- keybind mặc định
+    keybind = Enum.KeyCode.pa,      -- keybind mặc định
 }
 
 -- Internal human connections (so we can disconnect/reset)
@@ -3356,9 +3356,10 @@ M205One:AddDivider()
 
 M205One:AddLabel("-= FAKE LAG (ALPHA) =-")
 
-		-- Fak4 Lag (M205One) ----------------------------------------------------
+-- Fak4 Lag (M205One) ----------------------------------------------------
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 -- Anim IDs
@@ -3367,12 +3368,14 @@ local ANIM_IDS = {
     ["Run"]  = "rbxassetid://136252471123500",
 }
 
--- State / defaults
+-- State
 local options = {
     showMobileGUI = false,
     selectedAnimKey = "Walk",
-    keybind = Enum.KeyCode.F, -- PC keybind
+    keybind = Enum.KeyCode.pa,
 }
+local currentTrack = nil
+local animActive = false
 
 -- Play local animation
 local function playLocalAnim(animId)
@@ -3403,40 +3406,44 @@ local function playLocalAnim(animId)
     return track
 end
 
--- Core action: fake lag (anim stop khi move/jump)
-local function doFakeLag()
-    local animId = ANIM_IDS[options.selectedAnimKey] or ANIM_IDS["Walk"]
-    local track = playLocalAnim(animId)
-    if not track then return end
+-- Stop anim if running
+local function stopAnim()
+    if currentTrack and currentTrack.IsPlaying then
+        currentTrack:Stop()
+    end
+    currentTrack = nil
+    animActive = false
+end
 
-    -- theo dõi humanoid để stop anim khi move/jump
-    local char = LocalPlayer.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if hum then
-        local conn
-        conn = RunService.Heartbeat:Connect(function()
-            if not track.IsPlaying then
-                if conn then conn:Disconnect() end
-                return
-            end
-            -- move/jump detection
-            if hum.MoveDirection.Magnitude > 0.1 or hum:GetState() == Enum.HumanoidStateType.Jumping then
-                track:Stop()
-                if conn then conn:Disconnect() end
-            end
-        end)
+-- Core action
+local function doFakeLag()
+    if animActive then return end -- ngăn spam khi anim đang chạy
+    local animId = ANIM_IDS[options.selectedAnimKey] or ANIM_IDS["Walk"]
+    currentTrack = playLocalAnim(animId)
+    if currentTrack then
+        animActive = true
     end
 
-    -- notify nhỏ
     pcall(function()
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "Fak4 Lag",
-            Text = "Anim: " .. options.selectedAnimKey,
+            Text = "Activated (" .. options.selectedAnimKey .. ")",
             Duration = 1
         })
     end)
 end
--- Keybind PC
+
+-- Check movement trong lúc anim chạy
+RunService.Heartbeat:Connect(function()
+    if not animActive or not currentTrack then return end
+    local char = LocalPlayer.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum and hum.MoveDirection.Magnitude > 0 then
+        stopAnim()
+    end
+end)
+
+-- PC Keybind
 local keyConn
 local function setupKeybind(keycode)
     if keyConn then keyConn:Disconnect() end
@@ -3448,7 +3455,7 @@ local function setupKeybind(keycode)
     end)
 end
 
--- MOBILE GUI
+-- Mobile GUI
 local mobileGui
 local function createMobileGui()
     if mobileGui and mobileGui.Parent then return mobileGui end
@@ -3498,7 +3505,7 @@ end
 
 createMobileGui()
 
--- OBSIDIAN UI
+-- Obsidian UI
 M205One:AddToggle("ShowFak4LagGUI", {
     Text = "Show Mobile Fak4 GUI",
     Default = false,
@@ -3528,8 +3535,9 @@ M205One:AddLabel("FakeLag Keybind"):AddKeyPicker("FakeLagBind", {
 })
 
 
+-- Init PC keybind
 setupKeybind(options.keybind)
-M205One:AddDivider()
+		M205One:AddDivider()
 
 task.spawn(function()
 local Players = game:GetService("Players")
