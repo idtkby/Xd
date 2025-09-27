@@ -4090,57 +4090,87 @@ local function tpBehind(hrp, targetHRP)
     end  
 end  
   
--- Bắt remote để bật cooldown + xử lý TP mode  
--- ID anim backstab
-local BACKSTAB_ANIM = "86545133269813"
+-- ID sound backstab (localplayer phát)
+local BACKSTAB_SOUND = "86710781315432"
 
-local function hookBackstabAnim(humanoid)
-    humanoid.AnimationPlayed:Connect(function(track)
-        local anim = track.Animation
-        if not anim then return end
-        local id = anim.AnimationId and anim.AnimationId:match("%d+")
-        if id ~= BACKSTAB_ANIM then return end
-        if not _G.AimBackstab_Enabled then return end
-        if globalCooldown then return end
-        globalCooldown = true
+-- Hook Sound phát ra
+local function hookBackstabSound(char)
+    -- tìm tất cả Sound trong character (hoặc đợi spawn)
+    for _, s in ipairs(char:GetDescendants()) do
+        if s:IsA("Sound") then
+            s.Played:Connect(function()
+                local sid = s.SoundId:match("%d+")
+                if sid ~= BACKSTAB_SOUND then return end
+                if not _G.AimBackstab_Enabled then return end
+                if globalCooldown then return end
+                globalCooldown = true
 
-        -- Nếu chọn TP
-        if _G.AimBackstab_Action == "TP" then
-            task.delay(0, function()
-                local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
-                    if killersFolder then
-                        for _, killer in ipairs(killersFolder:GetChildren()) do
-                            local kHRP = killer:FindFirstChild("HumanoidRootPart")
-                            if kHRP and (hrp.Position - kHRP.Position).Magnitude <= _G.AimBackstab_Range then
-                                tpBehind(hrp, kHRP)
+                -- Nếu chọn TP
+                if _G.AimBackstab_Action == "TP" then
+                    task.spawn(function()
+                        local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+                            if killersFolder then
+                                for _, killer in ipairs(killersFolder:GetChildren()) do
+                                    local kHRP = killer:FindFirstChild("HumanoidRootPart")
+                                    if kHRP and (hrp.Position - kHRP.Position).Magnitude <= _G.AimBackstab_Range then
+                                        tpBehind(hrp, kHRP)
+                                    end
+                                end
                             end
                         end
-                    end
+                    end)
                 end
+
+                -- cooldown 30s
+                task.delay(30, function()
+                    globalCooldown = false
+                end)
             end)
         end
+    end
 
-        task.delay(1, function()
-            globalCooldown = false
-							print("")
-        end)
+    -- auto hook sound mới spawn trong char
+    char.DescendantAdded:Connect(function(d)
+        if d:IsA("Sound") then
+            d.Played:Connect(function()
+                local sid = d.SoundId:match("%d+")
+                if sid ~= BACKSTAB_SOUND then return end
+                if not _G.AimBackstab_Enabled then return end
+                if globalCooldown then return end
+                globalCooldown = true
+
+                if _G.AimBackstab_Action == "TP" then
+                    task.spawn(function()
+                        local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+                            if killersFolder then
+                                for _, killer in ipairs(killersFolder:GetChildren()) do
+                                    local kHRP = killer:FindFirstChild("HumanoidRootPart")
+                                    if kHRP and (hrp.Position - kHRP.Position).Magnitude <= _G.AimBackstab_Range then
+                                        tpBehind(hrp, kHRP)
+                                    end
+                                end
+                            end
+                        end
+                    end)
+                end
+
+                task.delay(30, function()
+                    globalCooldown = false
+                end)
+            end)
+        end
     end)
 end
 
--- Gắn cho nhân vật hiện tại
+-- Gắn khi spawn
 if lp.Character then
-    local hum = lp.Character:FindFirstChildOfClass("Humanoid")
-    if hum then hookBackstabAnim(hum) end
+    hookBackstabSound(lp.Character)
 end
-
--- Khi respawn gắn lại
-lp.CharacterAdded:Connect(function(char)
-    local hum = char:WaitForChild("Humanoid")
-    hookBackstabAnim(hum)
-end)
-
+lp.CharacterAdded:Connect(hookBackstabSound)
 -- helper: quay cùng hướng killer
 local function faceSameDirection(hrp, targetHRP)
     local look = targetHRP.CFrame.LookVector
