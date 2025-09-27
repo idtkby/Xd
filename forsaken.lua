@@ -4169,7 +4169,17 @@ RunService.Heartbeat:Connect(function()
         end
     end
 end)
-
+      
+-- Thêm dropdown chọn style      
+Main3Group:AddDropdown("AimBackstabStyle", {      
+    Values = {"Free", "Back"},      
+    Default = 1,      
+    Multi = false,      
+    Text = "Aim Style",      
+    Callback = function(v)      
+        _G.AimBackstab_Style = v      
+    end      
+})      
 -- GUI
 Main3Group:AddToggle("AimBackstabToggle", {
     Text = "Aimbot Dagger",
