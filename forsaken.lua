@@ -4017,158 +4017,87 @@ Main3Group:AddDivider()
 
 
 Main3Group:AddLabel("--== Surviv: [ TwoTime ] ==--", true) 
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local lp = Players.LocalPlayer
 
 -- Config
 _G.AimBackstab_Enabled = false
-_G.AimBackstab_Mode = "Behind" -- Behind hoặc Around
+_G.AimBackstab_Mode = "Behind"
 _G.AimBackstab_Range = 4
-_G.AimBackstab_Action = "Aim" -- Aim hoặc TP
-_G.AimBackstab_Style = "Free" -- Free hoặc Back
+_G.AimBackstab_Action = "TP" -- Aim hoặc TP
+_G.AimBackstab_Style = "Back"
 
--- Sound ID trigger (local)
+-- Trigger Sound ID (string số thôi)
 local TRIGGER_SOUND_ID = "86710781315432"
 
--- Cooldown
+-- Cooldown flag
 local globalCooldown = false
 
--- Check sau lưng
-local function isBehindTarget(hrp, targetHRP)
-    local distance = (hrp.Position - targetHRP.Position).Magnitude
-    if distance > _G.AimBackstab_Range then
-        return false
-    end
-
-    if _G.AimBackstab_Mode == "Around" then
-        return true
-    else
-        local direction = -targetHRP.CFrame.LookVector
-        local toPlayer = (hrp.Position - targetHRP.Position)
-        return toPlayer:Dot(direction) > 0.5
-    end
-end
-
--- TP ra sau killer
-local TP_OFFSET = 2.5
-local function tpBehind(hrp, targetHRP)
-    if not hrp or not targetHRP then return end
-    local look = targetHRP.CFrame.LookVector
-    local backPos = targetHRP.Position - look * TP_OFFSET
-    hrp.CFrame = CFrame.new(backPos, targetHRP.Position)
-
-    -- aim 1s
-    local startTime = tick()
-    while tick() - startTime < 1 do
-        if not hrp or not targetHRP or not targetHRP.Parent then break end
-        local direction = (targetHRP.Position - hrp.Position).Unit
-        local yRot = math.atan2(-direction.X, -direction.Z)
-        hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
-        RunService.Heartbeat:Wait()
-    end
-end
-
--- Face cùng hướng killer
-local function faceSameDirection(hrp, targetHRP)
-    local look = targetHRP.CFrame.LookVector
-    if look.Magnitude < 0.001 then return end
-    hrp.CFrame = CFrame.new(hrp.Position, hrp.Position + look)
-end
-
--- Hook sound riêng cho LocalPlayer
+-- Extract ID chuẩn từ SoundId
 local function extractId(sound)
-    return tostring(sound.SoundId):match("%d+")
+    local id = tostring(sound.SoundId)
+    return id:match("%d+")
 end
 
-local function hookSound(sound)
-    if extractId(sound) == TRIGGER_SOUND_ID then
-        sound.Played:Connect(function()
-            if not _G.AimBackstab_Enabled then return end
-            if globalCooldown then return end
-            globalCooldown = true
+-- Khi trigger: bật cooldown + TP sau killer
+local function triggerBackstab()
+    if not _G.AimBackstab_Enabled then return end
+    if globalCooldown then return end
+    globalCooldown = true
 
-            local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
-                if killersFolder then
-                    for _, killer in ipairs(killersFolder:GetChildren()) do
-                        local kHRP = killer:FindFirstChild("HumanoidRootPart")
-                        if kHRP and (hrp.Position - kHRP.Position).Magnitude <= _G.AimBackstab_Range then
-                            if _G.AimBackstab_Action == "TP" then
-                                tpBehind(hrp, kHRP)
-                            end
-                        end
+    local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+        if killersFolder then
+            for _, killer in ipairs(killersFolder:GetChildren()) do
+                local kHRP = killer:FindFirstChild("HumanoidRootPart")
+                if kHRP and (hrp.Position - kHRP.Position).Magnitude <= _G.AimBackstab_Range then
+                    if _G.AimBackstab_Action == "TP" then
+                        local backPos = kHRP.Position - kHRP.CFrame.LookVector * 2.5
+                        hrp.CFrame = CFrame.new(backPos, kHRP.Position)
                     end
                 end
             end
-
-            Library:Notify("Cooldown 30s", 5)
-            task.delay(30, function()
-                globalCooldown = false
-                Library:Notify("Cooldown Ended", 5)
-            end)
-        end)
+        end
     end
+
+    Library:Notify("Cooldown 30s", 5)
+    task.delay(30, function()
+        globalCooldown = false
+        Library:Notify("Cooldown Ended", 5)
+    end)
 end
 
--- Chỉ hook sound trong LocalPlayer
-lp.CharacterAdded:Connect(function(char)
-    char.DescendantAdded:Connect(function(obj)
-        if obj:IsA("Sound") then
-            hookSound(obj)
+-- Hook sound
+local function hookSound(s)
+    if not s:IsA("Sound") then return end
+    if extractId(s) ~= TRIGGER_SOUND_ID then return end
+
+    -- khi play
+    s.Played:Connect(function()
+        triggerBackstab()
+    end)
+
+    -- dự phòng nếu Played không chạy
+    s:GetPropertyChangedSignal("IsPlaying"):Connect(function()
+        if s.IsPlaying then
+            triggerBackstab()
         end
     end)
-end)
-if lp.Character then
-    for _, s in ipairs(lp.Character:GetDescendants()) do
-        if s:IsA("Sound") then
-            hookSound(s)
-        end
-    end
 end
 
--- ===============================
--- LOOP AIM
--- ===============================
-RunService.Heartbeat:Connect(function()
-    if not _G.AimBackstab_Enabled then return end
-    if globalCooldown then return end
-    if not lp.Character or lp.Character.Name ~= "TwoTime" then return end
-
-    local hrp = lp.Character:FindFirstChild("HumanoidRootPart")
-    local hum = lp.Character:FindFirstChildOfClass("Humanoid")
-    if not hrp then return end
-
-    local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
-    if not killersFolder then return end
-
-    for _, killer in ipairs(killersFolder:GetChildren()) do
-        local kHRP = killer:FindFirstChild("HumanoidRootPart")
-        if not kHRP then continue end
-
-        local dist = (hrp.Position - kHRP.Position).Magnitude
-        local shouldAim_Free = (_G.AimBackstab_Style == "Free") and isBehindTarget(hrp, kHRP)
-        local shouldAim_Back = (_G.AimBackstab_Style == "Back") and isBehindTarget(hrp, kHRP)
-        local shouldAim_BackTP = (_G.AimBackstab_Style == "Back" and _G.AimBackstab_Action == "TP" and dist <= _G.AimBackstab_Range)
-
-        if shouldAim_Free or shouldAim_Back or shouldAim_BackTP then
-            local oldAuto = hum and hum.AutoRotate
-            if hum then hum.AutoRotate = false end
-
-            if _G.AimBackstab_Style == "Back" then
-                faceSameDirection(hrp, kHRP)
-            else
-                local dir = (kHRP.Position - hrp.Position).Unit
-                local yRot = math.atan2(-dir.X, -dir.Z)
-                hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, yRot, 0)
-            end
-
-            if hum and oldAuto ~= nil then hum.AutoRotate = oldAuto end
-        end
+-- Hook all sounds trong LocalPlayer.Character
+local function hookCharacter(char)
+    for _, d in ipairs(char:GetDescendants()) do
+        hookSound(d)
     end
-end)
+    char.DescendantAdded:Connect(hookSound)
+end
+
+-- Initial + respawn
+if lp.Character then hookCharacter(lp.Character) end
+lp.CharacterAdded:Connect(hookCharacter)
       
 -- Thêm dropdown chọn style      
 Main3Group:AddDropdown("AimBackstabStyle", {      
