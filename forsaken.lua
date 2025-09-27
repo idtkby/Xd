@@ -337,7 +337,7 @@ Main1Group:AddToggle("ToggleRestoreGUI", {
             local title = Instance.new("TextLabel")
             title.Size = UDim2.new(1, 0, 0, 30)
             title.BackgroundTransparency = 1
-            title.Text = "RestOre Stamina"
+            title.Text = "RestOre St4min4"
             title.TextColor3 = Color3.new(1, 0, 0)
             title.TextScaled = true
             title.Font = Enum.Font.Code
@@ -3225,7 +3225,7 @@ local function createMobileGui()
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, 0, 0, 30)
     title.BackgroundTransparency = 1
-    title.Text = "Fak4 BlOck"
+    title.Text = "F4ke BlOck"
     title.TextColor3 = Color3.new(1, 0, 0)
     title.TextScaled = true
     title.Font = Enum.Font.Code
@@ -3341,7 +3341,7 @@ M205One:AddLabel("FakeBlock Keybind"):AddKeyPicker("FakeBlockBind", {
 -- optional: small notify that module loaded
 pcall(function()
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Fak4 BlOck",
+        Title = "F4ke BlOck",
         Text = "Loaded",
         Duration = 2
     })
@@ -3426,7 +3426,7 @@ local function doFakeLag()
 
     pcall(function()
         game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Fak4 Lag",
+            Title = "F4ke L4g",
             Text = "Activated (" .. options.selectedAnimKey .. ")",
             Duration = 1
         })
@@ -3479,7 +3479,7 @@ local function createMobileGui()
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, 0, 0, 30)
     title.BackgroundTransparency = 1
-    title.Text = "Fak4 Lag"
+    title.Text = "F4ke L4g"
     title.TextColor3 = Color3.new(1, 0, 0)
     title.TextScaled = true
     title.Font = Enum.Font.Code
