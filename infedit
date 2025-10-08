@@ -126,7 +126,7 @@ if makefolder and isfolder and writefile and isfile then
     end)
 end
 
-currentVersion = "6.3.3"
+currentVersion = "6.3.4"
 
 ScaledHolder = Instance.new("Frame")
 Scale = Instance.new("UIScale")
@@ -324,7 +324,7 @@ Title.BorderSizePixel = 0
 Title.Size = UDim2.new(0, 250, 0, 20)
 Title.Font = Enum.Font.SourceSans
 Title.TextSize = 18
-Title.Text = "[EDIT] Infinite Yield FE v" .. currentVersion
+Title.Text = "Infinite Yield FE v" .. currentVersion
 
 do
 	local emoji = ({
@@ -2885,8 +2885,8 @@ defaultsettings = {
 	prefix = ';';
 	StayOpen = false;
 	guiScale = defaultGuiScale;
-	espTransparency = 0.8;
-	keepIY = true; 
+	espTransparency = 0.3;
+	keepIY = true;
 	logsEnabled = false;
 	jLogsEnabled = false;
 	aliases = {};
@@ -2909,7 +2909,7 @@ useFactorySettings = function()
     StayOpen = false
     guiScale = defaultGuiScale
     KeepInfYield = true
-    espTransparency = 0.8
+    espTransparency = 0.3
     logsEnabled = false
     jLogsEnabled = false
     logsWebhook = nil
@@ -3012,7 +3012,7 @@ function saves()
                     if vtype(json.StayOpen, "boolean") then StayOpen = json.StayOpen else StayOpen = false end
                     if vtype(json.guiScale, "number") then guiScale = json.guiScale else guiScale = defaultGuiScale end
                     if vtype(json.keepIY, "boolean") then KeepInfYield = json.keepIY else KeepInfYield = true end
-                    if vtype(json.espTransparency, "number") then espTransparency = json.espTransparency else espTransparency = 0.8 end
+                    if vtype(json.espTransparency, "number") then espTransparency = json.espTransparency else espTransparency = 0.3 end
                     if vtype(json.logsEnabled, "boolean") then logsEnabled = json.logsEnabled else logsEnabled = false end
                     if vtype(json.jLogsEnabled, "boolean") then jLogsEnabled = json.jLogsEnabled else jLogsEnabled = false end
                     if vtype(json.logsWebhook, "string") then logsWebhook = json.logsWebhook else logsWebhook = nil end
@@ -4633,6 +4633,8 @@ CMDs[#CMDs + 1] = {NAME = 'joindate / jd [player]', DESC = 'Tells you the date t
 CMDs[#CMDs + 1] = {NAME = 'chatjoindate / cjd [player]', DESC = 'Chats the date the player joined Roblox'}
 CMDs[#CMDs + 1] = {NAME = 'copyname / copyuser [player]', DESC = 'Copies a players full username to your clipboard'}
 CMDs[#CMDs + 1] = {NAME = 'userid / id [player]', DESC = 'Notifies a players user ID'}
+CMDs[#CMDs + 1] = {NAME = 'copyplaceid / placeid', DESC = 'Copies the current place id to your clipboard'}
+CMDs[#CMDs + 1] = {NAME = 'copygameid / gameid', DESC = 'Copies the current game id to your clipboard'}
 CMDs[#CMDs + 1] = {NAME = 'copyuserid / copyid [player]', DESC = 'Copies a players user ID to your clipboard'}
 CMDs[#CMDs + 1] = {NAME = 'appearanceid / aid [player]', DESC = 'Notifies a players appearance ID'}
 CMDs[#CMDs + 1] = {NAME = 'copyappearanceid / caid [player]', DESC = 'Copies a players appearance ID to your clipboard'}
@@ -4747,7 +4749,8 @@ CMDs[#CMDs + 1] = {NAME = 'noroot / removeroot / rroot', DESC = 'Removes your ch
 CMDs[#CMDs + 1] = {NAME = 'replaceroot', DESC = 'Replaces your characters HumanoidRootPart'}
 CMDs[#CMDs + 1] = {NAME = 'clearcharappearance / clearchar / clrchar', DESC = 'Removes all accessory, shirt, pants, charactermesh, and bodycolors'}
 CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
-CMDs[#CMDs + 1] = {NAME = 'animation / anim [ID] [speed]', DESC = 'Makes your character perform an animation (must be by roblox to replicate)'}
+CMDs[#CMDs + 1] = {NAME = 'animation / anim [ID] [speed]', DESC = 'Makes your character perform an animation (must be an animation on the marketplace or by roblox/stickmasterluke to replicate)'}
+CMDs[#CMDs + 1] = {NAME = 'emote / em [ID] [speed]', DESC = 'Makes your character perform an emote (must be on the marketplace or by roblox/stickmasterluke to replicate)'}
 CMDs[#CMDs + 1] = {NAME = 'dance', DESC = 'Makes you  d a n c e'}
 CMDs[#CMDs + 1] = {NAME = 'undance', DESC = 'Stops dance animations'}
 CMDs[#CMDs + 1] = {NAME = 'spasm', DESC = 'Makes you  c r a z y'}
@@ -4826,6 +4829,7 @@ CMDs[#CMDs + 1] = {NAME = 'unctrllock', DESC = 'Re-binds Shiftlock to LeftShift'
 CMDs[#CMDs + 1] = {NAME = 'listento [player]', DESC = 'Listens to the area around a player. Can also eavesdrop with vc'}
 CMDs[#CMDs + 1] = {NAME = 'unlistento', DESC = 'Disables listento'}
 CMDs[#CMDs + 1] = {NAME = 'jerk', DESC = 'Makes you jork it'}
+CMDs[#CMDs + 1] = {NAME = 'unsuspendchat', DESC = 'Unsuspends you from text chat'}
 CMDs[#CMDs + 1] = {NAME = 'unsuspendvc', DESC = 'Unsuspends you from voice chat'}
 -- khang
 CMDs[#CMDs + 1] = {NAME = '', DESC = 'set Section'}
@@ -4845,7 +4849,8 @@ CMDs[#CMDs + 1] = {NAME = "espnpcs2", DESC = "ESP all NPCs in workspace"}
 CMDs[#CMDs + 1] = {NAME = "unespnpcs2", DESC = "UnNPC ESPs"}
 CMDs[#CMDs + 1] = {NAME = "killaurak", DESC = "Auto touching if player in 10 stud"}
 CMDs[#CMDs + 1] = {NAME = "flinggui", DESC = "give a fling gui"}
-CMDs[#CMDs + 1] = {NAME = "antiflingk", DESC = "98% antifling and not work speed 300+"}
+CMDs[#CMDs + 1] = {NAME = "antiflingk", DESC = "98% antifling and u can fling anybody"}
+CMDs[#CMDs + 1] = {NAME = "shiftlockg", DESC = "Load a gui shiftlock 0 rivet"}
 wait()
 
 for i = 1, #CMDs do
@@ -6451,7 +6456,7 @@ local TeleportCheck = false
 Players.LocalPlayer.OnTeleport:Connect(function(State)
 	if KeepInfYield and (not TeleportCheck) and queueteleport then
 		TeleportCheck = true
-		queueteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit'))()")
+		queueteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()")
 	end
 end)
 
@@ -6527,6 +6532,485 @@ addcmd('keepiy', {}, function(args, speaker)
 	else
 		notify('Incompatible Exploit','Your exploit does not support this command (missing queue_on_teleport)')
 	end
+end)
+
+
+-- Khang
+addcmd('norotationcamera',{'nrcam'},function(args, speaker)
+	local player = game:GetService("Players").LocalPlayer
+
+-- Giá»¯ DevTouchCameraMode luĂ´n lĂ  Classic
+local function setTouchCamera()
+    if player then
+        player.DevTouchCameraMode = Enum.DevTouchCameraMovementMode.Classic
+    end
+end
+
+setTouchCamera()
+player:GetPropertyChangedSignal("DevTouchCameraMode"):Connect(setTouchCamera)
+
+-- Giá»¯ DevComputerCameraMode luĂ´n lĂ  Classic
+task.spawn(function()
+    local function setComputerCamera()
+        if player then
+            player.DevComputerCameraMode = Enum.DevComputerCameraMovementMode.Classic
+        end
+    end
+
+    setComputerCamera()
+    player:GetPropertyChangedSignal("DevComputerCameraMode"):Connect(setComputerCamera)
+end)
+end)
+
+addcmd('vflyandflybutton',{'vandflyb'},function(args, speaker)
+    local Players = game:GetService("Players")
+    local UserInputService = game:GetService("UserInputService")
+    local CoreGui = game:GetService("CoreGui")
+    local speaker = Players.LocalPlayer
+
+    local isFlying = false
+    local flyMode = nil -- "normal" hoặc "vehicle"
+
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "FlyControlGui"
+    gui.ResetOnSpawn = false
+    gui.Parent = CoreGui
+
+    local function createButton(name, pos, color, text)
+        local btn = Instance.new("TextButton")
+        btn.Name = name
+        btn.Size = UDim2.new(0, 44.5, 0, 44.5)
+        btn.Position = pos
+        btn.BackgroundColor3 = color
+        btn.BackgroundTransparency = 0.3
+        btn.TextColor3 = Color3.new(1,1,1)
+        btn.Text = text
+        btn.TextSize = 14
+        btn.Font = Enum.Font.SourceSansBold
+        btn.AutoButtonColor = false
+        btn.Parent = gui
+
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 3)
+        corner.Parent = btn
+
+        -- Drag mobile
+        local dragging, dragInput, dragStart, startPos
+        local function update(input)
+            local delta = input.Position - dragStart
+            btn.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+        btn.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                dragging = true
+                dragStart = input.Position
+                startPos = btn.Position
+                input.Changed:Connect(function()
+                    if input.UserInputState == Enum.UserInputState.End then
+                        dragging = false
+                    end
+                end)
+            end
+        end)
+        btn.InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                dragInput = input
+            end
+        end)
+        UserInputService.InputChanged:Connect(function(input)
+            if input == dragInput and dragging then
+                update(input)
+            end
+        end)
+
+        return btn
+    end
+
+    local flyBtn = createButton("FlyBtn", UDim2.new(0, 55, 0, 0), Color3.fromRGB(0, 0, 0), "Fly")
+    local vflyBtn = createButton("VFlyBtn", UDim2.new(0, 55, 0, 50), Color3.fromRGB(0, 0, 0), "VFly")
+
+    local function stopAllFly()
+        isFlying = false
+        flyMode = nil
+        flyBtn.Text = "Fly"
+        flyBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        vflyBtn.Text = "VFly"
+        vflyBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        if not IsOnMobile then
+            NOFLY()
+        else
+            unmobilefly(speaker)
+        end
+    end
+
+    local function startFly(mode)
+        stopAllFly()
+        flyMode = mode
+        isFlying = true
+        if mode == "normal" then
+            flyBtn.Text = "Unfly"
+            flyBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 150)
+            if not IsOnMobile then
+                NOFLY()
+                task.wait()
+                sFLY()
+            else
+                mobilefly(speaker)
+            end
+        elseif mode == "vehicle" then
+            vflyBtn.Text = "Unfly"
+            vflyBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+            if not IsOnMobile then
+                NOFLY()
+                task.wait()
+                sFLY(true)
+            else
+                mobilefly(speaker, true)
+            end
+        end
+    end
+
+    flyBtn.MouseButton1Click:Connect(function()
+        if isFlying and flyMode == "normal" then
+            stopAllFly()
+        else
+            startFly("normal")
+        end
+    end)
+
+    vflyBtn.MouseButton1Click:Connect(function()
+        if isFlying and flyMode == "vehicle" then
+            stopAllFly()
+        else
+            startFly("vehicle")
+        end
+    end)
+
+    local function autoDisable()
+        if speaker.Character then
+            speaker.Character:WaitForChild("Humanoid").Died:Connect(stopAllFly)
+        end
+        speaker.CharacterAdded:Connect(function()
+            task.wait(1)
+            stopAllFly()
+            if speaker.Character:FindFirstChild("Humanoid") then
+                speaker.Character.Humanoid.Died:Connect(stopAllFly)
+            end
+        end)
+    end
+    autoDisable()
+
+    task.spawn(function()
+    print("The toggle Fly and VehicleFly for infinite yield is active.")
+    warn("-----------------------------------------------------------")
+    end)
+end)
+
+addcmd('backsit',{},function(args, speaker)
+	local players = getPlayer(args[1], speaker)
+	if headSit then headSit:Disconnect() end
+	for i,v in pairs(players)do
+		speaker.Character:FindFirstChildOfClass('Humanoid').Sit = true
+		headSit = RunService.Heartbeat:Connect(function()
+			if Players:FindFirstChild(Players[v].Name) and Players[v].Character ~= nil and getRoot(Players[v].Character) and getRoot(speaker.Character) and speaker.Character:FindFirstChildOfClass('Humanoid').Sit == true then
+				getRoot(speaker.Character).CFrame = getRoot(Players[v].Character).CFrame * CFrame.Angles(0,math.rad(0),0)* CFrame.new(0,0,1.3)
+			else
+				headSit:Disconnect()
+			end
+		end)
+	end
+end)
+
+addcmd('walktogui',{},function(args, speaker)
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/walkto"))()
+end)
+
+
+addcmd('gotogui',{},function(args, speaker)
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/goto"))()
+end)
+
+addcmd('invisicam',{},function(args, speaker)
+	game:GetService("Players").LocalPlayer.DevCameraOcclusionMode = Enum.DevCameraOcclusionMode.Invisicam
+end)
+
+addcmd('walktogui2', {}, function(args, speaker)
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/walktogui2"))()
+end)
+
+addcmd('toolname', {}, function(args, speaker)
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/ToolName"))()
+end)
+
+addcmd('interacttoggle', {}, function(args, speaker)
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/refs/heads/main/AutoInteractUniversal"))()
+end)
+
+addcmd('deleteparttool', {}, function(args, speaker)
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/refs/heads/main/deletetool"))()
+end)
+
+addcmd('killaurak', {}, function(args, speaker)
+local connections = getgenv().configs and getgenv().configs.connection if connections then local Disable = configs.Disable for i,v in connections do v:Disconnect() end Disable:Fire() Disable:Destroy() table.clear(configs) end local Disable = Instance.new("BindableEvent") getgenv().configs = { connections = {}, Disable = Disable, Size = Vector3.new(10,10,10), DeathCheck = true } local Players = cloneref(game:GetService("Players")) local RunService = cloneref(game:GetService("RunService")) local lp = Players.LocalPlayer local Run = true local Ignorelist = OverlapParams.new() Ignorelist.FilterType = Enum.RaycastFilterType.Include local function getchar(plr) local plr = plr or lp return plr.Character end local function gethumanoid(plr: Player | Character) local char = plr:IsA("Model") and plr or getchar(plr) if char then return char:FindFirstChildWhichIsA("Humanoid") end end local function IsAlive(Humanoid) return Humanoid and Humanoid.Health > 0 end local function GetTouchInterest(Tool) return Tool and Tool:FindFirstChildWhichIsA("TouchTransmitter",true) end local function GetCharacters(LocalPlayerChar) local Characters = {} for i,v in Players:GetPlayers() do table.insert(Characters,getchar(v)) end table.remove(Characters,table.find(Characters,LocalPlayerChar)) return Characters end local function Attack(Tool,TouchPart,ToTouch) if Tool:IsDescendantOf(workspace) then Tool:Activate() firetouchinterest(TouchPart,ToTouch,1) firetouchinterest(TouchPart,ToTouch,0) end end table.insert(getgenv().configs.connections,Disable.Event:Connect(function() Run = false end)) while Run do local char = getchar() if IsAlive(gethumanoid(char)) then local Tool = char and char:FindFirstChildWhichIsA("Tool") local TouchInterest = Tool and GetTouchInterest(Tool) if TouchInterest then local TouchPart = TouchInterest.Parent local Characters = GetCharacters(char) Ignorelist.FilterDescendantsInstances = Characters local InstancesInBox = workspace:GetPartBoundsInBox(TouchPart.CFrame,TouchPart.Size + getgenv().configs.Size,Ignorelist) for i,v in InstancesInBox do local Character = v:FindFirstAncestorWhichIsA("Model") if table.find(Characters,Character) then if getgenv().configs.DeathCheck then if IsAlive(gethumanoid(Character)) then Attack(Tool,TouchPart,v) end else Attack(Tool,TouchPart,v) end end end end end RunService.Heartbeat:Wait() end
+end)
+
+addcmd('flinggui', {}, function(args, speaker)
+loadstring(game:HttpGet("https://raw.githubusercontent.com/0Ben1/fe./main/Fling%20GUI"))()
+end)
+
+addcmd('antiflingk', {}, function(args, speaker)
+loadstring(game:HttpGet('https://raw.githubusercontent.com/Linux6699/DaHubRevival/main/AntiFling.lua'))()
+
+-- u exe this script if u cant not fling anymore 
+end)
+
+addcmd("espnpcs", {}, function(args, speaker)
+	local Players = game:GetService("Players")
+	local LocalPlayer = Players.LocalPlayer
+	local workspace = game:GetService("Workspace")
+	local RunService = game:GetService("RunService")
+
+	local function isPlayerCharacter(model)
+		for _, plr in ipairs(Players:GetPlayers()) do
+			if plr.Character == model then return true end
+		end
+		return false
+	end
+
+	local function espRedItalic(target)
+		if not target or target:FindFirstChild("ESP_RedItalic") then return end
+		local humanoid = target:FindFirstChildOfClass("Humanoid")
+		if humanoid and humanoid.Health > 0 then
+			if isPlayerCharacter(target) then return end
+			local mainPart = target:FindFirstChild("HumanoidRootPart") or target:FindFirstChildWhichIsA("BasePart")
+			if not mainPart then return end
+
+			local billboard = Instance.new("BillboardGui")
+			billboard.Name = "ESP_RedItalic"
+			billboard.Size = UDim2.new(0, 120, 0, 30)
+			billboard.Adornee = mainPart
+			billboard.AlwaysOnTop = true
+			billboard.MaxDistance = math.huge
+			billboard.Parent = target
+
+			local label = Instance.new("TextLabel", billboard)
+			label.Size = UDim2.new(1, 0, 1, 0)
+			label.BackgroundTransparency = 1
+			label.TextColor3 = Color3.fromRGB(255, 255, 255)
+			label.TextStrokeTransparency = 0.4
+			label.Font = Enum.Font.SourceSansBold
+			label.TextScaled = true
+
+			local con
+			con = RunService.RenderStepped:Connect(function()
+				if not target:IsDescendantOf(workspace) or humanoid.Health <= 0 then
+					if billboard then billboard:Destroy() end
+					local hl = target:FindFirstChild("ESP_RedOutline")
+					if hl then hl:Destroy() end
+					if con then con:Disconnect() end
+					return
+				end
+				label.Text = string.format("%s | %d", target.Name, humanoid.Health)
+			end)
+
+			local highlight = Instance.new("Highlight")
+			highlight.Name = "ESP_RedOutline"
+			highlight.FillColor = Color3.fromRGB(255, 0, 0)
+			highlight.FillTransparency = 1
+			highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+			highlight.OutlineTransparency = 0.1
+			highlight.Adornee = target
+			highlight.Parent = target
+		end
+	end
+
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:FindFirstChildOfClass("Humanoid") then
+			espRedItalic(obj)
+		end
+	end
+
+	_G.espnpc_connection = workspace.DescendantAdded:Connect(function(obj)
+		task.wait()
+		if obj:FindFirstChildOfClass("Humanoid") then
+			espRedItalic(obj)
+		end
+	end)
+end)
+
+addcmd("unespnpcs", {}, function(args, speaker)
+	if _G.espnpc_connection then
+		_G.espnpc_connection:Disconnect()
+		_G.espnpc_connection = nil
+	end
+
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		local esp = obj:FindFirstChild("ESP_RedItalic")
+		local hl = obj:FindFirstChild("ESP_RedOutline")
+		if esp then esp:Destroy() end
+		if hl then hl:Destroy() end
+	end
+end)
+
+-- inf npc
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+local LocalPlayer = Players.LocalPlayer
+
+local NPCESPEnabled = false
+local espTransparency = 0.8
+
+local function getRoot(obj)
+	return obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Torso") or obj:FindFirstChildWhichIsA("BasePart")
+end
+
+local function isPlayerCharacter(model)
+	for _, plr in ipairs(Players:GetPlayers()) do
+		if plr.Character == model then return true end
+	end
+	return false
+end
+
+local function removeESP(obj)
+	local esp = CoreGui:FindFirstChild(obj:GetDebugId() .. "_ESP")
+	if esp then esp:Destroy() end
+end
+
+local function round(n, d)
+	local m = 10 ^ (d or 0)
+	return math.floor(n * m + 0.5) / m
+end
+
+local function createESP(obj)
+	if isPlayerCharacter(obj) then return end
+	if not (obj:IsA("Model") or obj:IsA("BasePart")) then return end
+
+	local hasHealth = obj:FindFirstChildOfClass("Humanoid") or obj:FindFirstChild("Health")
+	if not hasHealth then return end
+	if CoreGui:FindFirstChild(obj:GetDebugId() .. "_ESP") then return end
+
+	local folder = Instance.new("Folder", CoreGui)
+	folder.Name = obj:GetDebugId() .. "_ESP"
+
+	local function refresh()
+	for _, v in ipairs(folder:GetChildren()) do v:Destroy() end
+
+	local head = obj:FindFirstChild("Head") or getRoot(obj)
+	if head then
+		local bill = Instance.new("BillboardGui")
+		bill.Adornee = head
+		bill.Size = UDim2.new(0, 100, 0, 150)
+		bill.StudsOffset = Vector3.new(0, 1, 0)
+		bill.AlwaysOnTop = true
+		bill.Name = "Label"
+		bill.Parent = folder -- ❗ Phải có để hiển thị
+
+		local text = Instance.new("TextLabel")
+		text.BackgroundTransparency = 1
+		text.Position = UDim2.new(0, 0, 0, -50)
+		text.Size = UDim2.new(0, 100, 0, 100)
+		text.Font = Enum.Font.SourceSansSemibold
+		text.TextSize = 20
+		text.TextColor3 = Color3.fromRGB(255, 255, 255)
+		text.TextStrokeTransparency = 0
+		text.TextYAlignment = Enum.TextYAlignment.Bottom
+		text.Text = ""
+		text.Parent = bill -- ❗ Phải có để gắn label
+	end
+
+	for _, part in ipairs(obj:GetDescendants()) do
+		if part:IsA("BasePart") then
+			local box = Instance.new("BoxHandleAdornment")
+			box.Adornee = part
+			box.Size = part.Size
+			box.AlwaysOnTop = true
+			box.Transparency = espTransparency
+			box.ZIndex = 5
+			box.Color3 = Color3.new(0, 0, 0) -- màu box đen
+			box.Parent = folder -- ❗ Bắt buộc để box hiển thị
+		end
+	end
+end
+
+	local function updateText()
+		local gui = folder:FindFirstChild("Label")
+		local healthObj = obj:FindFirstChildOfClass("Humanoid") or obj:FindFirstChild("Health")
+		local root = getRoot(obj)
+		local myRoot = getRoot(LocalPlayer.Character)
+		if gui and healthObj and root and myRoot then
+			local dist = (myRoot.Position - root.Position).Magnitude
+			local label = gui:FindFirstChildOfClass("TextLabel")
+			if label then
+				local value = healthObj:IsA("Humanoid") and healthObj.Health or tonumber(healthObj.Value) or 0
+				label.Text = "Name: " .. obj.Name .. " | HP: " .. round(value, 1) .. " | Dist: " .. math.floor(dist)
+			end
+		end
+	end
+
+	refresh()
+
+	local rsConn = RunService.RenderStepped:Connect(function()
+		local healthObj = obj:FindFirstChildOfClass("Humanoid") or obj:FindFirstChild("Health")
+		local value = healthObj and (healthObj:IsA("Humanoid") and healthObj.Health or tonumber(healthObj.Value)) or 0
+
+		if not NPCESPEnabled or not obj:IsDescendantOf(workspace) or not healthObj or value <= 0 then
+			removeESP(obj)
+			rsConn:Disconnect()
+			return
+		end
+
+		updateText()
+	end)
+end
+
+local function clearAllESP()
+	for _, v in ipairs(CoreGui:GetChildren()) do
+		if v:IsA("Folder") and v.Name:sub(-4) == "_ESP" then
+			v:Destroy()
+		end
+	end
+end
+
+-- Bật ESP
+addcmd('espnpcs2', {}, function()
+	NPCESPEnabled = true
+	clearAllESP()
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		local ok = obj:IsA("Model") or obj:IsA("BasePart")
+		local hasHealth = obj:FindFirstChildOfClass("Humanoid") or obj:FindFirstChild("Health")
+		if ok and hasHealth and not isPlayerCharacter(obj) then
+			createESP(obj)
+		end
+	end
+end)
+
+-- Tắt ESP
+addcmd('unespnpcs2', {}, function()
+	NPCESPEnabled = false
+	clearAllESP()
+end)
+
+-- Theo dõi spawn
+workspace.DescendantAdded:Connect(function(obj)
+	if NPCESPEnabled then
+		task.wait(0.2)
+		local ok = obj:IsA("Model") or obj:IsA("BasePart")
+		local hasHealth = obj:FindFirstChildOfClass("Humanoid") or obj:FindFirstChild("Health")
+		if ok and hasHealth and not isPlayerCharacter(obj) then
+			createESP(obj)
+		end
+	end
+end)
+-- inf npc
+
+addcmd('shiftlockg', {}, function()
+loadstring(game:HttpGet("https://github.com/ltseverydayyou/uuuuuuu/blob/main/shiftlock?raw=true"))()
 end)
 
 addcmd('unkeepiy', {}, function(args, speaker)
@@ -6973,11 +7457,20 @@ QEfly = true
 iyflyspeed = 1
 vehicleflyspeed = 1
 function sFLY(vfly)
-	repeat wait() until Players.LocalPlayer and Players.LocalPlayer.Character and getRoot(Players.LocalPlayer.Character) and Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-	repeat wait() until IYMouse
-	if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
+	local plr = Players.LocalPlayer
+	local char = plr.Character or plr.CharacterAdded:Wait()
+	local humanoid = char:FindFirstChildOfClass("Humanoid")
+	if not humanoid then
+		repeat task.wait() until char:FindFirstChildOfClass("Humanoid")
+		humanoid = char:FindFirstChildOfClass("Humanoid")
+	end
 
-	local T = getRoot(Players.LocalPlayer.Character)
+	if flyKeyDown or flyKeyUp then
+		flyKeyDown:Disconnect()
+		flyKeyUp:Disconnect()
+	end
+
+	local T = getRoot(char)
 	local CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
 	local lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
 	local SPEED = 0
@@ -6989,68 +7482,71 @@ function sFLY(vfly)
 		BG.P = 9e4
 		BG.Parent = T
 		BV.Parent = T
-		BG.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-		BG.cframe = T.CFrame
-		BV.velocity = Vector3.new(0, 0, 0)
-		BV.maxForce = Vector3.new(9e9, 9e9, 9e9)
+		BG.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+		BG.CFrame = T.CFrame
+		BV.Velocity = Vector3.new(0, 0, 0)
+		BV.MaxForce = Vector3.new(9e9, 9e9, 9e9)
 		task.spawn(function()
-			repeat wait()
-				if not vfly and Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
-					Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = true
+			repeat task.wait()
+				local camera = workspace.CurrentCamera
+				if not vfly and humanoid then
+					humanoid.PlatformStand = true
 				end
+
 				if CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0 then
 					SPEED = 50
 				elseif not (CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0) and SPEED ~= 0 then
 					SPEED = 0
 				end
 				if (CONTROL.L + CONTROL.R) ~= 0 or (CONTROL.F + CONTROL.B) ~= 0 or (CONTROL.Q + CONTROL.E) ~= 0 then
-					BV.velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (CONTROL.F + CONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(CONTROL.L + CONTROL.R, (CONTROL.F + CONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+					BV.Velocity = ((camera.CFrame.LookVector * (CONTROL.F + CONTROL.B)) + ((camera.CFrame * CFrame.new(CONTROL.L + CONTROL.R, (CONTROL.F + CONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - camera.CFrame.p)) * SPEED
 					lCONTROL = {F = CONTROL.F, B = CONTROL.B, L = CONTROL.L, R = CONTROL.R}
 				elseif (CONTROL.L + CONTROL.R) == 0 and (CONTROL.F + CONTROL.B) == 0 and (CONTROL.Q + CONTROL.E) == 0 and SPEED ~= 0 then
-					BV.velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (lCONTROL.F + lCONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(lCONTROL.L + lCONTROL.R, (lCONTROL.F + lCONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+					BV.Velocity = ((camera.CFrame.LookVector * (lCONTROL.F + lCONTROL.B)) + ((camera.CFrame * CFrame.new(lCONTROL.L + lCONTROL.R, (lCONTROL.F + lCONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - camera.CFrame.p)) * SPEED
 				else
-					BV.velocity = Vector3.new(0, 0, 0)
+					BV.Velocity = Vector3.new(0, 0, 0)
 				end
-				BG.cframe = workspace.CurrentCamera.CoordinateFrame
+				BG.CFrame = camera.CFrame
 			until not FLYING
 			CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
 			lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
 			SPEED = 0
 			BG:Destroy()
 			BV:Destroy()
-			if Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
-				Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
-			end
+
+			if humanoid then humanoid.PlatformStand = false end
 		end)
 	end
-	flyKeyDown = IYMouse.KeyDown:Connect(function(KEY)
-		if KEY:lower() == 'w' then
+
+	flyKeyDown = UserInputService.InputBegan:Connect(function(input, processed)
+		if input.KeyCode == Enum.KeyCode.W then
 			CONTROL.F = (vfly and vehicleflyspeed or iyflyspeed)
-		elseif KEY:lower() == 's' then
+		elseif input.KeyCode == Enum.KeyCode.S then
 			CONTROL.B = - (vfly and vehicleflyspeed or iyflyspeed)
-		elseif KEY:lower() == 'a' then
+		elseif input.KeyCode == Enum.KeyCode.A then
 			CONTROL.L = - (vfly and vehicleflyspeed or iyflyspeed)
-		elseif KEY:lower() == 'd' then 
+		elseif input.KeyCode == Enum.KeyCode.D then
 			CONTROL.R = (vfly and vehicleflyspeed or iyflyspeed)
-		elseif QEfly and KEY:lower() == 'e' then
+		elseif input.KeyCode == Enum.KeyCode.E and QEfly then
 			CONTROL.Q = (vfly and vehicleflyspeed or iyflyspeed)*2
-		elseif QEfly and KEY:lower() == 'q' then
+		elseif input.KeyCode == Enum.KeyCode.Q and QEfly then
 			CONTROL.E = -(vfly and vehicleflyspeed or iyflyspeed)*2
 		end
-		pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Track end)
+		pcall(function() camera.CameraType = Enum.CameraType.Track end)
 	end)
-	flyKeyUp = IYMouse.KeyUp:Connect(function(KEY)
-		if KEY:lower() == 'w' then
+
+	flyKeyUp = UserInputService.InputEnded:Connect(function(input, processed)
+		if input.KeyCode == Enum.KeyCode.W then
 			CONTROL.F = 0
-		elseif KEY:lower() == 's' then
+		elseif input.KeyCode == Enum.KeyCode.S then
 			CONTROL.B = 0
-		elseif KEY:lower() == 'a' then
+		elseif input.KeyCode == Enum.KeyCode.A then
 			CONTROL.L = 0
-		elseif KEY:lower() == 'd' then
+		elseif input.KeyCode == Enum.KeyCode.D then
 			CONTROL.R = 0
-		elseif KEY:lower() == 'e' then
+		elseif input.KeyCode == Enum.KeyCode.E then
 			CONTROL.Q = 0
-		elseif KEY:lower() == 'q' then
+		elseif input.KeyCode == Enum.KeyCode.Q then
 			CONTROL.E = 0
 		end
 	end)
@@ -7223,6 +7719,10 @@ end)
 
 CFspeed = 50
 addcmd('cframefly', {'cfly'}, function(args, speaker)
+	if args[1] and isNumber(args[1]) then
+		CFspeed = args[1]
+	end
+
 	-- Full credit to peyton#9148 (apeyton)
 	speaker.Character:FindFirstChildOfClass('Humanoid').PlatformStand = true
 	local Head = speaker.Character:WaitForChild("Head")
@@ -7231,7 +7731,8 @@ addcmd('cframefly', {'cfly'}, function(args, speaker)
 	CFloop = RunService.Heartbeat:Connect(function(deltaTime)
 		local moveDirection = speaker.Character:FindFirstChildOfClass('Humanoid').MoveDirection * (CFspeed * deltaTime)
 		local headCFrame = Head.CFrame
-		local cameraCFrame = workspace.CurrentCamera.CFrame
+		local camera = workspace.CurrentCamera
+		local cameraCFrame = camera.CFrame
 		local cameraOffset = headCFrame:ToObjectSpace(cameraCFrame).Position
 		cameraCFrame = cameraCFrame * CFrame.new(-cameraOffset.X, -cameraOffset.Y, -cameraOffset.Z + 1)
 		local cameraPosition = cameraCFrame.Position
@@ -7844,17 +8345,16 @@ addcmd('allowrejoin',{'allowrj'},function(args, speaker)
 	end
 end)
 
-addcmd('cancelteleport',{'canceltp'},function(args, speaker)
-	TeleportService:TeleportCancel()
+addcmd("cancelteleport", {"canceltp"}, function(args, speaker)
+    TeleportService:TeleportCancel()
 end)
 
-addcmd('volume',{'vol'},function(args, speaker)
-	local level = args[1]/10
-	UserSettings():GetService("UserGameSettings").MasterVolume = level
+addcmd("volume",{ "vol"}, function(args, speaker)
+    UserSettings():GetService("UserGameSettings").MasterVolume = args[1]/10
 end)
 
-addcmd('antilag',{'boostfps','lowgraphics'},function(args, speaker)
-	local Terrain = workspace:FindFirstChildOfClass('Terrain')
+addcmd("antilag", {"boostfps", "lowgraphics"}, function(args, speaker)
+	local Terrain = workspace:FindFirstChildWhichIsA("Terrain")
 	Terrain.WaterWaveSize = 0
 	Terrain.WaterWaveSpeed = 0
 	Terrain.WaterReflectance = 0
@@ -7863,8 +8363,9 @@ addcmd('antilag',{'boostfps','lowgraphics'},function(args, speaker)
 	Lighting.FogEnd = 9e9
 	Lighting.FogStart = 9e9
 	settings().Rendering.QualityLevel = 1
-	for i,v in pairs(game:GetDescendants()) do
+	for _, v in pairs(game:GetDescendants()) do
 		if v:IsA("BasePart") then
+			v.CastShadow = false
 			v.Material = "Plastic"
 			v.Reflectance = 0
 			v.BackSurface = "SmoothNoOutlines"
@@ -7875,20 +8376,23 @@ addcmd('antilag',{'boostfps','lowgraphics'},function(args, speaker)
 			v.TopSurface = "SmoothNoOutlines"
 		elseif v:IsA("Decal") then
 			v.Transparency = 1
+			v.Texture = ""
 		elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
 			v.Lifetime = NumberRange.new(0)
 		end
 	end
-	for i,v in pairs(Lighting:GetDescendants()) do
+	for _, v in pairs(Lighting:GetDescendants()) do
 		if v:IsA("PostEffect") then
 			v.Enabled = false
 		end
 	end
 	workspace.DescendantAdded:Connect(function(child)
 		task.spawn(function()
-			if child:IsA('ForceField') or child:IsA('Sparkles') or child:IsA('Smoke') or child:IsA('Fire') or child:IsA('Beam') then
+			if child:IsA("ForceField") or child:IsA("Sparkles") or child:IsA("Smoke") or child:IsA("Fire") or child:IsA("Beam") then
 				RunService.Heartbeat:Wait()
 				child:Destroy()
+			elseif child:IsA("BasePart") then
+				child.CastShadow = false
 			end
 		end)
 	end)
@@ -7971,7 +8475,7 @@ addcmd('noesp',{'unesp','unespteam'},function(args, speaker)
 end)
 
 addcmd('esptransparency',{},function(args, speaker)
-	espTransparency = (args[1] and isNumber(args[1]) and args[1]) or 0.8
+	espTransparency = (args[1] and isNumber(args[1]) and args[1]) or 0.3
 	updatesaves()
 end)
 
@@ -8768,13 +9272,14 @@ end)
 addcmd('joindate',{'jd'},function(args, speaker)
 	local players = getPlayer(args[1], speaker)
 	local dates = {}
-	notify("Loading",'Hold on a sec')
 	for i,v in pairs(players) do
-		local user = game:HttpGet("https://users.roblox.com/v1/users/"..Players[v].UserId)
-		local json = HttpService:JSONDecode(user)
-		local date = json["created"]:sub(1,10)
-		local splitDates = string.split(date,"-")
-		table.insert(dates,Players[v].Name.." joined: "..splitDates[2].."/"..splitDates[3].."/"..splitDates[1])
+		local p = Players[v]
+
+		local secondsOld = p.AccountAge * 24 * 60 * 60
+		local now = os.time()
+		local dateJoined  = p.Name .. " joined: " .. os.date("%m/%d/%y", now - secondsOld)
+
+		table.insert(dates, dateJoined)
 	end
 	notify('Join Date (Month/Day/Year)',table.concat(dates, ',\n'))
 end)
@@ -8782,13 +9287,14 @@ end)
 addcmd('chatjoindate',{'cjd'},function(args, speaker)
 	local players = getPlayer(args[1], speaker)
 	local dates = {}
-	notify("Loading",'Hold on a sec')
 	for i,v in pairs(players) do
-		local user = game:HttpGet("https://users.roblox.com/v1/users/"..Players[v].UserId)
-		local json = HttpService:JSONDecode(user)
-		local date = json["created"]:sub(1,10)
-		local splitDates = string.split(date,"-")
-		table.insert(dates,Players[v].Name.." joined: "..splitDates[2].."/"..splitDates[3].."/"..splitDates[1])
+		local p = Players[v]
+
+		local secondsOld = p.AccountAge * 24 * 60 * 60
+		local now = os.time()
+		local dateJoined  = p.Name .. " joined: " .. os.date("%m/%d/%y", now - secondsOld)
+
+		table.insert(dates, dateJoined)
 	end
 	local chatString = table.concat(dates, ', ')
 	chatMessage(chatString)
@@ -8808,6 +9314,14 @@ addcmd('userid',{'id'},function(args, speaker)
 		local id = tostring(Players[v].UserId)
 		notify('User ID',id)
 	end
+end)
+
+addcmd("copyplaceid", {"placeid"}, function(args, speaker)
+    toClipboard(PlaceId)
+end)
+
+addcmd("copygameid", {"gameid"}, function(args, speaker)
+    toClipboard(game.GameId)
 end)
 
 addcmd('copyid',{'copyuserid'},function(args, speaker)
@@ -9889,21 +10403,40 @@ addcmd('headthrow',{},function(args, speaker)
 	end
 end)
 
-addcmd('animation',{'anim'},function(args, speaker)
-	if not r15(speaker) then
-		local pchar=speaker.Character
-		local AnimationId = tostring(args[1])
-		local Anim = Instance.new("Animation")
-		Anim.AnimationId = "rbxassetid://"..AnimationId
-		local k = pchar:FindFirstChildOfClass('Humanoid'):LoadAnimation(Anim)
-		k:Play()
-		if args[2] then
-			k:AdjustSpeed(tostring(args[2]))
-		end
-	else
-		notify('R6 Required','This command requires the r6 rig type')
-	end
+local function anim2track(asset_id)
+    local objs = game:GetObjects(asset_id)
+    for i = 1, #objs do
+        if objs[i]:IsA("Animation") then
+            return objs[i].AnimationId
+        end
+    end
+    return asset_id
+end
+
+addcmd("animation", {"anim"}, function(args, speaker)
+    local animid = tostring(args[1])
+    if not animid:find("rbxassetid://") then
+        animid = "rbxassetid://" .. animid
+    end
+    animid = anim2track(animid)
+    local animation = Instance.new("Animation")
+    animation.AnimationId = animid
+    local anim = speaker.Character:FindFirstChildWhichIsA("Humanoid"):LoadAnimation(animation)
+    anim.Priority = Enum.AnimationPriority.Movement
+    anim:Play()
+    if args[2] then anim:AdjustSpeed(tostring(args[2])) end
 end)
+
+addcmd("emote", {"em"}, function(args, speaker)
+    local animid = tostring(args[1])
+    if not animid:find("rbxassetid://") then
+        animid = "rbxassetid://" .. animid
+    end
+	
+    local anim = humanoid:PlayEmoteAndGetAnimTrackById(animid)
+    if args[2] then anim:AdjustSpeed(tostring(args[2])) end
+end)
+
 
 addcmd('noanim',{},function(args, speaker)
 	speaker.Character.Animate.Disabled = true
@@ -11636,10 +12169,8 @@ end)
 
 addcmd("flyfling", {}, function(args, speaker)
     execCmd("unvehiclefly\\unwalkfling")
-    wait()
-    if args[1] and isNumber(args[1]) then
-        vehicleflyspeed = args[1]
-    end
+    task.wait()
+    vehicleflyspeed = tonumber(args[1]) or vehicleflyspeed
     execCmd("vehiclefly\\walkfling")
 end)
 
@@ -12132,6 +12663,7 @@ addcmd('headsize',{},function(args, speaker)
 			local Size = Vector3.new(sizeArg,sizeArg,sizeArg)
 			local Head = Players[v].Character:FindFirstChild('Head')
 			if Head:IsA("BasePart") then
+				Head.CanCollide = false
 				if not args[2] or sizeArg == 1 then
 					Head.Size = Vector3.new(2,1,1)
 				else
@@ -12151,6 +12683,7 @@ addcmd('hitbox',{},function(args, speaker)
 			local Size = Vector3.new(sizeArg,sizeArg,sizeArg)
 			local Root = Players[v].Character:FindFirstChild('HumanoidRootPart')
 			if Root:IsA("BasePart") then
+				Root.CanCollide = false
 				if not args[2] or sizeArg == 1 then
 					Root.Size = Vector3.new(2,1,1)
 					Root.Transparency = transparency
@@ -12517,14 +13050,26 @@ addcmd("guiscale", {}, function(args, speaker)
     updatesaves()
 end)
 
-addcmd("unsuspendvc", {}, function(args, speaker)
-    VoiceChatService:joinVoice()
+addcmd("unsuspendchat", {}, function(args, speaker)
+	if replicatesignal then
+        replicatesignal(TextChatService.UpdateChatTimeout, speaker.UserId, 0, 10)
+    else
+        notify("Incompatible Exploit", "Your exploit does not support this command (missing replicatesignal)")
+    end
+end)
 
-    if typeof(onVoiceModerated) ~= "RBXScriptConnection" then
-        onVoiceModerated = cloneref(game:GetService("VoiceChatInternal")).LocalPlayerModerated:Connect(function()
-            task.wait(1)
-            VoiceChatService:joinVoice()
-        end)
+addcmd("unsuspendvc", {}, function(args, speaker)
+	if replicatesignal then
+    	replicatesignal(VoiceChatService.ClientRetryJoin)
+
+    	if typeof(onVoiceModerated) ~= "RBXScriptConnection" then
+        	onVoiceModerated = cloneref(game:GetService("VoiceChatInternal")).LocalPlayerModerated:Connect(function()
+            	task.wait(1)
+            	replicatesignal(VoiceChatService.ClientRetryJoin)
+        	end)
+    	end
+    else
+        notify("Incompatible Exploit", "Your exploit does not support this command (missing replicatesignal)")
     end
 end)
 
@@ -12785,514 +13330,14 @@ addcmd('removecmd',{'deletecmd'},function(args, speaker)
 	removecmd(args[1])
 end)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- Khang
-addcmd('norotationcamera',{'nrcam'},function(args, speaker)
-	local player = game:GetService("Players").LocalPlayer
-
--- Giá»¯ DevTouchCameraMode luĂ´n lĂ  Classic
-local function setTouchCamera()
-    if player then
-        player.DevTouchCameraMode = Enum.DevTouchCameraMovementMode.Classic
-    end
-end
-
-setTouchCamera()
-player:GetPropertyChangedSignal("DevTouchCameraMode"):Connect(setTouchCamera)
-
--- Giá»¯ DevComputerCameraMode luĂ´n lĂ  Classic
-task.spawn(function()
-    local function setComputerCamera()
-        if player then
-            player.DevComputerCameraMode = Enum.DevComputerCameraMovementMode.Classic
-        end
-    end
-
-    setComputerCamera()
-    player:GetPropertyChangedSignal("DevComputerCameraMode"):Connect(setComputerCamera)
-end)
-end)
-
-addcmd('vflyandflybutton',{'vandflyb'},function(args, speaker)
-    local Players = game:GetService("Players")
-    local UserInputService = game:GetService("UserInputService")
-    local CoreGui = game:GetService("CoreGui")
-    local speaker = Players.LocalPlayer
-
-    local isFlying = false
-    local flyMode = nil -- "normal" hoặc "vehicle"
-
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "FlyControlGui"
-    gui.ResetOnSpawn = false
-    gui.Parent = CoreGui
-
-    local function createButton(name, pos, color, text)
-        local btn = Instance.new("TextButton")
-        btn.Name = name
-        btn.Size = UDim2.new(0, 44.5, 0, 44.5)
-        btn.Position = pos
-        btn.BackgroundColor3 = color
-        btn.BackgroundTransparency = 0.3
-        btn.TextColor3 = Color3.new(1,1,1)
-        btn.Text = text
-        btn.TextSize = 14
-        btn.Font = Enum.Font.SourceSansBold
-        btn.AutoButtonColor = false
-        btn.Parent = gui
-
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(0, 3)
-        corner.Parent = btn
-
-        -- Drag mobile
-        local dragging, dragInput, dragStart, startPos
-        local function update(input)
-            local delta = input.Position - dragStart
-            btn.Position = UDim2.new(
-                startPos.X.Scale,
-                startPos.X.Offset + delta.X,
-                startPos.Y.Scale,
-                startPos.Y.Offset + delta.Y
-            )
-        end
-        btn.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                dragging = true
-                dragStart = input.Position
-                startPos = btn.Position
-                input.Changed:Connect(function()
-                    if input.UserInputState == Enum.UserInputState.End then
-                        dragging = false
-                    end
-                end)
-            end
-        end)
-        btn.InputChanged:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-                dragInput = input
-            end
-        end)
-        UserInputService.InputChanged:Connect(function(input)
-            if input == dragInput and dragging then
-                update(input)
-            end
-        end)
-
-        return btn
-    end
-
-    local flyBtn = createButton("FlyBtn", UDim2.new(0, 55, 0, 0), Color3.fromRGB(0, 0, 0), "Fly")
-    local vflyBtn = createButton("VFlyBtn", UDim2.new(0, 55, 0, 50), Color3.fromRGB(0, 0, 0), "VFly")
-
-    local function stopAllFly()
-        isFlying = false
-        flyMode = nil
-        flyBtn.Text = "Fly"
-        flyBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-        vflyBtn.Text = "VFly"
-        vflyBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-        if not IsOnMobile then
-            NOFLY()
-        else
-            unmobilefly(speaker)
-        end
-    end
-
-    local function startFly(mode)
-        stopAllFly()
-        flyMode = mode
-        isFlying = true
-        if mode == "normal" then
-            flyBtn.Text = "Unfly"
-            flyBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 150)
-            if not IsOnMobile then
-                NOFLY()
-                task.wait()
-                sFLY()
-            else
-                mobilefly(speaker)
-            end
-        elseif mode == "vehicle" then
-            vflyBtn.Text = "Unfly"
-            vflyBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
-            if not IsOnMobile then
-                NOFLY()
-                task.wait()
-                sFLY(true)
-            else
-                mobilefly(speaker, true)
-            end
-        end
-    end
-
-    flyBtn.MouseButton1Click:Connect(function()
-        if isFlying and flyMode == "normal" then
-            stopAllFly()
-        else
-            startFly("normal")
-        end
-    end)
-
-    vflyBtn.MouseButton1Click:Connect(function()
-        if isFlying and flyMode == "vehicle" then
-            stopAllFly()
-        else
-            startFly("vehicle")
-        end
-    end)
-
-    local function autoDisable()
-        if speaker.Character then
-            speaker.Character:WaitForChild("Humanoid").Died:Connect(stopAllFly)
-        end
-        speaker.CharacterAdded:Connect(function()
-            task.wait(1)
-            stopAllFly()
-            if speaker.Character:FindFirstChild("Humanoid") then
-                speaker.Character.Humanoid.Died:Connect(stopAllFly)
-            end
-        end)
-    end
-    autoDisable()
-
-    task.spawn(function()
-    print("The toggle Fly and VehicleFly for infinite yield is active.")
-    warn("-----------------------------------------------------------")
-    end)
-end)
-
-addcmd('backsit',{},function(args, speaker)
-	local players = getPlayer(args[1], speaker)
-	if headSit then headSit:Disconnect() end
-	for i,v in pairs(players)do
-		speaker.Character:FindFirstChildOfClass('Humanoid').Sit = true
-		headSit = RunService.Heartbeat:Connect(function()
-			if Players:FindFirstChild(Players[v].Name) and Players[v].Character ~= nil and getRoot(Players[v].Character) and getRoot(speaker.Character) and speaker.Character:FindFirstChildOfClass('Humanoid').Sit == true then
-				getRoot(speaker.Character).CFrame = getRoot(Players[v].Character).CFrame * CFrame.Angles(0,math.rad(0),0)* CFrame.new(0,0,1.3)
-			else
-				headSit:Disconnect()
-			end
-		end)
-	end
-end)
-
-addcmd('walktogui',{},function(args, speaker)
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/walkto"))()
-end)
-
-
-addcmd('gotogui',{},function(args, speaker)
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/goto"))()
-end)
-
-addcmd('invisicam',{},function(args, speaker)
-	game:GetService("Players").LocalPlayer.DevCameraOcclusionMode = Enum.DevCameraOcclusionMode.Invisicam
-end)
-
-addcmd('walktogui2', {}, function(args, speaker)
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/walktogui2"))()
-end)
-
-addcmd('toolname', {}, function(args, speaker)
-loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/main/ToolName"))()
-end)
-
-addcmd('interacttoggle', {}, function(args, speaker)
-loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/refs/heads/main/AutoInteractUniversal"))()
-end)
-
-addcmd('deleteparttool', {}, function(args, speaker)
-loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/NowGeta/refs/heads/main/deletetool"))()
-end)
-
-addcmd('killaurak', {}, function(args, speaker)
-local connections = getgenv().configs and getgenv().configs.connection if connections then local Disable = configs.Disable for i,v in connections do v:Disconnect() end Disable:Fire() Disable:Destroy() table.clear(configs) end local Disable = Instance.new("BindableEvent") getgenv().configs = { connections = {}, Disable = Disable, Size = Vector3.new(10,10,10), DeathCheck = true } local Players = cloneref(game:GetService("Players")) local RunService = cloneref(game:GetService("RunService")) local lp = Players.LocalPlayer local Run = true local Ignorelist = OverlapParams.new() Ignorelist.FilterType = Enum.RaycastFilterType.Include local function getchar(plr) local plr = plr or lp return plr.Character end local function gethumanoid(plr: Player | Character) local char = plr:IsA("Model") and plr or getchar(plr) if char then return char:FindFirstChildWhichIsA("Humanoid") end end local function IsAlive(Humanoid) return Humanoid and Humanoid.Health > 0 end local function GetTouchInterest(Tool) return Tool and Tool:FindFirstChildWhichIsA("TouchTransmitter",true) end local function GetCharacters(LocalPlayerChar) local Characters = {} for i,v in Players:GetPlayers() do table.insert(Characters,getchar(v)) end table.remove(Characters,table.find(Characters,LocalPlayerChar)) return Characters end local function Attack(Tool,TouchPart,ToTouch) if Tool:IsDescendantOf(workspace) then Tool:Activate() firetouchinterest(TouchPart,ToTouch,1) firetouchinterest(TouchPart,ToTouch,0) end end table.insert(getgenv().configs.connections,Disable.Event:Connect(function() Run = false end)) while Run do local char = getchar() if IsAlive(gethumanoid(char)) then local Tool = char and char:FindFirstChildWhichIsA("Tool") local TouchInterest = Tool and GetTouchInterest(Tool) if TouchInterest then local TouchPart = TouchInterest.Parent local Characters = GetCharacters(char) Ignorelist.FilterDescendantsInstances = Characters local InstancesInBox = workspace:GetPartBoundsInBox(TouchPart.CFrame,TouchPart.Size + getgenv().configs.Size,Ignorelist) for i,v in InstancesInBox do local Character = v:FindFirstAncestorWhichIsA("Model") if table.find(Characters,Character) then if getgenv().configs.DeathCheck then if IsAlive(gethumanoid(Character)) then Attack(Tool,TouchPart,v) end else Attack(Tool,TouchPart,v) end end end end end RunService.Heartbeat:Wait() end
-end)
-
-addcmd('flinggui', {}, function(args, speaker)
-loadstring(game:HttpGet("https://raw.githubusercontent.com/0Ben1/fe./main/Fling%20GUI"))()
-end)
-
-addcmd('antiflingk', {}, function(args, speaker)
-loadstring(game:HttpGet('https://raw.githubusercontent.com/Linux6699/DaHubRevival/main/AntiFling.lua'))()
-
--- u exe this script if u cant not fling anymore 
-end)
-
-addcmd("espnpcs", {}, function(args, speaker)
-	local Players = game:GetService("Players")
-	local LocalPlayer = Players.LocalPlayer
-	local workspace = game:GetService("Workspace")
-	local RunService = game:GetService("RunService")
-
-	local function isPlayerCharacter(model)
-		for _, plr in ipairs(Players:GetPlayers()) do
-			if plr.Character == model then return true end
-		end
-		return false
-	end
-
-	local function espRedItalic(target)
-		if not target or target:FindFirstChild("ESP_RedItalic") then return end
-		local humanoid = target:FindFirstChildOfClass("Humanoid")
-		if humanoid and humanoid.Health > 0 then
-			if isPlayerCharacter(target) then return end
-			local mainPart = target:FindFirstChild("HumanoidRootPart") or target:FindFirstChildWhichIsA("BasePart")
-			if not mainPart then return end
-
-			local billboard = Instance.new("BillboardGui")
-			billboard.Name = "ESP_RedItalic"
-			billboard.Size = UDim2.new(0, 120, 0, 30)
-			billboard.Adornee = mainPart
-			billboard.AlwaysOnTop = true
-			billboard.MaxDistance = math.huge
-			billboard.Parent = target
-
-			local label = Instance.new("TextLabel", billboard)
-			label.Size = UDim2.new(1, 0, 1, 0)
-			label.BackgroundTransparency = 1
-			label.TextColor3 = Color3.fromRGB(255, 255, 255)
-			label.TextStrokeTransparency = 0.4
-			label.Font = Enum.Font.SourceSansBold
-			label.TextScaled = true
-
-			local con
-			con = RunService.RenderStepped:Connect(function()
-				if not target:IsDescendantOf(workspace) or humanoid.Health <= 0 then
-					if billboard then billboard:Destroy() end
-					local hl = target:FindFirstChild("ESP_RedOutline")
-					if hl then hl:Destroy() end
-					if con then con:Disconnect() end
-					return
-				end
-				label.Text = string.format("%s | %d", target.Name, humanoid.Health)
-			end)
-
-			local highlight = Instance.new("Highlight")
-			highlight.Name = "ESP_RedOutline"
-			highlight.FillColor = Color3.fromRGB(255, 0, 0)
-			highlight.FillTransparency = 1
-			highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-			highlight.OutlineTransparency = 0.1
-			highlight.Adornee = target
-			highlight.Parent = target
-		end
-	end
-
-	for _, obj in ipairs(workspace:GetDescendants()) do
-		if obj:FindFirstChildOfClass("Humanoid") then
-			espRedItalic(obj)
-		end
-	end
-
-	_G.espnpc_connection = workspace.DescendantAdded:Connect(function(obj)
-		task.wait()
-		if obj:FindFirstChildOfClass("Humanoid") then
-			espRedItalic(obj)
-		end
-	end)
-end)
-
-addcmd("unespnpcs", {}, function(args, speaker)
-	if _G.espnpc_connection then
-		_G.espnpc_connection:Disconnect()
-		_G.espnpc_connection = nil
-	end
-
-	for _, obj in ipairs(workspace:GetDescendants()) do
-		local esp = obj:FindFirstChild("ESP_RedItalic")
-		local hl = obj:FindFirstChild("ESP_RedOutline")
-		if esp then esp:Destroy() end
-		if hl then hl:Destroy() end
-	end
-end)
-
--- inf npc
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local CoreGui = game:GetService("CoreGui")
-local LocalPlayer = Players.LocalPlayer
-
-local NPCESPEnabled = false
-local espTransparency = 0.8
-
-local function getRoot(obj)
-	return obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Torso") or obj:FindFirstChildWhichIsA("BasePart")
-end
-
-local function isPlayerCharacter(model)
-	for _, plr in ipairs(Players:GetPlayers()) do
-		if plr.Character == model then return true end
-	end
-	return false
-end
-
-local function removeESP(obj)
-	local esp = CoreGui:FindFirstChild(obj:GetDebugId() .. "_ESP")
-	if esp then esp:Destroy() end
-end
-
-local function round(n, d)
-	local m = 10 ^ (d or 0)
-	return math.floor(n * m + 0.5) / m
-end
-
-local function createESP(obj)
-	if isPlayerCharacter(obj) then return end
-	if not (obj:IsA("Model") or obj:IsA("BasePart")) then return end
-
-	local hasHealth = obj:FindFirstChildOfClass("Humanoid") or obj:FindFirstChild("Health")
-	if not hasHealth then return end
-	if CoreGui:FindFirstChild(obj:GetDebugId() .. "_ESP") then return end
-
-	local folder = Instance.new("Folder", CoreGui)
-	folder.Name = obj:GetDebugId() .. "_ESP"
-
-	local function refresh()
-	for _, v in ipairs(folder:GetChildren()) do v:Destroy() end
-
-	local head = obj:FindFirstChild("Head") or getRoot(obj)
-	if head then
-		local bill = Instance.new("BillboardGui")
-		bill.Adornee = head
-		bill.Size = UDim2.new(0, 100, 0, 150)
-		bill.StudsOffset = Vector3.new(0, 1, 0)
-		bill.AlwaysOnTop = true
-		bill.Name = "Label"
-		bill.Parent = folder -- ❗ Phải có để hiển thị
-
-		local text = Instance.new("TextLabel")
-		text.BackgroundTransparency = 1
-		text.Position = UDim2.new(0, 0, 0, -50)
-		text.Size = UDim2.new(0, 100, 0, 100)
-		text.Font = Enum.Font.SourceSansSemibold
-		text.TextSize = 20
-		text.TextColor3 = Color3.fromRGB(255, 255, 255)
-		text.TextStrokeTransparency = 0
-		text.TextYAlignment = Enum.TextYAlignment.Bottom
-		text.Text = ""
-		text.Parent = bill -- ❗ Phải có để gắn label
-	end
-
-	for _, part in ipairs(obj:GetDescendants()) do
-		if part:IsA("BasePart") then
-			local box = Instance.new("BoxHandleAdornment")
-			box.Adornee = part
-			box.Size = part.Size
-			box.AlwaysOnTop = true
-			box.Transparency = espTransparency
-			box.ZIndex = 5
-			box.Color3 = Color3.new(0, 0, 0) -- màu box đen
-			box.Parent = folder -- ❗ Bắt buộc để box hiển thị
-		end
-	end
-end
-
-	local function updateText()
-		local gui = folder:FindFirstChild("Label")
-		local healthObj = obj:FindFirstChildOfClass("Humanoid") or obj:FindFirstChild("Health")
-		local root = getRoot(obj)
-		local myRoot = getRoot(LocalPlayer.Character)
-		if gui and healthObj and root and myRoot then
-			local dist = (myRoot.Position - root.Position).Magnitude
-			local label = gui:FindFirstChildOfClass("TextLabel")
-			if label then
-				local value = healthObj:IsA("Humanoid") and healthObj.Health or tonumber(healthObj.Value) or 0
-				label.Text = "Name: " .. obj.Name .. " | HP: " .. round(value, 1) .. " | Dist: " .. math.floor(dist)
-			end
-		end
-	end
-
-	refresh()
-
-	local rsConn = RunService.RenderStepped:Connect(function()
-		local healthObj = obj:FindFirstChildOfClass("Humanoid") or obj:FindFirstChild("Health")
-		local value = healthObj and (healthObj:IsA("Humanoid") and healthObj.Health or tonumber(healthObj.Value)) or 0
-
-		if not NPCESPEnabled or not obj:IsDescendantOf(workspace) or not healthObj or value <= 0 then
-			removeESP(obj)
-			rsConn:Disconnect()
-			return
-		end
-
-		updateText()
-	end)
-end
-
-local function clearAllESP()
-	for _, v in ipairs(CoreGui:GetChildren()) do
-		if v:IsA("Folder") and v.Name:sub(-4) == "_ESP" then
-			v:Destroy()
-		end
-	end
-end
-
--- Bật ESP
-addcmd('espnpcs2', {}, function()
-	NPCESPEnabled = true
-	clearAllESP()
-	for _, obj in ipairs(workspace:GetDescendants()) do
-		local ok = obj:IsA("Model") or obj:IsA("BasePart")
-		local hasHealth = obj:FindFirstChildOfClass("Humanoid") or obj:FindFirstChild("Health")
-		if ok and hasHealth and not isPlayerCharacter(obj) then
-			createESP(obj)
-		end
-	end
-end)
-
--- Tắt ESP
-addcmd('unespnpcs2', {}, function()
-	NPCESPEnabled = false
-	clearAllESP()
-end)
-
--- Theo dõi spawn
-workspace.DescendantAdded:Connect(function(obj)
-	if NPCESPEnabled then
-		task.wait(0.2)
-		local ok = obj:IsA("Model") or obj:IsA("BasePart")
-		local hasHealth = obj:FindFirstChildOfClass("Humanoid") or obj:FindFirstChild("Health")
-		if ok and hasHealth and not isPlayerCharacter(obj) then
-			createESP(obj)
-		end
-	end
-end)
--- inf npc
-
-
-
-
-
-
-
-
-
-
-
-
 if IsOnMobile then
 	local QuickCapture = Instance.new("TextButton")
 	local UICorner = Instance.new("UICorner")
 	QuickCapture.Name = randomString()
 	QuickCapture.Parent = PARENT
 	QuickCapture.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
-	QuickCapture.BackgroundTransparency = 0.3
-	QuickCapture.Position = UDim2.new(1, -32, 0, 0)
+	QuickCapture.BackgroundTransparency = 0.5
+	QuickCapture.Position = UDim2.new(0.489, 0, 0, 0)
 	QuickCapture.Size = UDim2.new(0, 32, 0, 33)
 	QuickCapture.Font = Enum.Font.Bodoni
 	QuickCapture.Text = "IY"
@@ -13300,7 +13345,7 @@ if IsOnMobile then
 	QuickCapture.TextSize = 20
 	QuickCapture.TextWrapped = true
 	QuickCapture.ZIndex = 10
-	QuickCapture.Draggable = false
+	QuickCapture.Draggable = true
 	UICorner.Name = randomString()
 	UICorner.CornerRadius = UDim.new(0.5, 0)
 	UICorner.Parent = QuickCapture
@@ -13584,11 +13629,7 @@ task.spawn(function()
 	Credits:Destroy()
 	IntroBackground:Destroy()
 	minimizeHolder()
-	if IsOnMobile then notify("Unstable Device", "On mobile, Infinite Yield may have issues or features that are not functioning correctly.") end
 end)
-
-
-
 
 
 task.spawn(function()
