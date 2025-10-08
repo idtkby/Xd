@@ -5571,7 +5571,31 @@ if player.UserId ~= allowedId then
 	
 end)
 
+task.spawn(function()
+		local player = game:GetService("Players").LocalPlayer
 
+-- Giá»¯ DevTouchCameraMode luĂ´n lĂ  Classic
+local function setTouchCamera()
+    if player then
+        player.DevTouchCameraMode = Enum.DevTouchCameraMovementMode.Classic
+    end
+end
+
+setTouchCamera()
+player:GetPropertyChangedSignal("DevTouchCameraMode"):Connect(setTouchCamera)
+
+-- Giá»¯ DevComputerCameraMode luĂ´n lĂ  Classic
+task.spawn(function()
+    local function setComputerCamera()
+        if player then
+            player.DevComputerCameraMode = Enum.DevComputerCameraMovementMode.Classic
+        end
+    end
+
+    setComputerCamera()
+    player:GetPropertyChangedSignal("DevComputerCameraMode"):Connect(setComputerCamera)
+end)
+	end)
 
 warn("--------------------")
 print("   <==> Khang <==>")
