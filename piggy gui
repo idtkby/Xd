@@ -419,27 +419,32 @@ end)()
 
 task.spawn(function()
 local plr = game.Players.LocalPlayer
-local function antiTrip()
-    local char = plr.Character or plr.CharacterAdded:Wait()
-    local hum = char:WaitForChild("Humanoid")
 
-    -- Luôn bật lại khi bị ngã
-    hum.StateChanged:Connect(function(old,new)
-        if new == Enum.HumanoidStateType.FallingDown 
-        or new == Enum.HumanoidStateType.Ragdoll
-        or new == Enum.HumanoidStateType.Physics then
-            task.defer(function()
-                hum:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
-            end)
-        end
-    end)
-
-    -- Nếu spawn lại thì tự gắn lại
-    char:WaitForChild("Humanoid").Died:Connect(function()
-        plr.CharacterAdded:Wait()
-        task.delay(1, antiTrip)
-    end)
+local function enableAntiTrip(hum)
+	-- Khi Humanoid đổi state
+	hum.StateChanged:Connect(function(_, new)
+		if new == Enum.HumanoidStateType.FallingDown 
+		or new == Enum.HumanoidStateType.Ragdoll
+		or new == Enum.HumanoidStateType.Physics then
+			task.defer(function()
+				hum:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
+				hum.PlatformStand = false
+			end)
+		end
+	end)
 end
 
-antiTrip()
+local function setup()
+	local char = plr.Character or plr.CharacterAdded:Wait()
+	local hum = char:WaitForChild("Humanoid")
+	enableAntiTrip(hum)
+end
+
+-- Bật khi load lần đầu
+setup()
+
+-- Khi respawn → bật lại
+plr.CharacterAdded:Connect(function()
+	task.delay(0.5, setup)
+end)
 end)
