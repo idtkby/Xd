@@ -578,7 +578,7 @@ V1:CreateButton({
 
 
 
-local V2 = Window:CreateTab("Petapeta [Chapter 2][Updating..]", "eye")
+local V2 = Window:CreateTab("Petapeta [Chapter 2][:)]", "eye")
 
 --[[
 
@@ -833,7 +833,7 @@ local targetNames = {
 }
 
 KTab:CreateToggle({
-	Name = "Auto pick up items",
+	Name = "Auto pick up items (Alpha)",
 	CurrentValue = false,
 	Callback = function(state)
 		AutoPickupRunning = state
@@ -1195,103 +1195,138 @@ local InstantPromptToggle = KTab:CreateToggle({
     end,
 })
 
+
+
+
+local RunService = game:GetService("RunService")  
+local speaker = game.Players.LocalPlayer  
+local noclipConnection  
+local diedConnection  
+  
+KTab:CreateToggle({  
+	Name = "Noclip",  
+	Default = false,  
+	Flag = "NoclipToggle",  
+	Callback = function(state)  
+		if state then  
+			local char = speaker.Character or speaker.CharacterAdded:Wait()  
+			local humanoid = char:FindFirstChildOfClass("Humanoid")  
+  
+			-- Kích hoạt Noclip  
+			noclipConnection = RunService.Stepped:Connect(function()  
+				local c = speaker.Character  
+				if not c then return end  
+				for _, part in ipairs(c:GetDescendants()) do  
+					if part:IsA("BasePart") then  
+						part.CanCollide = false  
+					end  
+				end  
+			end)  
+  
+			-- Nếu chết thì tắt  
+			if humanoid then  
+				diedConnection = humanoid.Died:Connect(function()  
+					if noclipConnection then  
+						noclipConnection:Disconnect()  
+						noclipConnection = nil  
+					end  
+					if diedConnection then  
+						diedConnection:Disconnect()  
+						diedConnection = nil  
+					end  
+					-- Tắt nút  
+					KTab.Flags["NoclipToggle"] = false  
+				end)  
+			end  
+		else  
+			-- Hủy kết nối nếu đang bật  
+			if noclipConnection then  
+				noclipConnection:Disconnect()  
+				noclipConnection = nil  
+			end  
+			if diedConnection then  
+				diedConnection:Disconnect()  
+				diedConnection = nil  
+			end  
+		end  
+	end  
+})  
+
 local HumanModCons = {}
+local DefaultWalkSpeed = 16 -- ⚡ Mặc định Roblox
 
-KTab:CreateToggle({
-	Name = "Fast Speed",
-	CurrentValue = false,
-	Flag = "SpeedToggle",
-	Callback = function(state)
-		local speaker = game.Players.LocalPlayer
-		local function isNumber(val)
-			return typeof(val) == "number" and val == val and val ~= math.huge and val ~= -math.huge
-		end
-
-		if state then
-			local args = { true, 22 }
-			local speed = args[1] or 16
-			if args[2] then
-				speed = args[2]
-			end
-
-			if isNumber(speed) then
-				local Char = speaker.Character or workspace:FindFirstChild(speaker.Name)
-				local Human = Char and Char:FindFirstChildWhichIsA("Humanoid")
-
-				local function WalkSpeedChange()
-					if Char and Human then
-						Human.WalkSpeed = speed
-					end
-				end
-
-				WalkSpeedChange()
-
-				HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)
-					or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)
-
-				HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false)
-					or speaker.CharacterAdded:Connect(function(nChar)
-						Char, Human = nChar, nChar:WaitForChild("Humanoid")
-						WalkSpeedChange()
-						HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)
-							or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)
-					end)
-			end
-		else
-			HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false) or nil
-			HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false) or nil
-		end
-	end
+-- 📝 Textbox nhập speed
+KTab:CreateInput({
+    Name = "Speed Value",
+    CurrentValue = "22",
+    PlaceholderText = "Nhập speed (VD: 22)",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Value)
+        local num = tonumber(Value)
+        if num and num > 0 then
+            getgenv().CustomSpeed = num
+        else
+            getgenv().CustomSpeed = DefaultWalkSpeed
+        end
+    end
 })
 
-local HumanModCons = {}
-
+-- 🏃 Toggle bật/tắt Fast Speed
 KTab:CreateToggle({
-	Name = "FastSp 16*2",
-	CurrentValue = false,
-	Flag = "SpeedToggle",
-	Callback = function(state)
-		local speaker = game.Players.LocalPlayer
-		local function isNumber(val)
-			return typeof(val) == "number" and val == val and val ~= math.huge and val ~= -math.huge
-		end
+    Name = "Fast Speed",
+    CurrentValue = false,
+    Flag = "SpeedToggle",
+    Callback = function(state)
+        local speaker = game.Players.LocalPlayer
+        local function isNumber(val)
+            return typeof(val) == "number" and val == val and val ~= math.huge and val ~= -math.huge
+        end
 
-		if state then
-			local args = { true, 32 }
-			local speed = args[1] or 16
-			if args[2] then
-				speed = args[2]
-			end
+        if state then
+            -- ⚡ Lấy giá trị speed từ textbox hoặc mặc định
+            local speed = getgenv().CustomSpeed or DefaultWalkSpeed
+            if not isNumber(speed) then speed = DefaultWalkSpeed end
 
-			if isNumber(speed) then
-				local Char = speaker.Character or workspace:FindFirstChild(speaker.Name)
-				local Human = Char and Char:FindFirstChildWhichIsA("Humanoid")
+            local Char = speaker.Character or workspace:FindFirstChild(speaker.Name)
+            local Human = Char and Char:FindFirstChildWhichIsA("Humanoid")
 
-				local function WalkSpeedChange()
-					if Char and Human then
-						Human.WalkSpeed = speed
-					end
-				end
+            if Human then
+                -- Lưu speed gốc trước khi chỉnh
+                DefaultWalkSpeed = Human.WalkSpeed
 
-				WalkSpeedChange()
+                local function WalkSpeedChange()
+                    if Char and Human then
+                        Human.WalkSpeed = speed
+                    end
+                end
 
-				HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)
-					or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)
+                WalkSpeedChange()
 
-				HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false)
-					or speaker.CharacterAdded:Connect(function(nChar)
-						Char, Human = nChar, nChar:WaitForChild("Humanoid")
-						WalkSpeedChange()
-						HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)
-							or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)
-					end)
-			end
-		else
-			HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false) or nil
-			HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false) or nil
-		end
-	end
+                HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)
+                    or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)
+
+                HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false)
+                    or speaker.CharacterAdded:Connect(function(nChar)
+                        Char, Human = nChar, nChar:WaitForChild("Humanoid")
+                        WalkSpeedChange()
+                        HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)
+                            or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)
+                    end)
+            end
+        else
+            -- ❌ Khi tắt toggle → reset speed về mặc định ban đầu
+            local Char = speaker.Character or workspace:FindFirstChild(speaker.Name)
+            local Human = Char and Char:FindFirstChildWhichIsA("Humanoid")
+            if Human then
+                Human.WalkSpeed = DefaultWalkSpeed
+            end
+
+            HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false) or nil
+            HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false) or nil
+        end
+    end
 })
+  
 
 KTab:CreateSection("Other")
   
