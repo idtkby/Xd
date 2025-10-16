@@ -4036,9 +4036,9 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/Syndromehsh/-/refs/he
 end)
 
 M205Two:AddDivider()
-M205Two:AddButton("Load Sigmasaken [Key in discord]", function()loadstring(game:HttpGet("https://raw.githubusercontent.com/sigmaboy-sigma-boy/Stamina-Settings-and-ESP/refs/heads/main/SigmasakenLoader"))()
+M205Two:AddButton("Load Sigmasaken", function()loadstring(game:HttpGet("https://raw.githubusercontent.com/sigmaboy-sigma-boy/Sigmasaken/refs/heads/main/sigmasakenmain"))()
 task.wait(3)
-setclipboard("ESPREWRITED")
+setclipboard("")
 end)
 M205Two:AddButton("Load Fartsaken [Key]", function()
 if getgenv then
