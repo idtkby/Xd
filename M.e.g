@@ -72,6 +72,7 @@ local Main2o5Group = Tabs.Tab:AddRightTabbox() -- hoặc :AddLeftTabbox()
 local M105One = Main1o5Group:AddTab("--== Player ==--")
 
 local M205One = Main2o5Group:AddTab("--== Misc ==--")
+local M205Two = Main2o5Group:AddTab("--== Load ==--")
 
 
 
@@ -233,32 +234,71 @@ local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
 
 -- =========================
--- CONFIG
+-- CONFIG (để test)
 -- =========================
-_G.UseOutline = false
-_G.EspGui = false
-_G.EspName = true
-_G.EspDistance = true
-_G.EspItemColor = Color3.fromRGB(0, 255, 0)
-_G.EspNpcColor = Color3.fromRGB(255, 255, 0)
+_G.UseOutline = _G.UseOutline or false
+_G.EspGui = _G.EspGui or false
+_G.EspName = _G.EspName or true
+_G.EspDistance = _G.EspDistance or true
+_G.EspItemColor = _G.EspItemColor or Color3.fromRGB(0, 255, 0)
+_G.EspNpcColor = _G.EspNpcColor or Color3.fromRGB(255, 255, 0)
 
-local folderEspList = { ["PowerBox"] = true, ["Puzzles"] = true }
-local objEspList = { ["Item"] = true, ["ItemF"] = true, ["ItemE"] = true }
-local ignoredNPC = { ["Trap"] = true, ["ThePhone"] = true, ["Ragdoll"] = true }
+--==- Esp Model
+local folderEspList = {
+   ["PowerBox"] = true, 
+   ["Puzzles"] = true,
+}
+
+local objEspList = {
+   ["Item"] = true,
+   ["ItemF"] = true,    
+   ["ItemE"] = true,
+}
+
+local ignoredNPC = { 
+   ["Trap"] = true, 
+   ["ThePhone"] = false, 
+   ["Ragdoll"] = true,
+}
+
+-- =========================
+-- GET ADORNEE — chỉ lấy model chính
+-- =========================
+local function getAdorneeForObject(obj)
+	if not obj then return nil end
+
+	if obj:IsA("Model") then
+		if not obj.PrimaryPart then
+			local bp = obj:FindFirstChildWhichIsA("BasePart", true)
+			if bp then
+				pcall(function() obj.PrimaryPart = bp end)
+			end
+		end
+		return obj.PrimaryPart
+	elseif obj:IsA("BasePart") then
+		-- Nếu part này thuộc model → bỏ qua
+		if obj.Parent and obj.Parent:IsA("Model") then
+			return nil
+		end
+		return obj
+	end
+
+	return nil
+end
+
+	
 
 -- =========================
 -- OUTLINE
 -- =========================
 local function addOutline(obj, color)
-	if not obj then return end
-	if not (obj:IsA("Model") or obj:IsA("BasePart")) then return end
-	if obj:FindFirstChild("OutlineESP") then return end
+	local adornee = getAdorneeForObject(obj)
+	if not adornee then return end
 
-	local adornee
-	if obj:IsA("Model") then
-		if obj.PrimaryPart then adornee = obj else return end
-	else
-		adornee = obj
+	local existing = obj:FindFirstChild("OutlineESP")
+	if existing and existing:IsA("Highlight") then
+		existing.OutlineColor = color
+		return
 	end
 
 	local h = Instance.new("Highlight")
@@ -267,64 +307,53 @@ local function addOutline(obj, color)
 	h.FillTransparency = 1
 	h.OutlineTransparency = 0
 	h.OutlineColor = color
-	h.Parent = adornee
+	h.Parent = obj
 end
 
 local function clearOutline(obj)
-	if obj and obj:FindFirstChild("OutlineESP") then
-		obj.OutlineESP:Destroy()
-	end
+	local h = obj:FindFirstChild("OutlineESP")
+	if h then h:Destroy() end
 end
 
 -- =========================
--- LABEL ESP
+-- LABEL
 -- =========================
 local function espLabel(obj, color)
-	-- Xoá label cũ
-	for _, gui in ipairs(obj:GetDescendants()) do
-		if gui.Name == "Esp_Gui" then gui:Destroy() end
+	local adornee = getAdorneeForObject(obj)
+	if not adornee then return end
+
+	for _, c in ipairs(adornee:GetChildren()) do
+		if c.Name == "Esp_Gui" and c:IsA("BillboardGui") then c:Destroy() end
 	end
 
 	if not _G.EspGui then return end
 
-	local adorneePart
-	if obj:IsA("Model") and obj.PrimaryPart then
-		adorneePart = obj.PrimaryPart
-	elseif obj:IsA("BasePart") then
-		adorneePart = obj
-	else
-		return
-	end
-
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "Esp_Gui"
-	gui.Adornee = adorneePart
+	gui.Adornee = adornee
 	gui.AlwaysOnTop = true
 	gui.Size = UDim2.new(0, 120, 0, 50)
 	gui.StudsOffset = Vector3.new(0, 2.5, 0)
-	gui.Parent = adorneePart
+	gui.Parent = adornee
 
 	local lbl = Instance.new("TextLabel", gui)
 	lbl.BackgroundTransparency = 1
 	lbl.Size = UDim2.new(1, 0, 1, 0)
 	lbl.Font = Enum.Font.Code
-	lbl.TextSize = 15
+	lbl.TextSize = 14
 	lbl.TextStrokeTransparency = 0
 	lbl.TextColor3 = color
 
 	local stroke = Instance.new("UIStroke", lbl)
 	stroke.Color = Color3.new(0, 0, 0)
-	stroke.Thickness = 1.5
+	stroke.Thickness = 1.2
 
 	local parts = {}
-	if _G.EspName then
-		table.insert(parts, obj.Name)
-	end
+	if _G.EspName then table.insert(parts, obj.Name) end
 	if _G.EspDistance then
 		local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-		local p = adorneePart.Position
 		if hrp then
-			local d = (hrp.Position - p).Magnitude
+			local d = (hrp.Position - adornee.Position).Magnitude
 			table.insert(parts, ("Dist: %.1f"):format(d))
 		end
 	end
@@ -332,85 +361,95 @@ local function espLabel(obj, color)
 	lbl.Text = table.concat(parts, "\n")
 end
 
--- =========================
--- CLEAR ALL
--- =========================
-local function clearAllESP()
+local function clearESP()
 	for _, obj in ipairs(workspace:GetDescendants()) do
 		if obj:FindFirstChild("OutlineESP") then obj.OutlineESP:Destroy() end
 		for _, gui in ipairs(obj:GetDescendants()) do
-			if gui.Name == "Esp_Gui" then gui:Destroy() end
+			if gui:IsA("BillboardGui") and gui.Name == "Esp_Gui" then gui:Destroy() end
 		end
 	end
 end
 
-Main2Group:AddDivider()
 -- =========================
 -- ESP ITEMS
 -- =========================
-local espItemsRunning = false
+Main2Group:AddDivider()
+local espItemRun = false
 Main2Group:AddToggle("ESPItems", {
-	Text = "Enable ESP Items",
+	Text = "ESP Items",
 	Default = false,
 	Callback = function(state)
-		espItemsRunning = state
-		if not state then clearAllESP() return end
+		espItemRun = state
+		if not state then clearESP() return end
 
-		while espItemsRunning do
-			for _, obj in ipairs(workspace:GetDescendants()) do
-				-- Folder
-				if folderEspList[obj.Name] and obj:IsA("Model") and obj.PrimaryPart then
-					if _G.UseOutline then addOutline(obj, _G.EspItemColor) else clearOutline(obj) end
-					espLabel(obj, _G.EspItemColor)
+		task.spawn(function()
+			while espItemRun do
+				for _, obj in ipairs(workspace:GetDescendants()) do
+					-- ESP Folder (quét model bên trong)
+					if folderEspList[obj.Name] then
+						for _, child in ipairs(obj:GetChildren()) do
+							if child:IsA("Model") then
+								local adornee = getAdorneeForObject(child)
+								if adornee then
+									if _G.UseOutline then addOutline(child, _G.EspItemColor) else clearOutline(child) end
+									espLabel(child, _G.EspItemColor)
+								end
+							end
+						end
+					end
+
+					-- ESP Object lẻ
+					if objEspList[obj.Name] then
+						local adornee = getAdorneeForObject(obj)
+						if adornee then
+							if _G.UseOutline then addOutline(obj, _G.EspItemColor) else clearOutline(obj) end
+							espLabel(obj, _G.EspItemColor)
+						end
+					end
 				end
-				-- Object
-				if objEspList[obj.Name] and obj:IsA("BasePart") then
-					if _G.UseOutline then addOutline(obj, _G.EspItemColor) else clearOutline(obj) end
-					espLabel(obj, _G.EspItemColor)
-				end
+				task.wait(1)
 			end
-			task.wait(1)
-		end
+		end)
 	end
 })
 :AddColorPicker("ItemColor", {
 	Default = Color3.fromRGB(0, 255, 0),
-	Callback = function(Value)
-		_G.EspItemColor = Value
-	end
+	Callback = function(Value) _G.EspItemColor = Value end
 })
+
 -- =========================
 -- ESP NPC
 -- =========================
-local espNpcRunning = false
+local espNpcRun = false
 Main2Group:AddToggle("ESPNPC", {
-	Text = "Enable ESP NPC",
+	Text = "ESP NPC",
 	Default = false,
 	Callback = function(state)
-		espNpcRunning = state
-		if not state then clearAllESP() return end
+		espNpcRun = state
+		if not state then clearESP() return end
 
-		while espNpcRunning do
-			local npcFolder = workspace:FindFirstChild("NPCS")
-			if npcFolder then
-				for _, npc in ipairs(npcFolder:GetChildren()) do
-					if not ignoredNPC[npc.Name] then
-						if npc:IsA("Model") and npc.PrimaryPart then
-							if _G.UseOutline then addOutline(npc, _G.EspNpcColor) else clearOutline(npc) end
-							espLabel(npc, _G.EspNpcColor)
+		task.spawn(function()
+			while espNpcRun do
+				local npcFolder = workspace:FindFirstChild("NPCS")
+				if npcFolder then
+					for _, npc in ipairs(npcFolder:GetChildren()) do
+						if not ignoredNPC[npc.Name] then
+							local adornee = getAdorneeForObject(npc)
+							if adornee then
+								if _G.UseOutline then addOutline(npc, _G.EspNpcColor) else clearOutline(npc) end
+								espLabel(npc, _G.EspNpcColor)
+							end
 						end
 					end
 				end
+				task.wait(1)
 			end
-			task.wait(1)
-		end
+		end)
 	end
 })
 :AddColorPicker("NpcColor", {
 	Default = Color3.fromRGB(255, 255, 0),
-	Callback = function(Value)
-		_G.EspNpcColor = Value
-	end
+	Callback = function(Value) _G.EspNpcColor = Value end
 })
 Main2Group:AddDivider()
 -- =========================
@@ -461,17 +500,164 @@ Main2Group:AddToggle("Show Distance", {
 
 
 
-
 --m205one
 M205One:AddDivider()
 M205One:AddLabel("- No-Clipped Ending")
 local TeleportService = game:GetService("TeleportService")
 local Players = game:GetService("Players")
 
-M205One:AddButton("Exit Backroom (Special level)", function()
+M205One:AddButton("Exit Backroom", function()
     local player = Players.LocalPlayer
     TeleportService:Teleport(93228425740454, player)
 end)
+M205One:AddDivider()
+
+M205One:AddToggle("FullBright", {
+    Text = "Full Bright",
+    Default = false,
+    Callback = function(Value)
+        _G.FullBright = Value
+        local Lighting = game:GetService("Lighting")
+
+        -- Lưu giá trị gốc để khôi phục khi tắt
+        if not _G._LightingSaved then
+            _G._LightingSaved = {
+                Brightness = Lighting.Brightness,
+                Ambient = Lighting.Ambient,
+                OutdoorAmbient = Lighting.OutdoorAmbient,
+                FogEnd = Lighting.FogEnd,
+                FogStart = Lighting.FogStart,
+                GlobalShadows = Lighting.GlobalShadows
+            }
+        end
+
+        if _G.FullBright then
+            task.spawn(function()
+                while _G.FullBright do
+                    -- Set ánh sáng
+                    Lighting.Brightness = 2
+                    Lighting.Ambient = Color3.new(1, 1, 1)
+                    Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
+                    Lighting.FogEnd = 100000
+                    Lighting.FogStart = 0
+                    Lighting.GlobalShadows = false
+
+                    -- Xoá hiệu ứng gây mờ tối nếu có
+                    for _, v in ipairs(Lighting:GetChildren()) do
+                        if v:IsA("Atmosphere") or v:IsA("BloomEffect") or v:IsA("ColorCorrectionEffect") then
+                            v:Destroy()
+                        end
+                    end
+
+                    task.wait(10) -- Lặp lại mỗi 10s
+                end
+            end)
+        else
+            -- Khôi phục Lighting gốc
+            if _G._LightingSaved then
+                Lighting.Brightness = _G._LightingSaved.Brightness
+                Lighting.Ambient = _G._LightingSaved.Ambient
+                Lighting.OutdoorAmbient = _G._LightingSaved.OutdoorAmbient
+                Lighting.FogEnd = _G._LightingSaved.FogEnd
+                Lighting.FogStart = _G._LightingSaved.FogStart
+                Lighting.GlobalShadows = _G._LightingSaved.GlobalShadows
+            end
+        end
+    end
+})
+
+
+M205One:AddToggle("ShowPing", {
+    Text = "Show YOUR Ping",
+    Default = false,
+    Callback = function(Value)
+        local Players = game:GetService("Players")
+        local player = Players.LocalPlayer
+        local Stats = game:GetService("Stats")
+        local RunService = game:GetService("RunService")
+
+        if not _G.PingConn then _G.PingConn = nil end
+
+        local function CreatePingGui()
+            local oldGui = game.CoreGui:FindFirstChild("PingGui")
+            if oldGui then oldGui:Destroy() end
+
+            local ScreenGui = Instance.new("ScreenGui")
+            ScreenGui.Name = "PingGui"
+            ScreenGui.ResetOnSpawn = false
+            ScreenGui.Parent = game.CoreGui
+
+            local Frame = Instance.new("Frame")
+            Frame.Size = UDim2.new(0, 200, 0, 50)
+            Frame.Position = UDim2.new(0.05, 0, 0.05, 0)
+            Frame.BackgroundColor3 = Color3.new(0, 0, 0)
+            Frame.BackgroundTransparency = 0.5
+            Frame.BorderSizePixel = 0
+            Frame.Active = true
+            Frame.Draggable = true -- cho kéo được
+            Frame.Parent = ScreenGui
+
+            local PingLabel = Instance.new("TextLabel")
+            PingLabel.Size = UDim2.new(1, 0, 1, 0)
+            PingLabel.BackgroundTransparency = 1
+            PingLabel.TextColor3 = Color3.new(1, 1, 1)
+            PingLabel.TextScaled = true
+            PingLabel.Text = "Ping: 0 ms"
+            PingLabel.Font = Enum.Font.Code
+            PingLabel.Parent = Frame
+
+            -- luôn update ping
+            if _G.PingConn then _G.PingConn:Disconnect() end
+            _G.PingConn = RunService.RenderStepped:Connect(function()
+                if not ScreenGui.Parent then return end
+                local ping = Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+                PingLabel.Text = "Ping: " .. math.floor(ping) .. " ms"
+            end)
+        end
+
+        if Value then
+            _G.ShowPingEnabled = true
+            CreatePingGui()
+
+            -- đảm bảo khi respawn GUI vẫn tồn tại
+            if not _G.RespawnConn then
+                _G.RespawnConn = player.CharacterAdded:Connect(function()
+                    task.wait(0.5)
+                    if _G.ShowPingEnabled then
+                        CreatePingGui()
+                    end
+                end)
+            end
+        else
+            _G.ShowPingEnabled = false
+            if _G.PingConn then _G.PingConn:Disconnect() end
+            _G.PingConn = nil
+            if game.CoreGui:FindFirstChild("PingGui") then
+                game.CoreGui.PingGui:Destroy()
+            end
+        end
+    end
+})
+
+M205One:AddButton("no disable chat", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/enable%20chat"))()
+end)
+
+
+
+
+M205Two:AddDivider()
+
+M205Two:AddButton("Load InfYield Edit", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()  
+				
+			end)
+
+
+
+
+
+
 
 
 
