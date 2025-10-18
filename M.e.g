@@ -169,7 +169,7 @@ M105One:AddLabel("-= Sprint speed =-")
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
 local sprintSpeedConn
-local sprintSpeedValue = 20 -- mặc định
+local sprintSpeedValue = 30 -- mặc định
 local defaultSpeed = 20     -- tốc độ mặc định trong game
 
 -- ⚡ Input chỉnh tốc độ
@@ -247,6 +247,7 @@ _G.EspNpcColor = _G.EspNpcColor or Color3.fromRGB(255, 255, 0)
 local folderEspList = {
    ["PowerBox"] = true, 
    ["Puzzles"] = true,
+   ["Party"] = true,
 }
 
 local objEspList = {
