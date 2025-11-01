@@ -10,7 +10,7 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
     Duration = 5
 })
 
--- Lưu lại hàm gốc
+--[[ Lưu lại hàm gốc
 local oldSetClipboard = setclipboard
 
 -- Ghi đè
@@ -22,7 +22,7 @@ setclipboard = function(text)
     -- Nếu không bị chặn, gọi hàm gốc
     return oldSetClipboard(text)
 end
-
+--]]
 task.wait(1) -- Đợi 1s trước khi thực thi 
 
 
@@ -688,259 +688,115 @@ Main1Group:AddLabel("--== Surviv: [ Guest 1337 ] ==--", true)
 
 --// Auto Block + Punch cho Guest1337 Survivor (Obsidian Lib)
 task.spawn(function()
+
+Main1Group:AddButton("Load Auto Block", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/skibidi399/Auto-block-script/refs/heads/main/FINAL%20AUTO%20BLOCK"))()
+end)
+
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
-local HttpService = game:GetService("HttpService")
 local lp = Players.LocalPlayer
 
--- Remote
-local NetworkEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
-
--- Biến
-_G.AutoBlockPunch_Range = 18
-_G.AutoBlock_Enabled = false
-_G.AutoPunch_Enabled = false
 _G.AutoPunchAimbot_Enabled = false
-local cooldown = 1
-local lastActionTime = 0
+local activeAimConn = nil
 
-local clickedTracks = {}
-local clickedSounds = {}
-
--- Animation-based AutoBlock IDs
-local animationIds = {
-    ["126830014841198"] = true, ["126355327951215"] = true, ["121086746534252"] = true,
-    ["18885909645"] = true, ["98456918873918"] = true, ["105458270463374"] = true,
-    ["83829782357897"] = true, ["125403313786645"] = true, ["118298475669935"] = true,
-    ["82113744478546"] = true, ["70371667919898"] = true, ["99135633258223"] = true,
-    ["97167027849946"] = true, ["109230267448394"] = true, ["139835501033932"] = true,
-    ["126896426760253"] = true, ["93069721274110"] = true, ["109667959938617"] = true,
-    ["126681776859538"] = true, ["129976080405072"] = true, ["121293883585738"] = true,
-    ["81639435858902"] = true, ["137314737492715"] = true, ["92173139187970"] = true,
-    ["131543461321709"] = true
-}
-
-local autoBlockTriggerSounds = {
-    ["102228729296384"] = true, ["140242176732868"] = true, ["112809109188560"] = true,
-    ["136323728355613"] = true, ["115026634746636"] = true, ["84116622032112"] = true,
-    ["108907358619313"] = true, ["127793641088496"] = true, ["86174610237192"] = true,
-    ["95079963655241"] = true, ["101199185291628"] = true, ["119942598489800"] = true,
-    ["84307400688050"] = true, ["113037804008732"] = true, ["105200830849301"] = true,
-    ["75330693422988"] = true, ["82221759983649"] = true, ["81702359653578"] = true,
-    ["108610718831698"] = true, ["112395455254818"] = true, ["109431876587852"] = true,
-    ["109348678063422"] = true, ["85853080745515"] = true, ["12222216"] = true,
-}
-
--- Kiểm tra localplayer là Guest1337 survivor
-local function isGuestSurvivor()
-    if not lp.Character or lp.Character.Name ~= "Guest1337" then return false end
-    return lp.Character.Parent and lp.Character.Parent.Name ~= "Killers"
-end
-
--- Remote Block
-local function remoteBlock()
-    local args = {
-        "UseActorAbility",
-        { buffer.fromstring("\"Block\"") }
-    }
-    NetworkEvent:FireServer(unpack(args))
-end
-
--- Remote Punch
-local function remotePunch(targetRoot)
-    local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-    if hrp and targetRoot then
-        local args = {
-            "UseActorAbility",
-            { buffer.fromstring("\"Punch\"") }
-        }
-        NetworkEvent:FireServer(unpack(args))
-    end
-				end
-
-				local punchAnimIDs = {
+local punchAnimIDs = {
     ["87259391926321"] = true, ["140703210927645"] = true,
     ["136007065400978"] = true, ["129843313690921"] = true,
     ["86709774283672"] = true, ["108807732150251"] = true,
-    ["138040001965654"] = true, ["86096387000557"] = true,
+    ["138040001965654"] = true, ["86096387000557"] = true
 }
 
-local function punchAimbotAnimation(humanoid)
-    humanoid.AnimationPlayed:Connect(function(track)
-        local anim = track.Animation
-        if not anim then return end
-        local id = anim.AnimationId and string.match(anim.AnimationId, "%d+")
-        if not id or not punchAnimIDs[id] then return end
-        if not _G.AutoPunchAimbot_Enabled then return end
-
-        local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-        if not myRoot then return end
-
-        -- Tìm nearest killer
-        local nearest, dist = nil, math.huge
-        local killersFolder = Workspace:FindFirstChild("Players") and Workspace.Players:FindFirstChild("Killers")
-        if killersFolder then
-            for _, killer in ipairs(killersFolder:GetChildren()) do
-                local root = killer:FindFirstChild("HumanoidRootPart")
-                local h = killer:FindFirstChildOfClass("Humanoid")
-                if root and h and h.Health > 0 then
-                    local d = (root.Position - myRoot.Position).Magnitude
-                    if d < dist then dist = d; nearest = root end
-                end
-            end
-        end
-        if not nearest then return end
-
-        -- Lock aim 0.8s
-        local start = tick()
-        local aimConn
-        aimConn = RunService.Heartbeat:Connect(function()
-            if tick() - start > 0.8 or not nearest.Parent or not myRoot.Parent then
-                if aimConn then aimConn:Disconnect() end
-                return
-            end
-            local lookPos = Vector3.new(nearest.Position.X, myRoot.Position.Y, nearest.Position.Z)
-            myRoot.CFrame = CFrame.new(myRoot.Position, lookPos)
-        end)
-
-        -- Sau khi lock aim, punch
-        task.delay(0.15, function()
-            if nearest and nearest.Parent then
-                remotePunch(nearest)
-            end
-        end)
-    end)
-end
-
--- Gắn aimbot cho localplayer
-local char = lp.Character
-if char then
-    local humanoid = char:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        punchAimbotAnimation(humanoid)
+local function stopAim()
+    if activeAimConn then
+        activeAimConn:Disconnect()
+        activeAimConn = nil
     end
 end
 
--- Khi respawn, gắn lại
-lp.CharacterAdded:Connect(function(char)
-    local humanoid = char:WaitForChild("Humanoid")
-    punchAimbotAnimation(humanoid)
-end)
--- Loop chính    
-RunService.Heartbeat:Connect(function()  
-    if not isGuestSurvivor() then return end  
-    local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")  
-    if not myRoot then return end  
+local function startAimAtTarget(targetRoot, myRoot)
+    stopAim()
+    local startTime = tick()
 
-    local killersFolder = Workspace:FindFirstChild("Players") and Workspace.Players:FindFirstChild("Killers")  
-    if not killersFolder then return end  
+    activeAimConn = RunService.Heartbeat:Connect(function()
+        if not _G.AutoPunchAimbot_Enabled then return stopAim() end
+        if not targetRoot or not targetRoot.Parent or not myRoot or not myRoot.Parent then return stopAim() end
+        if tick() - startTime > 0.85 then return stopAim() end
 
-    for _, killer in ipairs(killersFolder:GetChildren()) do  
-        local root = killer:FindFirstChild("HumanoidRootPart")  
-        local humanoid = killer:FindFirstChildOfClass("Humanoid")  
-        if root and humanoid and humanoid.Health > 0 then  
-            local dist = (root.Position - myRoot.Position).Magnitude  
-            if dist <= _G.AutoBlockPunch_Range then  
-
-                local hrp = killer:FindFirstChild("HumanoidRootPart")  
-local humanoid = killer:FindFirstChildOfClass("Humanoid")  
-if root and humanoid and humanoid.Health > 0 then  
-    local dist = (root.Position - myRoot.Position).Magnitude  
-  
-    -- check vận tốc của killer  
-    local isStill = (root.AssemblyLinearVelocity.Magnitude <= 1) -- coi như đứng yên nếu tốc độ < 1  
-  
-    -- nếu đứng yên thì dist phải <= 8 mới cho block  
-    if (isStill and dist <= 4) or (not isStill and dist <= _G.AutoBlockPunch_Range) then  
-        -- 1) Kiểm tra Animation    
-                for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do    
-    local anim = track.Animation    
-    local id = anim and anim.AnimationId and string.match(anim.AnimationId, "%d+")    
-  
-   if id and animationIds[id] and not clickedTracks[track] then  
-    local tp = track.TimePosition or 0  
-    if tp <= 0.15 and dist <= _G.AutoBlockPunch_Range then  
-        clickedTracks[track] = true  
-  
-        -- block luôn không delay  
-        if _G.AutoBlock_Enabled then  
-            remoteBlock()  
-        end  
-  
-        -- sau 0.2s mới punch  
-        if _G.AutoPunch_Enabled and (tick() - lastActionTime >= cooldown) then  
-            lastActionTime = tick()  
-            task.delay(0.2, function()  
-                if root and humanoid and humanoid.Health > 0 then  
-                    remotePunch(root)  
-                end  
-            end)  
-        end  
-  
-        task.spawn(function()  
-            track.Stopped:Wait()  
-            clickedTracks[track] = nil  
-        end)  
-    end  
-end  
-end  
-  
-                -- 2) Kiểm tra Sound    
-                for _, sound in ipairs(killer:GetDescendants()) do  
-    if sound:IsA("Sound") and sound.IsPlaying then  
-        local sid = sound.SoundId and sound.SoundId:match("%d+")  
-        if sid and autoBlockTriggerSounds[sid] and not clickedSounds[sid] then  
-            local ok, tp = pcall(function() return sound.TimePosition end)  
-            local timePos = (ok and tp) or 0  
-  
-            -- Block tức thì khi sound vừa phát  
-            if timePos <= 0.15 and dist <= _G.AutoBlockPunch_Range then  
-                clickedSounds[sid] = true  
-  
-                -- Block ngay lập tức (không chờ delay)  
-                if _G.AutoBlock_Enabled then  
-                    remoteBlock()  
-                end  
-  
-                -- Punch giữ delay 0.2s và có cooldown  
-                if _G.AutoPunch_Enabled and (tick() - lastActionTime >= cooldown) then  
-                    lastActionTime = tick()  
-                    task.delay(0.2, function()  
-                        if root and humanoid and humanoid.Health > 0 then  
-                            remotePunch(root)  
-                        end  
-                    end)  
-                end  
-            end  
-  
-            -- Reset để bắt lại lần sau  
-            task.delay(1, function()  
-                clickedSounds[sid] = nil  
-            end)  
-        end  
-    end  
-end  
-    end  
+        local lookPos = Vector3.new(targetRoot.Position.X, myRoot.Position.Y, targetRoot.Position.Z)
+        myRoot.CFrame = CFrame.new(myRoot.Position, lookPos)
+    end)
 end
 
-            end  
-        end  
-    end  
-end)
+local function handleLocalTrack(track)
+    if not _G.AutoPunchAimbot_Enabled then return end
+    if not track then return end
 
-    
+    local anim = track.Animation
+    if not anim then return end
 
-local Players = game:GetService("Players")
+    local id = anim.AnimationId and anim.AnimationId:match("%d+")
+    if not id or not punchAnimIDs[id] then return end
+
+    local myChar = lp.Character
+    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    if not myRoot then return end
+
+    local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+    if not killersFolder then return end
+
+    local nearest, dist = nil, math.huge
+
+    for _, killer in ipairs(killersFolder:GetChildren()) do
+        local isPlayer = Players:GetPlayerFromCharacter(killer) ~= nil
+        if not isPlayer and killer.Name:lower():find("noli") then continue end
+
+        local root = killer:FindFirstChild("HumanoidRootPart")
+        local h = killer:FindFirstChildOfClass("Humanoid")
+        if root and h and h.Health > 0 then
+            local d = (root.Position - myRoot.Position).Magnitude
+            if d < dist then dist = d; nearest = root end
+        end
+    end
+
+    if nearest then
+        startAimAtTarget(nearest, myRoot)
+    end
+end
+
+local function setupHumanoid(humanoid)
+    humanoid.AnimationPlayed:Connect(handleLocalTrack)
+end
+
+local function onCharacter(char)
+    stopAim()
+    local humanoid = char:WaitForChild("Humanoid")
+    setupHumanoid(humanoid)
+end
+
+if lp.Character then
+    onCharacter(lp.Character)
+end
+
+lp.CharacterAdded:Connect(onCharacter)
+
+Main1Group:AddToggle("AutoPunchAimbotToggle", {
+    Text = "Punch Aimbot",
+    Default = false,
+    Callback = function(v)
+        _G.AutoPunchAimbot_Enabled = v
+        Library:Notify(v and "Punch Aimbot: ON" or "Punch Aimbot: OFF", 5)
+    end
+})
+
+----------------------
+-- Walkspeed Override
+----------------------
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
-
-local lp = Players.LocalPlayer
 local NetworkEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
 
--- Toggle obsidian
 local walkspeedOverrideEnabled = false
 
 Main1Group:AddToggle("WalkspeedOverrideToggle", {
@@ -951,50 +807,36 @@ Main1Group:AddToggle("WalkspeedOverrideToggle", {
     end
 })
 
--- Danh sách anim Walkspeed Override
 local walkspeedAnimIds = {
     ["106776364623742"] = true,
     ["98456918873918"] = true,
     ["97167027849946"] = true
 }
 
--- Hàm block (dùng buffer)
 local function remoteBlock()
     pcall(function()
-        local args = {
-            "UseActorAbility",
-            { buffer.fromstring("\"Block\"") }
-        }
-        NetworkEvent:FireServer(unpack(args))
+        NetworkEvent:FireServer("UseActorAbility", { buffer.fromstring("\"Block\"") })
     end)
 end
 
--- Hàm check killer facing localplayer
 local function isFacingTarget(killerRoot, myRoot)
-    if not killerRoot or not myRoot then return false end
     local toPlayer = (myRoot.Position - killerRoot.Position).Unit
-    local lookDir = Vector3.new(killerRoot.CFrame.LookVector.X, 0, killerRoot.CFrame.LookVector.Z).Unit
-    return toPlayer:Dot(lookDir) > 0.7 -- facing tương đối chính diện
+    local lookDir = killerRoot.CFrame.LookVector
+    return toPlayer:Dot(Vector3.new(lookDir.X, 0, lookDir.Z)) > 0.7
 end
 
--- Kiểm tra killer có lao về phía localp
 local function isApproaching(killerRoot, myRoot)
-    if not killerRoot or not myRoot then return false end
-    local toPlayer = myRoot.Position - killerRoot.Position
-    if toPlayer.Magnitude < 1 then return false end
     local vel = killerRoot.AssemblyLinearVelocity
     if vel.Magnitude < 1 then return false end
-    local dirToPlayer = toPlayer.Unit
-    local velDir = Vector3.new(vel.X, 0, vel.Z).Unit
-    return dirToPlayer:Dot(velDir) > 0.6 -- lao khá thẳng về phía localp
+    local toPlayer = myRoot.Position - killerRoot.Position
+    return toPlayer.Unit:Dot(Vector3.new(vel.X, 0, vel.Z).Unit) > 0.6
 end
 
--- Loop riêng cho Walkspeed Override
 RunService.Heartbeat:Connect(function()
     if not walkspeedOverrideEnabled then return end
-    if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
+    local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+    if not myRoot then return end
 
-    local myRoot = lp.Character.HumanoidRootPart
     local killersFolder = Workspace:FindFirstChild("Players") and Workspace.Players:FindFirstChild("Killers")
     if not killersFolder then return end
 
@@ -1006,49 +848,22 @@ RunService.Heartbeat:Connect(function()
             if dist <= 100 then
                 for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
                     local anim = track.Animation
-                    local id = anim and anim.AnimationId and anim.AnimationId:match("%d+")
+                    local id = anim and anim.AnimationId:match("%d+")
 
-                    if id and walkspeedAnimIds[id] then
-                        local approaching = isApproaching(root, myRoot)
-                        local facing = isFacingTarget(root, myRoot)
-
-                        if approaching and facing then
-                            remoteBlock()
-                        end
+                    if id and walkspeedAnimIds[id] and isApproaching(root, myRoot) and isFacingTarget(root, myRoot) then
+                        remoteBlock()
                     end
                 end
             end
         end
     end
 end)
+
 end)
 
 
-      
--- UI      
-Main1Group:AddToggle("AutoBlockToggle", {  
-    Text = "Auto Block",  
-    Default = false,  
-    Callback = function(v)  
-        _G.AutoBlock_Enabled = v  
-    end  
-})  
+     
   
-Main1Group:AddToggle("AutoPunchToggle", {  
-    Text = "Auto Punch",  
-    Default = false,  
-    Callback = function(v)  
-        _G.AutoPunch_Enabled = v  
-    end  
-})  
-  
-Main1Group:AddToggle("AutoPunchAimbotToggle", {  
-    Text = "Punch Aimbot",  
-    Default = false,  
-    Callback = function(v)  
-        _G.AutoPunchAimbot_Enabled = v  
-    end  
-})  
 --// Range Visual (Killer Detection Circle)
 local RunService = game:GetService("RunService")
 local KillersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
@@ -1174,7 +989,7 @@ Main1Group:AddToggle("ShowRange", {
 Main1Group:AddInput("AutoBlockPunchRange", {
     Default = tostring(detectionRange),
     Numeric = true,
-    Text = "Detection Range",
+    Text = "show Range",
     Placeholder = "5 ~ 50",
     Callback = function(value)
         local num = tonumber(value)
@@ -1187,7 +1002,6 @@ Main1Group:AddInput("AutoBlockPunchRange", {
     end
 })
 
-Main1Group:AddLabel("Request 150< ping [Block Jason, cOOlkidd")
 
 Main1Group:AddDivider()
 
@@ -2792,6 +2606,21 @@ _G.EspHealth = Value
 
 
 
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 -- Main2o5Group
@@ -4024,9 +3853,6 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Forsaken/main/
 end)
 M205Two:AddButton("Load YOXI Hub", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Yomkaa/forsaken-YOXI-HUB/refs/heads/main/forsaken%20YOXI%20HUB",true))()
-end)
-M205Two:AddButton("Load Auto Block", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/skibidi399/Auto-block-script/refs/heads/main/FINAL%20AUTO%20BLOCK"))()
 end)
 M205Two:AddButton("Load Rinns Hub [Key](2links)", function()
 loadstring(game:HttpGet("https://rawscripts.net/raw/Forsaken-Stamina-values-changer-42106"))()
