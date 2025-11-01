@@ -3857,8 +3857,16 @@ M205Two:AddButton("Rejoin", function()
 end)
 			end)
 
+
+
+
+
+
+
+
 		
-local M205Theree = Main2o5Group:AddTab("--= Event =--")
+		
+local M205Theree = Main2o5Group:AddTab("--= Event [Beta] =--")
 		
 		M205Theree:AddToggle("EspSukker", {
 	Text = "ESP Sukker [ Event ]",
@@ -3881,6 +3889,62 @@ local M205Theree = Main2o5Group:AddTab("--= Event =--")
 })
 		
 
+-- 📌 AUTO COLLECT SUKKER
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+local hrp = function()
+	return lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+end
+
+local sukkerNames = {"umdum", "toon dusek", "dumsek", "doosek"}
+local autoCollectRunning = false
+
+-- ✅ Hàm teleport an toàn
+local function tpTo(pos)
+	if hrp() then
+		hrp().CFrame = CFrame.new(pos + Vector3.new(0, 3, 0))
+	end
+end
+
+-- ✅ Tìm tất cả sukker trong map
+local function getAllSukker()
+	local list = {}
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("Model") then
+			for _, name in ipairs(sukkerNames) do
+				if obj.Name == name and obj:FindFirstChildWhichIsA("BasePart") then
+					table.insert(list, obj)
+				end
+			end
+		end
+	end
+	return list
+end
+
+-- ✅ Tạo toggle
+M205Theree:AddToggle("AutoCollectSukker", {
+	Text = "Auto Collect Sukker (TP)",
+	Default = false,
+	Callback = function(state)
+		autoCollectRunning = state
+		if not state then return end
+
+		task.spawn(function()
+			while autoCollectRunning do
+				local sukkerList = getAllSukker()
+				for _, sukker in ipairs(sukkerList) do
+					if not autoCollectRunning then break end
+					local part = sukker:FindFirstChildWhichIsA("BasePart")
+					if part then
+						tpTo(part.Position)
+						task.wait(0.5) -- đợi nhặt
+					end
+				end
+				task.wait(0.5)
+			end
+		end)
+	end
+})
 
 
 
@@ -3896,6 +3960,24 @@ local M205Theree = Main2o5Group:AddTab("--= Event =--")
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
 
 
 
