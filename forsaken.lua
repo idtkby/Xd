@@ -2651,6 +2651,7 @@ local soundLibrary = {
     ["Creation of hatred"] = "115884097233860",
     ["Smile"] = "122146196733152",
     ["Through Patches of Violet"] = "134062685653533",
+	["Guest666 vs Noob"] = "88279626466849",
 }
 
 -- Mặc định chọn Burnout
@@ -3856,7 +3857,29 @@ M205Two:AddButton("Rejoin", function()
 end)
 			end)
 
+		
+local M205Theree = Main2o5Group:AddTab("--= Event =--")
+		
+		M205Theree:AddToggle("EspSukker", {
+	Text = "ESP Sukker [ Event ]",
+	Default = false,
+	Callback = function(v)
+		_G.EspSukker = v
+		if v then
+			task.spawn(function()
+				-- Danh sách model thuộc nhóm Sukker
+				local sukkerNames = {"umdum", "toon dusek", "dumsek", "doosek"}
+				local color = Color3.fromRGB(255, 105, 180) -- màu hồng sáng cho dễ phân biệt
 
+				-- Loop qua danh sách để ESP từng loại
+				for _, name in ipairs(sukkerNames) do
+					HandleESP(name, color, "Sukker", "EspSukker")
+				end
+			end)
+		end
+	end
+})
+		
 
 
 
