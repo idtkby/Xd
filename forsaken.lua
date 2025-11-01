@@ -96,7 +96,7 @@ if _G.NotificationSound then
 Library:SetDPIScale(85)
 
 local Window = Library:CreateWindow({
-    Title = "        [🔪Slasher] Forsaken",
+    Title = "        [G666] Forsaken",
     Center = true,
     AutoShow = true,
     Resizable = true,
@@ -3868,84 +3868,184 @@ end)
 		
 local M205Theree = Main2o5Group:AddTab("--= Event [Beta] =--")
 		
-		M205Theree:AddToggle("EspSukker", {
-	Text = "ESP Sukker [ Event ]",
-	Default = false,
-	Callback = function(v)
-		_G.EspSukker = v
-		if v then
-			task.spawn(function()
-				-- Danh sách model thuộc nhóm Sukker
-				local sukkerNames = {"umdum", "toon dusek", "dumsek", "doosek"}
-				local color = Color3.fromRGB(255, 105, 180) -- màu hồng sáng cho dễ phân biệt
+M205Theree:AddToggle("EspSukker", {
+    Text = "ESP Sukkar [ Event ]",
+    Default = false,
+    Callback = function(v)
+        _G.EspSukker = v
+        if v then
+            task.spawn(function()
+                local sukkerNames = {
+                    ["umdum"] = true,
+                    ["toon dusek"] = true,
+                    ["dumsek"] = true,
+                    ["doosek"] = true
+                }
 
-				-- Loop qua danh sách để ESP từng loại
-				for _, name in ipairs(sukkerNames) do
-					HandleESP(name, color, "Sukker", "EspSukker")
-				end
-			end)
-		end
-	end
+                local color = Color3.fromRGB(255, 105, 180)
+                local loppyPos = Vector3.new(-3475, 5, 212)
+                local existing = {}
+
+                -- Hàm check khoảng cách Loppy
+                local function isNearLoppy(part)
+                    if not part then return false end
+                    local dist = (part.Position - loppyPos).Magnitude
+                    return dist <= 350 -- True = gần Loppy (không ESP)
+                end
+
+                -- Quét lần đầu
+                for _, obj in ipairs(workspace:GetDescendants()) do
+                    if obj:IsA("Model") and sukkerNames[string.lower(obj.Name)] then
+                        local part = obj:FindFirstChildWhichIsA("BasePart")
+                        if part and not isNearLoppy(part) then
+                            CreateItemESP(obj, color, "Sukker")
+                            table.insert(existing, obj)
+                        end
+                    end
+                end
+
+                -- Khi spawn Sukker mới
+                local con = workspace.DescendantAdded:Connect(function(obj)
+                    if _G.EspSukker and obj:IsA("Model") and sukkerNames[string.lower(obj.Name)] then
+                        task.wait(0.1)
+                        local part = obj:FindFirstChildWhichIsA("BasePart")
+                        if part and not isNearLoppy(part) then
+                            CreateItemESP(obj, color, "Sukker")
+                            table.insert(existing, obj)
+                        end
+                    end
+                end)
+
+                -- Update liên tục
+                local updateConn = game:GetService("RunService").RenderStepped:Connect(function()
+                    if not _G.EspSukker then return end
+                    local hrp = Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+                    for i, obj in ipairs(existing) do
+                        if obj and obj.Parent then
+                            local part = obj:FindFirstChildWhichIsA("BasePart")
+                            local gui = part and part:FindFirstChild("ItemESP_Gui")
+
+                            -- Nếu quá gần Loppy → ẩn ESP
+                            if part and isNearLoppy(part) then
+                                if gui then gui:Destroy() end
+                                local hl = obj:FindFirstChild("ItemESP_Outline")
+                                if hl then hl:Destroy() end
+                            else
+                                -- Nếu xa đủ → hiện ESP + update distance
+                                if part and hrp and gui then
+                                    local lbl = gui:FindFirstChild("MainLabel")
+                                    if lbl then
+                                        local dist = (part.Position - hrp.Position).Magnitude
+                                        lbl.Text = "Sukker\nDist: " .. math.floor(dist)
+                                    end
+                                elseif part and not gui then
+                                    CreateItemESP(obj, color, "Sukker")
+                                end
+                            end
+                        end
+                    end
+                end)
+
+                -- Cleanup khi tắt
+                repeat task.wait(0.5) until not _G.EspSukker
+                con:Disconnect()
+                updateConn:Disconnect()
+                for _, obj in ipairs(existing) do
+                    ClearItemESP(obj)
+                end
+            end)
+        end
+    end
 })
 		
 
--- 📌 AUTO COLLECT SUKKER
+-- 📌 AUTO COLLECT SUKKER (FULL PRO)
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
-local hrp = function()
-	return lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+
+local function hrp()
+    return lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
 end
 
-local sukkerNames = {"umdum", "toon dusek", "dumsek", "doosek"}
+-- Danh sách Sukker
+local sukkerNames = {
+    ["umdum"] = true, ["toon dusek"] = true,
+    ["dumsek"] = true, ["doosek"] = true
+}
+
+-- Vị trí Loppy (vùng né)
+local loppyPos = Vector3.new(-3475, 5, 212)
+local function isNearLoppy(pos)
+    return (pos - loppyPos).Magnitude <= 350
+end
+
+-- Teleport an toàn
+local function tpTo(pos)
+    local root = hrp()
+    if root then
+        root.CFrame = CFrame.new(pos + Vector3.new(0, 3, 0))
+    end
+end
+
+-- Lấy danh sách Sukker hiện có
+local function getAllSukker()
+    local list = {}
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") and sukkerNames[string.lower(obj.Name)] then
+            local part = obj:FindFirstChildWhichIsA("BasePart")
+            if part and not isNearLoppy(part.Position) then
+                table.insert(list, obj)
+            end
+        end
+    end
+    return list
+end
+
 local autoCollectRunning = false
 
--- ✅ Hàm teleport an toàn
-local function tpTo(pos)
-	if hrp() then
-		hrp().CFrame = CFrame.new(pos + Vector3.new(0, 3, 0))
-	end
-end
-
--- ✅ Tìm tất cả sukker trong map
-local function getAllSukker()
-	local list = {}
-	for _, obj in ipairs(workspace:GetDescendants()) do
-		if obj:IsA("Model") then
-			for _, name in ipairs(sukkerNames) do
-				if obj.Name == name and obj:FindFirstChildWhichIsA("BasePart") then
-					table.insert(list, obj)
-				end
-			end
-		end
-	end
-	return list
-end
-
--- ✅ Tạo toggle
+-- Toggle GUI
 M205Theree:AddToggle("AutoCollectSukker", {
-	Text = "Auto Collect Sukker (TP)",
-	Default = false,
-	Callback = function(state)
-		autoCollectRunning = state
-		if not state then return end
+    Text = "Auto Collect Sukkar (TP)",
+    Default = false,
+    Callback = function(v)
+        autoCollectRunning = v
 
-		task.spawn(function()
-			while autoCollectRunning do
-				local sukkerList = getAllSukker()
-				for _, sukker in ipairs(sukkerList) do
-					if not autoCollectRunning then break end
-					local part = sukker:FindFirstChildWhichIsA("BasePart")
-					if part then
-						tpTo(part.Position)
-						task.wait(0.5) -- đợi nhặt
-					end
-				end
-				task.wait(0.5)
-			end
-		end)
-	end
+        if v then
+            task.spawn(function()
+                while autoCollectRunning do
+                    -- Nếu chết thì dừng
+                    if not hrp() then
+                        repeat task.wait(1) until hrp() or not autoCollectRunning
+                    end
+                    if not autoCollectRunning then break end
+
+                    local sukkerList = getAllSukker()
+                    -- Nếu không có thì đợi spawn
+                    if #sukkerList == 0 then
+                        task.wait(0.5)
+                    else
+                        -- Sort theo khoảng cách gần nhất
+                        table.sort(sukkerList, function(a, b)
+                            local pa = a:FindFirstChildWhichIsA("BasePart").Position
+                            local pb = b:FindFirstChildWhichIsA("BasePart").Position
+                            return (pa - hrp().Position).Magnitude < (pb - hrp().Position).Magnitude
+                        end)
+
+                        for _, sukker in ipairs(sukkerList) do
+                            if not autoCollectRunning or not hrp() then break end
+                            local part = sukker:FindFirstChildWhichIsA("BasePart")
+                            if part and not isNearLoppy(part.Position) then
+                                tpTo(part.Position)
+                                task.wait(0.4) -- chờ nhặt
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+    end
 })
-
 
 
 
