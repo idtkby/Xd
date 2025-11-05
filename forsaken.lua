@@ -704,8 +704,20 @@ Main1Group:AddToggle("WalkspeedOverrideToggle", {
     end
 })
 
+
+				
+
+
+
+
+
+
+
+
 local walkspeedAnimIds = {
     ["106776364623742"] = true,
+	["128414736976503"] = true,
+    ["127846074966393"] = true,
     ["98456918873918"] = true,
     ["97167027849946"] = true
 }
@@ -1884,6 +1896,9 @@ local hitboxColor = Color3.fromRGB(255, 0, 0)
 
 -- Anim IDs cần theo dõi
 local SKILL_ANIMS = {
+    ["133363345661032"] = true,
+    ["101101433684051"] = true,
+    ["116787687605496"] = true,
     ["93491748129367"] = true,
     ["70447634862911"] = true,
     ["119181003138006"] = true,
