@@ -2747,7 +2747,7 @@ end
 
 -- Dropdown chọn nhạc
 M205One:AddDropdown("LastSoundChoice", {
-    Values = {"Burnout","Plead","Compass","Creation of hatred","Vanity","Smile","Through Patches of Violet"},
+    Values = {"Burnout","Plead","Compass","Creation of hatred","Vanity","Smile","Through Patches of Violet","Guest666 vs Noob"},
     Default = 1,
     Multi = false,
     Text = "Choose Sound",
