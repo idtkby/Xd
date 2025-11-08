@@ -581,6 +581,344 @@ Main1Group:AddLabel("--== Surviv: [ Chance ] ==--", true)
 				
 -- Divider + Label
 Main1Group:AddDivider()
+Main1Group:AddLabel("--== Surviv: [ Veeronica ] ==--", true)
+task.spawn(function()
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local function getBehaviorFolder()
+	return ReplicatedStorage:WaitForChild("Assets")
+		:WaitForChild("Survivors")
+		:WaitForChild("Veeronica")
+		:WaitForChild("Behavior")
+end
+
+local function getSprintingButton()
+	return player.PlayerGui:WaitForChild("MainUI"):WaitForChild("SprintingButton")
+end
+
+local behaviorFolder = getBehaviorFolder()
+local enabled = false
+local activeMonitors = {}
+local descendantAddedConn = nil
+local device = "Mobile"
+
+-- safe connect
+local function safeConnectPropertyChanged(instance, prop, fn)
+	local ok, signal = pcall(function()
+		return instance:GetPropertyChangedSignal(prop)
+	end)
+	if ok and signal then
+		return signal:Connect(fn)
+	end
+	return nil
+end
+
+-- theo dõi Highlight
+local function monitorHighlight(h)
+	if not h or activeMonitors[h] then return end
+
+	local connections = {}
+	local prevState = false
+
+	local function cleanup()
+		for _, conn in ipairs(connections) do
+			if conn and conn.Connected then
+				conn:Disconnect()
+			end
+		end
+		activeMonitors[h] = nil
+	end
+
+	local function adorneeIsPlayerCharacter(h)
+		if not h then return false end
+		local adornee = h.Adornee
+		local char = player.Character
+		if not adornee or not char then return false end
+		if adornee == char then return true end
+		if adornee:IsDescendantOf(char) then return true end
+		return false
+	end
+
+	local function onChanged()
+		if not enabled then return end
+		if not h or not h.Parent then
+			cleanup()
+			return
+		end
+
+		local currState = adorneeIsPlayerCharacter(h)
+		if prevState ~= currState then
+			if currState then
+				if device == "Mobile" then
+					local ok, btn = pcall(getSprintingButton)
+					if ok and btn then
+						for _, v in pairs(getconnections(btn.MouseButton1Down)) do
+							pcall(function() v:Fire() end)
+							pcall(function() if v.Function then v:Function() end end)
+						end
+					end
+				end
+			end
+		end
+		prevState = currState
+	end
+
+	local c = safeConnectPropertyChanged(h, "Adornee", onChanged)
+	if c then table.insert(connections, c) end
+
+	table.insert(connections, h.AncestryChanged:Connect(function(_, parent)
+		if not parent then
+			cleanup()
+		else
+			onChanged()
+		end
+	end))
+
+	table.insert(connections, player.CharacterAdded:Connect(onChanged))
+	table.insert(connections, player.CharacterRemoving:Connect(onChanged))
+
+	activeMonitors[h] = cleanup
+	task.spawn(onChanged)
+end
+
+-- quản lý highlight
+local function startManager()
+	if descendantAddedConn then return end
+
+	for _, desc in ipairs(behaviorFolder:GetDescendants()) do
+		if desc:IsA("Highlight") then
+			monitorHighlight(desc)
+		end
+	end
+
+	descendantAddedConn = behaviorFolder.DescendantAdded:Connect(function(child)
+		if child:IsA("Highlight") then
+			monitorHighlight(child)
+		end
+	end)
+end
+
+local function stopManager()
+	if descendantAddedConn and descendantAddedConn.Connected then
+		descendantAddedConn:Disconnect()
+	end
+	descendantAddedConn = nil
+
+	for _, fn in pairs(activeMonitors) do
+		pcall(fn)
+	end
+	activeMonitors = {}
+end
+
+local function setEnabled(v)
+	if enabled == v then return end
+	enabled = v
+	if enabled then
+		startManager()
+	else
+		stopManager()
+	end
+end
+
+-- ✅ Thêm Toggle vào OrionLib
+Main1Group:AddToggle("AutoTrick", {
+	Text = "Auto Trick",
+	Default = false,
+	Callback = function(v)
+		setEnabled(v)
+	end
+})
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local lp = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+-- Cấu hình cơ bản
+local shiftlockEnabled = false
+local connection
+local overrideConnection
+local controlChargeEnabled = false
+local controlChargeActive = false
+local savedHumanoidState = {}
+
+-- Animation cần phát hiện
+local chargeAnimIds = {
+    "117058860640843" -- ID animation Charge
+}
+
+local ORIGINAL_DASH_SPEED = 60
+
+-- ========== HÀM PHỤ ==========
+
+local function getHumanoid()
+	local char = lp.Character
+	return char and char:FindFirstChildOfClass("Humanoid")
+end
+
+local function setShiftlock(state)
+	shiftlockEnabled = state
+
+	if connection then
+		connection:Disconnect()
+		connection = nil
+	end
+
+	if state then
+		UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+		connection = RunService.RenderStepped:Connect(function()
+			local char = lp.Character
+			local root = char and char:FindFirstChild("HumanoidRootPart")
+			if root then
+				local camCF = camera.CFrame
+				root.CFrame = CFrame.new(root.Position, Vector3.new(
+					camCF.LookVector.X + root.Position.X,
+					root.Position.Y,
+					camCF.LookVector.Z + root.Position.Z
+				))
+			end
+		end)
+	else
+		UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+	end
+end
+
+local function saveHumState(hum)
+	if not hum or savedHumanoidState[hum] then return end
+	local s = {}
+	s.WalkSpeed = hum.WalkSpeed
+	pcall(function()
+		s.JumpPower = hum.JumpPower
+	end)
+	s.AutoRotate = hum.AutoRotate
+	s.PlatformStand = hum.PlatformStand
+	savedHumanoidState[hum] = s
+end
+
+local function restoreHumState(hum)
+	if not hum then return end
+	local s = savedHumanoidState[hum]
+	if not s then return end
+	pcall(function()
+		hum.WalkSpeed = s.WalkSpeed or 16
+		hum.JumpPower = s.JumpPower or 50
+		hum.AutoRotate = s.AutoRotate or true
+		hum.PlatformStand = s.PlatformStand or false
+	end)
+	savedHumanoidState[hum] = nil
+end
+
+local function detectChargeAnimation()
+	local hum = getHumanoid()
+	if not hum then return false end
+	for _, track in ipairs(hum:GetPlayingAnimationTracks()) do
+		local animId = tostring(track.Animation and track.Animation.AnimationId or ""):match("%d+")
+		if animId and table.find(chargeAnimIds, animId) then
+			return true
+		end
+	end
+	return false
+end
+
+-- ========== CORE ==========
+
+local function startOverride()
+	if controlChargeActive then return end
+	local hum = getHumanoid()
+	if not hum then return end
+
+	controlChargeActive = true
+	saveHumState(hum)
+
+	pcall(function()
+		hum.WalkSpeed = ORIGINAL_DASH_SPEED
+		hum.AutoRotate = false
+	end)
+
+	setShiftlock(true)
+
+	overrideConnection = RunService.RenderStepped:Connect(function()
+		local humanoid = getHumanoid()
+		local rootPart = humanoid and humanoid.Parent and humanoid.Parent:FindFirstChild("HumanoidRootPart")
+		if not humanoid or not rootPart then return end
+
+		pcall(function()
+			humanoid.WalkSpeed = ORIGINAL_DASH_SPEED
+			humanoid.AutoRotate = false
+		end)
+
+		local dir = rootPart.CFrame.LookVector
+		local horizontal = Vector3.new(dir.X, 0, dir.Z)
+		if horizontal.Magnitude > 0 then
+			humanoid:Move(horizontal.Unit)
+		else
+			humanoid:Move(Vector3.zero)
+		end
+	end)
+end
+
+local function stopOverride()
+	if not controlChargeActive then return end
+	controlChargeActive = false
+
+	if overrideConnection then
+		pcall(function() overrideConnection:Disconnect() end)
+		overrideConnection = nil
+	end
+
+	setShiftlock(false)
+
+	local hum = getHumanoid()
+	if hum then
+		restoreHumState(hum)
+		pcall(function() hum:Move(Vector3.zero) end)
+	end
+end
+
+local function Control_SetEnabled(val)
+	controlChargeEnabled = val
+	if not val then stopOverride() end
+end
+
+-- Theo dõi trạng thái animation
+RunService.RenderStepped:Connect(function()
+	if not controlChargeEnabled then
+		if controlChargeActive then stopOverride() end
+		return
+	end
+
+	local hum = getHumanoid()
+	if not hum then
+		if controlChargeActive then stopOverride() end
+		return
+	end
+
+	if detectChargeAnimation() then
+		if not controlChargeActive then startOverride() end
+	else
+		if controlChargeActive then stopOverride() end
+	end
+end)
+
+lp.CharacterAdded:Connect(function()
+	stopOverride()
+end)
+
+-- ✅ GẮN VÀO ORIONLIB TOGGLE
+Main1Group:AddToggle("ShiftLockControl", {
+	Text = "Control Sk8",
+	Default = false,
+	Callback = function(state)
+		Control_SetEnabled(state)
+	end
+})
+end)
+
+Main1Group:AddDivider()
 Main1Group:AddLabel("--== Surviv: [ Guest 1337 ] ==--", true)
 
 --// Auto Block + Punch cho Guest1337 Survivor (Obsidian Lib)
