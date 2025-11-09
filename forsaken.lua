@@ -2991,7 +2991,7 @@ M205One:AddToggle("AutoCollectItems", {
 
 M205One:AddDivider()
 
-M205One:AddLabel("-= Last Mans Standing Sound [OST]=-")
+M205One:AddLabel("-= Last Mans Standing Sound [OST] =-")
 
 local targetName = "LastSurvivor"
 
@@ -3004,8 +3004,8 @@ local soundLibrary = {
     ["Creation of hatred"] = "115884097233860",
     ["Smile"] = "122146196733152",
     ["Through Patches of Violet"] = "134062685653533",
-	["Guest666 vs Noob"] = "88279626466849",
-	["Artful vs Block"] = "95804479897896",
+	["Dead Ringer"] = "88279626466849",
+	["Perpetuity"] = "95804479897896",
 }
 
 -- Mặc định chọn Burnout
@@ -3086,7 +3086,7 @@ end
 
 -- Dropdown chọn nhạc
 M205One:AddDropdown("LastSoundChoice", {
-    Values = {"Burnout","Plead","Compass","Creation of hatred","Vanity","Smile","Through Patches of Violet","Guest666 vs Noob","Artful vs Block"},
+    Values = {"Burnout","Plead","Compass","Creation of hatred","Vanity","Smile","Through Patches of Violet","Dead Ringer","Perpetuity"},
     Default = 1,
     Multi = false,
     Text = "Choose Sound",
