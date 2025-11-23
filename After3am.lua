@@ -81,183 +81,345 @@ local M205Two = Main2o5Group:AddTab("--== Load ==--")
 
 
 
---======================================================
--- SETTINGS
---======================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Thêm label FireAxe Code
+local FireAxeLabel = Main1Group:AddLabel("FireAxe Code: Loading...")
+
+-- Update liên tục
+task.spawn(function()
+    local fireaxeCodeValue = game:GetService("Workspace"):WaitForChild("GameManager"):WaitForChild("FireaxeCode") -- Hoặc game.GameManager nếu trực tiếp
+    while true do
+        task.wait(0.5)
+        if fireaxeCodeValue:IsA("StringValue") then
+            FireAxeLabel:SetText("FireAxe Code: " .. fireaxeCodeValue.Value)
+        else
+            FireAxeLabel:SetText("FireAxe Code: N/A")
+        end
+    end
+end)
+
+-- Biến trạng thái
+_G.InfEnergyEnabled = false
+
+-- Button toggle Inf Energy
+Main1Group:AddButton("Inf Energy (Not Now)", function()
+    _G.InfEnergyEnabled = not _G.InfEnergyEnabled
+end)
+
+-- Loop giữ energy max
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        if _G.InfEnergyEnabled then
+            pcall(function()
+                -- Set EnergyBar full
+                EnergyBar_upvr.Size = UDim2.new(1, -4, 1, -4)
+                -- Ghi đè var67 để chặn giảm
+                _G.var67 = 100
+            end)
+        end
+    end
+end)
+
+Main1Group:AddDivider()
+Main1Group:AddLabel(">>UnEquip Shotgun to change")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- TextBox + Button cho Ammo
+local ammoValue = 2
+Main1Group:AddInput("AmmoInput", {
+    Text = "-Set Ammo-",
+    Placeholder = "Enter Ammo (1-inf)",
+    Default = tostring(ammoValue),
+    Numeric = true,
+    Callback = function(val)
+        local n = tonumber(val)
+        if n and n >= 1 then
+            ammoValue = n
+        else
+            Library:Notify("Invalid Ammo value!", 3)
+        end
+    end
+})
+
+Main1Group:AddButton("SetAmmoButton", function()
+    Text = "Set Ammo",
+    local tool = LocalPlayer:FindFirstChild("Shotgun") or LocalPlayer.Backpack:FindFirstChild("Shotgun")
+    if tool and tool:FindFirstChild("Ammo") then
+        tool.Ammo.Value = ammoValue
+        Library:Notify("Ammo set to "..ammoValue, 3)
+    else
+        Library:Notify("Shotgun not found!", 3)
+    end
+end)
+
+-- TextBox + Button cho ReserveAmmo
+local reserveValue = 10
+Main1Group:AddInput("ReserveInput", {
+    Text = "-Set Reserve Ammo-",
+    Placeholder = "Enter Reserve Ammo (1-inf)",
+    Default = tostring(reserveValue),
+    Numeric = true,
+    Callback = function(val)
+        local n = tonumber(val)
+        if n and n >= 1 then
+            reserveValue = n
+        else
+            Library:Notify("Invalid Reserve Ammo value!", 3)
+        end
+    end
+})
+
+Main1Group:AddButton("SetReserveButton", function()
+    Text = "Set Reserve Ammo",
+    local tool = LocalPlayer:FindFirstChild("Shotgun") or LocalPlayer.Backpack:FindFirstChild("Shotgun")
+    if tool and tool:FindFirstChild("ReserveAmmo") then
+        tool.ReserveAmmo.Value = reserveValue
+        Library:Notify("Reserve Ammo set to "..reserveValue, 3)
+    else
+        Library:Notify("Shotgun not found!", 3)
+    end
+end)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_G.ESP_Items_Enabled = false
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 
--- Toggle ESP
-_G.ESP_Items_Enabled = false
-_G.ESP_Items_Selected = {}
-_G.ESP_Enemy_Enabled = false
-_G.ShadowMan_Color = Color3.fromRGB(255,0,0)
-_G.UseOutline = true -- bật/tắt outline
+local PickupsFolder = Workspace:WaitForChild("Pickups")
 
---======================================================
--- HELPER FUNCTIONS
---======================================================
-local function CreateESP(obj, color, labelText)
-	if obj:FindFirstChild("ESP_Gui") or obj:FindFirstChild("ESP_Outline") then return end
+local ItemColors = {
+    ["Repair Kit"] = Color3.fromRGB(0,255,0),
+    ["Shotgun Ammo"] = Color3.fromRGB(255,215,0),
+    ["Flashlight"] = Color3.new(1,1,1),
+    ["Fuel"] = Color3.fromRGB(255,0,0)
+}
 
-	local part = obj:FindFirstChildWhichIsA("BasePart")
-	if not part then return end
+local function GetPart(obj)
+    -- Lấy PrimaryPart nếu có, nếu không lấy BasePart đầu tiên
+    return obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+end
 
-	-- Billboard
-	local gui = Instance.new("BillboardGui")
-	gui.Name = "ESP_Gui"
-	gui.Adornee = part
-	gui.Size = UDim2.new(0,100,0,40)
-	gui.StudsOffset = Vector3.new(0,2,0)
-	gui.AlwaysOnTop = true
-	gui.Parent = part
+local function CreateESP(obj)
+    if obj:FindFirstChild("ESP_Gui") or obj:FindFirstChild("ESP_Outline") then return end
+    local part = GetPart(obj)
+    if not part then return end
 
-	local lbl = Instance.new("TextLabel")
-	lbl.Name = "MainLabel"
-	lbl.Size = UDim2.new(1,0,1,0)
-	lbl.BackgroundTransparency = 1
-	lbl.Font = Enum.Font.Code
-	lbl.TextSize = 14
-	lbl.TextColor3 = color
-	lbl.TextStrokeTransparency = 0
-	lbl.Text = labelText.."\nDist: 0.0"
-	lbl.Parent = gui
+    local color = ItemColors[obj.Name] or Color3.new(1,1,1)
 
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = Color3.new(0,0,0)
-	stroke.Thickness = 1.5
-	stroke.Parent = lbl
+    -- Billboard
+    local gui = Instance.new("BillboardGui")
+    gui.Name = "ESP_Gui"
+    gui.Adornee = part
+    gui.Size = UDim2.new(0,100,0,40)
+    gui.StudsOffset = Vector3.new(0,2,0)
+    gui.AlwaysOnTop = true
+    gui.Parent = part
 
-	-- Outline
-	if _G.UseOutline then
-		local hl = Instance.new("Highlight")
-		hl.Name = "ESP_Outline"
-		hl.Adornee = obj
-		hl.FillTransparency = 1
-		hl.OutlineTransparency = 0
-		hl.OutlineColor = color
-		hl.Parent = obj
-	end
+    local lbl = Instance.new("TextLabel")
+    lbl.Name = "MainLabel"
+    lbl.Size = UDim2.new(1,0,1,0)
+    lbl.BackgroundTransparency = 1
+    lbl.Font = Enum.Font.Code
+    lbl.TextSize = 14
+    lbl.TextColor3 = color
+    lbl.TextStrokeTransparency = 0
+    lbl.Text = obj.Name.."\nDist: 0.0"
+    lbl.Parent = gui
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.new(0,0,0)
+    stroke.Thickness = 1.5
+    stroke.Parent = lbl
+
+    -- Outline Highlight
+    local hl = Instance.new("Highlight")
+    hl.Name = "ESP_Outline"
+    hl.Adornee = obj
+    hl.FillTransparency = 1
+    hl.OutlineTransparency = 0
+    hl.OutlineColor = color
+    hl.Parent = obj
 end
 
 local function ClearESP(obj)
-	local gui = obj:FindFirstChild("ESP_Gui")
-	if gui then gui:Destroy() end
-	local hl = obj:FindFirstChild("ESP_Outline")
-	if hl then hl:Destroy() end
+    local part = GetPart(obj)
+    if not part then return end
+    if part:FindFirstChild("ESP_Gui") then part.ESP_Gui:Destroy() end
+    if obj:FindFirstChild("ESP_Outline") then obj.ESP_Outline:Destroy() end
 end
 
---======================================================
--- ITEM ESP LOOP
---======================================================
 task.spawn(function()
-	local tracked = {}
+    local tracked = {}
 
-	while true do
-		task.wait(0.2)
-		if _G.ESP_Items_Enabled then
-			for _, obj in ipairs(Workspace:GetDescendants()) do
-				if obj:IsA("Model") and _G.ESP_Items_Selected[obj.Name] then
-					local data = _G.ESP_Items_Selected[obj.Name]
-					CreateESP(obj, data.Color, obj.Name)
-					tracked[obj] = data.Color
-				end
-			end
-		else
-			for obj,_ in pairs(tracked) do
-				if obj and obj.Parent then
-					ClearESP(obj)
-				end
-			end
-			table.clear(tracked)
-		end
+    while true do
+        task.wait(2)
+        if _G.ESP_Items_Enabled then
+            for _, obj in ipairs(PickupsFolder:GetChildren()) do
+                if obj:IsA("Model") then
+                    CreateESP(obj)
+                    tracked[obj] = true
 
-		-- Update khoảng cách
-		for obj,_ in pairs(tracked) do
-			if obj and obj.Parent and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-				local part = obj:FindFirstChildWhichIsA("BasePart")
-				local gui = part and part:FindFirstChild("ESP_Gui")
-				local lbl = gui and gui:FindFirstChild("MainLabel")
-				if lbl and part then
-					local dist = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-					lbl.Text = obj.Name..string.format("\nDist: %.1f", dist)
-				end
-			end
-		end
-	end
+                    local part = GetPart(obj)
+                    if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        local gui = part:FindFirstChild("ESP_Gui")
+                        if gui and gui:FindFirstChild("MainLabel") then
+                            local dist = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                            gui.MainLabel.Text = obj.Name..string.format("\nDist: %.1f", dist)
+                        end
+                    end
+                end
+            end
+        else
+            for obj,_ in pairs(tracked) do
+                if obj and obj.Parent then
+                    ClearESP(obj)
+                end
+            end
+            table.clear(tracked)
+        end
+    end
 end)
 
 --======================================================
 -- ENEMY ESP LOOP (ShadowMan)
 --======================================================
+_G.ESP_Enemy_Enabled = false
+
+local function GetPart(obj)
+    return obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+end
+
+local function CreateEnemyESP(obj)
+    if obj:FindFirstChild("ESP_Gui") or obj:FindFirstChild("ESP_Outline") then return end
+    local part = GetPart(obj)
+    if not part then return end
+
+    local color = _G.ShadowMan_Color or Color3.new(1,1,1)
+    local hum = obj:FindFirstChildOfClass("Humanoid")
+    local hp = hum and math.floor(hum.Health) or "?"
+
+    -- Billboard
+    local gui = Instance.new("BillboardGui")
+    gui.Name = "ESP_Gui"
+    gui.Adornee = part
+    gui.Size = UDim2.new(0,120,0,50)
+    gui.StudsOffset = Vector3.new(0,2,0)
+    gui.AlwaysOnTop = true
+    gui.Parent = part
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Name = "MainLabel"
+    lbl.Size = UDim2.new(1,0,1,0)
+    lbl.BackgroundTransparency = 1
+    lbl.Font = Enum.Font.Code
+    lbl.TextSize = 14
+    lbl.TextColor3 = color
+    lbl.TextStrokeTransparency = 0
+    lbl.Text = "ShadowMan\nHP: "..hp.."\nDist: 0.0"
+    lbl.Parent = gui
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.new(0,0,0)
+    stroke.Thickness = 1.5
+    stroke.Parent = lbl
+
+    -- Outline
+    local hl = Instance.new("Highlight")
+    hl.Name = "ESP_Outline"
+    hl.Adornee = obj
+    hl.FillTransparency = 1
+    hl.OutlineTransparency = 0
+    hl.OutlineColor = color
+    hl.Parent = obj
+end
+
+local function ClearEnemyESP(obj)
+    local part = GetPart(obj)
+    if not part then return end
+    if part:FindFirstChild("ESP_Gui") then part.ESP_Gui:Destroy() end
+    if obj:FindFirstChild("ESP_Outline") then obj.ESP_Outline:Destroy() end
+end
+
 task.spawn(function()
-	local trackedEnemies = {}
+    local trackedEnemies = {}
 
-	while true do
-		task.wait(0.2)
-		if _G.ESP_Enemy_Enabled then
-			for _, enemy in ipairs(Workspace:GetDescendants()) do
-				if enemy:IsA("Model") and enemy.Name == "ShadowMan" then
-					local hum = enemy:FindFirstChildOfClass("Humanoid")
-					local hp = hum and math.floor(hum.Health) or "?"
-					CreateESP(enemy, _G.ShadowMan_Color, "ShadowMan\nHP: "..hp)
-					trackedEnemies[enemy] = true
+    while true do
+        task.wait(2)
+        if _G.ESP_Enemy_Enabled then
+            for _, enemy in ipairs(Workspace:GetDescendants()) do
+                if enemy:IsA("Model") and enemy.Name == "ShadowMan" then
+                    CreateEnemyESP(enemy)
+                    trackedEnemies[enemy] = true
 
-					-- Update distance
-					local part = enemy:FindFirstChildWhichIsA("BasePart")
-					local gui = part and part:FindFirstChild("ESP_Gui")
-					local lbl = gui and gui:FindFirstChild("MainLabel")
-					if lbl and part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-						local dist = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-						lbl.Text = "ShadowMan\nHP: "..hp..string.format("\nDist: %.1f", dist)
-					end
-				end
-			end
-		else
-			for enemy,_ in pairs(trackedEnemies) do
-				if enemy and enemy.Parent then
-					ClearESP(enemy)
-				end
-			end
-			table.clear(trackedEnemies)
-		end
-	end
+                    -- Update HP + distance
+                    local part = GetPart(enemy)
+                    local gui = part and part:FindFirstChild("ESP_Gui")
+                    local lbl = gui and gui:FindFirstChild("MainLabel")
+                    local hum = enemy:FindFirstChildOfClass("Humanoid")
+                    local hp = hum and math.floor(hum.Health) or "?"
+                    if lbl and part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        local dist = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                        lbl.Text = "ShadowMan\nHP: "..hp..string.format("\nDist: %.1f", dist)
+                    end
+                end
+            end
+        else
+            for enemy,_ in pairs(trackedEnemies) do
+                if enemy and enemy.Parent then
+                    ClearEnemyESP(enemy)
+                end
+            end
+            table.clear(trackedEnemies)
+        end
+    end
 end)
 --======================================================    
 --  UI (Main2Group)    
 --======================================================    
-    
--- Callback dropdown sửa
-Main2Group:AddDropdown("ESPItemDropdown", {
-    Text = "Item ESP",
-    Multi = true,
-    Default = {},
-    Values = {"Shotgun Ammo", "Flashlight", "Fuel"},
-    Callback = function(values)
-        _G.ESP_Items_Selected = {}
-        for _, name in ipairs(values) do
-            local color = (name == "Shotgun Ammo" and Color3.fromRGB(255,215,0)) or
-                          (name == "Flashlight" and Color3.new(1,1,1)) or
-                          (name == "Fuel" and Color3.fromRGB(255,0,0))
-            _G.ESP_Items_Selected[name] = {Color = color}
-        end
-        print("ESP Selected:", _G.ESP_Items_Selected) -- Debug
+Main2Group:AddToggle("ESPItemsToggle", {
+    Text = "ESP Items",
+    Default = false,
+    Callback = function(v)
+        _G.ESP_Items_Enabled = v
     end
-})
-    
-Main2Group:AddToggle("ESPItemsToggle", {    
-	Text = "Enable ESP Items",    
-	Default = false,    
-	Callback = function(v)    
-		_G.ESP_Items_Enabled = v    
-	end    
 })
     
 -- Toggle riêng
 Main2Group:AddToggle("ESPEnemyToggle", {
-    Text = "ESP ShadowMan",
+    Text = "ESP Enemy",
     Default = false,
     Callback = function(v)
         _G.ESP_Enemy_Enabled = v
