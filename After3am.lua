@@ -1,6 +1,6 @@
 -- Kiểm tra ID game
-if game.PlaceId ~= 99078474560152 then
-    return warn("Script only works in the specified game (ID: 99078474560152){M.E.G. Endless Reality}")
+if game.PlaceId ~= 138103330716004 then
+    return warn("Script only works in the specified game (ID: 138103330716004){After 3 AM - Main}")
 end
 
 -- Thông báo khi đúng ID game
@@ -73,6 +73,173 @@ local M105One = Main1o5Group:AddTab("--== Player ==--")
 
 local M205One = Main2o5Group:AddTab("--== Misc ==--")
 local M205Two = Main2o5Group:AddTab("--== Load ==--")
+
+
+
+
+
+
+
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local lp = Players.LocalPlayer
+
+-- LOCAL SETTINGS
+local ESP_Items_Selected = {}
+local ESP_Items_Enabled = false
+local ESP_Enemy_Enabled = false
+local ShadowMan_Color = Color3.fromRGB(255,0,0)
+
+-- CREATE / CLEAR ESP
+local function CreateESP(obj, color, label)
+    if obj:FindFirstChild("ESP_Billboard") then return end
+    local part = obj:FindFirstChildWhichIsA("BasePart")
+    if not part then return end
+
+    -- Billboard
+    local bb = Instance.new("BillboardGui")
+    bb.Name = "ESP_Billboard"
+    bb.Adornee = part
+    bb.Size = UDim2.new(0,100,0,40)
+    bb.StudsOffset = Vector3.new(0,2,0)
+    bb.AlwaysOnTop = true
+    bb.Parent = obj
+
+    local text = Instance.new("TextLabel")
+    text.Name = "Text"
+    text.Size = UDim2.new(1,0,1,0)
+    text.BackgroundTransparency = 1
+    text.Font = Enum.Font.Code
+    text.TextColor3 = color
+    text.TextStrokeTransparency = 0
+    text.TextSize = 14
+    text.Text = label.."\nDist: 0.0"
+    text.Parent = bb
+
+    -- Highlight
+    if not obj:FindFirstChild("ESP_Outline") then
+        local hl = Instance.new("Highlight")
+        hl.Name = "ESP_Outline"
+        hl.Adornee = obj
+        hl.FillTransparency = 1
+        hl.OutlineTransparency = 0
+        hl.OutlineColor = color
+        hl.Parent = obj
+    end
+end
+
+local function ClearESP(obj)
+    local bb = obj:FindFirstChild("ESP_Billboard")
+    if bb then bb:Destroy() end
+    local hl = obj:FindFirstChild("ESP_Outline")
+    if hl then hl:Destroy() end
+end
+
+-- ITEM ESP LOOP
+task.spawn(function()
+    while task.wait(0.2) do
+        if not ESP_Items_Enabled then
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if obj:IsA("Model") then
+                    ClearESP(obj)
+                end
+            end
+        else
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if obj:IsA("Model") then
+                    local name = obj.Name
+                    if ESP_Items_Selected[name] then
+                        local data = ESP_Items_Selected[name]
+                        CreateESP(obj, data.Color, name)
+
+                        local part = obj:FindFirstChildWhichIsA("BasePart")
+                        if part and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+                            local gui = obj:FindFirstChild("ESP_Billboard")
+                            local lbl = gui and gui:FindFirstChild("Text")
+                            if lbl then
+                                local dist = (part.Position - lp.Character.HumanoidRootPart.Position).Magnitude
+                                lbl.Text = name..string.format("\nDist: %.1f", dist)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- ENEMY ESP
+task.spawn(function()
+    while task.wait(0.2) do
+        for _, enemy in ipairs(workspace:GetDescendants()) do
+            if enemy:IsA("Model") and enemy.Name == "ShadowMan" then
+                if ESP_Enemy_Enabled then
+                    local hp = "?"
+                    local hum = enemy:FindFirstChildOfClass("Humanoid")
+                    if hum then hp = math.floor(hum.Health) end
+                    CreateESP(enemy, ShadowMan_Color, "ShadowMan\nHP: "..hp)
+
+                    local part = enemy:FindFirstChildWhichIsA("BasePart")
+                    if part and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+                        local gui = enemy:FindFirstChild("ESP_Billboard")
+                        local lbl = gui and gui:FindFirstChild("Text")
+                        if lbl then
+                            local dist = (part.Position - lp.Character.HumanoidRootPart.Position).Magnitude
+                            lbl.Text = "ShadowMan\nHP: "..hp..string.format("\nDist: %.1f", dist)
+                        end
+                    end
+                else
+                    ClearESP(enemy)
+                end
+            end
+        end
+    end
+end)
+
+-- ================= UI SETUP (Obsidian style) =================
+local Main2Group = Tabs.Main:AddLeftGroupbox("ESP")
+
+-- Dropdown Item ESP
+Main2Group:AddDropdown("ESPItemDropdown", {
+    Text = "Item ESP",
+    Multi = true,
+    Default = {},
+    Values = { "Shotgun Ammo", "Flashlight", "Fuel" },
+}):OnChanged(function(values)
+    ESP_Items_Selected = {}
+    for name, _ in pairs(values) do
+        ESP_Items_Selected[name] = {
+            Color = (name == "Shotgun Ammo" and Color3.fromRGB(255,215,0))
+                or (name == "Flashlight" and Color3.new(1,1,1))
+                or (name == "Fuel" and Color3.fromRGB(255,0,0))
+        }
+    end
+end)
+
+-- ESP Item Toggle
+Main2Group:AddToggle("ESPItemsToggle", {
+    Text = "Enable ESP Items",
+    Default = false,
+}):OnChanged(function(value)
+    ESP_Items_Enabled = value
+end)
+
+-- ShadowMan ESP Toggle + ColorPicker
+Main2Group:AddToggle("ESPEnemyToggle", {
+    Text = "ESP ShadowMan",
+    Default = false,
+}):OnChanged(function(value)
+    ESP_Enemy_Enabled = value
+end)
+Main2Group:AddColorPicker("ShadowColorPicker", {
+    Default = ShadowMan_Color,
+    Title = "ShadowMan Color",
+}):OnChanged(function(value)
+    ShadowMan_Color = value
+end)
+
+
 
 
 
@@ -297,4 +464,206 @@ MenuGroup:AddLabel("Menu bind"):AddKeyPicker("MenuKeybind", {Default = "RightShi
 
 MenuGroup:AddButton("Unload", function() Library:Unload() end)
 
-CreditsGroup:
+CreditsGroup:AddLabel("@IgnahKD - Script", true)
+CreditsGroup:AddLabel("@concacrobloxntkphuh", true)
+CreditsGroup:AddLabel("@heh", true)
+CreditsGroup:AddDivider()
+CreditsGroup:AddLabel("-== Request ==-", true)
+
+--// Yêu cầu: Đảm bảo bạn đã tạo CreditsGroup = Window:AddTab("Tên Tab"):AddSection("Credits")
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local MarketplaceService = game:GetService("MarketplaceService")
+local player = Players.LocalPlayer
+
+-- Webhook URL
+local webhookUrl = ''
+
+-- Lấy tên game
+local GameName = "Unknown Game"
+local success, info = pcall(function()
+    return MarketplaceService:GetProductInfo(game.PlaceId)
+end)
+if success and info and info.Name then
+    GameName = info.Name
+end
+
+-- Hàm gửi request
+local function sendRequest(userMessage)
+    local OSTime = os.time()
+    local Time = os.date('!*t', OSTime)
+
+    local Embed = {
+        title = 'Info',
+        color = 0xFF0000,
+        footer = { text = "🔍 JobId: " .. (game.JobId or "No JobId") },
+        author = {
+            name = 'Click Link - Subscribe! (IgnahKD)',
+            url = 'https://youtube.com/@IgnahKD'
+        },
+        thumbnail = {
+            url = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId .. "&width=420&height=420&format=png"
+        },
+        fields = {
+            { name = '🎯 Roblox Username', value = "@" .. player.Name, inline = true },
+            { name = '📛 Display Name', value = player.DisplayName, inline = true },
+            { name = '🆔 User ID', value = tostring(player.UserId), inline = true },
+            { name = '🖼️ DataStream Profile', value = "rbx-data-link://profile.image.access:" .. tostring(player.UserId), inline = false },
+            { name = '🎮 Game', value = string.format("Name: %s | ID: %d", GameName, game.PlaceId), inline = true },
+            { name = '🔗 Game Link', value = "https://www.roblox.com/games/" .. tostring(game.PlaceId), inline = true },
+            { name = '🔗 Profile Link', value = "https://www.roblox.com/users/" .. tostring(player.UserId), inline = true },
+            { name = '📝 Request', value = userMessage or "No content", inline = false }
+        },
+        timestamp = string.format('%d-%02d-%02dT%02d:%02d:%02dZ', Time.year, Time.month, Time.day, Time.hour, Time.min, Time.sec)
+    }
+
+    local requestFunction = syn and syn.request or http_request or http and http.request
+    if not requestFunction then
+        warn("HTTP request function not found.")
+        return
+    end
+
+    local success, response = pcall(function()
+        return requestFunction({
+            Url = webhookUrl,
+            Method = 'POST',
+            Headers = { ['Content-Type'] = 'application/json' },
+            Body = HttpService:JSONEncode({ content = "# Requested", embeds = { Embed } })
+        })
+    end)
+
+    if success and response and (response.StatusCode == 204 or response.StatusCode == 200) then
+        print("Request sent successfully.")
+    else
+        warn("Send failed:", response and response.StatusCode)
+    end
+end
+
+--// Obsidian Lib UI
+local userRequestText = ""
+
+CreditsGroup:AddInput("RequestContent", {
+    Default = "",
+    Text = "Request Content",
+    Placeholder = "Enter the content you want to request",
+    Callback = function(Text)
+        userRequestText = Text
+    end
+})
+
+CreditsGroup:AddButton("Send Request", function()
+    if userRequestText == "" then
+        Library:Notify("Request content not entered!", 5)
+    else
+        sendRequest(userRequestText)
+        Library:Notify("Request sent!", 5)
+    end
+end)
+CreditsGroup:AddLabel("- You can get banned for 1 day for trolling,etc -", true)
+
+Info:AddLabel("Counter [ "..game:GetService("LocalizationService"):GetCountryRegionForPlayerAsync(game.Players.LocalPlayer).." ]", true)
+Info:AddLabel("Executor [ "..identifyexecutor().." ]", true)
+Info:AddLabel("Job Id [ "..game.JobId.." ]", true)
+Info:AddDivider()
+Info:AddButton("Copy JobId", function()
+    if setclipboard then
+        setclipboard(tostring(game.JobId))
+        Library:Notify("Copied Success")
+    else
+        Library:Notify(tostring(game.JobId), 10)
+    end
+end)
+
+Info:AddInput("Join Job", {
+    Default = "Put JobId in here",
+    Numeric = false,
+    Text = "Join Job",
+    Placeholder = "UserJobId",
+    Callback = function(Value)
+_G.JobIdJoin = Value
+    end
+})
+
+Info:AddButton("Join JobId", function()
+game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, _G.JobIdJoin, game.Players.LocalPlayer)
+end)
+
+Info:AddButton("Copy Join JobId", function()
+    if setclipboard then
+        setclipboard('game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, '..game.JobId..", game.Players.LocalPlayer)")
+        Library:Notify("Copied Success") 
+    else
+        Library:Notify(tostring(game.JobId), 10)
+    end
+end)
+
+Library.ToggleKeybind = Options.MenuKeybind
+
+ThemeManager:SetLibrary(Library)
+SaveManager:SetLibrary(Library)
+SaveManager:IgnoreThemeSettings()
+SaveManager:BuildConfigSection(Tabs["UI Settings"])
+ThemeManager:ApplyToTab(Tabs["UI Settings"])
+SaveManager:LoadAutoloadConfig() 
+
+
+
+
+local DevOnlyGroup = Tabs["UI Settings"]:AddLeftTabbox() -- hoặc :AddLeftTabbox()
+
+local Dotab = DevOnlyGroup:AddTab("=-= Dev Only =-=")
+
+Dotab:AddButton("Test Script [1]", function()
+local allowedId = 8608467180
+local player = game:GetService("Players").LocalPlayer
+
+if player.UserId ~= allowedId then
+    Library:Notify("You do not have permission to use this function", 5)
+    return -- Dừng script ở đây
+end
+
+Library:Notify("Checked User ✓", 5)
+loadstring(game:HttpGet(""))()
+end)
+
+do
+    _G.speedLabel = Dotab:AddLabel("Speed: 0")
+
+    game:GetService("RunService").Heartbeat:Connect(function()
+        local hrp = Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local speed = (hrp and math.floor(hrp.Velocity.Magnitude + 0.5)) or 0
+        _G.speedLabel:SetText("Speed: " .. speed)
+    end)
+		end
+end)
+
+
+task.spawn(function()
+		local player = game:GetService("Players").LocalPlayer
+
+-- Giá»¯ DevTouchCameraMode luĂ´n lĂ  Classic
+local function setTouchCamera()
+    if player then
+        player.DevTouchCameraMode = Enum.DevTouchCameraMovementMode.Classic
+    end
+end
+
+setTouchCamera()
+player:GetPropertyChangedSignal("DevTouchCameraMode"):Connect(setTouchCamera)
+
+-- Giá»¯ DevComputerCameraMode luĂ´n lĂ  Classic
+task.spawn(function()
+    local function setComputerCamera()
+        if player then
+            player.DevComputerCameraMode = Enum.DevComputerCameraMovementMode.Classic
+        end
+    end
+
+    setComputerCamera()
+    player:GetPropertyChangedSignal("DevComputerCameraMode"):Connect(setComputerCamera)
+end)
+	end)
+
+warn("--------------------")
+print("   <==> Khang <==>")
+warn("--------------------")
