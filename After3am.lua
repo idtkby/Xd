@@ -101,7 +101,7 @@ local FireAxeLabel = Main1Group:AddLabel("FireAxe Code: Loading...")
 task.spawn(function()
     local fireaxeCodeValue = game:GetService("Workspace"):WaitForChild("GameManager"):WaitForChild("FireaxeCode") -- Hoặc game.GameManager nếu trực tiếp
     while true do
-        task.wait(0.5)
+        task.wait(5)
         if fireaxeCodeValue:IsA("StringValue") then
             FireAxeLabel:SetText("FireAxe Code: " .. fireaxeCodeValue.Value)
         else
