@@ -81,163 +81,196 @@ local M205Two = Main2o5Group:AddTab("--== Load ==--")
 
 
 
+--======================================================
+-- SETTINGS
+--======================================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local lp = Players.LocalPlayer
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
 
--- LOCAL SETTINGS
-local ESP_Items_Selected = {}
-local ESP_Items_Enabled = false
-local ESP_Enemy_Enabled = false
-local ShadowMan_Color = Color3.fromRGB(255,0,0)
+-- Toggle ESP
+_G.ESP_Items_Enabled = false
+_G.ESP_Items_Selected = {}
+_G.ESP_Enemy_Enabled = false
+_G.ShadowMan_Color = Color3.fromRGB(255,0,0)
+_G.UseOutline = true -- bật/tắt outline
 
--- CREATE / CLEAR ESP
-local function CreateESP(obj, color, label)
-    if obj:FindFirstChild("ESP_Billboard") then return end
-    local part = obj:FindFirstChildWhichIsA("BasePart")
-    if not part then return end
+--======================================================
+-- HELPER FUNCTIONS
+--======================================================
+local function CreateESP(obj, color, labelText)
+	if obj:FindFirstChild("ESP_Gui") or obj:FindFirstChild("ESP_Outline") then return end
 
-    -- Billboard
-    local bb = Instance.new("BillboardGui")
-    bb.Name = "ESP_Billboard"
-    bb.Adornee = part
-    bb.Size = UDim2.new(0,100,0,40)
-    bb.StudsOffset = Vector3.new(0,2,0)
-    bb.AlwaysOnTop = true
-    bb.Parent = obj
+	local part = obj:FindFirstChildWhichIsA("BasePart")
+	if not part then return end
 
-    local text = Instance.new("TextLabel")
-    text.Name = "Text"
-    text.Size = UDim2.new(1,0,1,0)
-    text.BackgroundTransparency = 1
-    text.Font = Enum.Font.Code
-    text.TextColor3 = color
-    text.TextStrokeTransparency = 0
-    text.TextSize = 14
-    text.Text = label.."\nDist: 0.0"
-    text.Parent = bb
+	-- Billboard
+	local gui = Instance.new("BillboardGui")
+	gui.Name = "ESP_Gui"
+	gui.Adornee = part
+	gui.Size = UDim2.new(0,100,0,40)
+	gui.StudsOffset = Vector3.new(0,2,0)
+	gui.AlwaysOnTop = true
+	gui.Parent = part
 
-    -- Highlight
-    if not obj:FindFirstChild("ESP_Outline") then
-        local hl = Instance.new("Highlight")
-        hl.Name = "ESP_Outline"
-        hl.Adornee = obj
-        hl.FillTransparency = 1
-        hl.OutlineTransparency = 0
-        hl.OutlineColor = color
-        hl.Parent = obj
-    end
+	local lbl = Instance.new("TextLabel")
+	lbl.Name = "MainLabel"
+	lbl.Size = UDim2.new(1,0,1,0)
+	lbl.BackgroundTransparency = 1
+	lbl.Font = Enum.Font.Code
+	lbl.TextSize = 14
+	lbl.TextColor3 = color
+	lbl.TextStrokeTransparency = 0
+	lbl.Text = labelText.."\nDist: 0.0"
+	lbl.Parent = gui
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.new(0,0,0)
+	stroke.Thickness = 1.5
+	stroke.Parent = lbl
+
+	-- Outline
+	if _G.UseOutline then
+		local hl = Instance.new("Highlight")
+		hl.Name = "ESP_Outline"
+		hl.Adornee = obj
+		hl.FillTransparency = 1
+		hl.OutlineTransparency = 0
+		hl.OutlineColor = color
+		hl.Parent = obj
+	end
 end
 
 local function ClearESP(obj)
-    local bb = obj:FindFirstChild("ESP_Billboard")
-    if bb then bb:Destroy() end
-    local hl = obj:FindFirstChild("ESP_Outline")
-    if hl then hl:Destroy() end
+	local gui = obj:FindFirstChild("ESP_Gui")
+	if gui then gui:Destroy() end
+	local hl = obj:FindFirstChild("ESP_Outline")
+	if hl then hl:Destroy() end
 end
 
+--======================================================
 -- ITEM ESP LOOP
+--======================================================
 task.spawn(function()
-    while task.wait(0.2) do
-        if not ESP_Items_Enabled then
-            for _, obj in ipairs(workspace:GetDescendants()) do
-                if obj:IsA("Model") then
-                    ClearESP(obj)
-                end
-            end
-        else
-            for _, obj in ipairs(workspace:GetDescendants()) do
-                if obj:IsA("Model") then
-                    local name = obj.Name
-                    if ESP_Items_Selected[name] then
-                        local data = ESP_Items_Selected[name]
-                        CreateESP(obj, data.Color, name)
+	local tracked = {}
 
-                        local part = obj:FindFirstChildWhichIsA("BasePart")
-                        if part and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
-                            local gui = obj:FindFirstChild("ESP_Billboard")
-                            local lbl = gui and gui:FindFirstChild("Text")
-                            if lbl then
-                                local dist = (part.Position - lp.Character.HumanoidRootPart.Position).Magnitude
-                                lbl.Text = name..string.format("\nDist: %.1f", dist)
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
+	while true do
+		task.wait(0.2)
+		if _G.ESP_Items_Enabled then
+			for _, obj in ipairs(Workspace:GetDescendants()) do
+				if obj:IsA("Model") and _G.ESP_Items_Selected[obj.Name] then
+					local data = _G.ESP_Items_Selected[obj.Name]
+					CreateESP(obj, data.Color, obj.Name)
+					tracked[obj] = data.Color
+				end
+			end
+		else
+			for obj,_ in pairs(tracked) do
+				if obj and obj.Parent then
+					ClearESP(obj)
+				end
+			end
+			table.clear(tracked)
+		end
+
+		-- Update khoảng cách
+		for obj,_ in pairs(tracked) do
+			if obj and obj.Parent and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+				local part = obj:FindFirstChildWhichIsA("BasePart")
+				local gui = part and part:FindFirstChild("ESP_Gui")
+				local lbl = gui and gui:FindFirstChild("MainLabel")
+				if lbl and part then
+					local dist = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+					lbl.Text = obj.Name..string.format("\nDist: %.1f", dist)
+				end
+			end
+		end
+	end
 end)
 
--- ENEMY ESP
+--======================================================
+-- ENEMY ESP LOOP (ShadowMan)
+--======================================================
 task.spawn(function()
-    while task.wait(0.2) do
-        for _, enemy in ipairs(workspace:GetDescendants()) do
-            if enemy:IsA("Model") and enemy.Name == "ShadowMan" then
-                if ESP_Enemy_Enabled then
-                    local hp = "?"
-                    local hum = enemy:FindFirstChildOfClass("Humanoid")
-                    if hum then hp = math.floor(hum.Health) end
-                    CreateESP(enemy, ShadowMan_Color, "ShadowMan\nHP: "..hp)
+	local trackedEnemies = {}
 
-                    local part = enemy:FindFirstChildWhichIsA("BasePart")
-                    if part and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
-                        local gui = enemy:FindFirstChild("ESP_Billboard")
-                        local lbl = gui and gui:FindFirstChild("Text")
-                        if lbl then
-                            local dist = (part.Position - lp.Character.HumanoidRootPart.Position).Magnitude
-                            lbl.Text = "ShadowMan\nHP: "..hp..string.format("\nDist: %.1f", dist)
-                        end
-                    end
-                else
-                    ClearESP(enemy)
-                end
-            end
-        end
-    end
+	while true do
+		task.wait(0.2)
+		if _G.ESP_Enemy_Enabled then
+			for _, enemy in ipairs(Workspace:GetDescendants()) do
+				if enemy:IsA("Model") and enemy.Name == "ShadowMan" then
+					local hum = enemy:FindFirstChildOfClass("Humanoid")
+					local hp = hum and math.floor(hum.Health) or "?"
+					CreateESP(enemy, _G.ShadowMan_Color, "ShadowMan\nHP: "..hp)
+					trackedEnemies[enemy] = true
+
+					-- Update distance
+					local part = enemy:FindFirstChildWhichIsA("BasePart")
+					local gui = part and part:FindFirstChild("ESP_Gui")
+					local lbl = gui and gui:FindFirstChild("MainLabel")
+					if lbl and part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+						local dist = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+						lbl.Text = "ShadowMan\nHP: "..hp..string.format("\nDist: %.1f", dist)
+					end
+				end
+			end
+		else
+			for enemy,_ in pairs(trackedEnemies) do
+				if enemy and enemy.Parent then
+					ClearESP(enemy)
+				end
+			end
+			table.clear(trackedEnemies)
+		end
+	end
 end)
-
--- ================= UI SETUP (Obsidian style) =================
-local Main2Group = Tabs.Main:AddLeftGroupbox("ESP")
-
--- Dropdown Item ESP
+--======================================================    
+--  UI (Main2Group)    
+--======================================================    
+    
+-- Callback dropdown sửa
 Main2Group:AddDropdown("ESPItemDropdown", {
     Text = "Item ESP",
     Multi = true,
     Default = {},
-    Values = { "Shotgun Ammo", "Flashlight", "Fuel" },
-}):OnChanged(function(values)
-    ESP_Items_Selected = {}
-    for name, _ in pairs(values) do
-        ESP_Items_Selected[name] = {
-            Color = (name == "Shotgun Ammo" and Color3.fromRGB(255,215,0))
-                or (name == "Flashlight" and Color3.new(1,1,1))
-                or (name == "Fuel" and Color3.fromRGB(255,0,0))
-        }
+    Values = {"Shotgun Ammo", "Flashlight", "Fuel"},
+    Callback = function(values)
+        _G.ESP_Items_Selected = {}
+        for _, name in ipairs(values) do
+            local color = (name == "Shotgun Ammo" and Color3.fromRGB(255,215,0)) or
+                          (name == "Flashlight" and Color3.new(1,1,1)) or
+                          (name == "Fuel" and Color3.fromRGB(255,0,0))
+            _G.ESP_Items_Selected[name] = {Color = color}
+        end
+        print("ESP Selected:", _G.ESP_Items_Selected) -- Debug
     end
-end)
-
--- ESP Item Toggle
-Main2Group:AddToggle("ESPItemsToggle", {
-    Text = "Enable ESP Items",
-    Default = false,
-}):OnChanged(function(value)
-    ESP_Items_Enabled = value
-end)
-
--- ShadowMan ESP Toggle + ColorPicker
+})
+    
+Main2Group:AddToggle("ESPItemsToggle", {    
+	Text = "Enable ESP Items",    
+	Default = false,    
+	Callback = function(v)    
+		_G.ESP_Items_Enabled = v    
+	end    
+})
+    
+-- Toggle riêng
 Main2Group:AddToggle("ESPEnemyToggle", {
     Text = "ESP ShadowMan",
     Default = false,
-}):OnChanged(function(value)
-    ESP_Enemy_Enabled = value
-end)
-Main2Group:AddColorPicker("ShadowColorPicker", {
-    Default = ShadowMan_Color,
-    Title = "ShadowMan Color",
-}):OnChanged(function(value)
-    ShadowMan_Color = value
-end)
+    Callback = function(v)
+        _G.ESP_Enemy_Enabled = v
+    end
+}):AddColorPicker("ShadowColor", {
+    Text = "ShadowMan Color",
+    Default = Color3.fromRGB(255,0,0),
+    Callback = function(c)
+        _G.ShadowMan_Color = c
+    end
+})
+    
+    
 
 
 
