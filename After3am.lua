@@ -156,7 +156,7 @@ Main1Group:AddInput("AmmoInput", {
 })
 
 Main1Group:AddButton("SetAmmoButton", function()
-    Text = "Set Ammo",
+    
     local tool = LocalPlayer:FindFirstChild("Shotgun") or LocalPlayer.Backpack:FindFirstChild("Shotgun")
     if tool and tool:FindFirstChild("Ammo") then
         tool.Ammo.Value = ammoValue
@@ -184,7 +184,7 @@ Main1Group:AddInput("ReserveInput", {
 })
 
 Main1Group:AddButton("SetReserveButton", function()
-    Text = "Set Reserve Ammo",
+  
     local tool = LocalPlayer:FindFirstChild("Shotgun") or LocalPlayer.Backpack:FindFirstChild("Shotgun")
     if tool and tool:FindFirstChild("ReserveAmmo") then
         tool.ReserveAmmo.Value = reserveValue
@@ -225,7 +225,7 @@ local ItemColors = {
     ["Shotgun Ammo"] = Color3.fromRGB(255,215,0),
     ["Flashlight"] = Color3.new(1,1,1),
     ["Fuel"] = Color3.fromRGB(255,0,0),
-	["Shotgun"] = Color3.fromRGB(255,215,0),
+	["Shotgun"] = Color3.fromRGB(200,200,200),
 }
 
 local function GetPart(obj)
@@ -586,8 +586,10 @@ M205Two:AddDivider()
 
 M205Two:AddButton("Load InfYield Edit", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()  
-				
-			end)
+end)
+		M205Two:AddButton("Aimbot Toggle", function()
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Aimbot%20npc%207%20days"))()
+		end)
 
 
 
