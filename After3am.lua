@@ -224,7 +224,8 @@ local ItemColors = {
     ["Repair Kit"] = Color3.fromRGB(0,255,0),
     ["Shotgun Ammo"] = Color3.fromRGB(255,215,0),
     ["Flashlight"] = Color3.new(1,1,1),
-    ["Fuel"] = Color3.fromRGB(255,0,0)
+    ["Fuel"] = Color3.fromRGB(255,0,0),
+	["Shotgun"] = Color3.fromRGB(255,215,0),
 }
 
 local function GetPart(obj)
