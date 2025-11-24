@@ -93,7 +93,7 @@ local M205Two = Main2o5Group:AddTab("--== Load ==--")
 
 
 
-
+Main1Group:AddDivider()
 -- Thêm label FireAxe Code
 local FireAxeLabel = Main1Group:AddLabel("FireAxe Code: Loading...")
 
@@ -101,7 +101,7 @@ local FireAxeLabel = Main1Group:AddLabel("FireAxe Code: Loading...")
 task.spawn(function()
     local fireaxeCodeValue = game:GetService("Workspace"):WaitForChild("GameManager"):WaitForChild("FireaxeCode") -- Hoặc game.GameManager nếu trực tiếp
     while true do
-        task.wait(5)
+        task.wait(10)
         if fireaxeCodeValue:IsA("StringValue") then
             FireAxeLabel:SetText("FireAxe Code: " .. fireaxeCodeValue.Value)
         else
@@ -110,11 +110,177 @@ task.spawn(function()
     end
 end)
 
+
+
+Main1Group:AddDivider()
+Main1Group:AddLabel(">>UnEquip Shotgun to change")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+--===== AMMO INPUT =====--
+local ammoValue = 2
+
+Main1Group:AddInput("AmmoInput", {
+    Text = "-Set Ammo-",
+    Placeholder = "Enter Ammo (1-inf)",
+    Default = tostring(ammoValue),
+    Numeric = false, -- để gõ chữ "inf"
+    Callback = function(val)
+        val = tostring(val):lower()
+
+        if val == "inf" then
+            ammoValue = math.huge
+            Library:Notify("Ammo = INF", 3)
+            return
+        end
+
+        local n = tonumber(val)
+        if n and n >= 0 then
+            ammoValue = n
+        else
+            Library:Notify("Invalid Ammo value!", 3)
+        end
+    end
+})
+
+Main1Group:AddButton("SetAmmo", function()
+    local tool = LocalPlayer:FindFirstChild("Shotgun") or LocalPlayer.Backpack:FindFirstChild("Shotgun")
+    if tool and tool:FindFirstChild("Ammo") then
+        tool.Ammo.Value = ammoValue
+        Library:Notify("Ammo set to "..tostring(ammoValue), 3)
+    else
+        Library:Notify("Shotgun not found!", 3)
+    end
+end)
+
+--===== RESERVE AMMO INPUT =====--
+local reserveValue = 10
+
+Main1Group:AddInput("ReserveInput", {
+    Placeholder = "Enter Reserve Ammo (1-inf)",
+    Default = tostring(reserveValue),
+    Numeric = false,
+    Callback = function(val)
+        val = tostring(val):lower()
+
+        if val == "inf" then
+            reserveValue = math.huge
+            Library:Notify("Reserve = INF", 3)
+            return
+        end
+
+        local n = tonumber(val)
+        if n and n >= 0 then
+            reserveValue = n
+        else
+            Library:Notify("Invalid Reserve Ammo value!", 3)
+        end
+    end
+})
+
+Main1Group:AddButton("SetReserve", function()
+    local tool = LocalPlayer:FindFirstChild("Shotgun") or LocalPlayer.Backpack:FindFirstChild("Shotgun")
+    if tool and tool:FindFirstChild("ReserveAmmo") then
+        tool.ReserveAmmo.Value = reserveValue
+        Library:Notify("Reserve Ammo set to "..tostring(reserveValue), 3)
+    else
+        Library:Notify("Shotgun not found!", 3)
+    end
+end)
+
+Main1Group:AddLabel(">>↓Watch the video to understand how it works")
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local selectedItem = "Fuel" -- default
+
+-- Dropdown chọn tool
+Main1Group:AddDropdown("ItemSelect", {
+    Text = "Select Item",
+    Default = "Fuel",
+    Multi = false,
+    Options = {"Fuel", "Flashlight"},
+    Callback = function(v)
+        selectedItem = v
+    end
+})
+
+-- Nút Set Full = 100
+Main1Group:AddButton("SetFull", function()
+
+    local tool =
+        LocalPlayer.Backpack:FindFirstChild(selectedItem) or
+        (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild(selectedItem))
+
+    if tool and tool:FindFirstChild("Quantity") then
+        tool.Quantity.Value = 100
+        Library:Notify(selectedItem.." set full", 3)
+    else
+        Library:Notify(selectedItem.." not found!", 3)
+    end
+
+end)
+
+--===== RESERVE AMMO INPUT =====--
+local shotgunammoValue = 2
+
+Main1Group:AddInput("ShotgunAmmoInput", {
+    Placeholder = "Enter Shotgun Ammo (1-inf)",
+    Default = tostring(shotgunammoValue),
+    Numeric = false,
+    Callback = function(val)
+        val = tostring(val):lower()
+
+        if val == "inf" then
+            shotgunammoValue = math.huge
+            Library:Notify("Sg Ammo = INF", 3)
+            return
+        end
+
+        local n = tonumber(val)
+        if n and n >= 0 then
+            shotgunammoValue = n
+        else
+            Library:Notify("Invalid Shotgun Ammo value!", 3)
+        end
+    end
+})
+
+Main1Group:AddButton("SetShotgunAmmo", function()
+    local tool = LocalPlayer:FindFirstChild("Shotgun Ammo") or LocalPlayer.Backpack:FindFirstChild("Shotgun Ammo")
+    if tool and tool:FindFirstChild("Quantity") then
+        tool.Quantity.Value = shotgunammoValue
+        Library:Notify("Sg Ammo set to "..tostring(shotgunammoValue), 3)
+    else
+        Library:Notify("Shotgun Ammo not found!", 3)
+    end
+end)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+M105One:AddDivider()
+
 -- Biến trạng thái
 _G.InfEnergyEnabled = false
 
 -- Button toggle Inf Energy
-Main1Group:AddButton("Inf Energy (Not Now)", function()
+M105One:AddButton("Inf Energy (Not Now)", function()
     _G.InfEnergyEnabled = not _G.InfEnergyEnabled
 end)
 
@@ -130,67 +296,6 @@ task.spawn(function()
                 _G.var67 = 100
             end)
         end
-    end
-end)
-
-Main1Group:AddDivider()
-Main1Group:AddLabel(">>UnEquip Shotgun to change")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
--- TextBox + Button cho Ammo
-local ammoValue = 2
-Main1Group:AddInput("AmmoInput", {
-    Text = "-Set Ammo-",
-    Placeholder = "Enter Ammo (1-inf)",
-    Default = tostring(ammoValue),
-    Numeric = true,
-    Callback = function(val)
-        local n = tonumber(val)
-        if n and n >= 1 then
-            ammoValue = n
-        else
-            Library:Notify("Invalid Ammo value!", 3)
-        end
-    end
-})
-
-Main1Group:AddButton("SetAmmoButton", function()
-    
-    local tool = LocalPlayer:FindFirstChild("Shotgun") or LocalPlayer.Backpack:FindFirstChild("Shotgun")
-    if tool and tool:FindFirstChild("Ammo") then
-        tool.Ammo.Value = ammoValue
-        Library:Notify("Ammo set to "..ammoValue, 3)
-    else
-        Library:Notify("Shotgun not found!", 3)
-    end
-end)
-
--- TextBox + Button cho ReserveAmmo
-local reserveValue = 10
-Main1Group:AddInput("ReserveInput", {
-    Text = "-Set Reserve Ammo-",
-    Placeholder = "Enter Reserve Ammo (1-inf)",
-    Default = tostring(reserveValue),
-    Numeric = true,
-    Callback = function(val)
-        local n = tonumber(val)
-        if n and n >= 1 then
-            reserveValue = n
-        else
-            Library:Notify("Invalid Reserve Ammo value!", 3)
-        end
-    end
-})
-
-Main1Group:AddButton("SetReserveButton", function()
-  
-    local tool = LocalPlayer:FindFirstChild("Shotgun") or LocalPlayer.Backpack:FindFirstChild("Shotgun")
-    if tool and tool:FindFirstChild("ReserveAmmo") then
-        tool.ReserveAmmo.Value = reserveValue
-        Library:Notify("Reserve Ammo set to "..reserveValue, 3)
-    else
-        Library:Notify("Shotgun not found!", 3)
     end
 end)
 
@@ -223,9 +328,9 @@ local PickupsFolder = Workspace:WaitForChild("Pickups")
 local ItemColors = {
     ["Repair Kit"] = Color3.fromRGB(0,255,0),
     ["Shotgun Ammo"] = Color3.fromRGB(255,215,0),
-    ["Flashlight"] = Color3.new(1,1,1),
+    ["Flashlight"] = Color3.fromRGB(155,155,155),
     ["Fuel"] = Color3.fromRGB(255,0,0),
-	["Shotgun"] = Color3.fromRGB(200,200,200),
+    ["Shotgun"] = Color3.fromRGB(200,200,200),
 }
 
 local function GetPart(obj)
@@ -318,6 +423,7 @@ end)
 -- ENEMY ESP LOOP (ShadowMan)
 --======================================================
 _G.ESP_Enemy_Enabled = false
+_G.ShadowMan_Color = Color3.fromRGB(155,0,0)
 
 local function GetPart(obj)
     return obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
@@ -427,7 +533,7 @@ Main2Group:AddToggle("ESPEnemyToggle", {
     end
 }):AddColorPicker("ShadowColor", {
     Text = "ShadowMan Color",
-    Default = Color3.fromRGB(255,0,0),
+    Default = Color3.fromRGB(155,0,0),
     Callback = function(c)
         _G.ShadowMan_Color = c
     end
@@ -578,6 +684,26 @@ M205One:AddToggle("ShowPing", {
 M205One:AddButton("no disable chat", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/enable%20chat"))()
 end)
+M205One:AddButton("Third Person", function()
+
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+
+    -- Đợi character & humanoid load
+    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.CharacterAdded:Wait()
+    end
+
+    -- Set zoom xa tối đa
+    LocalPlayer.CameraMaxZoomDistance = 300
+    LocalPlayer.CameraMinZoomDistance = 0.5 -- giữ góc nhìn third
+
+    -- Set camera thành Third Person
+    LocalPlayer.CameraMode = Enum.CameraMode.Classic
+
+    Library:Notify("Camera unlocked", 3)
+
+end)
 
 
 
@@ -586,11 +712,11 @@ M205Two:AddDivider()
 
 M205Two:AddButton("Load InfYield Edit", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()  
-end)
-		M205Two:AddButton("Aimbot Toggle", function()
+				
+			end)
+M205Two:AddButton("Aimbot Toggle", function()
 			loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Aimbot%20npc%207%20days"))()
 		end)
-
 
 
 
