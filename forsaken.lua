@@ -3006,6 +3006,7 @@ local soundLibrary = {
     ["Through Patches of Violet"] = "134062685653533",
 	["Dead Ringer"] = "88279626466849",
 	["Perpetuity"] = "95804479897896",
+	["Close to me"] = ""
 }
 
 -- Mặc định chọn Burnout
