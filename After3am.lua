@@ -101,12 +101,13 @@ local FireAxeLabel = Main1Group:AddLabel("FireAxe Code: Loading...")
 task.spawn(function()
     local fireaxeCodeValue = game:GetService("Workspace"):WaitForChild("GameManager"):WaitForChild("FireaxeCode") -- Hoặc game.GameManager nếu trực tiếp
     while true do
-        task.wait(10)
+        
         if fireaxeCodeValue:IsA("StringValue") then
             FireAxeLabel:SetText("FireAxe Code: " .. fireaxeCodeValue.Value)
         else
             FireAxeLabel:SetText("FireAxe Code: N/A")
         end
+        task.wait(1000)
     end
 end)
 
@@ -157,6 +158,7 @@ end)
 local reserveValue = 10
 
 Main1Group:AddInput("ReserveInput", {
+Text = "-Set Reserve-",
     Placeholder = "Enter Reserve Ammo (1-inf)",
     Default = tostring(reserveValue),
     Numeric = false,
@@ -193,39 +195,42 @@ Main1Group:AddLabel(">>↓Watch the video to understand how it works")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-local selectedItem = "Fuel" -- default
+local selectedItem = "Fuel" -- mặc định
 
 -- Dropdown chọn tool
 Main1Group:AddDropdown("ItemSelect", {
-    Text = "Select Item",
+    Values = {"Fuel", "Flashlight"},
     Default = "Fuel",
     Multi = false,
-    Options = {"Fuel", "Flashlight"},
+    Text = "Select Item",
     Callback = function(v)
         selectedItem = v
     end
 })
 
 -- Nút Set Full = 100
-Main1Group:AddButton("SetFull", function()
+Main1Group:AddButton({
+    Text = "Set Full",
+    Func = function()
 
-    local tool =
-        LocalPlayer.Backpack:FindFirstChild(selectedItem) or
-        (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild(selectedItem))
+        local tool =
+            LocalPlayer.Backpack:FindFirstChild(selectedItem) or
+            (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild(selectedItem))
 
-    if tool and tool:FindFirstChild("Quantity") then
-        tool.Quantity.Value = 100
-        Library:Notify(selectedItem.." set full", 3)
-    else
-        Library:Notify(selectedItem.." not found!", 3)
+        if tool and tool:FindFirstChild("Quantity") then
+            tool.Quantity.Value = 100
+            Library:Notify(selectedItem .. " set full!", 3)
+        else
+            Library:Notify(selectedItem .. " not found!", 3)
+        end
     end
-
-end)
+})
 
 --===== RESERVE AMMO INPUT =====--
 local shotgunammoValue = 2
 
 Main1Group:AddInput("ShotgunAmmoInput", {
+Text = "-Set Shotgun Ammo-",
     Placeholder = "Enter Shotgun Ammo (1-inf)",
     Default = tostring(shotgunammoValue),
     Numeric = false,
@@ -484,7 +489,7 @@ task.spawn(function()
     local trackedEnemies = {}
 
     while true do
-        task.wait(2)
+        task.wait(0.5)
         if _G.ESP_Enemy_Enabled then
             for _, enemy in ipairs(Workspace:GetDescendants()) do
                 if enemy:IsA("Model") and enemy.Name == "ShadowMan" then
