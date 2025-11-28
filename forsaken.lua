@@ -2245,6 +2245,11 @@ local SKILL_ANIMS = {
     ["100592913030351"] = true,
     ["83685305553364"] = true,
     ["99030950661794"] = true,
+	["105026134432828"] = true,
+    ["109777684604906"] = true,
+	--[[
+[MessageOutput] [Anim] rbxassetid://105026134432828[MessageOutput] [Anim] rbxassetid://109777684604906
+						]]
 }
 
 local HITBOX_SIZE = Vector3.new(10, 3, 1000)
