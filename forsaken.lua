@@ -3011,7 +3011,8 @@ local soundLibrary = {
     ["Through Patches of Violet"] = "134062685653533",
 	["Dead Ringer"] = "88279626466849",
 	["Perpetuity"] = "95804479897896",
-	["Close to me"] = ""
+	["Close to me"] = "",
+	["JX1DX1 vs IHasAFaceLULZ"] = "126614821104122",
 }
 
 -- Mặc định chọn Burnout
@@ -3092,7 +3093,7 @@ end
 
 -- Dropdown chọn nhạc
 M205One:AddDropdown("LastSoundChoice", {
-    Values = {"Burnout","Plead","Compass","Creation of hatred","Vanity","Smile","Through Patches of Violet","Dead Ringer","Perpetuity"},
+    Values = {"Burnout","Plead","Compass","Creation of hatred","Vanity","Smile","Through Patches of Violet","Dead Ringer","Perpetuity","JX1DX1 vs IHasAFaceLULZ"},
     Default = 1,
     Multi = false,
     Text = "Choose Sound",
