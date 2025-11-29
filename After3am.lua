@@ -304,7 +304,55 @@ task.spawn(function()
     end
 end)
 
+		Main1Group:AddLabel(">>Equip Shotgun need")
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local lp = Players.LocalPlayer
+
+_G.AutoShotgun = false
+local hbConnect = nil
+
+-- Hàm chạy AutoShotgun
+local function StartAutoShotgun()
+    if hbConnect then hbConnect:Disconnect() end
+
+    hbConnect = RunService.Heartbeat:Connect(function()
+        if not _G.AutoShotgun then return end
+
+        local char = lp.Character
+        if not char then return end
+
+        local gun = char:FindFirstChild("Shotgun")
+        if not gun or not gun:FindFirstChild("DamageTargetEvent") then return end
+
+        for _, monster in ipairs(workspace.CurrentMonsters:GetChildren()) do
+            local hum = monster:FindFirstChild("Humanoid")
+            local hrp = monster:FindFirstChild("HumanoidRootPart")
+
+            if hum and hum.Health > 0 and hrp then
+                gun.DamageTargetEvent:FireServer(hrp, hrp.Position)
+            end
+        end
+    end)
+end
+
+-- Gọi hàm khi script load
+StartAutoShotgun()
+
+-- 🔥 Toggle trong Obsidian
+Main1Group:AddToggle("AutoShotgunToggle", {
+    Text = "Kill Enemy (beta)",
+    Default = false,
+    Callback = function(v)
+        _G.AutoShotgun = v
+        if v then
+            Library:Notify("Enabled", 3)
+        else
+            Library:Notify("Disabled", 3)
+        end
+    end
+})
 
 
 
