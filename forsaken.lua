@@ -956,7 +956,7 @@ local function startAimAtTarget(targetRoot, myRoot)
     activeAimConn = RunService.Heartbeat:Connect(function()
         if not _G.AutoPunchAimbot_Enabled then return stopAim() end
         if not targetRoot or not targetRoot.Parent or not myRoot or not myRoot.Parent then return stopAim() end
-        if tick() - startTime > 0.85 then return stopAim() end
+        if tick() - startTime > 0.6 then return stopAim() end
 
         local lookPos = Vector3.new(targetRoot.Position.X, myRoot.Position.Y, targetRoot.Position.Z)
         myRoot.CFrame = CFrame.new(myRoot.Position, lookPos)
