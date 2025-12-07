@@ -114,7 +114,6 @@ end)
 
 
 Main1Group:AddDivider()
-Main1Group:AddLabel(">>UnEquip Shotgun to change")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
@@ -125,7 +124,7 @@ Main1Group:AddInput("AmmoInput", {
     Text = "-Set Ammo-",
     Placeholder = "Enter Ammo (1-inf)",
     Default = tostring(ammoValue),
-    Numeric = false, -- để gõ chữ "inf"
+    Numeric = false,
     Callback = function(val)
         val = tostring(val):lower()
 
@@ -145,12 +144,24 @@ Main1Group:AddInput("AmmoInput", {
 })
 
 Main1Group:AddButton("SetAmmo", function()
-    local tool = LocalPlayer:FindFirstChild("Shotgun") or LocalPlayer.Backpack:FindFirstChild("Shotgun")
-    if tool and tool:FindFirstChild("Ammo") then
-        tool.Ammo.Value = ammoValue
-        Library:Notify("Ammo set to "..tostring(ammoValue), 3)
+    local found = false
+
+    -- chỉnh tất cả Shotgun trong Character + Backpack
+    for _,tool in ipairs({LocalPlayer.Character, LocalPlayer.Backpack}) do
+        if tool then
+            for _,item in ipairs(tool:GetChildren()) do
+                if item.Name == "Shotgun" and item:FindFirstChild("Ammo") then
+                    item.Ammo.Value = ammoValue
+                    found = true
+                end
+            end
+        end
+    end
+
+    if found then
+        Library:Notify("Set ALL Shotgun Ammo = "..tostring(ammoValue), 3)
     else
-        Library:Notify("Shotgun not found!", 3)
+        Library:Notify("No Shotgun found!", 3)
     end
 end)
 
@@ -158,7 +169,7 @@ end)
 local reserveValue = 10
 
 Main1Group:AddInput("ReserveInput", {
-Text = "-Set Reserve-",
+    Text = "-Set Reserve-",
     Placeholder = "Enter Reserve Ammo (1-inf)",
     Default = tostring(reserveValue),
     Numeric = false,
@@ -181,15 +192,25 @@ Text = "-Set Reserve-",
 })
 
 Main1Group:AddButton("SetReserve", function()
-    local tool = LocalPlayer:FindFirstChild("Shotgun") or LocalPlayer.Backpack:FindFirstChild("Shotgun")
-    if tool and tool:FindFirstChild("ReserveAmmo") then
-        tool.ReserveAmmo.Value = reserveValue
-        Library:Notify("Reserve Ammo set to "..tostring(reserveValue), 3)
+    local found = false
+
+    for _,tool in ipairs({LocalPlayer.Character, LocalPlayer.Backpack}) do
+        if tool then
+            for _,item in ipairs(tool:GetChildren()) do
+                if item.Name == "Shotgun" and item:FindFirstChild("ReserveAmmo") then
+                    item.ReserveAmmo.Value = reserveValue
+                    found = true
+                end
+            end
+        end
+    end
+
+    if found then
+        Library:Notify("Set ALL ReserveAmmo = "..tostring(reserveValue), 3)
     else
-        Library:Notify("Shotgun not found!", 3)
+        Library:Notify("No Shotgun found!", 3)
     end
 end)
-
 Main1Group:AddLabel(">>↓Watch the video to understand how it works")
 
 local Players = game:GetService("Players")
@@ -227,13 +248,17 @@ Main1Group:AddButton({
 })
 
 --===== RESERVE AMMO INPUT =====--
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+--===== SHOTGUN AMMO INPUT =====--
 local shotgunammoValue = 2
 
 Main1Group:AddInput("ShotgunAmmoInput", {
-Text = "-Set Shotgun Ammo-",
+    Text = "-Set Shotgun Ammo-",
     Placeholder = "Enter Shotgun Ammo (1-inf)",
     Default = tostring(shotgunammoValue),
-    Numeric = false,
+    Numeric = false, -- cho phép nhập chữ
     Callback = function(val)
         val = tostring(val):lower()
 
@@ -253,10 +278,22 @@ Text = "-Set Shotgun Ammo-",
 })
 
 Main1Group:AddButton("SetShotgunAmmo", function()
-    local tool = LocalPlayer:FindFirstChild("Shotgun Ammo") or LocalPlayer.Backpack:FindFirstChild("Shotgun Ammo")
-    if tool and tool:FindFirstChild("Quantity") then
-        tool.Quantity.Value = shotgunammoValue
-        Library:Notify("Sg Ammo set to "..tostring(shotgunammoValue), 3)
+    local found = false
+
+    -- Loop Character + Backpack
+    for _,container in ipairs({LocalPlayer.Character, LocalPlayer.Backpack}) do
+        if container then
+            for _,item in ipairs(container:GetChildren()) do
+                if item.Name == "Shotgun Ammo" and item:FindFirstChild("Quantity") then
+                    item.Quantity.Value = shotgunammoValue
+                    found = true
+                end
+            end
+        end
+    end
+
+    if found then
+        Library:Notify("Set all Shotgun Ammo = "..tostring(shotgunammoValue), 3)
     else
         Library:Notify("Shotgun Ammo not found!", 3)
     end
