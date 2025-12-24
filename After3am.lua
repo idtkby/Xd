@@ -117,41 +117,64 @@ Main1Group:AddDivider()
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
---===== AMMO INPUT =====--
-local ammoValue = 2
+-- ===== DATA LƯU THEO TỪNG GUN =====
+local GunData = {
+    Shotgun = { Ammo = 2, Reserve = 10 },
+    Handgun = { Ammo = 7, Reserve = 14 },
+}
 
+local CurrentGun = "Shotgun"
+
+Main1Group:AddDropdown("GunSelect", {
+    Text = "Select Gun",
+    Values = { "Shotgun", "Handgun" },
+    Default = "Shotgun", -- ❗ PHẢI LÀ STRING
+    Multi = false,
+
+    Callback = function(val)
+        CurrentGun = val
+
+        -- update textbox theo gun
+        Options.AmmoInput:SetValue(tostring(GunData[val].Ammo))
+        Options.ReserveInput:SetValue(tostring(GunData[val].Reserve))
+
+        Library:Notify("Selected: "..val, 2)
+    end
+})
+
+-- ===== AMMO INPUT =====
 Main1Group:AddInput("AmmoInput", {
-    Text = "-Set Ammo-",
-    Placeholder = "Enter Ammo (1-inf)",
-    Default = tostring(ammoValue),
+    Text = "Set Ammo",
+    Default = tostring(GunData[CurrentGun].Ammo),
     Numeric = false,
+
     Callback = function(val)
         val = tostring(val):lower()
 
         if val == "inf" then
-            ammoValue = math.huge
-            Library:Notify("Ammo = INF", 3)
+            GunData[CurrentGun].Ammo = math.huge
             return
         end
 
         local n = tonumber(val)
         if n and n >= 0 then
-            ammoValue = n
+            GunData[CurrentGun].Ammo = n
         else
-            Library:Notify("Invalid Ammo value!", 3)
+            Library:Notify("Invalid Reserve value!", 2)
         end
     end
 })
 
+-- ===== SET AMMO =====
 Main1Group:AddButton("SetAmmo", function()
     local found = false
+    local value = GunData[CurrentGun].Ammo
 
-    -- chỉnh tất cả Shotgun trong Character + Backpack
-    for _,tool in ipairs({LocalPlayer.Character, LocalPlayer.Backpack}) do
-        if tool then
-            for _,item in ipairs(tool:GetChildren()) do
-                if item.Name == "Shotgun" and item:FindFirstChild("Ammo") then
-                    item.Ammo.Value = ammoValue
+    for _, container in ipairs({LocalPlayer.Character, LocalPlayer.Backpack}) do
+        if container then
+            for _, tool in ipairs(container:GetChildren()) do
+                if tool.Name == CurrentGun and tool:FindFirstChild("Ammo") then
+                    tool.Ammo.Value = value
                     found = true
                 end
             end
@@ -159,46 +182,45 @@ Main1Group:AddButton("SetAmmo", function()
     end
 
     if found then
-        Library:Notify("Set ALL Shotgun Ammo = "..tostring(ammoValue), 3)
+        Library:Notify("Set "..CurrentGun.." Ammo = "..tostring(value), 3)
     else
-        Library:Notify("No Shotgun found!", 3)
+        Library:Notify(CurrentGun.." not found!", 3)
     end
 end)
 
---===== RESERVE AMMO INPUT =====--
-local reserveValue = 10
-
+-- ===== RESERVE INPUT =====
 Main1Group:AddInput("ReserveInput", {
-    Text = "-Set Reserve-",
-    Placeholder = "Enter Reserve Ammo (1-inf)",
-    Default = tostring(reserveValue),
+    Text = "Set Reserve",
+    Default = tostring(GunData[CurrentGun].Reserve),
     Numeric = false,
+
     Callback = function(val)
         val = tostring(val):lower()
 
         if val == "inf" then
-            reserveValue = math.huge
-            Library:Notify("Reserve = INF", 3)
+            GunData[CurrentGun].Reserve = math.huge
             return
         end
 
         local n = tonumber(val)
         if n and n >= 0 then
-            reserveValue = n
+            GunData[CurrentGun].Reserve = n
         else
-            Library:Notify("Invalid Reserve Ammo value!", 3)
+            Library:Notify("Reserve không hợp lệ", 2)
         end
     end
 })
 
+-- ===== SET RESERVE =====
 Main1Group:AddButton("SetReserve", function()
     local found = false
+    local value = GunData[CurrentGun].Reserve
 
-    for _,tool in ipairs({LocalPlayer.Character, LocalPlayer.Backpack}) do
-        if tool then
-            for _,item in ipairs(tool:GetChildren()) do
-                if item.Name == "Shotgun" and item:FindFirstChild("ReserveAmmo") then
-                    item.ReserveAmmo.Value = reserveValue
+    for _, container in ipairs({LocalPlayer.Character, LocalPlayer.Backpack}) do
+        if container then
+            for _, tool in ipairs(container:GetChildren()) do
+                if tool.Name == CurrentGun and tool:FindFirstChild("ReserveAmmo") then
+                    tool.ReserveAmmo.Value = value
                     found = true
                 end
             end
@@ -206,9 +228,9 @@ Main1Group:AddButton("SetReserve", function()
     end
 
     if found then
-        Library:Notify("Set ALL ReserveAmmo = "..tostring(reserveValue), 3)
+        Library:Notify("Set "..CurrentGun.." Reserve = "..tostring(value), 3)
     else
-        Library:Notify("No Shotgun found!", 3)
+        Library:Notify(CurrentGun.." not found!", 3)
     end
 end)
 Main1Group:AddLabel(">>↓Watch the video to understand how it works")
@@ -340,7 +362,7 @@ task.spawn(function()
         end
     end
 end)
-
+Main1Group:AddDivider()
 		Main1Group:AddLabel(">>Equip Shotgun need")
 
 local Players = game:GetService("Players")
@@ -421,6 +443,7 @@ local ItemColors = {
     ["Flashlight"] = Color3.fromRGB(155,155,155),
     ["Fuel"] = Color3.fromRGB(255,0,0),
     ["Shotgun"] = Color3.fromRGB(200,200,200),
+    ["Handgun"] = Color3.fromRGB(195,195,195),
 }
 
 local function GetPart(obj)
@@ -574,7 +597,7 @@ task.spawn(function()
     local trackedEnemies = {}
 
     while true do
-        task.wait(0.5)
+        task.wait(1)
         if _G.ESP_Enemy_Enabled then
             for _, enemy in ipairs(Workspace:GetDescendants()) do
                 if enemy:IsA("Model") and enemy.Name == "ShadowMan" then
@@ -620,12 +643,6 @@ Main2Group:AddToggle("ESPEnemyToggle", {
     Default = false,
     Callback = function(v)
         _G.ESP_Enemy_Enabled = v
-    end
-}):AddColorPicker("ShadowColor", {
-    Text = "ShadowMan Color",
-    Default = Color3.fromRGB(155,0,0),
-    Callback = function(c)
-        _G.ShadowMan_Color = c
     end
 })
     
