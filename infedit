@@ -13177,7 +13177,7 @@ addcmd('vflyandflybutton',{'vandflyb'},function(args, speaker)
     local flyBtn = createButton("FlyBtn", UDim2.new(0, 55, 0, 0), Color3.fromRGB(0, 0, 0), "Fly")
     local vflyBtn = createButton("VFlyBtn", UDim2.new(0, 55, 0, 50), Color3.fromRGB(0, 0, 0), "VFly")
 
-    local function stopAllFly()
+local function stopAllFly()
 	if not isFlying then return end
 
 	isFlying = false
@@ -13185,22 +13185,22 @@ addcmd('vflyandflybutton',{'vandflyb'},function(args, speaker)
 
 	flyBtn.Text = "Fly"
 	flyBtn.BackgroundColor3 = Color3.fromRGB(0,0,0)
-
 	vflyBtn.Text = "VFly"
 	vflyBtn.BackgroundColor3 = Color3.fromRGB(0,0,0)
 
-	if not IsOnMobile then
-		NOFLY()
-	else
-		pcall(function()
-			unmobilefly(speaker)
-		end)
+	-- PC
+	if typeof(NOFLY) == "function" then
+		pcall(NOFLY)
+	end
+
+	-- Mobile
+	if typeof(unmobilefly) == "function" then
+		pcall(unmobilefly, speaker)
 	end
 end
 
 local function startFly(mode)
 	if isFlying then
-		-- đang bay mà bấm mode khác → tắt rồi bật lại
 		stopAllFly()
 	end
 
@@ -13211,20 +13211,20 @@ local function startFly(mode)
 		flyBtn.Text = "Unfly"
 		flyBtn.BackgroundColor3 = Color3.fromRGB(50,50,150)
 
-		if not IsOnMobile then
-			sFLY(false)
-		else
-			mobilefly(speaker, false)
+		if typeof(sFLY) == "function" then
+			pcall(sFLY, false)
+		elseif typeof(mobilefly) == "function" then
+			pcall(mobilefly, speaker, false)
 		end
 
 	elseif mode == "vehicle" then
 		vflyBtn.Text = "Unfly"
 		vflyBtn.BackgroundColor3 = Color3.fromRGB(255,200,0)
 
-		if not IsOnMobile then
-			sFLY(true)
-		else
-			mobilefly(speaker, true)
+		if typeof(sFLY) == "function" then
+			pcall(sFLY, true)
+		elseif typeof(mobilefly) == "function" then
+			pcall(mobilefly, speaker, true)
 		end
 	end
 end
