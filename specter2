@@ -1767,7 +1767,7 @@ boost_group:AddButton({
     end
 })
 
-infy_group:AddButton({
+misc_group:AddButton({
     Text = 'Infinite Yield',
     Tooltip = 'Give Inf yield has edit',
     DoubleClick = false,
