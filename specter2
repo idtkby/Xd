@@ -786,51 +786,64 @@ game_group:AddButton({
         end
 
         if dirty_water and prompt then
-            -- 2. Kiểm tra nếu nước chưa trồi lên (thường ẩn dưới sàn/bồn)
-            -- Hoặc đợi nếu nó đang trong quá trình di chuyển (nâng lên)
-            local last_y = dirty_water.Position.Y
-            local is_moving = true
+            -- 2. Logic đợi nước ổn định
+            local last_pos = dirty_water.Position
+            local stabilized = false
+            local attempts = 0
             
-            library:Notify("Waiting for dirty water to stabilize...")
+            library:Notify("Checking dirty water status...")
             
-            -- Đợi tối đa 5 giây để nước dừng di chuyển hẳn
-            local timeout = 0
-            while is_moving and timeout < 10 do 
-                task.wait(0.5)
-                local current_y = dirty_water.Position.Y
-                
-                -- Nếu vị trí không đổi sau 0.5s thì coi như đã dừng lại hoàn toàn
-                if math.abs(current_y - last_y) < 0.01 then
-                    is_moving = false
-                else
-                    last_y = current_y
+            -- Đợi tối đa 5 giây (10 lần quét 0.5s)
+            while attempts < 10 do
+                -- Nếu Prompt đã Enabled và hiển thị, có thể kích hoạt ngay (cho map cũ)
+                if prompt.Enabled and prompt.Visible then
+                    stabilized = true
+                    break
                 end
-                timeout = timeout + 1
+                
+                task.wait(0.5)
+                
+                -- Nếu nó đang di chuyển (cho map mới), so sánh vị trí Y
+                local current_pos = dirty_water.Position
+                if (current_pos - last_pos).Magnitude < 0.01 and prompt.Enabled then
+                    stabilized = true
+                    break
+                end
+                
+                last_pos = current_pos
+                attempts = attempts + 1
             end
 
-            -- 3. Kiểm tra lại lần cuối xem Prompt có Enabled không
-            if not prompt.Enabled then
-                library:Notify("Water is up but prompt is not ready yet!")
-                return
+            -- 3. Thực hiện Teleport và Kích hoạt
+            if stabilized or prompt.Enabled then
+                local player_last_pos = local_player.Character.HumanoidRootPart.CFrame
+                
+                -- Teleport đến vị trí nước bẩn
+                local_player.Character.HumanoidRootPart.CFrame = dirty_water.CFrame + Vector3.new(0, 3, 0)
+                
+                task.wait(0.3)
+                
+                -- Kiểm tra lại lần cuối trước khi fire
+                if prompt.Enabled then
+                    fireproximityprompt(prompt)
+                    library:Notify("Reported Dirty Water Successfully")
+                else
+                    library:Notify("Failed: Prompt became disabled")
+                end
+                
+                task.wait(0.3)
+                local_player.Character.HumanoidRootPart.CFrame = player_last_pos
+            else
+                library:Notify("Water is not ready yet!")
             end
-
-            -- 4. Thực hiện Teleport và Report
-            local last_pos = local_player.Character.HumanoidRootPart.CFrame
-            local_player.Character.HumanoidRootPart.CFrame = dirty_water.CFrame + Vector3.new(0, 3, 0)
-            
-            task.wait(0.3)
-            fireproximityprompt(prompt)
-            task.wait(0.3)
-            
-            local_player.Character.HumanoidRootPart.CFrame = last_pos
-            library:Notify("Reported Dirty Water Successfully")
         else
             library:Notify("Dirty water not found (Wait for ghost interaction)")
         end
     end,
     DoubleClick = false,
-    Tooltip = 'Teleports and reports dirty water after it stops moving'
+    Tooltip = 'Teleports and reports dirty water (Works for all maps)'
 })
+
 
 
 
