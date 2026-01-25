@@ -1114,11 +1114,11 @@ end
 local obj_label_11 = objquest_group:AddLabel('')
 local obj_label_1 = objquest_group:AddLabel('Objective 1: Waiting...')
 local obj_label_12 = objquest_group:AddLabel('')
-
+objquest_group:AddDivider()
 local obj_label_21 = objquest_group:AddLabel('')
 local obj_label_2 = objquest_group:AddLabel('Objective 2: Waiting...')
 local obj_label_22 = objquest_group:AddLabel('')
-
+objquest_group:AddDivider()
 local obj_label_31 = objquest_group:AddLabel('')
 local obj_label_3 = objquest_group:AddLabel('Objective 3: Waiting...')
 local obj_label_32 = objquest_group:AddLabel('')
