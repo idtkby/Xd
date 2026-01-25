@@ -1767,6 +1767,24 @@ boost_group:AddButton({
     end
 })
 
+infy_group:AddButton({
+    Text = 'Infinite Yield',
+    Tooltip = 'Give Inf yield has edit',
+    DoubleClick = false,
+
+    Func = function()
+        local success, err = pcall(function()
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()
+        end)
+
+        if success then
+            library:Notify("Load Success")
+        else
+            library:Notify("Failed to load infYield\n" .. tostring(err))
+        end
+    end
+})
+
 boost_group:AddToggle('uf', {
     Text = 'Unlock Fps',
     Default = false,
