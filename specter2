@@ -32,6 +32,7 @@ local tabs = {
 local evidence_group = tabs.main:AddRightGroupbox('Evidences')
 local ghost_group = tabs.main:AddRightGroupbox('Information')
 local game_group = tabs.main:AddLeftGroupbox('Game Settings')
+local objquest_group = tabs.main:AddLeftGroupbox('Objectives')
 
 local ghost_esp_group = tabs.esp:AddLeftGroupbox('Ghost Esp Settings')
 local player_esp_group = tabs.esp:AddRightGroupbox('Player Esp Settings')
@@ -766,6 +767,74 @@ game_group:AddButton({
 })
 
 game_group:AddButton({
+    Text = 'Report Dirty Water',
+
+    Func = function()
+        local dirty_water = nil
+        local prompt = nil
+        
+        -- 1. Tìm đúng Part Water bẩn (có prompt tương ứng)
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v.Name == "Water" and v:IsA("BasePart") then
+                local p = v:FindFirstChildOfClass("ProximityPrompt")
+                if p and (p.ObjectText == "Report dirty water" or p.ActionText == "Report dirty water") then
+                    dirty_water = v
+                    prompt = p
+                    break
+                end
+            end
+        end
+
+        if dirty_water and prompt then
+            -- 2. Kiểm tra nếu nước chưa trồi lên (thường ẩn dưới sàn/bồn)
+            -- Hoặc đợi nếu nó đang trong quá trình di chuyển (nâng lên)
+            local last_y = dirty_water.Position.Y
+            local is_moving = true
+            
+            library:Notify("Waiting for dirty water to stabilize...")
+            
+            -- Đợi tối đa 5 giây để nước dừng di chuyển hẳn
+            local timeout = 0
+            while is_moving and timeout < 10 do 
+                task.wait(0.5)
+                local current_y = dirty_water.Position.Y
+                
+                -- Nếu vị trí không đổi sau 0.5s thì coi như đã dừng lại hoàn toàn
+                if math.abs(current_y - last_y) < 0.01 then
+                    is_moving = false
+                else
+                    last_y = current_y
+                end
+                timeout = timeout + 1
+            end
+
+            -- 3. Kiểm tra lại lần cuối xem Prompt có Enabled không
+            if not prompt.Enabled then
+                library:Notify("Water is up but prompt is not ready yet!")
+                return
+            end
+
+            -- 4. Thực hiện Teleport và Report
+            local last_pos = local_player.Character.HumanoidRootPart.CFrame
+            local_player.Character.HumanoidRootPart.CFrame = dirty_water.CFrame + Vector3.new(0, 3, 0)
+            
+            task.wait(0.3)
+            fireproximityprompt(prompt)
+            task.wait(0.3)
+            
+            local_player.Character.HumanoidRootPart.CFrame = last_pos
+            library:Notify("Reported Dirty Water Successfully")
+        else
+            library:Notify("Dirty water not found (Wait for ghost interaction)")
+        end
+    end,
+    DoubleClick = false,
+    Tooltip = 'Teleports and reports dirty water after it stops moving'
+})
+
+
+
+game_group:AddButton({
     Text = 'Enable Power',
 
     Func = function()
@@ -1019,6 +1088,85 @@ game_group:AddSlider('anti_touch_distance', {
         touch_distance = Value
     end
 })
+
+
+
+
+
+
+
+objquest_group:AddDivider()
+
+-- Hàm hỗ trợ ngắt dòng sau mỗi 18 ký tự
+local function wrapText(str, limit)
+    limit = limit or 32
+    if #str <= limit then return str end
+    
+    local lines = {}
+    for i = 1, #str, limit do
+        table.insert(lines, str:sub(i, i + limit - 1))
+    end
+    return table.concat(lines, "\n")
+end
+
+-- Khai báo các Label trong Group
+local obj_label_11 = objquest_group:AddLabel('')
+local obj_label_1 = objquest_group:AddLabel('Objective 1: Waiting...')
+local obj_label_12 = objquest_group:AddLabel('')
+
+local obj_label_21 = objquest_group:AddLabel('')
+local obj_label_2 = objquest_group:AddLabel('Objective 2: Waiting...')
+local obj_label_22 = objquest_group:AddLabel('')
+
+local obj_label_31 = objquest_group:AddLabel('')
+local obj_label_3 = objquest_group:AddLabel('Objective 3: Waiting...')
+local obj_label_32 = objquest_group:AddLabel('')
+
+task.spawn(function()
+    while true do
+        task.wait(1)
+        
+        local vanObjectives = workspace:FindFirstChild("Van") 
+            and workspace.Van:FindFirstChild("Objectives") 
+            and workspace.Van.Objectives:FindFirstChild("SurfaceGui")
+            and workspace.Van.Objectives.SurfaceGui:FindFirstChild("Frame")
+            and workspace.Van.Objectives.SurfaceGui.Frame:FindFirstChild("Objectives")
+
+        if vanObjectives then
+            for i = 1, 3 do
+                local objectivePart = vanObjectives:FindFirstChild(tostring(i))
+                if objectivePart and objectivePart:IsA("TextLabel") then
+                    local currentLabel = (i == 1 and obj_label_1) or (i == 2 and obj_label_2) or obj_label_3
+                    
+                    -- Màu hoàn thành: 85, 170, 127
+                    local completedColor = Color3.fromRGB(85, 170, 127)
+                    local currentColor = objectivePart.TextColor3
+                    local diff = math.abs(currentColor.R - completedColor.R) + math.abs(currentColor.G - completedColor.G) + math.abs(currentColor.B - completedColor.B)
+                    
+                    if diff < 0.02 then
+                        currentLabel:SetText("Objective " .. i .. ":\n  > > Completed < <")
+                    else
+                        -- Áp dụng Wrap Text cho nội dung nhiệm vụ dài
+                        local formattedText = wrapText(objectivePart.Text, 32)
+                        currentLabel:SetText("Objective " .. i .. ":\n" .. formattedText)
+                    end
+                end
+            end
+        else
+            obj_label_1:SetText("Objective 1: Van Closed")
+            obj_label_2:SetText("Objective 2: Van Closed")
+            obj_label_3:SetText("Objective 3: Van Closed")
+        end
+    end
+end)
+
+
+
+
+
+
+
+
 
 player_group:AddDivider()
 
