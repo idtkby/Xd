@@ -1,4 +1,4 @@
--- V1
+-- V159
 
 local KINGHUB01 = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
 
@@ -118,6 +118,32 @@ local bone = map:FindFirstChild('Bone')
 local fuse_box = map:FindFirstChild("Fusebox"):FindFirstChild("Fusebox")
 local closets = map.Closets
 local rooms = map.Rooms
+
+-- Hàm để lấy tất cả vật phẩm bị nguyền rủa + xương + vân tay
+local function getAllCursedItems()
+    local all_items = {}
+    
+    -- Thêm các món trong folder cursed_object
+    if cursed_objects_folder then
+        for _, v in pairs(cursed_objects_folder:GetChildren()) do
+            table.insert(all_items, v)
+        end
+    end
+    
+    -- Thêm Bone (nếu tồn tại)
+    if bone then
+        table.insert(all_items, bone)
+    end
+    
+    -- Thêm tất cả Fingerprints trong folder
+    if fingerprints then
+        for _, v in pairs(fingerprints:GetChildren()) do
+            table.insert(all_items, v)
+        end
+    end
+    
+    return all_items
+end
 
 local GhostInfo = workspace.Van.Objectives.SurfaceGui.Frame.Objectives.GhostInfo
 
@@ -606,8 +632,8 @@ espconnection = run_service.RenderStepped:Connect(function()
     end
     
     if cursed_object_name then
-        for _, v in next, cursed_objects:GetChildren() do
-            if (v:IsA("MeshPart") or v:IsA("Model") or v:IsA("Part")) and not (v.Name == "Chair" or v.Name == "Body" or v.Name == "Eye1" or v.Name == "Eye2") and not v:FindFirstChild("Esp BillBoard") then
+for _, v in next, getAllCursedItems() do 
+        if (v:IsA("MeshPart") or v:IsA("Model") or v:IsA("Part")) and not (v.Name == "Chair" or v.Name == "Body" or v.Name == "Eye1" or v.Name == "Eye2") and not v:FindFirstChild("Esp BillBoard") then
                 local esp_billboard = Instance.new("BillboardGui")
                 esp_billboard.Parent = v
                 esp_billboard.Name = "Esp BillBoard"
@@ -633,8 +659,8 @@ espconnection = run_service.RenderStepped:Connect(function()
     end
 
     if cursed_object_highlight then
-        for _, v in next, cursed_objects:GetChildren() do
-            if (v:IsA("MeshPart") or v:IsA("Model") or v:IsA("Part")) and not (v.Name == "Chair" or v.Name == "fingerprints" or v.Name == "bone" or v.Name == "Body") and not v:FindFirstChild("Highlight") then
+        for _, v in next, getAllCursedItems() do
+        if (v:IsA("MeshPart") or v:IsA("Model") or v:IsA("Part")) and not (v.Name == "Chair" or v.Name == "Body") and not v:FindFirstChild("Highlight") then
                 local Highlight = Instance.new("Highlight")
                 Highlight.Parent = v
                 Highlight.FillTransparency = 1        -- Làm trong suốt phần ruột
@@ -715,7 +741,7 @@ espconnection = run_service.RenderStepped:Connect(function()
                 esp_text.Name = "Name Esp"
                 esp_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 esp_text.Size = UDim2.new(1, 0, 1, 0)
-                esp_text.Text = v.Name
+                esp_text.Text = "Hiding Spot"
                 esp_text.TextColor3 = Color3.fromRGB(255, 255, 255)
                 esp_text.TextSize = 14
                 esp_text.Font = "SourceSansBold"
@@ -999,40 +1025,48 @@ task.spawn(function()
                 end
             end
 
-            -- B. LOGIC EMF 2 & 5 (Check màu 131, 156, 49)
+            -- B. LOGIC EMF 2 & 5 (SỬA LỖI TRÊN TAY)
             if item.Name == "EMF Reader" then
                 local activeColor = Color3.fromRGB(131, 156, 49)
-                local emf_2 = item:FindFirstChild("2")
                 
-                if emf_2 and emf_2.Color == activeColor then
-                    emf_active_timers[item] = (emf_active_timers[item] or 0) + 0.5
-                    if emf_active_timers[item] >= 2.5 and not ghost_room_found then
-                        for _, room in pairs(rooms:GetChildren()) do
-                            local hitbox = room:FindFirstChild("Hitbox")
-                            local handle = item:FindFirstChild("Handle") or item.PrimaryPart
-                            if hitbox and handle then
-                                if (handle.Position - hitbox.Position).Magnitude < 12 then -- Tăng nhẹ range lên 12
-                                    ghost_room = hitbox.CFrame
-                                    ghost_room_label:SetText("Ghost Room: " .. room.Name)
-                                    library:Notify("Ghost Room: " .. room.Name)
-                                    ghost_room_found = true
-                                    break
+                -- Sử dụng tham số 'true' để tìm Part "2" và "5" ở bất cứ đâu bên trong Model
+                local emf_2 = item:FindFirstChild("2", true)
+                local emf_5 = item:FindFirstChild("5", true)
+                
+                if emf_2 and emf_2:IsA("BasePart") then
+                    if emf_2.Color == activeColor then
+                        emf_active_timers[item] = (emf_active_timers[item] or 0) + 0.5
+                        if emf_active_timers[item] >= 2.5 and not ghost_room_found then
+                            for _, room in pairs(rooms:GetChildren()) do
+                                local hitbox = room:FindFirstChild("Hitbox")
+                                -- Handle có thể bị đổi tên hoặc lồng trong Model khi cầm trên tay
+                                local handle = item:FindFirstChild("Handle", true) or item.PrimaryPart
+                                
+                                if hitbox and handle then
+                                    if (handle.Position - hitbox.Position).Magnitude < 12 then
+                                        ghost_room = hitbox.CFrame
+                                        ghost_room_label:SetText("Ghost Room: " .. room.Name)
+                                        library:Notify("Ghost Room Identified: " .. room.Name)
+                                        ghost_room_found = true
+                                        break
+                                    end
                                 end
                             end
                         end
+                    else
+                        emf_active_timers[item] = 0
                     end
-                else
-                    emf_active_timers[item] = 0
                 end
 
-                local emf_5 = item:FindFirstChild("5")
-                if emf_5 and emf_5.Color == activeColor and not found_emf then
+                -- EMF 5
+                if emf_5 and emf_5:IsA("BasePart") and emf_5.Color == activeColor and not found_emf then
                     found_emf = true
                     emf_label:SetText("EMF 5: Yes")
                     library:Notify("Evidence: EMF Level 5!")
                     updateGhostType()
                 end
             end
+            
 
             -- C. LOGIC THERMOMETER (Sửa lỗi không quét được trên tay)
             if item.Name == "Thermometer" or item:FindFirstChild("Temp") then
@@ -1059,7 +1093,80 @@ end)
 
 
 
+game_group:AddButton({
+    Text = 'Find Ghost Room',
 
+    Func = function()
+        local emf_tool = local_player.Character and local_player.Character:FindFirstChild("EquipmentModel") and local_player.Character.EquipmentModel:FindFirstChild("2")
+        local emf = local_player.Character and local_player.Character:FindFirstChild("EquipmentModel") and local_player.Character.EquipmentModel:FindFirstChild("1")
+        local last_pos = local_player.Character.HumanoidRootPart.CFrame
+
+        if not emf_tool then
+            library:Notify("Equip EMF reader first!")
+            return
+        end
+
+        if not emf or emf.Color ~= Color3.fromRGB(52, 142, 64) then
+            replicated_storage:WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("InventoryService"):WaitForChild("RF"):WaitForChild("Toggle"):InvokeServer("EMF Reader")
+        end
+
+        if not ghost:FindFirstChildOfClass("Model") then
+            library:Notify("Open the van first!")
+            return
+        end
+
+        for _, room in pairs(rooms:GetChildren()) do
+            if room:IsA("Folder") then
+                local hitbox = room:FindFirstChild("Hitbox")
+
+                if hitbox then
+                    local_player.Character.HumanoidRootPart.CFrame = hitbox.CFrame
+                    camera.CFrame = hitbox.CFrame
+                    task.wait(0.75)
+
+                    if emf_tool.Color == Color3.fromRGB(131, 156, 49) then
+                        ghost_room = hitbox.CFrame
+                        ghost_room_label:SetText("Ghost Room: " .. room.Name)
+                        library:Notify("Ghost Room: " .. room.Name .. " (It Not Might Be Always The Ghost Room!)")
+                        local_player.Character.HumanoidRootPart.CFrame = last_pos
+                        break
+                    end
+                end
+            end
+        end
+
+        if not ghost_room then
+            task.wait(0.75)
+            library:Notify("Ghost room not found retrying...")
+            for _, room in pairs(rooms:GetChildren()) do
+                if room:IsA("Folder") then
+                    local hitbox = room:FindFirstChild("Hitbox")
+
+                    if hitbox then
+                        local_player.Character.HumanoidRootPart.CFrame = hitbox.CFrame
+                        camera.CFrame = hitbox.CFrame
+                        task.wait(0.75)
+
+                        if emf_tool.Color == Color3.fromRGB(131, 156, 49) then
+                            ghost_room = hitbox.CFrame
+                            ghost_room_label:SetText("Ghost Room: " .. room.Name)
+                            library:Notify("Ghost Room: " .. room.Name .. " (It Not Might Be Always The Ghost Room!)")
+                            local_player.Character.HumanoidRootPart.CFrame = last_pos
+                            break
+                        end
+                    end
+                end
+            end
+
+            if not ghost_room then
+                library:Notify("Ghost room not found")
+                local_player.Character.HumanoidRootPart.CFrame = last_pos
+            end
+        end
+    end,
+    DoubleClick = false,
+    Tooltip = 'Searches for the ghost room with the EMF reader'
+})
 
 
 
@@ -1592,7 +1699,7 @@ cursed_esp_group:AddToggle('cursed_object_name', {
         cursed_object_name = Value
         if not Value then
             for _, v in next, cursed_objects:GetChildren() do
-                if (v:IsA("MeshPart") or v:IsA("Model") or v:IsA("Part")) and not (v.Name == "Chair" or v.Name == "fingerprints" or v.Name == "bone" or v.Name == "Body") and v:FindFirstChild("Esp BillBoard") then
+                if (v:IsA("MeshPart") or v:IsA("Model") or v:IsA("Part")) and not (v.Name == "Chair" or v.Name == "Body") and v:FindFirstChild("Esp BillBoard") then
                     v:FindFirstChild("Esp BillBoard"):Destroy()
                 end
             end
@@ -1665,7 +1772,7 @@ evidence_esp_group:AddToggle('orbs_name', {
 })
 
 closet_esp_group:AddToggle('closet_name', {
-    Text = 'Closet Esp Name',
+    Text = 'Hiding Spot Esp Name',
     Default = false,
     Tooltip = 'Enables names to all closets',
 
@@ -1682,7 +1789,7 @@ closet_esp_group:AddToggle('closet_name', {
 })
 
 closet_esp_group:AddToggle('closet_highlight', {
-    Text = 'Closet Esp Highlight',
+    Text = 'Hiding Spot Esp Highlight',
     Default = false,
     Tooltip = 'Highlights closets',
 
