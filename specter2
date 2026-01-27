@@ -1,4 +1,4 @@
--- V159
+-- V1
 
 local KINGHUB01 = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
 
@@ -443,6 +443,8 @@ espconnection = run_service.RenderStepped:Connect(function()
                 if silly_ghost:IsA("Model") and not silly_ghost:FindFirstChild("Highlight") then
                     local Highlight = Instance.new("Highlight")
                     Highlight.Parent = silly_ghost
+                    Highlight.FillTransparency = 1        -- Làm trong suốt phần ruột
+    Highlight.OutlineTransparency = 0     -- Hiện viền đậm
                     Highlight.FillColor = highlight_color_ghost
                     Highlight.OutlineColor = highlight_color_ghost
                 end
@@ -514,6 +516,8 @@ espconnection = run_service.RenderStepped:Connect(function()
                 if humanoid.Health > 0 and not player.Character:FindFirstChild("Highlight") then
                     local Highlight = Instance.new("Highlight")
                     Highlight.Parent = player.Character
+                    Highlight.FillTransparency = 1        -- Làm trong suốt phần ruột
+    Highlight.OutlineTransparency = 0     -- Hiện viền đậm
                     Highlight.FillColor = player_highlight_color
                     Highlight.OutlineColor = player_highlight_color
                 end
@@ -580,6 +584,8 @@ espconnection = run_service.RenderStepped:Connect(function()
             if v:IsA("Model") and not v:FindFirstChild("Highlight") then
                 local Highlight = Instance.new("Highlight")
                 Highlight.Parent = v
+                Highlight.FillTransparency = 1        -- Làm trong suốt phần ruột
+    Highlight.OutlineTransparency = 0     -- Hiện viền đậm
                 Highlight.FillColor = item_highlight_color
                 Highlight.OutlineColor = item_highlight_color
             end
@@ -591,6 +597,8 @@ espconnection = run_service.RenderStepped:Connect(function()
             if v:IsA("Model") and not v:FindFirstChild("Highlight") then
                 local Highlight = Instance.new("Highlight")
                 Highlight.Parent = v
+                Highlight.FillTransparency = 1        -- Làm trong suốt phần ruột
+    Highlight.OutlineTransparency = 0     -- Hiện viền đậm
                 Highlight.FillColor = item_highlight_color
                 Highlight.OutlineColor = item_highlight_color
             end
@@ -626,9 +634,11 @@ espconnection = run_service.RenderStepped:Connect(function()
 
     if cursed_object_highlight then
         for _, v in next, cursed_objects:GetChildren() do
-            if (v:IsA("MeshPart") or v:IsA("Model") or v:IsA("Part")) and not (v.Name == "Chair" or v.Name == "Body") and not v:FindFirstChild("Highlight") then
+            if (v:IsA("MeshPart") or v:IsA("Model") or v:IsA("Part")) and not (v.Name == "Chair" or v.Name == "fingerprints" or v.Name == "bone" or v.Name == "Body") and not v:FindFirstChild("Highlight") then
                 local Highlight = Instance.new("Highlight")
                 Highlight.Parent = v
+                Highlight.FillTransparency = 1        -- Làm trong suốt phần ruột
+    Highlight.OutlineTransparency = 0     -- Hiện viền đậm
                 Highlight.FillColor = cursed_object_highlight_color
                 Highlight.OutlineColor = cursed_object_highlight_color
             end
@@ -721,6 +731,8 @@ espconnection = run_service.RenderStepped:Connect(function()
             if v:IsA("Model") and not v:FindFirstChild("Highlight") then
                 local highlight = Instance.new("Highlight")
                 highlight.Parent = v
+                Highlight.FillTransparency = 1        -- Làm trong suốt phần ruột
+    Highlight.OutlineTransparency = 0     -- Hiện viền đậm
                 highlight.FillColor = closet_highlight_color
                 highlight.OutlineColor = closet_highlight_color
             end
@@ -770,67 +782,104 @@ game_group:AddButton({
     Text = 'Report Dirty Water',
 
     Func = function()
-        local dirty_water = nil
-        local prompt = nil
+        local active_water = nil
+        local active_prompt = nil
+        local active_beam = nil
         
-        -- 1. Tìm đúng Part Water bẩn (có prompt tương ứng)
+        -- 1. QUÉT TÌM CÁI NƯỚC ĐANG "ACTIVE" NHẤT
+        local all_waters = {}
         for _, v in pairs(workspace:GetDescendants()) do
             if v.Name == "Water" and v:IsA("BasePart") then
                 local p = v:FindFirstChildOfClass("ProximityPrompt")
                 if p and (p.ObjectText == "Report dirty water" or p.ActionText == "Report dirty water") then
-                    dirty_water = v
-                    prompt = p
-                    break
+                    table.insert(all_waters, {part = v, prompt = p})
                 end
             end
         end
 
-        if dirty_water and prompt then
-            -- 2. Kiểm tra nếu nước chưa trồi lên (thường ẩn dưới sàn/bồn)
-            -- Hoặc đợi nếu nó đang trong quá trình di chuyển (nâng lên)
-            local last_y = dirty_water.Position.Y
-            local is_moving = true
+        -- Ưu tiên chọn cái vòi nào đang xả (Beam == true)
+        for _, obj in pairs(all_waters) do
+            local f = obj.part:FindFirstChild("Faucet", true) or obj.part.Parent:FindFirstChild("Faucet", true)
+            local b = f and f:FindFirstChildWhichIsA("Beam", true)
             
-            library:Notify("Waiting for dirty water to stabilize...")
-            
-            -- Đợi tối đa 5 giây để nước dừng di chuyển hẳn
-            local timeout = 0
-            while is_moving and timeout < 10 do 
-                task.wait(0.5)
-                local current_y = dirty_water.Position.Y
-                
-                -- Nếu vị trí không đổi sau 0.5s thì coi như đã dừng lại hoàn toàn
-                if math.abs(current_y - last_y) < 0.01 then
-                    is_moving = false
-                else
-                    last_y = current_y
+            if (b and b.Enabled == true) or obj.prompt.Enabled == true then
+                active_water = obj.part
+                active_prompt = obj.prompt
+                active_beam = b
+                break -- Đã tìm thấy vòi đang hoạt động
+            end
+        end
+
+        -- 2. XỬ LÝ NẾU TÌM THẤY
+        if active_water and active_prompt then
+            library:Notify("Found active dirty water! Checking status...")
+
+            -- Nếu Beam đang bật, bắt buộc đợi cho đến khi nó tắt hoặc tối đa 10s
+            if active_beam and active_beam.Enabled == true then
+                library:Notify("Water is pumping... Waiting for it to finish.")
+                local wait_limit = 0
+                while active_beam.Enabled == true and wait_limit < 20 do
+                    task.wait(0.5)
+                    wait_limit = wait_limit + 1
                 end
-                timeout = timeout + 1
+                task.wait(1) -- Đợi thêm 1s cho nước ổn định sau khi tắt vòi
             end
 
-            -- 3. Kiểm tra lại lần cuối xem Prompt có Enabled không
-            if not prompt.Enabled then
-                library:Notify("Water is up but prompt is not ready yet!")
-                return
+            -- 3. VÒNG LẶP ĐỢI PROMPT HOẶC DỪNG DI CHUYỂN
+            local is_ready = false
+            local last_pos = active_water.Position
+            
+            for i = 1, 30 do -- Đợi tối đa 15 giây
+                task.wait(0.5)
+                
+                -- Nếu Prompt bật (Dấu hiệu quan trọng nhất)
+                if active_prompt.Enabled == true then
+                    is_ready = true
+                    break
+                end
+                
+                -- Check nếu nước đã dừng trồi lên/đổi size
+                local current_pos = active_water.Position
+                if (current_pos - last_pos).Magnitude < 0.001 and i > 4 then
+                    -- Nếu đứng yên và không còn Beam nữa
+                    if not active_beam or active_beam.Enabled == false then
+                        is_ready = true
+                        break
+                    end
+                end
+                last_pos = current_pos
             end
 
-            -- 4. Thực hiện Teleport và Report
-            local last_pos = local_player.Character.HumanoidRootPart.CFrame
-            local_player.Character.HumanoidRootPart.CFrame = dirty_water.CFrame + Vector3.new(0, 3, 0)
-            
-            task.wait(0.3)
-            fireproximityprompt(prompt)
-            task.wait(0.3)
-            
-            local_player.Character.HumanoidRootPart.CFrame = last_pos
-            library:Notify("Reported Dirty Water Successfully")
+            -- 4. THỰC HIỆN TELEPORT
+            if is_ready or active_prompt.Enabled then
+                local last_cframe = local_player.Character.HumanoidRootPart.CFrame
+                
+                -- Nhảy tới
+                local_player.Character.HumanoidRootPart.CFrame = active_water.CFrame + Vector3.new(0, 3, 0)
+                task.wait(0.6) -- Đợi lâu hơn chút để tránh lỗi vị trí
+                
+                if active_prompt.Enabled then
+                    fireproximityprompt(active_prompt)
+                    library:Notify("Reported Dirty Water successfully!")
+                else
+                    library:Notify("Dirty water is being pumped out, and a report cannot be made yet.")
+                end
+                
+                task.wait(0.3)
+                local_player.Character.HumanoidRootPart.CFrame = last_cframe
+            else
+                library:Notify("Dirty water is stuck or has not yet appeared.")
+            end
         else
-            library:Notify("Dirty water not found (Wait for ghost interaction)")
+            library:Notify("Dirty Water no")
         end
     end,
     DoubleClick = false,
-    Tooltip = 'Teleports and reports dirty water after it stops moving'
+    Tooltip = 'Tp to the location with dirty water and report it.'
 })
+
+
+
 
 
 
@@ -876,24 +925,21 @@ local function isGhostColor(color)
     return math.abs(color.R - target.R) + math.abs(color.G - target.G) + math.abs(color.B - target.B) < 0.02
 end
 
--- 1. LOGIC QUÉT KHUNG CHAT (TextChatService)
--- Bắt tin nhắn ma hiện trên khung chat với màu đỏ
+-- 1. LOGIC QUÉT KHUNG CHAT (Giữ nguyên)
 game:GetService("TextChatService").OnIncomingMessage = function(message)
     if not auto_scan_enabled or got_spirit_box then return end
-    
     if message.Status == Enum.TextChatMessageStatus.Success then
-        -- Trong Specter, tin nhắn ma thường có RichText màu đỏ hoặc Metadata đặc biệt
         local rawText = message.Text
         if rawText:find("170") or rawText:find("rgb") or rawText:find("#aa0000") then
             got_spirit_box = true
             spirit_box_label:SetText("Spirit Box: Yes")
-            library:Notify("Evidence Found: Spirit Box (Chat Detected!)")
+            library:Notify("Evidence Found: Spirit Box (Chat)")
             updateGhostType()
         end
     end
 end
 
--- 2. HÀM QUÉT BILLBOARD TRÊN THIẾT BỊ
+-- 2. HÀM QUÉT BILLBOARD SPIRIT BOX
 local function checkSpiritBoxBillboard(desc)
     if desc:IsA("BillboardGui") and desc.Enabled then
         local textLabel = desc:FindFirstChildWhichIsA("TextLabel", true)
@@ -902,7 +948,7 @@ local function checkSpiritBoxBillboard(desc)
                 if not got_spirit_box then
                     got_spirit_box = true
                     spirit_box_label:SetText("Spirit Box: Yes")
-                    library:Notify("Evidence Found: Spirit Box (Billboard Detected!)")
+                    library:Notify("Evidence Found: Spirit Box (Billboard)")
                     updateGhostType()
                 end
             end
@@ -910,62 +956,75 @@ local function checkSpiritBoxBillboard(desc)
     end
 end
 
+-- 3. VÒNG LẶP QUÉT TỔNG HỢP
 task.spawn(function()
     while true do
         task.wait(0.5) 
         if not auto_scan_enabled then continue end
 
-        local equipment = workspace:FindFirstChild("Equipment")
-        if not equipment then continue end
+        -- Gom tất cả item từ Workspace và Character vào một bảng để quét
+        local items_to_scan = {}
+        
+        -- Quét dưới đất
+        local ground_eq = workspace:FindFirstChild("Equipment")
+        if ground_eq then
+            for _, v in pairs(ground_eq:GetChildren()) do table.insert(items_to_scan, v) end
+        end
+        
+        -- Quét trên tay (Trong nhân vật)
+        if local_player.Character then
+            for _, v in pairs(local_player.Character:GetChildren()) do
+                -- Nếu là Model thiết bị trực tiếp hoặc nằm trong folder EquipmentModel
+                if v:IsA("Model") then
+                    table.insert(items_to_scan, v)
+                elseif v.Name == "EquipmentModel" then
+                    for _, sub_v in pairs(v:GetChildren()) do table.insert(items_to_scan, sub_v) end
+                end
+            end
+        end
 
-        for _, item in pairs(equipment:GetChildren()) do
-            
-            -- LOGIC SPIRIT BOX
+        for _, item in pairs(items_to_scan) do
+            -- A. LOGIC SPIRIT BOX (Cập nhật check đệ quy cho đồ trên tay)
             if item.Name == "Spirit Box" then
-                -- Quét các bill hiện có
                 for _, desc in pairs(item:GetDescendants()) do
                     checkSpiritBoxBillboard(desc)
                 end
                 
-                -- Bắt trường hợp ma tạo billboard mới hoặc xoá rồi tạo lại
                 if not item:GetAttribute("SB_Connected") then
                     item:SetAttribute("SB_Connected", true)
                     item.DescendantAdded:Connect(function(newDesc)
-                        task.wait(0.1) -- Đợi 1 chút để text kịp load
+                        task.wait(0.1)
                         checkSpiritBoxBillboard(newDesc)
                     end)
                 end
             end
 
-            -- 2. EMF 2 & GHOST ROOM (Giữ nguyên logic của bạn)
+            -- B. LOGIC EMF 2 & 5 (Check màu 131, 156, 49)
             if item.Name == "EMF Reader" then
                 local activeColor = Color3.fromRGB(131, 156, 49)
                 local emf_2 = item:FindFirstChild("2")
                 
-                if emf_2 then
-                    if emf_2.Color == activeColor then
-                        emf_active_timers[item] = (emf_active_timers[item] or 0) + 0.5
-                        if emf_active_timers[item] >= 2.5 and not ghost_room_found then
-                            for _, room in pairs(rooms:GetChildren()) do
-                                local hitbox = room:FindFirstChild("Hitbox")
-                                local handle = item:FindFirstChild("Handle") or item.PrimaryPart
-                                if hitbox and handle then
-                                    if (handle.Position - hitbox.Position).Magnitude < 10 then
-                                        ghost_room = hitbox.CFrame
-                                        ghost_room_label:SetText("Ghost Room: " .. room.Name)
-                                        library:Notify("Ghost Room Identified: " .. room.Name)
-                                        ghost_room_found = true
-                                        break
-                                    end
+                if emf_2 and emf_2.Color == activeColor then
+                    emf_active_timers[item] = (emf_active_timers[item] or 0) + 0.5
+                    if emf_active_timers[item] >= 2.5 and not ghost_room_found then
+                        for _, room in pairs(rooms:GetChildren()) do
+                            local hitbox = room:FindFirstChild("Hitbox")
+                            local handle = item:FindFirstChild("Handle") or item.PrimaryPart
+                            if hitbox and handle then
+                                if (handle.Position - hitbox.Position).Magnitude < 12 then -- Tăng nhẹ range lên 12
+                                    ghost_room = hitbox.CFrame
+                                    ghost_room_label:SetText("Ghost Room: " .. room.Name)
+                                    library:Notify("Ghost Room: " .. room.Name)
+                                    ghost_room_found = true
+                                    break
                                 end
                             end
                         end
-                    else
-                        emf_active_timers[item] = 0
                     end
+                else
+                    emf_active_timers[item] = 0
                 end
 
-                -- EMF 5
                 local emf_5 = item:FindFirstChild("5")
                 if emf_5 and emf_5.Color == activeColor and not found_emf then
                     found_emf = true
@@ -975,22 +1034,28 @@ task.spawn(function()
                 end
             end
 
-            -- 3. THERMOMETER
-            if item.Name == "Thermometer" then
-                local label = item:FindFirstChild("Temp") and item.Temp:FindFirstChild("SurfaceGui") and item.Temp.SurfaceGui:FindFirstChild("TextLabel")
-                if label then
-                    local tempNum = tonumber(label.Text:match("[-%d.]+"))
+            -- C. LOGIC THERMOMETER (Sửa lỗi không quét được trên tay)
+            if item.Name == "Thermometer" or item:FindFirstChild("Temp") then
+                -- Tìm TextLabel sâu bên trong Model (cầm trên tay cấu trúc hay bị lồng Handle)
+                local tempLabel = item:FindFirstChildWhichIsA("TextLabel", true)
+                
+                if tempLabel and tempLabel.IsA(tempLabel, "TextLabel") then
+                    local text = tempLabel.Text
+                    -- Lọc lấy số (chấp nhận cả số âm và số thập phân)
+                    local tempNum = tonumber(text:match("[-%d.]+"))
+                    
                     if tempNum and tempNum < 0 and not got_freezing then
                         got_freezing = true
                         freezing_label:SetText("Freezing: Yes")
-                        library:Notify("Evidence: Freezing Temperatures!")
+                        library:Notify("Evidence: Freezing (" .. tempNum .. "°C)")
                         updateGhostType()
                     end
                 end
             end
-        end -- Kết thúc vòng for items
-    end -- Kết thúc vòng while
+        end 
+    end
 end)
+
 
 
 
@@ -1527,7 +1592,7 @@ cursed_esp_group:AddToggle('cursed_object_name', {
         cursed_object_name = Value
         if not Value then
             for _, v in next, cursed_objects:GetChildren() do
-                if (v:IsA("MeshPart") or v:IsA("Model") or v:IsA("Part")) and not (v.Name == "Chair" or v.Name == "Body") and v:FindFirstChild("Esp BillBoard") then
+                if (v:IsA("MeshPart") or v:IsA("Model") or v:IsA("Part")) and not (v.Name == "Chair" or v.Name == "fingerprints" or v.Name == "bone" or v.Name == "Body") and v:FindFirstChild("Esp BillBoard") then
                     v:FindFirstChild("Esp BillBoard"):Destroy()
                 end
             end
@@ -1664,7 +1729,7 @@ world_group:AddToggle('fb', {
 })
 
 local colorCorrection = Instance.new("ColorCorrectionEffect")
-colorCorrection.Name = "DYHUB | Saturation-Boost"
+colorCorrection.Name = "😘"
 colorCorrection.Saturation = 0
 colorCorrection.Parent = game.Lighting
 
@@ -1803,7 +1868,7 @@ local watermark_connection = run_service.RenderStepped:Connect(function()
         FrameCounter = 0;
     end;
 
-    library:SetWatermark(('DYHUB | %s fps | %s ms | Game: ' .. info.Name .. ''):format(
+    library:SetWatermark(('IgnahK | %s fps | %s ms | Game: ' .. info.Name .. ''):format(
         math.floor(FPS),
         math.floor(stats.Network.ServerStatsItem['Data Ping']:GetValue())
     ));
