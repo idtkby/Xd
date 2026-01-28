@@ -124,8 +124,8 @@ local function getAllCursedItems()
     local all_items = {}
     
     -- Thêm các món trong folder cursed_object
-    if cursed_objects_folder then
-        for _, v in pairs(cursed_objects_folder:GetChildren()) do
+    if cursed_objects then
+        for _, v in pairs(cursed_objects:GetChildren()) do
             table.insert(all_items, v)
         end
     end
@@ -144,6 +144,11 @@ local function getAllCursedItems()
     
     return all_items
 end
+
+
+
+
+
 
 local GhostInfo = workspace.Van.Objectives.SurfaceGui.Frame.Objectives.GhostInfo
 
