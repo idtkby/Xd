@@ -494,7 +494,7 @@ espconnection = run_service.RenderStepped:Connect(function()
                     esp_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                     esp_text.Size = UDim2.new(1, 0, 1, 0)
                     esp_text.Text = "Ghost [" .. silly_ghost.Name .. "]"
-                    esp_text.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    esp_text.TextColor3 = highlight_color_ghost
                     esp_text.TextSize = 14
                     esp_text.Font = "SourceSansBold"
                     esp_text.BackgroundTransparency = 1
@@ -524,7 +524,7 @@ espconnection = run_service.RenderStepped:Connect(function()
                     esp_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                     esp_text.Size = UDim2.new(1, 0, 1, 0)
                     esp_text.Text = player.DisplayName
-                    esp_text.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    esp_text.TextColor3 = player_highlight_color
                     esp_text.TextSize = 14
                     esp_text.Font = "SourceSansBold"
                     esp_text.BackgroundTransparency = 1
@@ -568,7 +568,7 @@ espconnection = run_service.RenderStepped:Connect(function()
                 esp_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 esp_text.Size = UDim2.new(1, 0, 1, 0)
                 esp_text.Text = v.Name
-                esp_text.TextColor3 = Color3.fromRGB(255, 255, 255)
+                esp_text.TextColor3 = item_highlight_color
                 esp_text.TextSize = 14
                 esp_text.Font = "SourceSansBold"
                 esp_text.BackgroundTransparency = 1
@@ -595,7 +595,7 @@ espconnection = run_service.RenderStepped:Connect(function()
                 esp_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 esp_text.Size = UDim2.new(1, 0, 1, 0)
                 esp_text.Text = v.Name
-                esp_text.TextColor3 = Color3.fromRGB(255, 255, 255)
+                esp_text.TextColor3 = item_highlight_color
                 esp_text.TextSize = 14
                 esp_text.Font = "SourceSansBold"
                 esp_text.BackgroundTransparency = 1
@@ -648,7 +648,7 @@ for _, v in next, getAllCursedItems() do
                 esp_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 esp_text.Size = UDim2.new(1, 0, 1, 0)
                 esp_text.Text = v.Name
-                esp_text.TextColor3 = Color3.fromRGB(255, 255, 255)
+                esp_text.TextColor3 = cursed_object_highlight_color
                 esp_text.TextSize = 14
                 esp_text.Font = "SourceSansBold"
                 esp_text.BackgroundTransparency = 1
@@ -742,7 +742,7 @@ for _, v in next, getAllCursedItems() do
                 esp_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 esp_text.Size = UDim2.new(1, 0, 1, 0)
                 esp_text.Text = "Hiding Spot"
-                esp_text.TextColor3 = Color3.fromRGB(255, 255, 255)
+                esp_text.TextColor3 = closet_highlight_color
                 esp_text.TextSize = 14
                 esp_text.Font = "SourceSansBold"
                 esp_text.BackgroundTransparency = 1
@@ -757,8 +757,8 @@ for _, v in next, getAllCursedItems() do
             if v:IsA("Model") and not v:FindFirstChild("Highlight") then
                 local highlight = Instance.new("Highlight")
                 highlight.Parent = v
-                Highlight.FillTransparency = 1        -- Làm trong suốt phần ruột
-    Highlight.OutlineTransparency = 0     -- Hiện viền đậm
+                highlight.FillTransparency = 1        -- Làm trong suốt phần ruột
+    highlight.OutlineTransparency = 0     -- Hiện viền đậm
                 highlight.FillColor = closet_highlight_color
                 highlight.OutlineColor = closet_highlight_color
             end
@@ -897,13 +897,90 @@ game_group:AddButton({
                 library:Notify("Dirty water is stuck or has not yet appeared.")
             end
         else
-            library:Notify("Dirty Water no")
+            library:Notify("Dirty Water not found")
         end
     end,
     DoubleClick = false,
     Tooltip = 'Tp to the location with dirty water and report it.'
 })
 
+local auto_report_water = false -- Biến kiểm soát trạng thái toggle
+
+game_group:AddToggle('AutoReportWater', {
+    Text = 'Auto Report Dirty Water',
+    Default = false,
+    Tooltip = 'Automatically teleports and reports dirty water when detected',
+
+    Callback = function(Value)
+        auto_report_water = Value
+        
+        if auto_report_water then
+            task.spawn(function()
+                while auto_report_water do
+                    task.wait(60) -- Quét mỗi 1p một lần để tránh lag
+                    
+                    local active_water = nil
+                    local active_prompt = nil
+                    local active_beam = nil
+                    
+                    -- 1. TÌM NƯỚC BẨN ĐANG HOẠT ĐỘNG
+                    for _, v in pairs(workspace:GetDescendants()) do
+                        if v.Name == "Water" and v:IsA("BasePart") then
+                            local p = v:FindFirstChildOfClass("ProximityPrompt")
+                            if p and (p.ObjectText == "Report dirty water" or p.ActionText == "Report dirty water") then
+                                -- Kiểm tra nếu vòi đang xả nước (Beam)
+                                local f = v:FindFirstChild("Faucet", true) or v.Parent:FindFirstChild("Faucet", true)
+                                local b = f and f:FindFirstChildWhichIsA("Beam", true)
+                                
+                                -- Nếu Prompt đã bật HOẶC Beam đang chạy thì đây là mục tiêu
+                                if p.Enabled or (b and b.Enabled) then
+                                    active_water = v
+                                    active_prompt = p
+                                    active_beam = b
+                                    break 
+                                end
+                            end
+                        end
+                    end
+
+                    -- 2. LOGIC XỬ LÝ TỰ ĐỘNG
+                    if active_water and active_prompt then
+                        -- Nếu Beam đang bật, đợi cho đến khi tắt (tối đa 15s)
+                        local timeout = 0
+                        while active_beam and active_beam.Enabled and timeout < 30 do
+                            task.wait(0.5)
+                            timeout = timeout + 1
+                        end
+
+                        -- Đợi thêm 1s cho nước ổn định vị trí/kích thước
+                        task.wait(1)
+
+                        -- Kiểm tra lại Prompt trước khi bay tới
+                        if active_prompt.Enabled and auto_report_water then
+                            local last_cframe = local_player.Character.HumanoidRootPart.CFrame
+                            
+                            -- Teleport & Fire
+                            local_player.Character.HumanoidRootPart.CFrame = active_water.CFrame + Vector3.new(0, 3, 0)
+                            task.wait(0.5)
+                            
+                            if active_prompt.Enabled then
+                                fireproximityprompt(active_prompt)
+                                library:Notify("Auto Reported Dirty Water!")
+                                -- Đợi một chút để game cập nhật, tránh loop teleport liên tục vào 1 chỗ
+                                task.wait(0.5)
+                            end
+                            
+                            local_player.Character.HumanoidRootPart.CFrame = last_cframe
+                            
+                            -- Sau khi report xong 1 cái, nghỉ 5s để tránh lỗi hoặc đợi ma làm bẩn bồn khác
+                            task.wait(5)
+                        end
+                    end
+                end
+            end)
+        end
+    end
+})
 
 
 
