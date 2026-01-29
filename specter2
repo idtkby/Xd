@@ -1197,14 +1197,14 @@ task.spawn(function()
                 if emf_2 and emf_2:IsA("BasePart") then
                     if emf_2.Color == activeColor then
                         emf_active_timers[item] = (emf_active_timers[item] or 0) + 0.5
-                        if emf_active_timers[item] >= 2000.5 and not ghost_room_found then
+                        if emf_active_timers[item] >= 2.5 and not ghost_room_found then
                             for _, room in pairs(rooms:GetChildren()) do
                                 local hitbox = room:FindFirstChild("Hitbox")
                                 -- Handle có thể bị đổi tên hoặc lồng trong Model khi cầm trên tay
                                 local handle = item:FindFirstChild("Handle", true) or item.PrimaryPart
                                 
                                 if hitbox and handle then
-                                    if (handle.Position - hitbox.Position).Magnitude < 12 then
+                                    if (handle.Position - hitbox.Position).Magnitude < 7 then
                                         ghost_room = hitbox.CFrame
                                         ghost_room_label:SetText("Ghost Room: " .. room.Name)
                                         library:Notify("Ghost Room Identified: " .. room.Name)
@@ -1300,6 +1300,20 @@ game_group:AddButton({
     end,
     DoubleClick = false,
     Tooltip = 'Teleports you to the van'
+})
+
+game_group:AddButton({
+    Text = 'Tp To Ghost Room',
+
+    Func = function()
+        if ghost_room then
+            local_player.Character.HumanoidRootPart.CFrame = ghost_room
+        else
+            Library:Notify("Ghost room not found")
+        end
+    end,
+    DoubleClick = false,
+    Tooltip = 'Teleports you to the ghost room'
 })
 
 game_group:AddButton({
@@ -2161,55 +2175,42 @@ save_manager:LoadAutoloadConfig()
 
 
 task.spawn(function()
-local AlreadySet = false
+
+
 
 function doDetectHunt()
-    task.spawn(function()
-        while getgenv().AutoHD == true do
-            local foundHunt = false
-            for _, v in ipairs(game:GetService("SoundService"):GetDescendants()) do
-                if v.Name == "Hunt" and v:IsA("Sound") then
-                    foundHunt = true
-                    if v.Playing and v.Volume >= 0.1 then
-                        if not AlreadySet then
-                            AlreadySet = true
-                            game:GetService("StarterGui"):SetCore("SendNotification", {
+	spawn(function()
+		while getgenv().AutoHD == true do
+			for _, v in ipairs(game.SoundService:GetDescendants()) do
+				if v.Name == "Hunt" then
+					if v.Volume >= 0.1 then
+						if AlreadySet == false then
+							AlreadySet = true
+
+							                            game:GetService("StarterGui"):SetCore("SendNotification", {
                                 Title = "⚠️ WARNING ⚠️",
                                 Text = "Hunt Has Started!",
                                 Icon = "rbxassetid://4483362458",
                                 Duration = 5
                             })
-                        end
-                    elseif v.Volume <= 0 then -- Thường Hunt kết thúc volume sẽ về 0 hoặc ngừng Playing
-                        if AlreadySet then
-                            AlreadySet = false
-                            game:GetService("StarterGui"):SetCore("SendNotification", {
-                                Title = "✅ SAFE ✅",
-                                Text = "Hunt Has Ended!",
-                                Icon = "rbxassetid://4483362458",
-                                Duration = 5
-                            })
-                        end
-                    end
-                end
-            end
-            
-            -- Nếu không tìm thấy âm thanh Hunt nào trong map (ma ngừng hunt và xóa sound)
-            if not foundHunt and AlreadySet then
-                AlreadySet = false
-                game:GetService("StarterGui"):SetCore("SendNotification", {
+						end
+					elseif v.Volume <= 0.3 then
+						if AlreadySet == true then
+							AlreadySet = false
+
+							                game:GetService("StarterGui"):SetCore("SendNotification", {
                     Title = "✅ SAFE ✅",
-                    Text = "Hunt Has Ended! (Sound Removed)",
+                    Text = "Hunt Has Ended!",
                     Duration = 5
                 })
-            end
-            
-            task.wait(1)
-        end
-    end)
+						end
+					end
+				end
+			end
+			wait(1)
+		end
+	end)
 end
-
-
 
 
 
