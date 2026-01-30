@@ -272,8 +272,9 @@ end
 ghost_group:AddDivider()
 
 local ghost_name_label = ghost_group:AddLabel('Ghost Name: N/A')
-local ghost_room_label = ghost_group:AddLabel('Ghost Room: Not Found')
+local ghost_room_label = ghost_group:AddLabel('Ghost Spawn: Not Found')
 local ghost_speed_label = ghost_group:AddLabel('Ghost Speed: Not Found')
+local ghost_room_label2 = ghost_group:AddLabel('Ghost Room: Not Found')
 
 ghost_group:AddDivider()
 
@@ -416,15 +417,15 @@ task.spawn(function()
                             
                             -- Cập nhật UI Linoria
                             if ghost_room_label then
-                                ghost_room_label:SetText("Ghost Room: " .. realRoomName)
+                                ghost_room_label:SetText("Ghost Spawn: " .. realRoomName)
                             end
                             
-                            library:Notify("Ghost Room Found: " .. realRoomName)
+                            library:Notify("Ghost Spawn Found: " .. realRoomName)
                             
                             -- Thông báo hệ thống
                             game:GetService("StarterGui"):SetCore("SendNotification", {
                                 Title = "Specter 2 Finder",
-                                Text = "Room: " .. realRoomName,
+                                Text = "Spawn: " .. realRoomName,
                                 Duration = 5
                             })
                             break
@@ -1105,6 +1106,8 @@ game_group:AddDivider()
 local auto_scan_enabled = true
 local ghost_room_found = false
 local emf_active_timers = {}
+local emf_locking_room = {} -- Lưu trữ phòng đang được EMF lock
+
 
 -- Hàm kiểm tra màu đỏ đặc trưng của ma (170, 0, 0)
 local function isGhostColor(color)
@@ -1186,40 +1189,59 @@ task.spawn(function()
                 end
             end
 
-            -- B. LOGIC EMF 2 & 5 (SỬA LỖI TRÊN TAY)
+            -- B. LOGIC EMF 2 & 5 (ĐÃ FIX LOCK HITBOX)
             if item.Name == "EMF Reader" then
                 local activeColor = Color3.fromRGB(131, 156, 49)
-                
-                -- Sử dụng tham số 'true' để tìm Part "2" và "5" ở bất cứ đâu bên trong Model
                 local emf_2 = item:FindFirstChild("2", true)
                 local emf_5 = item:FindFirstChild("5", true)
                 
                 if emf_2 and emf_2:IsA("BasePart") then
                     if emf_2.Color == activeColor then
-                        emf_active_timers[item] = (emf_active_timers[item] or 0) + 0.5
-                        if emf_active_timers[item] >= 2.5 and not ghost_room_found then
-                            for _, room in pairs(rooms:GetChildren()) do
-                                local hitbox = room:FindFirstChild("Hitbox")
-                                -- Handle có thể bị đổi tên hoặc lồng trong Model khi cầm trên tay
-                                local handle = item:FindFirstChild("Handle", true) or item.PrimaryPart
-                                
-                                if hitbox and handle then
-                                    if (handle.Position - hitbox.Position).Magnitude < 7 then
-                                        ghost_room = hitbox.CFrame
-                                        ghost_room_label:SetText("Ghost Room: " .. room.Name)
-                                        library:Notify("Ghost Room Identified: " .. room.Name)
-                                        ghost_room_found = true
+                        -- Lấy Handle/Vị trí máy EMF
+                        local handle = item:FindFirstChild("Handle", true) or item.PrimaryPart
+                        
+                        if handle then
+                            -- Nếu chưa lock phòng nào, tiến hành tìm phòng gần nhất để lock
+                            if not emf_locking_room[item] then
+                                for _, room in pairs(rooms:GetChildren()) do
+                                    local hitbox = room:FindFirstChild("Hitbox")
+                                    if hitbox and (handle.Position - hitbox.Position).Magnitude < 12 then
+                                        emf_locking_room[item] = room -- Khóa mục tiêu vào phòng này
                                         break
                                     end
                                 end
                             end
+
+                            -- Nếu đã lock được phòng, kiểm tra điều kiện duy trì
+                            local lockedRoom = emf_locking_room[item]
+                            if lockedRoom then
+                                local hb = lockedRoom:FindFirstChild("Hitbox")
+                                -- KIỂM TRA: Nếu đi quá xa khỏi Hitbox đã lock (vượt quá 12m) -> Reset
+                                if hb and (handle.Position - hb.Position).Magnitude < 100 then
+                                    emf_active_timers[item] = (emf_active_timers[item] or 0) + 0.5
+                                    
+                                    -- Nếu đủ 2.5s liên tục trong phòng đã lock
+                                    if emf_active_timers[item] >= 2.5 and not ghost_room_found then
+                                        ghost_room = hb.CFrame
+                                        ghost_room_label2:SetText("Ghost Room: " .. lockedRoom.Name)
+                                        library:Notify("Ghost Room Identified: " .. lockedRoom.Name)
+                                        ghost_room_found = true
+                                    end
+                                else
+                                    -- Rời khỏi phòng đã lock -> Reset ngay
+                                    emf_active_timers[item] = 0
+                                    emf_locking_room[item] = nil
+                                end
+                            end
                         end
                     else
+                        -- EMF 2 Tắt -> Reset lock và timer ngay lập tức
                         emf_active_timers[item] = 0
+                        emf_locking_room[item] = nil
                     end
                 end
 
-                -- EMF 5
+                -- EMF 5 (Giữ nguyên)
                 if emf_5 and emf_5:IsA("BasePart") and emf_5.Color == activeColor and not found_emf then
                     found_emf = true
                     emf_label:SetText("EMF 5: Yes")
@@ -1227,6 +1249,7 @@ task.spawn(function()
                     updateGhostType()
                 end
             end
+
             
 
             -- C. LOGIC THERMOMETER (Sửa lỗi không quét được trên tay)
@@ -1253,6 +1276,80 @@ end)
 
 
 
+game_group:AddButton({
+    Text = 'Find Ghost Room',
+
+    Func = function()
+        local emf_tool = local_player.Character and local_player.Character:FindFirstChild("EquipmentModel") and local_player.Character.EquipmentModel:FindFirstChild("2")
+        local emf = local_player.Character and local_player.Character:FindFirstChild("EquipmentModel") and local_player.Character.EquipmentModel:FindFirstChild("1")
+        local last_pos = local_player.Character.HumanoidRootPart.CFrame
+
+        if not emf_tool then
+            library:Notify("Equip EMF reader first!")
+            return
+        end
+
+        if not emf or emf.Color ~= Color3.fromRGB(52, 142, 64) then
+            replicated_storage:WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("InventoryService"):WaitForChild("RF"):WaitForChild("Toggle"):InvokeServer("EMF Reader")
+        end
+
+        if not ghost:FindFirstChildOfClass("Model") then
+            library:Notify("Open the van first!")
+            return
+        end
+
+        for _, room in pairs(rooms:GetChildren()) do
+            if room:IsA("Folder") then
+                local hitbox = room:FindFirstChild("Hitbox")
+
+                if hitbox then
+                    local_player.Character.HumanoidRootPart.CFrame = hitbox.CFrame
+                    camera.CFrame = hitbox.CFrame
+                    task.wait(0.75)
+
+                    if emf_tool.Color == Color3.fromRGB(131, 156, 49) then
+                        ghost_room = hitbox.CFrame
+                        ghost_room_label2:SetText("Ghost Room: " .. room.Name)
+                        library:Notify("Ghost Room: " .. room.Name .. " (It Not Might Be Always The Ghost Room!)")
+                        local_player.Character.HumanoidRootPart.CFrame = last_pos
+                        break
+                    end
+                end
+            end
+        end
+
+        if not ghost_room then
+            task.wait(0.75)
+            library:Notify("Ghost room not found retrying...")
+            for _, room in pairs(rooms:GetChildren()) do
+                if room:IsA("Folder") then
+                    local hitbox = room:FindFirstChild("Hitbox")
+
+                    if hitbox then
+                        local_player.Character.HumanoidRootPart.CFrame = hitbox.CFrame
+                        camera.CFrame = hitbox.CFrame
+                        task.wait(0.75)
+
+                        if emf_tool.Color == Color3.fromRGB(131, 156, 49) then
+                            ghost_room = hitbox.CFrame
+                            ghost_room_label2:SetText("Ghost Room: " .. room.Name)
+                            library:Notify("Ghost Room: " .. room.Name .. " (It Not Might Be Always The Ghost Room!)")
+                            local_player.Character.HumanoidRootPart.CFrame = last_pos
+                            break
+                        end
+                    end
+                end
+            end
+
+            if not ghost_room then
+                library:Notify("Ghost room not found")
+                local_player.Character.HumanoidRootPart.CFrame = last_pos
+            end
+        end
+    end,
+    DoubleClick = false,
+    Tooltip = 'Searches for the ghost room with the EMF reader'
+})
 
 
 
@@ -1317,21 +1414,21 @@ game_group:AddButton({
 })
 
 game_group:AddButton({
-    Text = 'Teleport to Ghost Room',
+    Text = 'Teleport to Ghost Spawm',
     Func = function()
         if ghost_room_pos then
             local character = local_player.Character
             if character and character:FindFirstChild("HumanoidRootPart") then
                 -- Teleport đến vị trí đã lưu từ con ma + cao lên 3 unit
                 character.HumanoidRootPart.CFrame = ghost_room_pos + Vector3.new(0, 3, 0)
-                library:Notify("Teleported to Ghost Room!")
+                library:Notify("Teleported to Ghost Spawn!")
             end
         else
-            library:Notify("Ghost Room not found yet! Wait for ghost to spawn.")
+            library:Notify("Ghost Spawn not found yet! Wait for ghost to spawn.")
         end
     end,
     DoubleClick = false,
-    Tooltip = 'Teleports you to the identified ghost room'
+    Tooltip = 'Teleports you to the identified ghost spawn'
 })
 
 
@@ -2178,40 +2275,39 @@ task.spawn(function()
 
 
 
+local StarterGui = game:GetService("StarterGui")
+local SoundService = game:GetService("SoundService")
+
+local AlreadySet = false
+
 function doDetectHunt()
-	spawn(function()
-		while getgenv().AutoHD == true do
-			for _, v in ipairs(game.SoundService:GetDescendants()) do
-				if v.Name == "Hunt" then
-					if v.Volume >= 0.1 then
-						if AlreadySet == false then
-							AlreadySet = true
+	task.spawn(function()
+		while getgenv().AutoHD do
+			for _, v in ipairs(SoundService:GetDescendants()) do
+				if v:IsA("Sound") and v.Name == "Hunt" then
 
-							                            game:GetService("StarterGui"):SetCore("SendNotification", {
-                                Title = "⚠️ WARNING ⚠️",
-                                Text = "Hunt Has Started!",
-                                Icon = "rbxassetid://4483362458",
-                                Duration = 5
-                            })
-						end
-					elseif v.Volume <= 0.3 then
-						if AlreadySet == true then
-							AlreadySet = false
+					if v.Volume >= 0.5 and not AlreadySet then
+						AlreadySet = true
+						StarterGui:SetCore("SendNotification", {
+							Title = "⚠️ WARNING ⚠️",
+							Text = "Hunt Has Started!",
+							Duration = 5
+						})
 
-							                game:GetService("StarterGui"):SetCore("SendNotification", {
-                    Title = "✅ SAFE ✅",
-                    Text = "Hunt Has Ended!",
-                    Duration = 5
-                })
-						end
+					elseif v.Volume <= 0.05 and AlreadySet then
+						AlreadySet = false
+						StarterGui:SetCore("SendNotification", {
+							Title = "✅ SAFE ✅",
+							Text = "Hunt Has Ended!",
+							Duration = 5
+						})
 					end
 				end
 			end
-			wait(1)
+			task.wait(0.5)
 		end
 	end)
 end
-
 
 
 
