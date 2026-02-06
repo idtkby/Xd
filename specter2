@@ -1,4 +1,13 @@
 -- V159
+-- Kiểm tra ID game
+if game.PlaceId == 8267733039 then
+    warn("This script does NOT support Loppy.")
+    return
+end
+
+-- Script cho game KHÁC (sai ID thì chạy)
+print("Loaded!")
+-- code còn lại ở đây
 
 local KINGHUB01 = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
 
