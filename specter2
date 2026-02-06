@@ -8,6 +8,59 @@ end
 -- Script cho game KHÁC (sai ID thì chạy)
 print("Loaded!")
 -- code còn lại ở đây
+-- [ KHAI BÁO TOÀN CỤC - Đặt cái này ở dòng trên cùng của Script ] --
+local HuntGui_Main = nil
+local HuntLabel_Text = nil
+
+local function InitHuntGUI()
+    if HuntGui_Main then return end -- Nếu có rồi thì không tạo lại
+
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "HuntStatusGui_Global"
+    -- Thử CoreGui trước, nếu lỗi thì dùng PlayerGui (để tránh lỗi ở một số executor)
+    local success, _ = pcall(function() ScreenGui.Parent = game:GetService("CoreGui") end)
+    if not success then ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui") end
+    
+    ScreenGui.Enabled = false -- Mặc định ẩn
+
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(0, 200, 0, 40)
+    Frame.Position = UDim2.new(0.5, -100, 0.1, 0) -- Canh giữa màn hình phía trên
+    Frame.BackgroundColor3 = Color3.new(0, 0, 0)
+    Frame.BackgroundTransparency = 0.5
+    Frame.Parent = ScreenGui
+
+    local StatusLabel = Instance.new("TextLabel")
+    StatusLabel.Size = UDim2.new(1, 0, 1, 0)
+    StatusLabel.BackgroundTransparency = 1
+    StatusLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+    StatusLabel.TextScaled = true
+    StatusLabel.Text = "STATUS: SAFE"
+    StatusLabel.Font = Enum.Font.SourceSansBold
+    StatusLabel.Parent = Frame
+
+    -- Gán vào biến toàn cục để dùng ở chỗ khác
+    HuntGui_Main = ScreenGui
+    HuntLabel_Text = StatusLabel
+    
+    -- Chức năng kéo thả (Drag)
+    local dragging, dragInput, dragStart, startPos
+    Frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true; dragStart = input.Position; startPos = Frame.Position
+        end
+    end)
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    Frame.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end end)
+end
+
+-- Gọi hàm tạo ngay lập tức
+InitHuntGUI()
 
 local KINGHUB01 = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
 
@@ -201,6 +254,14 @@ local inf_jump = false
 local no_hold = false
 local nofog = false
 local fps = false
+
+
+
+
+
+
+
+
 
 local freezing_label = evidence_group:AddLabel('Freezing Temp: Not Found')
 local ghostwriting_label = evidence_group:AddLabel('Ghost Writing: Not Found')
@@ -2122,23 +2183,6 @@ misc_group:AddButton({
     Tooltip = 'Bypass cheat for Safe now!'
 })
 
-boost_group:AddButton({
-    Text = 'Boost Fps',
-    Tooltip = 'Optimize performance and boost FPS',
-    DoubleClick = false,
-
-    Func = function()
-        local success, err = pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Nigga.lua"))()
-        end)
-
-        if success then
-            library:Notify("Boost FPS Enabled!")
-        else
-            library:Notify("Failed to load Boost FPS:\n" .. tostring(err))
-        end
-    end
-})
 
 misc_group:AddButton({
     Text = 'Infinite Yield',
@@ -2166,12 +2210,51 @@ boost_group:AddToggle('uf', {
     Callback = function(Value)
         fps = Value
         if Value then
-            setfpscap(99999999999)
+            setfpscap(360)
         else
             setfpscap(60)
         end
     end
 })
+
+-- [ UI SETTINGS ] --
+-- Các biến lưu setting
+getgenv().hunt_notif_enabled = false
+getgenv().hunt_notif_mode = "Notify"
+
+misc_group:AddToggle('HuntNotifToggle', {
+    Text = 'Enable Hunt Notifier',
+    Default = false,
+    Callback = function(Value)
+        hunt_notif_enabled = Value
+        -- Nếu tắt toggle thì ẩn Label ngay
+        if HuntGui_Main and not Value then 
+            HuntGui_Main.Enabled = false 
+        elseif HuntGui_Main and Value and (hunt_notif_mode == "Label" or hunt_notif_mode == "Both") then
+            HuntGui_Main.Enabled = true -- Hiện lại nếu đang bật
+        end
+    end
+})
+
+misc_group:AddDropdown('HuntNotifMode', {
+    Values = { 'Notify', 'Both' },
+    Default = 1,
+    Multi = false,
+    Text = 'Notification Mode',
+    Callback = function(Value)
+        hunt_notif_mode = Value
+        -- Cập nhật hiển thị ngay khi đổi chế độ
+        if HuntGui_Main and hunt_notif_enabled then
+            if Value == "Label" or Value == "Both" then
+                HuntGui_Main.Enabled = true
+            else
+                HuntGui_Main.Enabled = false
+            end
+        end
+    end
+})
+
+
 
 library:SetWatermarkVisibility(true)
 
@@ -2279,46 +2362,80 @@ save_manager:LoadAutoloadConfig()
 
 
 
+-- ===== FIX HUNT DETECT DỰA TRÊN VOLUME =====
+
+getgenv().hunt_notif_enabled = getgenv().hunt_notif_enabled or false
+getgenv().hunt_notif_mode = getgenv().hunt_notif_mode or "Notify"
 
 task.spawn(function()
+    local HUNT_ID = "18657053709"
+    local isHunting = false
+    local StarterGui = game:GetService("StarterGui")
 
+    local function notify(title, text)
+        pcall(function()
+            StarterGui:SetCore("SendNotification", {
+                Title = title,
+                Text = text,
+                Duration = 5
+            })
+        end)
+    end
 
+    local function setHuntState(active)
+        if isHunting == active then return end -- Tránh lặp lại thông báo nếu volume nhảy liên tục
+        isHunting = active
 
-local StarterGui = game:GetService("StarterGui")
-local SoundService = game:GetService("SoundService")
+        -- ===== CẬP NHẬT LABEL =====
+        if HuntGui_Main and HuntLabel_Text and hunt_notif_enabled then
+            if hunt_notif_mode == "Label" or hunt_notif_mode == "Both" then
+                HuntGui_Main.Enabled = true
+                if active then
+                    HuntLabel_Text.Text = "⚠️ HUNTING ⚠️"
+                    HuntLabel_Text.TextColor3 = Color3.fromRGB(255, 0, 0)
+                else
+                    HuntLabel_Text.Text = "✅ SAFE ✅"
+                    HuntLabel_Text.TextColor3 = Color3.fromRGB(0, 255, 0)
+                end
+            end
+        end
 
-local AlreadySet = false
+        -- ===== GỬI NOTIFY =====
+        if hunt_notif_enabled and (hunt_notif_mode == "Notify" or hunt_notif_mode == "Both") then
+            if active then
+                notify("⚠️ WARNING ⚠️", "Ghost is HUNTING!")
+            else
+                notify("✅ SAFE ✅", "Hunt Has Ended.")
+            end
+        end
+    end
 
-function doDetectHunt()
-	task.spawn(function()
-		while getgenv().AutoHD do
-			for _, v in ipairs(SoundService:GetDescendants()) do
-				if v:IsA("Sound") and v.Name == "Hunt" then
+    local function bindSound(snd)
+        if not snd:IsA("Sound") then return end
+        if not tostring(snd.SoundId):find(HUNT_ID) then return end
 
-					if v.Volume >= 0.5 and not AlreadySet then
-						AlreadySet = true
-						StarterGui:SetCore("SendNotification", {
-							Title = "⚠️ WARNING ⚠️",
-							Text = "Hunt Has Started!",
-							Duration = 5
-						})
+        -- Hàm kiểm tra âm lượng
+        local function checkVolume()
+            -- Nếu Volume lớn hơn 0 (thường game sẽ set 0.5 hoặc 1 khi hunt)
+            if snd.Volume > 0.31 then
+                setHuntState(true)
+            else
+                setHuntState(false)
+            end
+        end
 
-					elseif v.Volume <= 0.05 and AlreadySet then
-						AlreadySet = false
-						StarterGui:SetCore("SendNotification", {
-							Title = "✅ SAFE ✅",
-							Text = "Hunt Has Ended!",
-							Duration = 5
-						})
-					end
-				end
-			end
-			task.wait(0.5)
-		end
-	end)
-end
+        -- Lắng nghe sự thay đổi của thuộc tính Volume
+        snd:GetPropertyChangedSignal("Volume"):Connect(checkVolume)
+        
+        -- Kiểm tra ngay lúc vừa tìm thấy sound
+        checkVolume()
+    end
 
+    -- Quét SoundService và Workspace
+    local SoundService = game:GetService("SoundService")
+    for _, v in ipairs(SoundService:GetDescendants()) do bindSound(v) end
+    SoundService.DescendantAdded:Connect(bindSound)
 
-
-
+    for _, v in ipairs(workspace:GetDescendants()) do bindSound(v) end
+    workspace.DescendantAdded:Connect(bindSound)
 end)
