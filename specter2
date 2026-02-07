@@ -75,18 +75,24 @@ if not game:IsLoaded() then
 end
 
 local window = library:CreateWindow({
-    Title = 'IganhK | SPECTER',
+    Title = "[UPDATE] SPECTER",
     Center = true,
     AutoShow = true,
-    TabPadding = 8,
-    MenuFadeTime = 0.2
+    Resizable = true,
+    Footer = "Script by IganhK [Beta Version]",
+           Icon = nil, -- ID logo
+
+    AutoLock = false,
+    ShowCustomCursor = true,
+    NotifySide = "Right",
+    TabPadding = 2,
+    MenuFadeTime = 0
 })
 
 local tabs = {
     main = window:AddTab('Main'),
     esp = window:AddTab('Esp'),
     player = window:AddTab('Player'),
-    world = window:AddTab('Lighting'),
     ['ui settings'] = window:AddTab('Settings')
 }
 
@@ -106,8 +112,8 @@ local closet_esp_group = tabs.esp:AddRightGroupbox('Closet Esp Settings')
 local player_group = tabs.player:AddLeftGroupbox('Player Settings')
 local misc_group = tabs.player:AddRightGroupbox('Misc')
 
-local world_group = tabs.world:AddRightGroupbox('Visual Settings')
-local boost_group = tabs.world:AddLeftGroupbox('Graphic Settings')
+local world_group = tabs.player:AddRightGroupbox('Visual Settings')
+local boost_group = tabs.player:AddLeftGroupbox('Graphic Settings')
 
 local menu_group = tabs['ui settings']:AddLeftGroupbox('Menu')
 local credits_group = tabs['ui settings']:AddRightGroupbox('Credits')
@@ -236,7 +242,7 @@ local closet_name = false
 local player_name = false
 local full_bright = false
 local inf_stamina = false
-local anti_touch = false
+local anti_touch = true
 local show_ghost = false
 local got_motion = false
 local got_freezing = false -- Thêm dòng này vào khoảng dòng 140
@@ -569,26 +575,53 @@ sanityconnection = run_service.RenderStepped:Connect(function()
     end
 end)
 
-ghostconnection = run_service.RenderStepped:Connect(function()
-    if anti_touch then
-        for _, v in pairs(ghost:GetChildren()) do
-            if v:IsA("Model") then
-                local Distance = (local_player.Character.HumanoidRootPart.Position - v.PrimaryPart.Position).Magnitude
-                if Distance < touch_distance then
-                    local_player.Character.HumanoidRootPart.CFrame = van.PrimaryPart.CFrame + Vector3.new(0, 5, 0)
-                    Library:Notify("Ghost was too close teleported to save place.")
-                end
-            end
-        end
 
-        for _, v in pairs(ghost:GetChildren()) do
-            if v:IsA("Model") then
-                local humanoid = v:FindFirstChild("Humanoid")
-                ghost_speed_label:SetText('Ghost Speed: ' .. string.format("%.1f", humanoid.WalkSpeed))
+
+
+
+local lastUpdate = 0
+local UPDATE_DELAY = 0.15 -- ~6–7 lần/giây (đủ mượt, không lag)
+
+local cachedGhostHumanoid = nil
+
+-- tìm ghost humanoid 1 lần
+local function getGhostHumanoid()
+    if cachedGhostHumanoid and cachedGhostHumanoid.Parent then
+        return cachedGhostHumanoid
+    end
+
+    if not ghost then return nil end
+
+    for _, v in pairs(ghost:GetChildren()) do
+        if v:IsA("Model") then
+            local hum = v:FindFirstChildOfClass("Humanoid")
+            if hum then
+                cachedGhostHumanoid = hum
+                return hum
             end
         end
     end
+    return nil
+end
+
+ghostconnection = run_service.RenderStepped:Connect(function()
+    if not anti_touch then return end
+
+    local now = tick()
+    if now - lastUpdate < UPDATE_DELAY then return end
+    lastUpdate = now
+
+    local humanoid = getGhostHumanoid()
+    if humanoid then
+        ghost_speed_label:SetText(
+            'Ghost Speed: ' .. string.format("%.1f", humanoid.WalkSpeed)
+        )
+    end
 end)
+
+
+
+
 
 playerconnection = run_service.RenderStepped:Connect(function()
     if inf_stamina then
@@ -1503,38 +1536,9 @@ game_group:AddButton({
 
 
 
-game_group:AddDivider()
 
-game_group:AddToggle('anti_ghost_touch', {
-    Text = 'Anti Ghost Touch',
-    Default = false,
-    Tooltip = 'Prevents you from touching the ghost and dying',
 
-    Callback = function(Value)
-        anti_touch = Value
-    end,
-}):AddKeyPicker('anti_touch_keybind', {
-    Default = '',
-    SyncToggleState = true,
-    Mode = 'Toggle',
-    Text = 'Anti Touch Ghost',
-    NoUI = false,
-    Callback = function()
-    end,
-})
 
-game_group:AddSlider('anti_touch_distance', {
-    Text = 'Anti Touch Distance',
-    Default = 7,
-    Min = 7,
-    Max = 12,
-    Rounding = 1,
-    Compact = false,
-
-    Callback = function(Value)
-        touch_distance = Value
-    end
-})
 
 
 
@@ -1628,7 +1632,7 @@ player_group:AddToggle('no_hold', {
 })
 
 player_group:AddToggle('third_person', {
-    Text = '3rd Person',
+    Text = '3rd Person (Form)',
     Default = false,
     Tooltip = 'Change camera to 3rd person',
 
@@ -1648,6 +1652,32 @@ player_group:AddToggle('third_person', {
     NoUI = false,
     Callback = function()
     end,
+})
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+local isFirstPerson = false
+
+player_group:AddToggle('fp_tp', {
+    Text = 'First / Third Person',
+    Default = false,
+    Tooltip = 'Switch real camera mode',
+
+    Callback = function(Value)
+        isFirstPerson = Value
+
+        if isFirstPerson then
+            -- FIRST PERSON (KHÓA LUÔN)
+            player.CameraMode = Enum.CameraMode.LockFirstPerson
+            camera.CameraType = Enum.CameraType.Custom
+        else
+            -- THIRD PERSON (MỞ TỰ DO)
+            player.CameraMode = Enum.CameraMode.Classic
+            camera.CameraType = Enum.CameraType.Custom
+        end
+    end
 })
 
 player_group:AddToggle('allow_jumping', {
@@ -1702,29 +1732,6 @@ player_group:AddToggle('inf_stamina', {
 
     Callback = function(Value)
         inf_stamina = Value
-    end
-})
-
-player_group:AddToggle('speed sprint modify', {
-    Text = 'Speed Sprint Changer',
-    Default = false,
-    Tooltip = 'Changes how fast you sprint',
-
-    Callback = function(Value)
-        speed_sprint = Value
-    end
-})
-
-player_group:AddSlider('sprint_speed', {
-    Text = 'Sprint Speed',
-    Default = 1,
-    Min = 0.1,
-    Max = 10,
-    Rounding = 1,
-    Compact = false,
-
-    Callback = function(Value)
-        sprint_speed = Value
     end
 })
 
@@ -2127,6 +2134,15 @@ world_group:AddToggle('saturation', {
     end
 })
 
+local Lighting = game:GetService("Lighting")
+
+local nofog = false
+local fogConn
+
+-- lưu fog gốc
+local defaultFogEnd = Lighting.FogEnd
+local defaultFogStart = Lighting.FogStart
+
 world_group:AddToggle('nf', {
     Text = 'No Fog',
     Default = false,
@@ -2134,12 +2150,21 @@ world_group:AddToggle('nf', {
 
     Callback = function(Value)
         nofog = Value
+
+        if fogConn then
+            fogConn:Disconnect()
+            fogConn = nil
+        end
+
         if Value then
-            lighting.FogEnd = 1000000
-            lighting.FogStart = 0
+            fogConn = game:GetService("RunService").RenderStepped:Connect(function()
+                Lighting.FogStart = 0
+                Lighting.FogEnd = 1e6
+            end)
         else
-            lighting.FogEnd = 1000
-            lighting.FogStart = 0
+            -- trả về fog gốc
+            Lighting.FogStart = defaultFogStart
+            Lighting.FogEnd = defaultFogEnd
         end
     end
 })
@@ -2166,23 +2191,8 @@ misc_group:AddButton({
         library:Notify("Anti AFK Enabled!")
     end,
     DoubleClick = false,
-    Tooltip = 'Won\'t disconnect you after 20 minutes'
+    Tooltip = 'Anti Afk'
 })
-
-misc_group:AddButton({
-    Text = 'Bypass Anti Cheat',
-    Func = function()
-        -- แบบง่ายโดยไม่ต้องใช้ exploit
-        local_player.Idled:Connect(function()
-            VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-            VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-        end)
-        library:Notify("Bypass Done!")
-    end,
-    DoubleClick = false,
-    Tooltip = 'Bypass cheat for Safe now!'
-})
-
 
 misc_group:AddButton({
     Text = 'Infinite Yield',
@@ -2216,6 +2226,10 @@ boost_group:AddToggle('uf', {
         end
     end
 })
+
+
+
+
 
 -- [ UI SETTINGS ] --
 -- Các biến lưu setting
@@ -2350,8 +2364,8 @@ theme_manager:SetLibrary(library)
 save_manager:SetLibrary(library)
 save_manager:IgnoreThemeSettings()
 save_manager:SetIgnoreIndexes({ 'MenuKeybind' })
-theme_manager:SetFolder('DYHUB')
-save_manager:SetFolder('DYHUB/Specter')
+theme_manager:SetFolder('Khanghubskssoo')
+save_manager:SetFolder('kk/Specter')
 save_manager:BuildConfigSection(tabs['ui settings'])
 theme_manager:ApplyToTab(tabs['ui settings'])
 
