@@ -136,7 +136,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- Tạo cửa sổ giao diện chính
 local Window = Rayfield:CreateWindow({
-    Name = "Script By IgnahK [PETAPETA [Chapter 2]]",
+    Name = "Script By IgnahK [Petapeta lv7 update(alpha)]",
     LoadingTitle = "Loading Script...",
     LoadingSubtitle = "Please wait",
     ConfigurationSaving = {
@@ -423,17 +423,26 @@ local espGroups = {
 		}
 	},
 	{
+		label = "Mop",
+		objects = {
+			Mop = {label = "Mop", color = Color3.fromRGB(255,255,255)}
+		}
+	},
+	{
 		label = "SafeCode",
 		objects = {
 			HintPaper = {label = "SafeCode", color = Color3.fromRGB(0,255,255)},
+			EtoNum = {label = "SafeCode", color = Color3.fromRGB(0,255,255)},
 			TelevisionW = {label = "SafeCode", color = Color3.fromRGB(0,255,255)},
    TelevisionN = {label = "SafeCode", color = Color3.fromRGB(0,255,255)}
 		}
 	},
 	{
-		label = "Room (Stage 5)",
+		label = "Room (Stage 5,7)",
 		objects = {
-			["dirty sheet"] = {label = "Room", color = Color3.fromRGB(255,105,0)}
+			["dirty sheet"] = {label = "Room", color = Color3.fromRGB(255,105,0)},
+			["ToiletArea"] = {label = "Toilet", color = Color3.fromRGB(255,0,255)},
+			["Dirt"] = {label = "Bath", color = Color3.fromRGB(100,0,255)}
 		}
 	},
 {
@@ -578,7 +587,7 @@ V1:CreateButton({
 
 
 
-local V2 = Window:CreateTab("Petapeta [Chapter 2][:)]", "eye")
+local V2 = Window:CreateTab("Petapeta [Chapter 2][Alpha(No Update)]", "eye")
 
 --[[
 
@@ -830,6 +839,8 @@ local targetNames = {
  ["FireExtinguisher"] = true,
  ["BoxBottom"] = true,
  ["Ofuda"] = true,
+ ["Mop"] = true,
+ ["EtoNum"] = true,
 }
 
 KTab:CreateToggle({
