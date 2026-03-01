@@ -486,9 +486,62 @@ mainTab:CreateButton({
 mainTab:CreateButton({
 	Name = "Esp Mini Peta",
 	Callback = function()
-		autoESP(function(p)
-			return p:IsA("BasePart") and p.Name:match("^Visual_Minipeta_[1-4]$")
-		end, Color3.fromRGB(255, 0, 0), "Mini Peta")
+task.spawn(function()
+	local highlightName = "ItemHighlight" -- Tên node highlight
+	local itemName:match("^Visual_Minipeta_[1-4]$")
+
+	local espName = itemName -- Tên node ESP trong BillboardGui
+	local labelText = itemName -- 🔁 ← Văn bản hiện trên ESP
+	local espColor = Color3.fromRGB(255,0,0)
+	local outlineColor = Color3.fromRGB(0, 0, 0)
+	local highlightColor = Color3.fromRGB(255, 255,255)
+
+	-- Tạo ESP
+	local function createESP(item)
+		if item:FindFirstChild(espName) then return end
+
+		local billboard = Instance.new("BillboardGui")
+		billboard.Name = espName
+		billboard.AlwaysOnTop = true
+		billboard.Size = UDim2.new(0, 200, 0, 50)
+		billboard.StudsOffset = Vector3.new(0, 3, 0)
+		billboard.MaxDistance = math.huge
+		billboard.Parent = item
+
+		local textLabel = Instance.new("TextLabel", billboard)
+		textLabel.Text = labelText
+		textLabel.TextColor3 = espColor
+		textLabel.TextStrokeColor3 = outlineColor
+		textLabel.TextStrokeTransparency = 0
+		textLabel.BackgroundTransparency = 1
+		textLabel.Size = UDim2.new(1, 0, 1, 0)
+		textLabel.TextSize = 12
+		textLabel.Font = Enum.Font.SourceSansBold
+
+		local highlight = Instance.new("Highlight")
+		highlight.Name = highlightName
+		highlight.FillColor = highlightColor
+		highlight.FillTransparency = 0.5
+		highlight.OutlineColor = highlightColor
+		highlight.OutlineTransparency = 0
+		highlight.Parent = item
+	end
+
+	-- Quét ban đầu
+	for _, item in ipairs(workspace:GetDescendants()) do
+		if item.Name == itemName and not item:FindFirstChild(espName) then
+			createESP(item)
+		end
+	end
+
+	-- Lắng nghe khi object mới xuất hiện
+	workspace.DescendantAdded:Connect(function(descendant)
+		if descendant.Name == itemName and not descendant:FindFirstChild(espName) then
+			task.wait(10)
+			createESP(descendant)
+		end
+	end)
+end)
 	end,
 })
 
