@@ -2345,7 +2345,8 @@ menu_group:AddButton('Unload', function()
     library:Unload()
 end)
 
-credits_group:AddLabel('Ignahk: Credits', true)
+credits_group:AddLabel('IgnahK: Editor', true)
+credits_group:AddLabel('Credits: Idk', true)
 
 
 settings_group:AddToggle('keybind_visibility', {
