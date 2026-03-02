@@ -2453,3 +2453,11 @@ task.spawn(function()
     for _, v in ipairs(workspace:GetDescendants()) do bindSound(v) end
     workspace.DescendantAdded:Connect(bindSound)
 end)
+
+
+
+print("-- Specter 2 Script Note --")
+warn("I added a specter script and changed 50% of the structure, so it's not 100% my doing.")
+print("------------------- IgnahK -")
+
+
