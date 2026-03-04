@@ -1783,7 +1783,7 @@ end
 local function teleportToExitKey()
 	local target, dist = getExitKeyNearest()
 	if target and dist <= 450 then
-		safeTeleport(target.CFrame * CFrame.new(5,0,0))
+		safeTeleport(target.CFrame * CFrame.new(0,5,0))
 	end
 end
 
