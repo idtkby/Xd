@@ -488,7 +488,7 @@ mainTab:CreateButton({
 	Callback = function()
 task.spawn(function()
 	local highlightName = "ItemHighlight" -- Tên node highlight
-	local itemName:match("^Visual_Minipeta_[1-4]$")
+	local itemName = "Visual_Minipeta_1" or "Visual_Minipeta_2" or "Visual_Minipeta_3" or "Visual_Minipeta_4"
 
 	local espName = itemName -- Tên node ESP trong BillboardGui
 	local labelText = itemName -- 🔁 ← Văn bản hiện trên ESP
@@ -1783,7 +1783,7 @@ end
 local function teleportToExitKey()
 	local target, dist = getExitKeyNearest()
 	if target and dist <= 450 then
-		safeTeleport(target.CFrame * CFrame.new(6,6,0))
+		safeTeleport(target.CFrame * CFrame.new(5,0,0))
 	end
 end
 
