@@ -372,6 +372,8 @@ end)
 })
 
 
+
+
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -580,6 +582,8 @@ V1:CreateButton({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/PlayerEsp"))()
     end,
 })
+
+V1:CreateSection("WARN\n Turn off all ESPs enabled before level 7 to avoid mandatory errors.")
 
 
 
