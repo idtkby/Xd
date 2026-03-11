@@ -136,7 +136,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- Tạo cửa sổ giao diện chính
 local Window = Rayfield:CreateWindow({
-    Name = "Script By IgnahK [Petapeta lv7 update(alpha)]",
+    Name = "Script By IgnahK [Petapeta Lv 7 Hard mode event]",
     LoadingTitle = "Loading Script...",
     LoadingSubtitle = "Please wait",
     ConfigurationSaving = {
