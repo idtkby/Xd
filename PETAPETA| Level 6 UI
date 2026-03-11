@@ -252,7 +252,7 @@ V1:CreateButton({
 	end
 
 	local function isEnemyModel(model)
-		return model:IsA("Model") and (model.Name == "EnemyModel" or model.Name == "EnemyModel_Stage6")
+		return model:IsA("Model") and (model.Name == "EnemyModel" or model.Name == "EnemyModel_Stage6" or model.Name == "Enemy_NUIPETA" or model.Name == "EnemyModel_Hard" or model.Name == "EnemyModel_Christmas")
 	end
 
 	local function checkExisting()
@@ -298,6 +298,14 @@ sound:Play()
 			Icon = "rbxassetid://83439791036389",
 		})
 	end)
+
+local enemyNames = {
+ EnemyModel_Stage6 = true,
+	EnemyModel = true,
+	EnemyModel_Christmas = true,
+	EnemyModel_Hard = true,
+	Enemy_NUIPETA = true
+}
 
 	local alertSound = Instance.new("Sound")
 	alertSound.Name = "EnemyAlert"
@@ -355,14 +363,14 @@ sound:Play()
 
 	-- Quét ban đầu
 	for _, obj in ipairs(Workspace:GetDescendants()) do
-		if obj:IsA("Model") and obj.Name == "EnemyModel" then
+if obj:IsA("Model") and enemyNames[obj.Name] then
 			monitorEnemy(obj)
 		end
 	end
 
 	-- Theo dõi spawn mới
 	Workspace.DescendantAdded:Connect(function(obj)
-		if obj:IsA("Model") and obj.Name == "EnemyModel" then
+if obj:IsA("Model") and enemyNames[obj.Name] then
 			monitorEnemy(obj)
 		end
 	end)
