@@ -1841,18 +1841,18 @@ createBtn("Tp to Exit", 110, teleportToExit)
 -- ===== HOTKEY =====
 UserInputService.InputBegan:Connect(function(input, gp)
 	if gp then return end
-	if input.KeyCode == Enum.KeyCode.Z then
+	if input.KeyCode == Enum.KeyCode.B then
 		teleportToExitKey()
-	elseif input.KeyCode == Enum.KeyCode.X then
+	elseif input.KeyCode == Enum.KeyCode.N then
 		teleportToDoor()
-	elseif input.KeyCode == Enum.KeyCode.C then
+	elseif input.KeyCode == Enum.KeyCode.M then
 		teleportToExit()
 	end
 end)
 
 game:GetService("StarterGui"):SetCore("SendNotification", {
 	Title = "Window",
-	Text = "Z: Key | X: Door | C: Exit",
+	Text = "B: Key | N: Door | M: Exit",
 	Duration = 5
 })
     end,
