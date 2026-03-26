@@ -136,7 +136,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- Tạo cửa sổ giao diện chính
 local Window = Rayfield:CreateWindow({
-    Name = "Script By IgnahK [Petapeta Lv 7 Hard mode event]",
+    Name = "Script By IgnahK [Petapeta Lv 8]",
     LoadingTitle = "Loading Script...",
     LoadingSubtitle = "Please wait",
     ConfigurationSaving = {
@@ -448,11 +448,23 @@ local espGroups = {
 		}
 	},
 	{
-		label = "Room (Stage 5,7)",
+		label = "Room (Stage 5,7,8)",
 		objects = {
 			["dirty sheet"] = {label = "Room", color = Color3.fromRGB(255,105,0)},
 			["ToiletArea"] = {label = "Toilet", color = Color3.fromRGB(255,0,255)},
-			["Dirt"] = {label = "Bath", color = Color3.fromRGB(100,0,255)}
+			["Dirt"] = {label = "Bath", color = Color3.fromRGB(100,0,255)},
+			["KidsEndPoint"] = {label = "Dining room", color = Color3.fromRGB(255,255,255)},
+			["HideAndSeek"] = {label = "Craft Key room", color = Color3.fromRGB(255,255,255)}
+		}
+	},
+		label = "Items Lv8, Child",
+		objects = {
+			["Shiruwan"] = {label = "Shiruwan", color = Color3.fromRGB(255,105,0)},
+			["Tyawan"] = {label = "Tyawan", color = Color3.fromRGB(255,105,50)},
+			["Warifu1"] = {label = "Warifu1", color = Color3.fromRGB(255,150,90)},
+			["Warifu2"] = {label = "Warifu2", color = Color3.fromRGB(255,150,90)},
+			["Warifu3"] = {label = "Warifu3", color = Color3.fromRGB(255,150,90)},
+			["Meshes/Wicker_chest_Wicker_chest1"] = {label = "Child", color = Color3.fromRGB(200,200,200)}
 		}
 	},
 {
