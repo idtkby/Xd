@@ -457,6 +457,7 @@ local espGroups = {
 			["HideAndSeek"] = {label = "Craft Key room", color = Color3.fromRGB(255,255,255)}
 		}
 	},
+{
 		label = "Items Lv8, Child",
 		objects = {
 			["Shiruwan"] = {label = "Shiruwan", color = Color3.fromRGB(255,105,0)},
