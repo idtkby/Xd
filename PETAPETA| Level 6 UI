@@ -406,8 +406,7 @@ local espGroups = {
 			BoxBottom = {label = "Box", color = Color3.fromRGB(0,255,0)}
 		}
 	},
-	-- Thêm các nhóm khác ở đây nếu muốn...
-V1:CreateSection("-- Only lv 4 --")
+	-- Thêm các nhóm khác ở đây nếu mu
  	{
 		label = "Doll",
 		objects = {
@@ -433,7 +432,6 @@ V1:CreateSection("-- Only lv 4 --")
 			Dish = {label = "Plate", color = Color3.fromRGB(255, 223, 178)}
 		}
 	},
-V1:CreateSection("-- Only lv 7 --")
 	{
 		label = "Mop",
 		objects = {
@@ -459,7 +457,6 @@ V1:CreateSection("-- Only lv 7 --")
 			["HideAndSeek"] = {label = "Craft Key room", color = Color3.fromRGB(255,255,255)}
 		}
 	},
-V1:CreateSection("-- Only lv 8 --")
 {
 		label = "Items Lv8, Child",
 		objects = {
@@ -471,7 +468,6 @@ V1:CreateSection("-- Only lv 8 --")
 			["Meshes/Wicker_chest_Wicker_chest1"] = {label = "Child", color = Color3.fromRGB(200,200,200)}
 		}
 	},
-V1:CreateSection("-- Only lv 9 --")
 {
     label = "Lv9",
     objects = {
@@ -496,7 +492,6 @@ V1:CreateSection("-- Only lv 9 --")
         ["GaolDoor"] = {label = "Door (Need Hammer)", color = Color3.fromRGB(255,0,0)},
     }
 },
-V1:CreateSection("-- Only lv 6 --")
 {
 		label = "Chase end (Stage 6)",
 		objects = {
@@ -508,7 +503,6 @@ V1:CreateSection("-- Only lv 6 --")
 			["1st_6"] = {label = "", color = Color3.fromRGB(255,255,255)},
 		}
 	},
-V1:CreateSection("-- Only lv 6 --")
 	{
 		label = "Candle",
 		objects = {
