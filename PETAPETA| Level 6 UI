@@ -136,7 +136,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- Tạo cửa sổ giao diện chính
 local Window = Rayfield:CreateWindow({
-    Name = "Script By IgnahK [Petapeta Lv 8]",
+    Name = "Script By IgnahK [Petapeta Lv 9]",
     LoadingTitle = "Loading Script...",
     LoadingSubtitle = "Please wait",
     ConfigurationSaving = {
@@ -407,6 +407,7 @@ local espGroups = {
 		}
 	},
 	-- Thêm các nhóm khác ở đây nếu muốn...
+V1:CreateSection("-- Only lv 4 --")
  	{
 		label = "Doll",
 		objects = {
@@ -432,6 +433,7 @@ local espGroups = {
 			Dish = {label = "Plate", color = Color3.fromRGB(255, 223, 178)}
 		}
 	},
+V1:CreateSection("-- Only lv 7 --")
 	{
 		label = "Mop",
 		objects = {
@@ -457,6 +459,7 @@ local espGroups = {
 			["HideAndSeek"] = {label = "Craft Key room", color = Color3.fromRGB(255,255,255)}
 		}
 	},
+V1:CreateSection("-- Only lv 8 --")
 {
 		label = "Items Lv8, Child",
 		objects = {
@@ -468,6 +471,32 @@ local espGroups = {
 			["Meshes/Wicker_chest_Wicker_chest1"] = {label = "Child", color = Color3.fromRGB(200,200,200)}
 		}
 	},
+V1:CreateSection("-- Only lv 9 --")
+{
+    label = "Lv9",
+    objects = {
+
+        -- 🔧 ITEM
+        ["Rope2"] = {label = "Rope", color = Color3.fromRGB(255,170,0)},
+        ["Oke"] = {label = "Bucket", color = Color3.fromRGB(0,170,255)},
+        ["StepLadder"] = {label = "Ladder", color = Color3.fromRGB(200,200,200)},
+        ["Toolbox"] = {label = "Toolbox", color = Color3.fromRGB(255,255,0)},
+        ["Shovel"] = {label = "Shovel", color = Color3.fromRGB(139,69,19)},
+        ["Hammer"] = {label = "Hammer", color = Color3.fromRGB(255,80,80)},
+
+        -- 🌍 OBJECT / PUZZLE
+        ["Well_Lowered"] = {label = "Well (Need Rope)", color = Color3.fromRGB(0,255,255)},
+        ["Meshes/Well_02_String (1)"] = {label = "Well (Need Bucket)", color = Color3.fromRGB(0,200,200)},
+
+        ["dig1"] = {label = "Dig Spot (Need Shovel)", color = Color3.fromRGB(255,140,0)},
+        ["dig2"] = {label = "Key Spot (Need Shovel)", color = Color3.fromRGB(0,255,0)},
+
+        -- 🚪 OBJECTIVE
+        ["Gaol"] = {label = "Kid Room", color = Color3.fromRGB(255,0,255)},
+        ["GaolDoor"] = {label = "Door (Need Hammer)", color = Color3.fromRGB(255,0,0)},
+    }
+},
+V1:CreateSection("-- Only lv 6 --")
 {
 		label = "Chase end (Stage 6)",
 		objects = {
@@ -479,6 +508,7 @@ local espGroups = {
 			["1st_6"] = {label = "", color = Color3.fromRGB(255,255,255)},
 		}
 	},
+V1:CreateSection("-- Only lv 6 --")
 	{
 		label = "Candle",
 		objects = {
