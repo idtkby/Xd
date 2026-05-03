@@ -481,11 +481,10 @@ local espGroups = {
         ["Hammer"] = {label = "Hammer", color = Color3.fromRGB(255,80,80)},
 
         -- 🌍 OBJECT / PUZZLE
-        ["Well_Lowered"] = {label = "Well (Need Rope)", color = Color3.fromRGB(0,255,255)},
-        ["Meshes/Well_02_String (1)"] = {label = "Well (Need Bucket)", color = Color3.fromRGB(0,200,200)},
+        ["Well_Lowered"] = {label = "Well (Need Rope And Bucket)", color = Color3.fromRGB(0,255,255)},
 
-        ["dig1"] = {label = "Dig Spot (Need Shovel)", color = Color3.fromRGB(255,140,0)},
-        ["dig2"] = {label = "Key Spot (Need Shovel)", color = Color3.fromRGB(0,255,0)},
+        ["dig1"] = {label = "Key Spot (Need Shovel)", color = Color3.fromRGB(255,140,0)},
+        ["dig2"] = {label = "Key Spot (Need Shovel)", color = Color3.fromRGB(255,140,0)},
 
         -- 🚪 OBJECTIVE
         ["Gaol"] = {label = "Kid Room", color = Color3.fromRGB(255,0,255)},
