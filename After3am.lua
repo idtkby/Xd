@@ -122,13 +122,14 @@ local LocalPlayer = Players.LocalPlayer
 local GunData = {
     Shotgun = { Ammo = 2, Reserve = 10 },
     Handgun = { Ammo = 7, Reserve = 14 },
+    ["Flare Gun"] = { Ammo = 1, Reserve = 3 },
 }
 
 local CurrentGun = "Shotgun"
 
 Main1Group:AddDropdown("GunSelect", {
     Text = "Select Gun",
-    Values = { "Shotgun", "Handgun" },
+    Values = { "Shotgun", "Handgun", "Flare Gun" },
     Default = "Shotgun", -- ❗ PHẢI LÀ STRING
     Multi = false,
 
@@ -324,12 +325,12 @@ end)
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
---===== SHOTGUN AMMO INPUT =====--
+--===== HANDGUN AMMO INPUT =====--
 local handgunammoValue = 2
 
-Main1Group:AddInput("ShotgunAmmoInput", {
-    Text = "-Set Shotgun Ammo-",
-    Placeholder = "Enter Shotgun Ammo (1-inf)",
+Main1Group:AddInput("HandgunAmmoInput", {
+    Text = "-Set Handgun Ammo-",
+    Placeholder = "Enter Handgun Ammo (1-inf)",
     Default = tostring(handgunammoValue),
     Numeric = false, -- cho phép nhập chữ
     Callback = function(val)
@@ -337,7 +338,7 @@ Main1Group:AddInput("ShotgunAmmoInput", {
 
         if val == "inf" then
             handgunammoValue = math.huge
-            Library:Notify("Sg Ammo = INF", 3)
+            Library:Notify("Hg Ammo = INF", 3)
             return
         end
 
@@ -366,9 +367,159 @@ Main1Group:AddButton("Set Handgun Ammo", function()
     end
 
     if found then
-        Library:Notify("Set all Shotgun Ammo = "..tostring(handgunammoValue), 3)
+        Library:Notify("Set all Handgun Ammo = "..tostring(handgunammoValue), 3)
     else
         Library:Notify("Handgun Ammo not found!", 3)
+    end
+end)
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+--===== HANDGUN AMMO INPUT =====--
+local handgunammoValue = 2
+
+Main1Group:AddInput("HandgunAmmoInput", {
+    Text = "-Set Handgun Ammo-",
+    Placeholder = "Enter Handgun Ammo (1-inf)",
+    Default = tostring(handgunammoValue),
+    Numeric = false, -- cho phép nhập chữ
+    Callback = function(val)
+        val = tostring(val):lower()
+
+        if val == "inf" then
+            handgunammoValue = math.huge
+            Library:Notify("Hg Ammo = INF", 3)
+            return
+        end
+
+        local n = tonumber(val)
+        if n and n >= 0 then
+            handgunammoValue = n
+        else
+            Library:Notify("Invalid Handgun Ammo value!", 3)
+        end
+    end
+})
+
+Main1Group:AddButton("Set Handgun Ammo", function()
+    local found = false
+
+    -- Loop Character + Backpack
+    for _,container in ipairs({LocalPlayer.Character, LocalPlayer.Backpack}) do
+        if container then
+            for _,item in ipairs(container:GetChildren()) do
+                if item.Name == "Handgun Ammo" and item:FindFirstChild("Quantity") then
+                    item.Quantity.Value = handgunammoValue
+                    found = true
+                end
+            end
+        end
+    end
+
+    if found then
+        Library:Notify("Set all Handgun Ammo = "..tostring(handgunammoValue), 3)
+    else
+        Library:Notify("Handgun Ammo not found!", 3)
+    end
+end)
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+--===== HANDGUN AMMO INPUT =====--
+local handgunammoValue = 2
+
+Main1Group:AddInput("HandgunAmmoInput", {
+    Text = "-Set Handgun Ammo-",
+    Placeholder = "Enter Handgun Ammo (1-inf)",
+    Default = tostring(handgunammoValue),
+    Numeric = false, -- cho phép nhập chữ
+    Callback = function(val)
+        val = tostring(val):lower()
+
+        if val == "inf" then
+            handgunammoValue = math.huge
+            Library:Notify("Hg Ammo = INF", 3)
+            return
+        end
+
+        local n = tonumber(val)
+        if n and n >= 0 then
+            handgunammoValue = n
+        else
+            Library:Notify("Invalid Handgun Ammo value!", 3)
+        end
+    end
+})
+
+Main1Group:AddButton("Set Handgun Ammo", function()
+    local found = false
+
+    -- Loop Character + Backpack
+    for _,container in ipairs({LocalPlayer.Character, LocalPlayer.Backpack}) do
+        if container then
+            for _,item in ipairs(container:GetChildren()) do
+                if item.Name == "Handgun Ammo" and item:FindFirstChild("Quantity") then
+                    item.Quantity.Value = handgunammoValue
+                    found = true
+                end
+            end
+        end
+    end
+
+    if found then
+        Library:Notify("Set all Handgun Ammo = "..tostring(handgunammoValue), 3)
+    else
+        Library:Notify("Handgun Ammo not found!", 3)
+    end
+end)
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+--===== HANDGUN AMMO INPUT =====--
+local FlareGunAmmoValue = 3
+
+Main1Group:AddInput("FlareGunAmmoInput", {
+    Text = "-Set Flare Gun Ammo-",
+    Placeholder = "Enter Flare Gun Ammo (1-inf)",
+    Default = tostring(FlareGunAmmoValue),
+    Numeric = false, -- cho phép nhập chữ
+    Callback = function(val)
+        val = tostring(val):lower()
+
+        if val == "inf" then
+            FlareGunAmmoValue = math.huge
+            Library:Notify("Hg Ammo = INF", 3)
+            return
+        end
+
+        local n = tonumber(val)
+        if n and n >= 0 then
+            FlareGunAmmoValue = n
+        else
+            Library:Notify("Invalid Flare Gun Ammo value!", 3)
+        end
+    end
+})
+
+Main1Group:AddButton("Set FlareGunAmmo Ammo", function()
+    local found = false
+
+    -- Loop Character + Backpack
+    for _,container in ipairs({LocalPlayer.Character, LocalPlayer.Backpack}) do
+        if container then
+            for _,item in ipairs(container:GetChildren()) do
+                if item.Name == "Flare Gun Ammo" and item:FindFirstChild("Quantity") then
+                    item.Quantity.Value = FlareGunAmmoValue
+                    found = true
+                end
+            end
+        end
+    end
+
+    if found then
+        Library:Notify("Set all Flare Gun Ammo = "..tostring(FlareGunAmmoValue), 3)
+    else
+        Library:Notify("Flare Gun Ammo not found!", 3)
     end
 end)
 
