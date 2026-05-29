@@ -375,107 +375,7 @@ end)
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
---===== HANDGUN AMMO INPUT =====--
-local handgunammoValue = 2
-
-Main1Group:AddInput("HandgunAmmoInput", {
-    Text = "-Set Handgun Ammo-",
-    Placeholder = "Enter Handgun Ammo (1-inf)",
-    Default = tostring(handgunammoValue),
-    Numeric = false, -- cho phép nhập chữ
-    Callback = function(val)
-        val = tostring(val):lower()
-
-        if val == "inf" then
-            handgunammoValue = math.huge
-            Library:Notify("Hg Ammo = INF", 3)
-            return
-        end
-
-        local n = tonumber(val)
-        if n and n >= 0 then
-            handgunammoValue = n
-        else
-            Library:Notify("Invalid Handgun Ammo value!", 3)
-        end
-    end
-})
-
-Main1Group:AddButton("Set Handgun Ammo", function()
-    local found = false
-
-    -- Loop Character + Backpack
-    for _,container in ipairs({LocalPlayer.Character, LocalPlayer.Backpack}) do
-        if container then
-            for _,item in ipairs(container:GetChildren()) do
-                if item.Name == "Handgun Ammo" and item:FindFirstChild("Quantity") then
-                    item.Quantity.Value = handgunammoValue
-                    found = true
-                end
-            end
-        end
-    end
-
-    if found then
-        Library:Notify("Set all Handgun Ammo = "..tostring(handgunammoValue), 3)
-    else
-        Library:Notify("Handgun Ammo not found!", 3)
-    end
-end)
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
---===== HANDGUN AMMO INPUT =====--
-local handgunammoValue = 2
-
-Main1Group:AddInput("HandgunAmmoInput", {
-    Text = "-Set Handgun Ammo-",
-    Placeholder = "Enter Handgun Ammo (1-inf)",
-    Default = tostring(handgunammoValue),
-    Numeric = false, -- cho phép nhập chữ
-    Callback = function(val)
-        val = tostring(val):lower()
-
-        if val == "inf" then
-            handgunammoValue = math.huge
-            Library:Notify("Hg Ammo = INF", 3)
-            return
-        end
-
-        local n = tonumber(val)
-        if n and n >= 0 then
-            handgunammoValue = n
-        else
-            Library:Notify("Invalid Handgun Ammo value!", 3)
-        end
-    end
-})
-
-Main1Group:AddButton("Set Handgun Ammo", function()
-    local found = false
-
-    -- Loop Character + Backpack
-    for _,container in ipairs({LocalPlayer.Character, LocalPlayer.Backpack}) do
-        if container then
-            for _,item in ipairs(container:GetChildren()) do
-                if item.Name == "Handgun Ammo" and item:FindFirstChild("Quantity") then
-                    item.Quantity.Value = handgunammoValue
-                    found = true
-                end
-            end
-        end
-    end
-
-    if found then
-        Library:Notify("Set all Handgun Ammo = "..tostring(handgunammoValue), 3)
-    else
-        Library:Notify("Handgun Ammo not found!", 3)
-    end
-end)
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
---===== HANDGUN AMMO INPUT =====--
+--===== FLARE GUN AMMO INPUT =====--
 local FlareGunAmmoValue = 3
 
 Main1Group:AddInput("FlareGunAmmoInput", {
@@ -488,7 +388,7 @@ Main1Group:AddInput("FlareGunAmmoInput", {
 
         if val == "inf" then
             FlareGunAmmoValue = math.huge
-            Library:Notify("Hg Ammo = INF", 3)
+            Library:Notify("Fg Ammo = INF", 3)
             return
         end
 
