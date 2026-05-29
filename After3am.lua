@@ -644,6 +644,8 @@ local ItemColors = {
     ["Shotgun Ammo"] = Color3.fromRGB(255,215,0),
     ["Flashlight"] = Color3.fromRGB(155,155,155),
     ["Fuel"] = Color3.fromRGB(255,0,0),
+    ["Flare Gun Ammo"] = Color3.fromRGB(255,0,0),
+    ["Flare Gun"] = Color3.fromRGB(255,0,0),
     ["Shotgun"] = Color3.fromRGB(200,200,200),
     ["Handgun"] = Color3.fromRGB(195,195,195),
 }
