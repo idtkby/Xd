@@ -5192,7 +5192,7 @@ function execCmd(cmdStr,speaker,store)
 	end)
 end	
 
-function 	(name,alias,func,plgn)
+function addcmd(name,alias,func,plgn)
 	cmds[#cmds+1]=
 		{
 			NAME=name;
