@@ -95,434 +95,6 @@ local M205Two = Main2o5Group:AddTab("--== Load ==--")
 
 
 Main1Group:AddDivider()
--- Thêm label FireAxe Code
-local FireAxeLabel = Main1Group:AddLabel("FireAxe Code: Loading...")
-
--- Update liên tục
-task.spawn(function()
-    local fireaxeCodeValue = game:GetService("Workspace"):WaitForChild("GameManager"):WaitForChild("FireaxeCode") -- Hoặc game.GameManager nếu trực tiếp
-    while true do
-        
-        if fireaxeCodeValue:IsA("StringValue") then
-            FireAxeLabel:SetText("FireAxe Code: " .. fireaxeCodeValue.Value)
-        else
-            FireAxeLabel:SetText("FireAxe Code: N/A")
-        end
-        task.wait(1000)
-    end
-end)
-
-
-
-Main1Group:AddDivider()
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
--- ===== DATA LƯU THEO TỪNG GUN =====
-local GunData = {
-    Shotgun = { Ammo = 2, Reserve = 10 },
-    Handgun = { Ammo = 7, Reserve = 14 },
-    ["Flare Gun"] = { Ammo = 1, Reserve = 3 },
-}
-
-local CurrentGun = "Shotgun"
-
-Main1Group:AddDropdown("GunSelect", {
-    Text = "Select Gun",
-    Values = { "Shotgun", "Handgun", "Flare Gun" },
-    Default = "Shotgun", -- ❗ PHẢI LÀ STRING
-    Multi = false,
-
-    Callback = function(val)
-        CurrentGun = val
-
-        -- update textbox theo gun
-        Options.AmmoInput:SetValue(tostring(GunData[val].Ammo))
-        Options.ReserveInput:SetValue(tostring(GunData[val].Reserve))
-
-        Library:Notify("Selected: "..val, 2)
-    end
-})
-
--- ===== AMMO INPUT =====
-Main1Group:AddInput("AmmoInput", {
-    Text = "Set Ammo",
-    Default = tostring(GunData[CurrentGun].Ammo),
-    Numeric = false,
-
-    Callback = function(val)
-        val = tostring(val):lower()
-
-        if val == "inf" then
-            GunData[CurrentGun].Ammo = math.huge
-            return
-        end
-
-        local n = tonumber(val)
-        if n and n >= 0 then
-            GunData[CurrentGun].Ammo = n
-        else
-            Library:Notify("Invalid Reserve value!", 2)
-        end
-    end
-})
-
--- ===== SET AMMO =====
-Main1Group:AddButton("SetAmmo", function()
-    local found = false
-    local value = GunData[CurrentGun].Ammo
-
-    for _, container in ipairs({LocalPlayer.Character, LocalPlayer.Backpack}) do
-        if container then
-            for _, tool in ipairs(container:GetChildren()) do
-                if tool.Name == CurrentGun and tool:FindFirstChild("Ammo") then
-                    tool.Ammo.Value = value
-                    found = true
-                end
-            end
-        end
-    end
-
-    if found then
-        Library:Notify("Set "..CurrentGun.." Ammo = "..tostring(value), 3)
-    else
-        Library:Notify(CurrentGun.." not found!", 3)
-    end
-end)
-
--- ===== RESERVE INPUT =====
-Main1Group:AddInput("ReserveInput", {
-    Text = "Set Reserve",
-    Default = tostring(GunData[CurrentGun].Reserve),
-    Numeric = false,
-
-    Callback = function(val)
-        val = tostring(val):lower()
-
-        if val == "inf" then
-            GunData[CurrentGun].Reserve = math.huge
-            return
-        end
-
-        local n = tonumber(val)
-        if n and n >= 0 then
-            GunData[CurrentGun].Reserve = n
-        else
-            Library:Notify("Reserve không hợp lệ", 2)
-        end
-    end
-})
-
--- ===== SET RESERVE =====
-Main1Group:AddButton("SetReserve", function()
-    local found = false
-    local value = GunData[CurrentGun].Reserve
-
-    for _, container in ipairs({LocalPlayer.Character, LocalPlayer.Backpack}) do
-        if container then
-            for _, tool in ipairs(container:GetChildren()) do
-                if tool.Name == CurrentGun and tool:FindFirstChild("ReserveAmmo") then
-                    tool.ReserveAmmo.Value = value
-                    found = true
-                end
-            end
-        end
-    end
-
-    if found then
-        Library:Notify("Set "..CurrentGun.." Reserve = "..tostring(value), 3)
-    else
-        Library:Notify(CurrentGun.." not found!", 3)
-    end
-end)
-Main1Group:AddLabel(">>↓Watch the video to understand how it works")
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-local selectedItem = "Fuel" -- mặc định
-
--- Dropdown chọn tool
-Main1Group:AddDropdown("ItemSelect", {
-    Values = {"Fuel", "Flashlight"},
-    Default = "Fuel",
-    Multi = false,
-    Text = "Select Item",
-    Callback = function(v)
-        selectedItem = v
-    end
-})
-
--- Nút Set Full = 100
-Main1Group:AddButton({
-    Text = "Set Full",
-    Func = function()
-
-        local tool =
-            LocalPlayer.Backpack:FindFirstChild(selectedItem) or
-            (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild(selectedItem))
-
-        if tool and tool:FindFirstChild("Quantity") then
-            tool.Quantity.Value = 100
-            Library:Notify(selectedItem .. " set full!", 3)
-        else
-            Library:Notify(selectedItem .. " not found!", 3)
-        end
-    end
-})
-
---===== RESERVE AMMO INPUT =====--
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
---===== SHOTGUN AMMO INPUT =====--
-local shotgunammoValue = 2
-
-Main1Group:AddInput("ShotgunAmmoInput", {
-    Text = "-Set Shotgun Ammo-",
-    Placeholder = "Enter Shotgun Ammo (1-inf)",
-    Default = tostring(shotgunammoValue),
-    Numeric = false, -- cho phép nhập chữ
-    Callback = function(val)
-        val = tostring(val):lower()
-
-        if val == "inf" then
-            shotgunammoValue = math.huge
-            Library:Notify("Sg Ammo = INF", 3)
-            return
-        end
-
-        local n = tonumber(val)
-        if n and n >= 0 then
-            shotgunammoValue = n
-        else
-            Library:Notify("Invalid Shotgun Ammo value!", 3)
-        end
-    end
-})
-
-Main1Group:AddButton("SetShotgunAmmo", function()
-    local found = false
-
-    -- Loop Character + Backpack
-    for _,container in ipairs({LocalPlayer.Character, LocalPlayer.Backpack}) do
-        if container then
-            for _,item in ipairs(container:GetChildren()) do
-                if item.Name == "Shotgun Ammo" and item:FindFirstChild("Quantity") then
-                    item.Quantity.Value = shotgunammoValue
-                    found = true
-                end
-            end
-        end
-    end
-
-    if found then
-        Library:Notify("Set all Shotgun Ammo = "..tostring(shotgunammoValue), 3)
-    else
-        Library:Notify("Shotgun Ammo not found!", 3)
-    end
-end)
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
---===== HANDGUN AMMO INPUT =====--
-local handgunammoValue = 2
-
-Main1Group:AddInput("HandgunAmmoInput", {
-    Text = "-Set Handgun Ammo-",
-    Placeholder = "Enter Handgun Ammo (1-inf)",
-    Default = tostring(handgunammoValue),
-    Numeric = false, -- cho phép nhập chữ
-    Callback = function(val)
-        val = tostring(val):lower()
-
-        if val == "inf" then
-            handgunammoValue = math.huge
-            Library:Notify("Hg Ammo = INF", 3)
-            return
-        end
-
-        local n = tonumber(val)
-        if n and n >= 0 then
-            handgunammoValue = n
-        else
-            Library:Notify("Invalid Handgun Ammo value!", 3)
-        end
-    end
-})
-
-Main1Group:AddButton("Set Handgun Ammo", function()
-    local found = false
-
-    -- Loop Character + Backpack
-    for _,container in ipairs({LocalPlayer.Character, LocalPlayer.Backpack}) do
-        if container then
-            for _,item in ipairs(container:GetChildren()) do
-                if item.Name == "Handgun Ammo" and item:FindFirstChild("Quantity") then
-                    item.Quantity.Value = handgunammoValue
-                    found = true
-                end
-            end
-        end
-    end
-
-    if found then
-        Library:Notify("Set all Handgun Ammo = "..tostring(handgunammoValue), 3)
-    else
-        Library:Notify("Handgun Ammo not found!", 3)
-    end
-end)
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
---===== FLARE GUN AMMO INPUT =====--
-local FlareGunAmmoValue = 3
-
-Main1Group:AddInput("FlareGunAmmoInput", {
-    Text = "-Set Flare Gun Ammo-",
-    Placeholder = "Enter Flare Gun Ammo (1-inf)",
-    Default = tostring(FlareGunAmmoValue),
-    Numeric = false, -- cho phép nhập chữ
-    Callback = function(val)
-        val = tostring(val):lower()
-
-        if val == "inf" then
-            FlareGunAmmoValue = math.huge
-            Library:Notify("Fg Ammo = INF", 3)
-            return
-        end
-
-        local n = tonumber(val)
-        if n and n >= 0 then
-            FlareGunAmmoValue = n
-        else
-            Library:Notify("Invalid Flare Gun Ammo value!", 3)
-        end
-    end
-})
-
-Main1Group:AddButton("Set FlareGunAmmo Ammo", function()
-    local found = false
-
-    -- Loop Character + Backpack
-    for _,container in ipairs({LocalPlayer.Character, LocalPlayer.Backpack}) do
-        if container then
-            for _,item in ipairs(container:GetChildren()) do
-                if item.Name == "Flare Gun Ammo" and item:FindFirstChild("Quantity") then
-                    item.Quantity.Value = FlareGunAmmoValue
-                    found = true
-                end
-            end
-        end
-    end
-
-    if found then
-        Library:Notify("Set all Flare Gun Ammo = "..tostring(FlareGunAmmoValue), 3)
-    else
-        Library:Notify("Flare Gun Ammo not found!", 3)
-    end
-end)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-M105One:AddDivider()
-
--- Biến trạng thái
-_G.InfEnergyEnabled = false
-
--- Button toggle Inf Energy
-M105One:AddButton("Inf Energy (Not Now)", function()
-    _G.InfEnergyEnabled = not _G.InfEnergyEnabled
-end)
-
--- Loop giữ energy max
-task.spawn(function()
-    while true do
-        task.wait(0.1)
-        if _G.InfEnergyEnabled then
-            pcall(function()
-                -- Set EnergyBar full
-                EnergyBar_upvr.Size = UDim2.new(1, -4, 1, -4)
-                -- Ghi đè var67 để chặn giảm
-                _G.var67 = 100
-            end)
-        end
-    end
-end)
-Main1Group:AddDivider()
-		Main1Group:AddLabel(">>Equip Shotgun need")
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local lp = Players.LocalPlayer
-
-_G.AutoShotgun = false
-local hbConnect = nil
-
--- Hàm chạy AutoShotgun
-local function StartAutoShotgun()
-    if hbConnect then hbConnect:Disconnect() end
-
-    hbConnect = RunService.Heartbeat:Connect(function()
-        if not _G.AutoShotgun then return end
-
-        local char = lp.Character
-        if not char then return end
-
-        local gun = char:FindFirstChild("Shotgun")
-        if not gun or not gun:FindFirstChild("DamageTargetEvent") then return end
-
-        for _, monster in ipairs(workspace.CurrentMonsters:GetChildren()) do
-            local hum = monster:FindFirstChild("Humanoid")
-            local hrp = monster:FindFirstChild("HumanoidRootPart")
-
-            if hum and hum.Health > 0 and hrp then
-                gun.DamageTargetEvent:FireServer(hrp, hrp.Position)
-            end
-        end
-    end)
-end
-
--- Gọi hàm khi script load
-StartAutoShotgun()
-
--- 🔥 Toggle trong Obsidian
-Main1Group:AddToggle("AutoShotgunToggle", {
-    Text = "Kill Enemy (beta)",
-    Default = false,
-    Callback = function(v)
-        _G.AutoShotgun = v
-        if v then
-            Library:Notify("Enabled", 3)
-        else
-            Library:Notify("Disabled", 3)
-        end
-    end
-})
-
-
-
-
-
-
-
-
-
 
 
 
@@ -532,21 +104,68 @@ Main1Group:AddToggle("AutoShotgunToggle", {
 
 _G.ESP_Items_Enabled = false
 _G.ESP_Enemy_Enabled = false
-_G.ShadowMan_Color = Color3.fromRGB(255, 0, 0) -- Màu mặc định cho quái nếu cần
+_G.ShadowMan_Color = Color3.fromRGB(255, 0, 0)
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 
-local PickupsFolder = Workspace:WaitForChild("Pickups")
-
--- Danh sách quặng mới
 local OreList = {"Nickel", "Cobalt", "Coal", "Tin", "Copper", "Minerals", "Iron", "Diamond", "Lead", "Silver", "Gold"}
 
+-- Bộ nhớ đệm lưu trữ quặng (Tránh GetDescendants liên tục gây lag)
+local CachedOres = {}
+
+-- Hàm kiểm tra và nạp quặng vào danh sách (Hỗ trợ cả Model lớn và Part quặng nhỏ lẻ rơi ra)
+local function CheckAndCache(obj)
+    if (obj:IsA("Model") or obj:IsA("BasePart")) and table.find(OreList, obj.Name) then
+        if not table.find(CachedOres, obj) then
+            table.insert(CachedOres, obj)
+        end
+    end
+end
+
+-- Quét ban đầu khi mở script
+for _, obj in ipairs(Workspace:GetDescendants()) do
+    CheckAndCache(obj)
+end
+
+-- Lắng nghe khi có quặng mới hoặc quặng lẻ rơi ra map
+Workspace.DescendantAdded:Connect(function(descendant)
+    CheckAndCache(descendant)
+end)
+
+-- Hàm tìm Part chính để treo BillboardGui
 local function GetPart(obj)
-    -- Ưu tiên part tên "ore", sau đó tới PrimaryPart hoặc BasePart bất kỳ
-    return obj:FindFirstChild("ore") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+    if obj:IsA("BasePart") then return obj end -- Nếu là cục quặng lẻ rơi ra
+    return obj:FindFirstChild("ore") or obj:FindFirstChild("Rock") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+end
+
+-- Hàm kiểm tra xem quặng đã bị đào/vỡ chưa (Sửa lỗi vẫn hiện ESP khi đào xong)
+local function IsMined(obj)
+    if not obj or not obj.Parent then return true end
+    
+    -- Trường hợp 1: Nếu là cục quặng lẻ rơi ra (bản thân nó là BasePart)
+    if obj:IsA("BasePart") then
+        return obj.Transparency >= 1
+    end
+    
+    -- Trường hợp 2: Kiểm tra các part cốt lõi bên trong Model quặng lớn ("ore" hoặc "Rock")
+    local corePart = obj:FindFirstChild("ore") or obj:FindFirstChild("Rock")
+    if corePart and corePart:IsA("BasePart") and corePart.Transparency >= 1 then
+        return true
+    end
+    
+    -- Trường hợp 3: Quét diện rộng xem tất cả các part hiển thị bên trong có bị tàng hình hết không
+    local hasVisiblePart = false
+    for _, child in ipairs(obj:GetChildren()) do
+        if child:IsA("BasePart") and child.Transparency < 1 then
+            hasVisiblePart = true
+            break
+        end
+    end
+    
+    return not hasVisiblePart -- Nếu không có part nào nhìn thấy được nữa => Đã đào xong
 end
 
 --======================================================
@@ -554,17 +173,11 @@ end
 --======================================================
 local function CreateESP(obj)
     local part = GetPart(obj)
-    if not part then return end
-    
-    -- Nếu quặng đã đào (Transparency = 1) thì không tạo ESP
-    local oreChild = obj:FindFirstChild("ore")
-    if oreChild and oreChild:IsA("BasePart") and oreChild.Transparency == 1 then 
-        return 
-    end
-    
+    if not part or IsMined(obj) then return end
     if part:FindFirstChild("ESP_Gui") or obj:FindFirstChild("ESP_Outline") then return end
 
-    -- Lấy màu động từ quặng.ore.Color, nếu không có thì lấy màu của part chính, bí quá thì màu trắng
+    -- Lấy màu động từ quặng.ore hoặc quặng.Rock hoặc bản thân cục quặng lẻ
+    local oreChild = obj:IsA("Model") and (obj:FindFirstChild("ore") or obj:FindFirstChild("Rock")) or nil
     local color = (oreChild and oreChild:IsA("BasePart")) and oreChild.Color or part.Color or Color3.new(1,1,1)
 
     -- Billboard UI
@@ -608,55 +221,52 @@ local function ClearESP(obj)
     if obj:FindFirstChild("ESP_Outline") then obj.ESP_Outline:Destroy() end
 end
 
--- Vòng lặp quét Quặng (Ores)
+-- Vòng lặp cập nhật Quặng
 task.spawn(function()
-    local trackedOres = {}
-
     while true do
-        task.wait(0.5) -- Tăng tần suất quét lên 0.5s để cập nhật khoảng cách mượt hơn
+        task.wait(0.3) -- Tốc độ quét 0.3s mượt mà hơn để check khoảng cách Slider
+        
+        -- Dọn dẹp quặng đã biến mất hoàn toàn khỏi map ra khỏi bộ nhớ đệm
+        for i = #CachedOres, 1, -1 do
+            if not CachedOres[i] or not CachedOres[i].Parent then
+                table.remove(CachedOres, i)
+            end
+        end
+        
+        -- Lấy giá trị khoảng cách tối đa từ Slider UI (Mặc định 1000 nếu không tìm thấy slider)
+        local maxDist = Options.ESPDistanceSlider and Options.ESPDistanceSlider.Value or 1000
         
         if _G.ESP_Items_Enabled and Options.ESPOresDropdown then
-            local selectedOres = Options.ESPOresDropdown.Value -- Lấy bảng các quặng được chọn từ UI
+            local selectedOres = Options.ESPOresDropdown.Value
             
-            for _, obj in ipairs(PickupsFolder:GetChildren()) do
-                if obj:IsA("Model") and table.find(OreList, obj.Name) then
-                    local oreChild = obj:FindFirstChild("ore")
-                    
-                    -- Điều kiện hiển thị: Được tích chọn trong Dropdown VÀ chưa bị đào (Transparency < 1)
-                    if selectedOres[obj.Name] and (not oreChild or (oreChild:IsA("BasePart") and oreChild.Transparency < 1)) then
-                        CreateESP(obj)
-                        trackedOres[obj] = true
-
-                        local part = GetPart(obj)
-                        if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            for _, obj in ipairs(CachedOres) do
+                -- Điều kiện: Quặng được chọn trong danh sách VÀ chưa bị đào xong
+                if selectedOres[obj.Name] and not IsMined(obj) then
+                    local part = GetPart(obj)
+                    if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        local dist = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                        
+                        -- KIỂM TRA KHOẢNG CÁCH SLIDER
+                        if dist <= maxDist then
+                            CreateESP(obj)
                             local gui = part:FindFirstChild("ESP_Gui")
                             if gui and gui:FindFirstChild("MainLabel") then
-                                local dist = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                                gui.MaxDistance = maxDist -- Giới hạn tầm nhìn phần cứng của Roblox
                                 gui.MainLabel.Text = obj.Name..string.format("\nDist: %.1f", dist)
                             end
-                        end
-                    else
-                        -- Nếu bỏ chọn trong dropdown HOẶC quặng đã bị đào (Transparency = 1) -> Xóa ESP
-                        if trackedOres[obj] then
-                            ClearESP(obj)
-                            trackedOres[obj] = nil
+                        else
+                            ClearESP(obj) -- Quá xa thì xóa tạm thời cho đỡ rối mắt
                         end
                     end
-                end
-            end
-            
-            -- Dọn dẹp các mục biến mất khỏi Folder
-            for obj, _ in pairs(trackedOres) do
-                if not obj or not obj.Parent then
-                    trackedOres[obj] = nil
+                else
+                    ClearESP(obj) -- Bỏ chọn hoặc quặng đã vỡ hoàn toàn thì xóa ESP
                 end
             end
         else
-            -- Tắt toàn bộ khi toggle chính OFF
-            for obj, _ in pairs(trackedOres) do
-                if obj and obj.Parent then ClearESP(obj) end
+            -- Tắt nút chính tắt hết
+            for _, obj in ipairs(CachedOres) do
+                ClearESP(obj)
             end
-            table.clear(trackedOres)
         end
     end
 end)
@@ -673,7 +283,6 @@ local function CreateEnemyESP(obj)
     local hum = obj:FindFirstChildOfClass("Humanoid")
     local hp = hum and math.floor(hum.Health) or "?"
 
-    -- Billboard
     local gui = Instance.new("BillboardGui")
     gui.Name = "ESP_Gui"
     gui.Adornee = part
@@ -698,7 +307,6 @@ local function CreateEnemyESP(obj)
     stroke.Thickness = 1.5
     stroke.Parent = lbl
 
-    -- Outline
     local hl = Instance.new("Highlight")
     hl.Name = "ESP_Outline"
     hl.Adornee = obj
@@ -714,47 +322,53 @@ local function ClearEnemyESP(obj)
     if obj:FindFirstChild("ESP_Outline") then obj.ESP_Outline:Destroy() end
 end
 
--- Vòng lặp quét Quái vật qua Folder chuyên dụng (Monsters / monsters)
+-- Vòng lặp cập nhật Quái vật (Cũng áp dụng giới hạn tầm nhìn Slider luôn)
 task.spawn(function()
     local trackedEnemies = {}
 
     while true do
-        task.wait(0.5)
+        task.wait(0.3)
+        local maxDist = Options.ESPDistanceSlider and Options.ESPDistanceSlider.Value or 1000
         
         if _G.ESP_Enemy_Enabled then
-            -- Tự động tìm kiếm folder viết hoa hoặc viết thường
             local MonstersFolder = Workspace:FindFirstChild("Monsters") or Workspace:FindFirstChild("monsters")
             
             if MonstersFolder then
                 for _, enemy in ipairs(MonstersFolder:GetChildren()) do
                     if enemy:IsA("Model") then
-                        CreateEnemyESP(enemy)
-                        trackedEnemies[enemy] = true
-
                         local part = enemy.PrimaryPart or enemy:FindFirstChildWhichIsA("BasePart")
-                        local gui = part and part:FindFirstChild("ESP_Gui")
-                        local lbl = gui and gui:FindFirstChild("MainLabel")
-                        local hum = enemy:FindFirstChildOfClass("Humanoid")
-                        local hp = hum and math.floor(hum.Health) or "?"
-                        
-                        if lbl and part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                             local dist = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-                            lbl.Text = enemy.Name.."\nHP: "..hp..string.format("\nDist: %.1f", dist)
+                            
+                            if dist <= maxDist then
+                                CreateEnemyESP(enemy)
+                                trackedEnemies[enemy] = true
+
+                                local gui = part:FindFirstChild("ESP_Gui")
+                                local lbl = gui and gui:FindFirstChild("MainLabel")
+                                local hum = enemy:FindFirstChildOfClass("Humanoid")
+                                local hp = hum and math.floor(hum.Health) or "?"
+                                
+                                if lbl then
+                                    gui.MaxDistance = maxDist
+                                    lbl.Text = enemy.Name.."\nHP: "..hp..string.format("\nDist: %.1f", dist)
+                                end
+                            else
+                                ClearEnemyESP(enemy)
+                            end
                         end
                     end
                 end
             end
             
-            -- Xóa các quái đã chết hoặc bị xóa khỏi folder
             for enemy, _ in pairs(trackedEnemies) do
-                local MonstersFolder = Workspace:FindFirstChild("Monsters") or Workspace:FindFirstChild("monsters")
-                if not enemy or not enemy.Parent or (MonstersFolder and not enemy:IsDescendantOf(MonstersFolder)) then
+                local currentFolder = Workspace:FindFirstChild("Monsters") or Workspace:FindFirstChild("monsters")
+                if not enemy or not enemy.Parent or (currentFolder and not enemy:IsDescendantOf(currentFolder)) then
                     ClearEnemyESP(enemy)
                     trackedEnemies[enemy] = nil
                 end
             end
         else
-            -- Tắt toàn bộ khi toggle Enemy OFF
             for enemy, _ in pairs(trackedEnemies) do
                 if enemy and enemy.Parent then ClearEnemyESP(enemy) end
             end
@@ -764,9 +378,8 @@ task.spawn(function()
 end)
 
 --======================================================    
---  UI CONFIGURATION (Main2Group)    
+--  UI CONFIGURATION (Main2Group - LinoriaLib)    
 --======================================================    
--- Toggle Bật/Tắt ESP Quặng chính
 Main2Group:AddToggle("ESPItemsToggle", {
     Text = "ESP Ores Master",
     Default = false,
@@ -775,19 +388,28 @@ Main2Group:AddToggle("ESPItemsToggle", {
     end
 })
 
--- Dropdown chọn nhiều (Multi Dropdown) cho từng loại quặng cụ thể
 Main2Group:AddDropdown("ESPOresDropdown", {
     Values = OreList,
     Default = 1, 
-    Multi = true, -- Cho phép chọn nhiều mục cùng lúc
+    Multi = true, 
     Text = "Select Ores to Show",
-    Tooltip = "Chọn những loại quặng bạn muốn hiển thị trên màn hình",
+    Tooltip = "Chọn quặng muốn hiển thị",
+    Callback = function(Value) end,
+})
+
+-- SLIDER ĐIỀU CHỈNH KHOẢNG CÁCH (100 -> 2000)
+Main2Group:AddSlider("ESPDistanceSlider", {
+    Text = "Max ESP Distance",
+    Default = 1000,
+    Min = 100,
+    Max = 2000,
+    Rounding = 0, -- Làm tròn số nguyên (không lấy số thập phân cho gọn)
+    Compact = false,
     Callback = function(Value)
-        -- LinoriaLib tự cập nhật Options.ESPOresDropdown.Value thành một dictionary dạng { ["Coal"] = true, ["Iron"] = false }
-    end,
+        -- LinoriaLib tự động cập nhật giá trị vào Options.ESPDistanceSlider.Value
+    end
 })
     
--- Toggle riêng cho Enemy (Quét theo folder Monsters)
 Main2Group:AddToggle("ESPEnemyToggle", {
     Text = "ESP Monsters",
     Default = false,
@@ -795,7 +417,6 @@ Main2Group:AddToggle("ESPEnemyToggle", {
         _G.ESP_Enemy_Enabled = v
     end
 })
-    
 
 
 
@@ -917,6 +538,25 @@ M205One:AddToggle("FullBright", {
     end
 })
 
+local ProximityPromptService = game:GetService("ProximityPromptService")
+local PromptConnection
+
+M205One:AddToggle("InstantPrompt", {
+    Text = "Instant Prompt",
+    Default = false,
+    Callback = function(Value)
+        if PromptConnection then
+            PromptConnection:Disconnect()
+            PromptConnection = nil
+        end
+
+        if Value then
+            PromptConnection = ProximityPromptService.PromptButtonHoldBegan:Connect(function(prompt)
+                fireproximityprompt(prompt)
+            end)
+        end
+    end
+})
 
 M205One:AddToggle("ShowPing", {
     Text = "Show YOUR Ping",
@@ -989,10 +629,6 @@ M205One:AddToggle("ShowPing", {
         end
     end
 })
-
-M205One:AddButton("no disable chat", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/enable%20chat"))()
-end)
 M205One:AddButton("Third Person", function()
 
     local Players = game:GetService("Players")
@@ -1023,8 +659,67 @@ M205Two:AddButton("Load InfYield Edit", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()  
 				
 			end)
-M205Two:AddButton("Aimbot Toggle", function()
-			loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Aimbot%20npc%207%20days"))()
+M205Two:AddButton("Load Radar", function()
+			--- Bản vẽ Radar người chơi
+--- Được làm bởi topit
+
+_G.RadarSettings3 = {
+    --- Mục tiêu định vị ---
+    TRACK_PLAYERS = true;                     -- Bật/Tắt định vị Người chơi (Players)
+    TRACK_NPCS = true;                        -- Bật/Tắt định vị thực thể máy (NPCs)
+
+    --- Radar settings ---
+    RADAR_LINES = true; 
+    RADAR_LINE_DISTANCE = 50; 
+    RADAR_SCALE = .3; 
+    RADAR_RADIUS = 80; 
+    RADAR_START_POS = Vector2.new(300, 250); -- Tọa độ hiển thị mặc định của tâm Radar
+    RADAR_ROTATION = true; 
+    SMOOTH_ROT = true; 
+    SMOOTH_ROT_AMNT = 30; 
+    CARDINAL_DISPLAY = true; 
+    
+    --- Path Recording Settings (Bản đồ đường đi của bạn) ---
+    RECORD_PATH = true;                      -- Bật/Tắt chức năng vẽ lại đường đi cũ của bản thân
+    PATH_DISTANCE = 8;                       -- Khoảng cách (studs) giữa mỗi dấu chấm đường đi
+    PATH_MAX_POINTS = 500;                   -- Giới hạn số điểm tối đa để bảo vệ FPS
+    PATH_COLOR = Color3.fromRGB(0, 225, 255);-- Màu của đường đi cũ (Xanh Cyan)
+    
+    --- Marker settings ---
+    DISPLAY_OFFSCREEN = true; 
+    DISPLAY_TEAMMATES = true; 
+    DISPLAY_TEAM_COLORS = true; 
+    DISPLAY_FRIEND_COLORS = true; 
+    DISPLAY_RGB_COLORS = false; 
+    MARKER_SCALE_BASE = 1.25; 
+    MARKER_SCALE_MAX = 1.25; 
+    MARKER_SCALE_MIN = 0.75; 
+    MARKER_FALLOFF = true; 
+    MARKER_FALLOFF_AMNT = 125; 
+    OFFSCREEN_TRANSPARENCY = 0.3; 
+    USE_FALLBACK = false; 
+    USE_QUADS = true; 
+    USE_TEAM_COLORS = false; 
+    VISIBLITY_CHECK = false; 
+    
+    --- Theme Màu Sắc ---
+    RADAR_THEME = {
+        Outline = Color3.fromRGB(35, 35, 45); 
+        Background = Color3.fromRGB(25, 25, 35); 
+        DragHandle = Color3.fromRGB(50, 50, 255); 
+        Cardinal_Lines = Color3.fromRGB(110, 110, 120); 
+        Distance_Lines = Color3.fromRGB(65, 65, 75); 
+        Generic_Marker = Color3.fromRGB(255, 25, 115); 
+        Team_Marker = Color3.fromRGB(25, 115, 255); 
+        Friend_Marker = Color3.fromRGB(25, 255, 115); 
+        
+        Local_Marker = Color3.fromRGB(115, 25, 255); -- Tím gốc của LocalPlayer
+        NPC_Marker = Color3.fromRGB(255,0,0);  -- Màu giống LocalPlayer nhưng SÁNG HƠN (Neon Violet)
+    };
+}
+
+loadstring(game:HttpGet('https://raw.githubusercontent.com/idtkby/NowGeta/main/Full%20Function%20Radar'))()
+
 		end)
 
 
