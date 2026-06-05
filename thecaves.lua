@@ -102,6 +102,8 @@ Main1Group:AddDivider()
 
 
 
+
+
 _G.ESP_Items_Enabled = false
 _G.ESP_Enemy_Enabled = false
 _G.ShadowMan_Color = Color3.fromRGB(255, 0, 0)
@@ -138,7 +140,7 @@ end)
 -- Hàm tìm Part chính để treo BillboardGui
 local function GetPart(obj)
     if obj:IsA("BasePart") then return obj end -- Nếu là cục quặng lẻ rơi ra
-    return obj:FindFirstChild("ore") or obj:FindFirstChild("Rock") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+    return obj:FindFirstChild("ore") or obj:FindFirstChild("Ore") or obj:FindFirstChild("Rock") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
 end
 
 -- Hàm kiểm tra xem quặng đã bị đào/vỡ chưa (Sửa lỗi vẫn hiện ESP khi đào xong)
@@ -150,8 +152,8 @@ local function IsMined(obj)
         return obj.Transparency >= 1
     end
     
-    -- Trường hợp 2: Kiểm tra các part cốt lõi bên trong Model quặng lớn ("ore" hoặc "Rock")
-    local corePart = obj:FindFirstChild("ore") or obj:FindFirstChild("Rock")
+    -- Trường hợp 2: Kiểm tra các part cốt lõi bên trong Model quặng lớn
+    local corePart = obj:FindFirstChild("ore") or obj:FindFirstChild("Ore") or obj:FindFirstChild("Rock")
     if corePart and corePart:IsA("BasePart") and corePart.Transparency >= 1 then
         return true
     end
@@ -176,9 +178,26 @@ local function CreateESP(obj)
     if not part or IsMined(obj) then return end
     if part:FindFirstChild("ESP_Gui") or obj:FindFirstChild("ESP_Outline") then return end
 
-    -- Lấy màu động từ quặng.ore hoặc quặng.Rock hoặc bản thân cục quặng lẻ
-    local oreChild = obj:IsA("Model") and (obj:FindFirstChild("ore") or obj:FindFirstChild("Rock")) or nil
-    local color = (oreChild and oreChild:IsA("BasePart")) and oreChild.Color or part.Color or Color3.new(1,1,1)
+    -- LẤY MÀU CHUẨN: Ưu tiên tuyệt đối cục "ore"/"Ore", bỏ qua hoàn toàn "Rock" màu xám
+    local color = Color3.new(1, 1, 1) -- Màu mặc định nếu không quét được
+    
+    if obj:IsA("BasePart") then
+        color = obj.Color
+    else
+        -- Kiểm tra xem Model có chứa mảnh quặng màu (ore/Ore) không
+        local oreChild = obj:FindFirstChild("ore") or obj:FindFirstChild("Ore")
+        if oreChild and oreChild:IsA("BasePart") then
+            color = oreChild.Color
+        else
+            -- Vòng lặp quét dự phòng: Lấy màu của part bất kỳ KHÔNG PHẢI là đá (Rock/Stone)
+            for _, child in ipairs(obj:GetChildren()) do
+                if child:IsA("BasePart") and child.Name ~= "Rock" and child.Name ~= "Stone" then
+                    color = child.Color
+                    break
+                end
+            end
+        end
+    end
 
     -- Billboard UI
     local gui = Instance.new("BillboardGui")
@@ -322,7 +341,7 @@ local function ClearEnemyESP(obj)
     if obj:FindFirstChild("ESP_Outline") then obj.ESP_Outline:Destroy() end
 end
 
--- Vòng lặp cập nhật Quái vật (Cũng áp dụng giới hạn tầm nhìn Slider luôn)
+-- Vòng lặp cập nhật Quái vật
 task.spawn(function()
     local trackedEnemies = {}
 
@@ -403,11 +422,9 @@ Main2Group:AddSlider("ESPDistanceSlider", {
     Default = 1000,
     Min = 100,
     Max = 2000,
-    Rounding = 0, -- Làm tròn số nguyên (không lấy số thập phân cho gọn)
+    Rounding = 0,
     Compact = false,
-    Callback = function(Value)
-        -- LinoriaLib tự động cập nhật giá trị vào Options.ESPDistanceSlider.Value
-    end
+    Callback = function(Value) end
 })
     
 Main2Group:AddToggle("ESPEnemyToggle", {
@@ -423,6 +440,75 @@ Main2Group:AddToggle("ESPEnemyToggle", {
 
 
 
+
+--======================================================    
+--  AUTO MINE LOGIC (Tích hợp vào Main1Group)    
+--======================================================    
+
+-- Thêm nút bật/tắt vào đúng nhóm Main1Group theo yêu cầu của bạn
+Main1Group:AddToggle("AutoMineToggle", {
+    Text = "Auto Mine Quặng",
+    Default = false,
+    Tooltip = "Tự động kích hoạt Prompt đào khi đang cầm Pickaxe",
+})
+
+-- Hàm tìm ProximityPrompt của quặng gần nhân vật nhất và đang mở
+local function GetClosestOrePrompt()
+    local character = LocalPlayer.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then return nil end
+    
+    local rootPart = character.HumanoidRootPart
+    local closestPrompt = nil
+    local shortestDistance = math.huge
+
+    -- Sử dụng lại mảng CachedOres từ hệ thống ESP quét sẵn để tối ưu hiệu năng (Không lo bị lag)
+    for _, ore in ipairs(CachedOres) do
+        if ore and ore.Parent and not IsMined(ore) then
+            -- Tìm kiếm Prompt sâu bên trong Model hoặc Part quặng
+            local prompt = ore:FindFirstChildOfClass("ProximityPrompt") or ore:FindFirstChildWhichIsA("ProximityPrompt", true)
+            
+            if prompt and prompt.Enabled then
+                local parentPart = prompt.Parent
+                if parentPart and parentPart:IsA("BasePart") then
+                    local distance = (parentPart.Position - rootPart.Position).Magnitude
+                    
+                    -- Kiểm tra xem người chơi có nằm trong phạm vi kích hoạt của Prompt đó không
+                    if distance <= prompt.MaxActivationDistance and distance < shortestDistance then
+                        shortestDistance = distance
+                        closestPrompt = prompt
+                    end
+                end
+            end
+        end
+    end
+    return closestPrompt
+end
+
+-- Vòng lặp chạy ngầm xử lý Auto Mine (Tốc độ quét 0.1s siêu mượt)
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        
+        -- Kiểm tra trạng thái Toggle trong hệ thống Obsidian UI
+        if Toggles.AutoMineToggle and Toggles.AutoMineToggle.Value then
+            local character = LocalPlayer.Character
+            if character then
+                -- ĐIỀU KIỆN 1: Người chơi bắt buộc phải đang cầm (Equip) Tool tên là "Pickaxe" trên tay
+                local equippedTool = character:FindFirstChild("Pickaxe")
+                
+                if equippedTool and equippedTool:IsA("Tool") then
+                    -- ĐIỀU KIỆN 2: Tìm khối quặng có Prompt đang hiện gần nhất
+                    local targetPrompt = GetClosestOrePrompt()
+                    
+                    if targetPrompt then
+                        -- Sử dụng hàm của Executor để tự động click Prompt từ xa/tức thời
+                        fireproximityprompt(targetPrompt)
+                    end
+                end
+            end
+        end
+    end
+end)
 
 
 
@@ -666,7 +752,7 @@ M205Two:AddButton("Load Radar", function()
 _G.RadarSettings3 = {
     --- Mục tiêu định vị ---
     TRACK_PLAYERS = true;                     -- Bật/Tắt định vị Người chơi (Players)
-    TRACK_NPCS = true;                        -- Bật/Tắt định vị thực thể máy (NPCs)
+    TRACK_NPCS = false;                        -- Bật/Tắt định vị thực thể máy (NPCs)
 
     --- Radar settings ---
     RADAR_LINES = true; 
@@ -681,7 +767,7 @@ _G.RadarSettings3 = {
     
     --- Path Recording Settings (Bản đồ đường đi của bạn) ---
     RECORD_PATH = true;                      -- Bật/Tắt chức năng vẽ lại đường đi cũ của bản thân
-    PATH_DISTANCE = 12;                       -- Khoảng cách (studs) giữa mỗi dấu chấm đường đi
+    PATH_DISTANCE = 30;                       -- Khoảng cách (studs) giữa mỗi dấu chấm đường đi
     PATH_MAX_POINTS = 500;                   -- Giới hạn số điểm tối đa để bảo vệ FPS
     PATH_COLOR = Color3.fromRGB(0, 225, 255);-- Màu của đường đi cũ (Xanh Cyan)
     
