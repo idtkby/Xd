@@ -70,7 +70,8 @@ local Main2o5Group = Tabs.Tab:AddRightTabbox() -- hoặc :AddLeftTabbox()
 
 
 --== Mini Tabs [Tabbox]
-local M105One = Main1o5Group:AddTab("--== Player ==--")
+local M105One = Main1o5Group:AddTab("--== Locations ==--")
+local M105Two = Main1o5Group:AddTab("--== Ore ==--")
 
 local M205One = Main2o5Group:AddTab("--== Misc ==--")
 local M205Two = Main2o5Group:AddTab("--== Load ==--")
@@ -84,6 +85,32 @@ local M205Two = Main2o5Group:AddTab("--== Load ==--")
 
 
 
+-- Tạo tiêu đề phân khu (Thay thế cho CreateSection của Rayfield)
+M105One:AddDivider()
+
+-- Danh sách vị trí (Đã để sẵn form để bạn tiện copy/thêm tọa độ mới)
+local locations = {
+    {Name = "Sell Ore 💰", Position = Vector3.new(-57.96, 93.92, 13.34)}, 
+    {Name = "Item Shop 💸", Position = Vector3.new(-80.87, 93.84, 59.07)},
+    {Name = "Premium Shop 💸💸💸", Position = Vector3.new(-6.41, 93.83, 55.31)},
+    {Name = "Cave Gate ⛩️", Position = Vector3.new(-73.75, 93.28, 95.39)},
+}
+
+-- Vòng lặp tự động tạo nút bấm theo chuẩn Obsidian Lib
+for _, loc in ipairs(locations) do
+    M105One:AddButton({
+        Text = "Go to: " .. loc.Name,
+        Func = function()
+            local player = game:GetService("Players").LocalPlayer
+            local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = CFrame.new(loc.Position)
+            end
+        end,
+        DoubleClick = false, -- Click 1 phát bay luôn, không cần click đúp
+        Tooltip = "Dịch chuyển đến " .. loc.Name
+    })
+end
 
 
 
@@ -116,10 +143,16 @@ local LocalPlayer = Players.LocalPlayer
 local OreList = {"Nickel", "Cobalt", "Coal", "Tin", "Copper", "Minerals", "Iron", "Diamond", "Lead", "Silver", "Gold"}
 
 -- Bộ nhớ đệm lưu trữ quặng (Tránh GetDescendants liên tục gây lag)
+-- Bộ nhớ đệm lưu trữ quặng
 local CachedOres = {}
 
--- Hàm kiểm tra và nạp quặng vào danh sách (Hỗ trợ cả Model lớn và Part quặng nhỏ lẻ rơi ra)
+-- Hàm kiểm tra và nạp quặng (Đã thêm bộ lọc chống rác)
 local function CheckAndCache(obj)
+    -- NẾU LÀ TOOL (Quặng lẻ) HOẶC ĐANG NẰM TRONG NGƯỜI CHƠI -> BỎ QUA NGAY
+    if obj:IsA("Tool") or obj:FindFirstAncestorOfClass("Model") and Players:GetPlayerFromCharacter(obj:FindFirstAncestorOfClass("Model")) then 
+        return 
+    end
+
     if (obj:IsA("Model") or obj:IsA("BasePart")) and table.find(OreList, obj.Name) then
         if not table.find(CachedOres, obj) then
             table.insert(CachedOres, obj)
@@ -132,43 +165,52 @@ for _, obj in ipairs(Workspace:GetDescendants()) do
     CheckAndCache(obj)
 end
 
--- Lắng nghe khi có quặng mới hoặc quặng lẻ rơi ra map
+-- Lắng nghe khi có quặng mới rơi ra map
 Workspace.DescendantAdded:Connect(function(descendant)
     CheckAndCache(descendant)
 end)
 
--- Hàm tìm Part chính để treo BillboardGui
 local function GetPart(obj)
-    if obj:IsA("BasePart") then return obj end -- Nếu là cục quặng lẻ rơi ra
+    if obj:IsA("BasePart") then return obj end
     return obj:FindFirstChild("ore") or obj:FindFirstChild("Ore") or obj:FindFirstChild("Rock") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
 end
 
--- Hàm kiểm tra xem quặng đã bị đào/vỡ chưa (Sửa lỗi vẫn hiện ESP khi đào xong)
+-- Hàm check quặng đào (Cập nhật siêu chuẩn)
 local function IsMined(obj)
     if not obj or not obj.Parent then return true end
     
-    -- Trường hợp 1: Nếu là cục quặng lẻ rơi ra (bản thân nó là BasePart)
+    -- 1. Nếu nó trở thành Tool (Quặng rớt ra để nhặt) hoặc bị cầm trên tay -> Đã đào xong
+    if obj:IsA("Tool") or obj:IsDescendantOf(LocalPlayer.Character) then return true end
+    
+    -- 2. Nếu là cục lẻ BasePart
     if obj:IsA("BasePart") then
-        return obj.Transparency >= 1
+        -- Nếu nó bị tàng hình HOẶC nó không bị đóng băng (Anchored = false tức là đang lăn lóc trên đất)
+        if obj.Transparency >= 1 or not obj.Anchored then return true end
+        return false
     end
     
-    -- Trường hợp 2: Kiểm tra các part cốt lõi bên trong Model quặng lớn
-    local corePart = obj:FindFirstChild("ore") or obj:FindFirstChild("Ore") or obj:FindFirstChild("Rock")
-    if corePart and corePart:IsA("BasePart") and corePart.Transparency >= 1 then
-        return true
+    -- 3. Kiểm tra Model lớn (Rock + Ore)
+    local corePart = obj:FindFirstChild("ore") or obj:FindFirstChild("Ore")
+    if corePart and corePart:IsA("BasePart") then
+        if corePart.Transparency >= 1 then return true end
     end
     
-    -- Trường hợp 3: Quét diện rộng xem tất cả các part hiển thị bên trong có bị tàng hình hết không
-    local hasVisiblePart = false
+    -- 4. Quét dự phòng mảnh quặng màu
+    local hasValidOre = false
     for _, child in ipairs(obj:GetChildren()) do
-        if child:IsA("BasePart") and child.Transparency < 1 then
-            hasVisiblePart = true
-            break
+        if child:IsA("BasePart") and child.Name ~= "Rock" and child.Name ~= "Stone" then
+            -- Mảnh quặng phải hiển thị VÀ PHẢI ĐÓNG BĂNG trên tường (Anchored = true)
+            if child.Transparency < 1 and child.Anchored then
+                hasValidOre = true
+                break
+            end
         end
     end
     
-    return not hasVisiblePart -- Nếu không có part nào nhìn thấy được nữa => Đã đào xong
+    return not hasValidOre
 end
+
+
 
 --======================================================
 -- ORE (ITEM) ESP LOGIC
@@ -441,18 +483,29 @@ Main2Group:AddToggle("ESPEnemyToggle", {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 --======================================================    
 --  AUTO MINE LOGIC (Tích hợp vào Main1Group)    
 --======================================================    
 
--- Thêm nút bật/tắt vào đúng nhóm Main1Group theo yêu cầu của bạn
 Main1Group:AddToggle("AutoMineToggle", {
     Text = "Auto Mine Quặng",
     Default = false,
     Tooltip = "Tự động kích hoạt Prompt đào khi đang cầm Pickaxe",
 })
 
--- Hàm tìm ProximityPrompt của quặng gần nhân vật nhất và đang mở
+-- Hàm tìm ProximityPrompt của quặng
 local function GetClosestOrePrompt()
     local character = LocalPlayer.Character
     if not character or not character:FindFirstChild("HumanoidRootPart") then return nil end
@@ -461,18 +514,17 @@ local function GetClosestOrePrompt()
     local closestPrompt = nil
     local shortestDistance = math.huge
 
-    -- Sử dụng lại mảng CachedOres từ hệ thống ESP quét sẵn để tối ưu hiệu năng (Không lo bị lag)
     for _, ore in ipairs(CachedOres) do
+        -- Chỉ quét quặng CHƯA BỊ ĐÀO (Đã chặn quặng lẻ rớt đất thông qua IsMined)
         if ore and ore.Parent and not IsMined(ore) then
-            -- Tìm kiếm Prompt sâu bên trong Model hoặc Part quặng
             local prompt = ore:FindFirstChildOfClass("ProximityPrompt") or ore:FindFirstChildWhichIsA("ProximityPrompt", true)
             
-            if prompt and prompt.Enabled then
+            -- CHỐNG VỨT ĐỒ: Đảm bảo prompt KHÔNG nằm trong một Tool (quặng lẻ đang cầm)
+            if prompt and prompt.Enabled and not prompt:FindFirstAncestorOfClass("Tool") then
                 local parentPart = prompt.Parent
                 if parentPart and parentPart:IsA("BasePart") then
                     local distance = (parentPart.Position - rootPart.Position).Magnitude
                     
-                    -- Kiểm tra xem người chơi có nằm trong phạm vi kích hoạt của Prompt đó không
                     if distance <= prompt.MaxActivationDistance and distance < shortestDistance then
                         shortestDistance = distance
                         closestPrompt = prompt
@@ -484,24 +536,20 @@ local function GetClosestOrePrompt()
     return closestPrompt
 end
 
--- Vòng lặp chạy ngầm xử lý Auto Mine (Tốc độ quét 0.1s siêu mượt)
 task.spawn(function()
     while true do
         task.wait(0.1)
         
-        -- Kiểm tra trạng thái Toggle trong hệ thống Obsidian UI
+        -- Gọi thông qua Options/Toggles của Obsidian Lib
         if Toggles.AutoMineToggle and Toggles.AutoMineToggle.Value then
             local character = LocalPlayer.Character
             if character then
-                -- ĐIỀU KIỆN 1: Người chơi bắt buộc phải đang cầm (Equip) Tool tên là "Pickaxe" trên tay
                 local equippedTool = character:FindFirstChild("Pickaxe")
                 
+                -- Chỉ đào khi ĐANG CẦM ĐÚNG PICKAXE
                 if equippedTool and equippedTool:IsA("Tool") then
-                    -- ĐIỀU KIỆN 2: Tìm khối quặng có Prompt đang hiện gần nhất
                     local targetPrompt = GetClosestOrePrompt()
-                    
                     if targetPrompt then
-                        -- Sử dụng hàm của Executor để tự động click Prompt từ xa/tức thời
                         fireproximityprompt(targetPrompt)
                     end
                 end
@@ -509,6 +557,205 @@ task.spawn(function()
         end
     end
 end)
+
+
+
+
+
+
+
+
+
+
+
+--======================================================    
+--  LOGIC AUTO BOX & FENCE (Tối ưu hóa Cache)    
+--======================================================    
+local CachedBoxes = {}
+local CachedFences = {}
+
+-- Hàm nạp dữ liệu môi trường vào bộ nhớ đệm ẩn
+local function CacheInteractions(obj)
+    if obj.Name == "WoodBox" then
+        if not table.find(CachedBoxes, obj) then table.insert(CachedBoxes, obj) end
+    elseif obj.Name == "Fence" then
+        if not table.find(CachedFences, obj) then table.insert(CachedFences, obj) end
+    end
+end
+
+-- Tự động quét map ban đầu (Kết nối thẳng vào vòng lặp có sẵn của bạn)
+for _, obj in ipairs(game:GetService("Workspace"):GetDescendants()) do
+    CacheInteractions(obj)
+end
+game:GetService("Workspace").DescendantAdded:Connect(CacheInteractions)
+
+-- Hàm tìm kiếm Prompt gần nhất từ danh sách bộ nhớ đệm
+local function GetClosestPromptFromCache(cacheList)
+    local character = LocalPlayer.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then return nil end
+    
+    local rootPart = character.HumanoidRootPart
+    local closestPrompt = nil
+    local shortestDistance = math.huge
+
+    for _, obj in ipairs(cacheList) do
+        if obj and obj.Parent then
+            -- Tìm ProximityPrompt bên trong đối tượng
+            local prompt = obj:FindFirstChildOfClass("ProximityPrompt") or obj:FindFirstChildWhichIsA("ProximityPrompt", true)
+            
+            if prompt and prompt.Enabled then
+                -- Định vị Part vật lý để tính khoảng cách chuẩn xác
+                local part = obj:IsA("BasePart") and obj or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart", true)
+                if part then
+                    local distance = (part.Position - rootPart.Position).Magnitude
+                    -- Kiểm tra nếu người chơi đứng đủ gần phạm vi kích hoạt của vật thể
+                    if distance <= prompt.MaxActivationDistance and distance < shortestDistance then
+                        shortestDistance = distance
+                        closestPrompt = prompt
+                    end
+                end
+            end
+        end
+    end
+    return closestPrompt
+end
+
+-- Vòng lặp Core xử lý Auto tương tác (Tốc độ phản hồi 0.1s)
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        local character = LocalPlayer.Character
+        if not character then continue end
+
+        -- CHỨC NĂNG 1: Auto Mở Thùng (WoodBox)
+        if Toggles.AutoOpenBoxToggle and Toggles.AutoOpenBoxToggle.Value then
+            local crowbar = character:FindFirstChild("Crowbar")
+            if crowbar and crowbar:IsA("Tool") then
+                -- Dọn dẹp các thùng đã bị phá hủy hoàn toàn khỏi bộ nhớ
+                for i = #CachedBoxes, 1, -1 do
+                    if not CachedBoxes[i] or not CachedBoxes[i].Parent then table.remove(CachedBoxes, i) end
+                end
+                
+                local targetPrompt = GetClosestPromptFromCache(CachedBoxes)
+                if targetPrompt then
+                    fireproximityprompt(targetPrompt)
+                end
+            end
+        end
+
+        -- CHỨC NĂNG 2: Auto Chặt Vật Chắn (Fence)
+        if Toggles.AutoChopFenceToggle and Toggles.AutoChopFenceToggle.Value then
+            local axe = character:FindFirstChild("Axe")
+            if axe and axe:IsA("Tool") then
+                -- Dọn dẹp hàng rào đã bị phá hủy khỏi bộ nhớ
+                for i = #CachedFences, 1, -1 do
+                    if not CachedFences[i] or not CachedFences[i].Parent then table.remove(CachedFences, i) end
+                end
+                
+                local targetPrompt = GetClosestPromptFromCache(CachedFences)
+                if targetPrompt then
+                    fireproximityprompt(targetPrompt)
+                end
+            end
+        end
+    end
+end)
+
+
+--======================================================    
+--  UI TOGGLES (Thêm vào Main1Group)    
+--======================================================    
+Main1Group:AddToggle("AutoOpenBoxToggle", {
+    Text = "Auto Mở Thùng (Crowbar)",
+    Default = false,
+    Tooltip = "Tự động mở WoodBox khi đang cầm Crowbar",
+})
+
+Main1Group:AddToggle("AutoChopFenceToggle", {
+    Text = "Auto Chặt Vật Chắn (Axe)",
+    Default = false,
+    Tooltip = "Tự động phá hủy Fence khi đang cầm Axe",
+})
+
+
+
+
+
+
+
+
+--======================================================    
+--  ORE TELEPORT UI (Đã sửa lỗi nhận diện quặng rỗng)    
+--======================================================    
+M105Two:AddDropdown("TeleportOreDropdown", {
+    Values = OreList,
+    Default = 1, 
+    Multi = false, 
+    Text = "Select Ore to Teleport",
+    Tooltip = "Chọn loại quặng bạn muốn dịch chuyển tới",
+})
+
+M105Two:AddButton({
+    Text = "Teleport to Closest Ore",
+    DoubleClick = false,
+    Tooltip = "Biến đến cục quặng gần nhất thuộc loại đã chọn (Chưa đào)",
+    Func = function()
+        local selectedOreName = Options.TeleportOreDropdown and Options.TeleportOreDropdown.Value
+        if not selectedOreName then 
+            Library:Notify({ Title = "Lỗi", Description = "Vui lòng chọn một loại quặng trước!", Time = 3 })
+            return 
+        end
+
+        local character = LocalPlayer.Character
+        local hrp = character and character:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+
+        local closestOrePart = nil
+        local shortestDistance = math.huge
+
+        -- Quét danh sách bộ nhớ đệm quặng
+        for _, obj in ipairs(CachedOres) do
+            -- Ép điều kiện lọc cực gắt: Phải đúng tên VÀ hàm IsMined phải xác nhận là CHƯA ĐÀO
+            if obj and obj.Name == selectedOreName and not IsMined(obj) then
+                local part = GetPart(obj)
+                -- Đảm bảo part này không phải là cục đá rỗng bị bỏ lại
+                if part and part.Name ~= "Rock" and part.Name ~= "Stone" or (part and part.Transparency < 1) then
+                    local distance = (part.Position - hrp.Position).Magnitude
+                    if distance < shortestDistance then
+                        shortestDistance = distance
+                        closestOrePart = part
+                    end
+                end
+            end
+        end
+
+        -- Thực hiện dịch chuyển
+        if closestOrePart then
+            hrp.CFrame = CFrame.new(closestOrePart.Position + Vector3.new(0, 3, 0))
+            Library:Notify({
+                Title = "Teleport Success",
+                Description = "Đã đến " .. selectedOreName .. " chưa đào gần nhất!",
+                Time = 3
+            })
+        else
+            Library:Notify({
+                Title = "Thất bại",
+                Description = "Không tìm thấy cục " .. selectedOreName .. " nào thực sự chưa đào xung quanh!",
+                Time = 4
+            })
+        end
+    end
+})
+
+
+
+
+
+
+
+
+
+
 
 
 
