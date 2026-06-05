@@ -1,6 +1,6 @@
 -- Kiểm tra ID game
-if game.PlaceId ~= 121308443347459 then
-    return warn("Script only works in the specified game (ID: 121308443347459){7Days To Live (The Forest)}")
+if game.PlaceId ~= 107206090336891 then
+    return warn("Script only works in the specified game (ID: 107206090336891){The Caves - Game}")
 end
 
 -- Thông báo khi đúng ID game
@@ -9,2064 +9,1191 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
     Text = "Script is now executing...",
     Duration = 5
 })
-
 task.wait(1) -- Đợi 1s trước khi thực thi 
 
-task.spawn(function()
-print("----    ---- ----    ----    ------    ----    ---- ------------ ") print("****   ****  ****    ****   ********   *****   **** ************ ") print("----  ----   ----    ----  ----------  ------  ---- ----         ") print("*********    ************ ****    **** ************ ****  ****** ") print("---------    ------------ ------------ ------------ ----  ------ ") print("****  ****   ****    **** ************ ****  ****** ****    **** ") print("----   ----  ----    ---- ----    ---- ----   ----- ------------ ") print("****    **** ****    **** ****    **** ****    **** ************ ")                                                                  
-end)
+
+
+
 
 task.spawn(function()
--- Khai báo các dịch vụ cần thiết
-local player = game.Players.LocalPlayer
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local camera = workspace.CurrentCamera
+local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
+local Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
+local ThemeManager = loadstring(game:HttpGet(repo .. "addons/ThemeManager.lua"))()
+local SaveManager = loadstring(game:HttpGet(repo .. "addons/SaveManager.lua"))()
 
--- Tải và khởi tạo thư viện GUI Rayfield
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Options = Library.Options
+local Toggles = Library.Toggles
 
--- Tạo cửa sổ giao diện chính
-local Window = Rayfield:CreateWindow({
-    Name = "Script By IgnahK [The Forest]",
-    LoadingTitle = "Loading Script...",
-    LoadingSubtitle = "Please wait",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "MyHubFolder",
-        FileName = "MyHubConfig"
-    },
-    Discord = {
-        Enabled = false,
-        Invite = "",
-        RememberJoins = false
-    },
-    KeySystem = false,
-})
-
--- Thông báo đã tải
-Rayfield:Notify({
-    Title = "Welcome!",
-    Content = "Script Loaded",
-    Duration = 2
-})
-
--- Tạo Tab Main
-local MTab = Window:CreateTab("Main", "home")
-MTab:CreateSection("Main")
-
-  MTab:CreateButton({
-    Name = "Aimbot",
-    Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/Aimbot%20npc%207%20days"))()
-    end,
-  })
-
-MTab:CreateButton({
-Name = "Aimbot V2 [Strong Device]",
-Callback = function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/main/aimbot%20v2"))()
-end,
-})
-
-local savedCFrame = nil
-
-local function createAutoScrapToggle(tab, name)
-	local isRunning = false
-
-	tab:CreateToggle({
-		Name = name,
-		CurrentValue = false,
-		Flag = name,
-		Callback = function(state)
-			local Players = game:GetService("Players")
-			local lp = Players.LocalPlayer
-			local char = lp.Character or lp.CharacterAdded:Wait()
-			local hrp = char:WaitForChild("HumanoidRootPart")
-
-			isRunning = state
-
-			if not state then
-				Rayfield:Notify({Title = name, Content = "Disabled", Duration = 2})
-				task.delay(1, function()
-					if hrp and savedCFrame then
-						char:PivotTo(savedCFrame)
-						savedCFrame = nil
-						Rayfield:Notify({Title = name, Content = "Teleported back", Duration = 2})
-					end
-				end)
-				return
-			end
-
-			savedCFrame = hrp.CFrame
-
-			local function findNextScrap()
-				for _, obj in ipairs(workspace:GetDescendants()) do
-					if obj:IsA("Model") and obj.Name:lower() == "scrap" then
-						local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-						local prompt = obj:FindFirstChildWhichIsA("ProximityPrompt", true)
-							or obj:FindFirstChildWhichIsA("ClickDetector", true)
-							or obj:FindFirstChild("TouchInterest", true)
-						if part and prompt then
-							return part, prompt
-						end
-					end
-				end
-				return nil
-			end
-
-			task.spawn(function()
-				while isRunning do
-					local char = lp.Character or lp.CharacterAdded:Wait()
-					local hrp = char:WaitForChild("HumanoidRootPart")
-
-					local part, prompt = findNextScrap()
-					if not part then
-						Rayfield:Notify({Title = name, Content = "No Scrap found", Duration = 2})
-						break
-					end
-
-					hrp.CFrame = CFrame.new(part.Position + Vector3.new(0, 6.3, 0))
-
-					local humanoid = char:FindFirstChildOfClass("Humanoid")
-					if humanoid then
-						humanoid.PlatformStand = false
-						humanoid.Sit = false
-					end
-
-					pcall(function()
-						if prompt:IsA("ProximityPrompt") then
-							fireproximityprompt(prompt)
-						elseif prompt:IsA("ClickDetector") then
-							fireclickdetector(prompt)
-						elseif prompt.Name == "TouchInterest" then
-							firetouchinterest(hrp, part, 0)
-							task.wait()
-							firetouchinterest(hrp, part, 1)
-						end
-					end)
-
-					task.wait(0.1) -- Chờ rất ngắn để tránh lỗi fire chưa kịp ăn
-				end
-			end)
-
-			Rayfield:Notify({Title = name, Content = "Collecting started...", Duration = 2})
-		end
-	})
+function Notification(Message, Time)
+if _G.ChooseNotify == "Obsidian" then
+Library:Notify(Message, Time or 5)
+elseif _G.ChooseNotify == "Roblox" then
+game:GetService("StarterGui"):SetCore("SendNotification",{Title = "Error",Text = Message,Icon = "rbxassetid://7733658504",Duration = Time or 5})
 end
-
--- Tạo toggle duy nhất
-createAutoScrapToggle(MTab, "Auto Scrap")
-
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-
-local running = false
-local heliList = {}
-local originalCFrame = nil
-
-local function isValidPrompt(obj)
-	return obj and obj:IsDescendantOf(Workspace) and (
-		obj:IsA("ProximityPrompt") or
-		obj:IsA("ClickDetector") or
-		obj.Name == "TouchInterest"
-	)
-end
-
-local function activateNearbyPrompts()
-	local char = LocalPlayer.Character
-	if not char then return end
-
-	local HRP = char:FindFirstChild("HumanoidRootPart")
-	if not HRP then return end
-
-	for _, obj in ipairs(Workspace:GetDescendants()) do
-		if isValidPrompt(obj) then
-			local part = obj:IsA("TouchTransmitter") and obj.Parent or obj.Parent
-			if part and part:IsA("BasePart") then
-				local dist = (part.Position - HRP.Position).Magnitude
-				if dist <= 10 then
-					pcall(function()
-						if obj:IsA("ProximityPrompt") then
-							fireproximityprompt(obj, math.huge)
-						elseif obj:IsA("ClickDetector") then
-							fireclickdetector(obj)
-						elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
-							firetouchinterest(HRP, part, 0)
-							task.wait()
-							firetouchinterest(HRP, part, 1)
-						end
-					end)
-				end
-			end
-		end
-	end
-end
-
-local function getNearestHeli()
-	local char = LocalPlayer.Character
-	if not char then return end
-
-	local HRP = char:FindFirstChild("HumanoidRootPart")
-	if not HRP then return end
-
-	local nearest, minDist = nil, math.huge
-	for _, heli in ipairs(heliList) do
-		if heli:IsDescendantOf(Workspace) then
-			local dist = (heli:GetPivot().Position - HRP.Position).Magnitude
-			if dist < minDist then
-				minDist = dist
-				nearest = heli
-			end
-		end
-	end
-	return nearest
-end
-
-local function refreshHelis()
-	heliList = {}
-	for _, v in ipairs(Workspace:GetDescendants()) do
-		if v:IsA("Model") and v.Name == "heli_crash" then
-			table.insert(heliList, v)
-		end
-	end
-end
-
-local function teleportSafe(cf)
-	local char = LocalPlayer.Character
-	if not char then return end
-
-	local HRP = char:FindFirstChild("HumanoidRootPart")
-	local Humanoid = char:FindFirstChildOfClass("Humanoid")
-
-	if not HRP or not Humanoid then return end
-
-	Humanoid.PlatformStand = true
-	HRP.CFrame = cf
-	task.wait(0.1)
-	Humanoid.PlatformStand = false
-end
-
-local function autoCollect()
-	while running do
-		refreshHelis()
-
-		local target = getNearestHeli()
-		if not target then break end
-
-		local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-		if not hrp then break end
-
-		teleportSafe(target:GetPivot() + Vector3.new(0, 4, 0))
-
-		local timeout = 2
-		while timeout > 0 and running do
-			activateNearbyPrompts()
-			task.wait(0.5)
-			timeout -= 0.5
-		end
-
-		table.remove(heliList, table.find(heliList, target))
-	end
-
-	if originalCFrame and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-		teleportSafe(originalCFrame)
-	end
-end
-
--- ✅ Gắn vào MTab
-MTab:CreateToggle({
-	Name = "Collect heli crash [Day >2]",
-	CurrentValue = false,
-	Flag = "CollectHeliCrash",
-	Callback = function(state)
-		running = state
-		if state then
-			local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-			if hrp then
-				originalCFrame = hrp.CFrame
-			end
-			task.spawn(autoCollect)
-		else
-			heliList = {}
-			originalCFrame = nil
-		end
-	end
-})
-
-local autoHeal = false
-
-MTab:CreateToggle({
-    Name = "Auto Heal Players",
-    CurrentValue = false,
-    Flag = "AutoHealPlayers",
-    Callback = function(Value)
-        autoHeal = Value
-        if autoHeal then
-            task.spawn(function()
-                while autoHeal do
-                    for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
-                        local char = player.Character
-                        if char and char:FindFirstChild("Humanoid") and char:FindFirstChild("HumanoidRootPart") then
-                            local hp = char.Humanoid.Health
-                            local maxHp = char.Humanoid.MaxHealth
-                            if hp < maxHp then
-                                local args = { char }
-                                game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("heal"):FireServer(unpack(args))
-                            end
-                        end
-                    end
-                    task.wait(0.5)
-                end
-            end)
+if _G.NotificationSound then
+        local sound = Instance.new("Sound", workspace)
+            sound.SoundId = "rbxassetid://4590662766"
+            sound.Volume = _G.VolumeTime or 2
+            sound.PlayOnRemove = true
+            sound:Destroy()
         end
-    end,
-})    
-
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-local AutoKeyRunning = false
-local KeyConnection
-local KeyList = {}
-
-MTab:CreateToggle({
-	Name = "Auto Interact", -- 🔄 Đổi tên tại đây
-	CurrentValue = false,
-	Callback = function(state)
-		AutoKeyRunning = state
-		if state then
-			local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-			local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-			local lastTriggerTime = {}
-
-			local function scanInteractables()
-				KeyList = {}
-				for _, obj in ipairs(workspace:GetDescendants()) do
-					if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(LocalPlayer.Character) then
-						local model = obj:FindFirstAncestorWhichIsA("Model")
-						table.insert(KeyList, {model = model, obj = obj})
-					end
-				end
-			end
-
-			scanInteractables()
-
-			workspace.DescendantAdded:Connect(function(desc)
-				if AutoKeyRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") and not desc:IsDescendantOf(LocalPlayer.Character) then
-					local model = desc:FindFirstAncestorWhichIsA("Model")
-					table.insert(KeyList, {model = model, obj = desc})
-				end
-			end)
-
-			local function triggerPrompt(obj)
-				if not obj or not obj:IsDescendantOf(workspace) then return false end
-				local success = false
-				pcall(function()
-					if obj:IsA("ProximityPrompt") then
-						fireproximityprompt(obj, math.huge)
-						success = true
-					elseif obj:IsA("ClickDetector") then
-						fireclickdetector(obj)
-						success = true
-					elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
-						local part = obj.Parent
-						if part and part:IsA("BasePart") then
-							firetouchinterest(HumanoidRootPart, part, 0)
-							task.wait()
-							firetouchinterest(HumanoidRootPart, part, 1)
-							success = true
-						end
-					end
-				end)
-				return success
-			end
-
-			local function getClosestPart(model, refPos)
-				local closest, minDist = nil, math.huge
-				for _, part in ipairs(model:GetChildren()) do
-					if part:IsA("BasePart") then
-						local dist = (part.Position - refPos).Magnitude
-						if dist < minDist then
-							minDist = dist
-							closest = part
-						end
-					end
-				end
-				return closest, minDist
-			end
-
-			KeyConnection = RunService.Heartbeat:Connect(function()
-				if not AutoKeyRunning or not LocalPlayer.Character then return end
-				local HRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-				if not HRP then return end
-
-				local now = tick()
-				for i = #KeyList, 1, -1 do
-					local data = KeyList[i]
-					local model = data.model
-					local obj = data.obj
-
-					if not model or not model:IsDescendantOf(workspace) or not obj or not obj:IsDescendantOf(model) then
-						table.remove(KeyList, i)
-						continue
-					end
-
-					if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
-						continue
-					end
-
-					local _, dist = getClosestPart(model, HRP.Position)
-					if dist and dist <= 10 then
-						local success = triggerPrompt(obj)
-						if success then
-							lastTriggerTime[model] = now
-						else
-							table.remove(KeyList, i)
-						end
-					end
-				end
-			end)
-		else
-			if KeyConnection then
-				KeyConnection:Disconnect()
-				KeyConnection = nil
-			end
-			KeyList = {}
-		end
-	end
-})
-  
---[[
-MTab:CreateSection("Get Berry")
-
-local toggleRunning = false
-local connection
-
-MTab:CreateToggle({
-	Name = "GetBerry [INF]",
-	CurrentValue = false,
-	Flag = "GetBerryINF",
-	Callback = function(state)
-		toggleRunning = state
-
-		local lp = game:GetService("Players").LocalPlayer
-		local RunService = game:GetService("RunService")
-
-		if connection then
-			connection:Disconnect()
-			connection = nil
-		end
-
-		local char = lp.Character or lp.CharacterAdded:Wait()
-		local hrp = char:WaitForChild("HumanoidRootPart")
-		local hum = char:FindFirstChildOfClass("Humanoid")
-		if not (hrp and hum) then return end
-
-		local originalCFrame = hrp.CFrame
-
-		if not state then
-			char:PivotTo(originalCFrame)
-			return
-		end
-
-		connection = RunService.Heartbeat:Connect(function()
-			if not toggleRunning then return end
-
-			char = lp.Character or lp.CharacterAdded:Wait()
-			hrp = char:FindFirstChild("HumanoidRootPart")
-			hum = char:FindFirstChildOfClass("Humanoid")
-			if not (hrp and hum) then return end
-
-			local nearestBerry, shortestDist = nil, math.huge
-			for _, obj in ipairs(workspace:GetDescendants()) do
-				if obj:IsA("Model") and obj.Name:lower() == "berry" then
-					local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-					if part then
-						local dist = (hrp.Position - part.Position).Magnitude
-						if dist < shortestDist then
-							nearestBerry = obj
-							shortestDist = dist
-						end
-					end
-				end
-			end
-
-			if nearestBerry then
-				local part = nearestBerry.PrimaryPart or nearestBerry:FindFirstChildWhichIsA("BasePart")
-				if not nearestBerry.PrimaryPart and part then
-					pcall(function()
-						nearestBerry.PrimaryPart = part
-					end)
-				end
-
-				local prompt = nearestBerry:FindFirstChildWhichIsA("ProximityPrompt", true)
-					or nearestBerry:FindFirstChildWhichIsA("ClickDetector", true)
-					or nearestBerry:FindFirstChild("TouchInterest", true)
-
-				if prompt and part then
-					char:PivotTo(part.CFrame + Vector3.new(0, 7, 0))
-					task.wait(0.25)
-
-					for i = 1, 50 do
-						pcall(function()
-							if prompt:IsA("ProximityPrompt") then
-								fireproximityprompt(prompt)
-							elseif prompt:IsA("ClickDetector") then
-								fireclickdetector(prompt)
-							elseif prompt.Name == "TouchInterest" then
-								firetouchinterest(hrp, part, 0)
-								task.wait()
-								firetouchinterest(hrp, part, 1)
-							end
-						end)
-						task.wait(0.05)
-					end
-
-					task.wait(0.2)
-					char:PivotTo(originalCFrame)
-					task.wait(1) -- Chờ 1 giây trước lần lặp kế tiếp
-				end
-			else
-				task.wait(1)
-			end
-		end)
-	end
-})
-
-MTab:CreateButton({
-	Name = "GetBerry [30/04/1975]",
-	Callback = function()
-		local lp = game:GetService("Players").LocalPlayer
-		local char = lp.Character or lp.CharacterAdded:Wait()
-		local hrp = char:WaitForChild("HumanoidRootPart")
-		local hum = char:FindFirstChildOfClass("Humanoid")
-		if not (hrp and hum) then return end
-
-		local originalCFrame = hrp.CFrame
-
-		local nearestBerry, shortestDist = nil, math.huge
-		for _, obj in ipairs(workspace:GetDescendants()) do
-			if obj:IsA("Model") and obj.Name:lower() == "berry" then
-				local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-				if part then
-					local dist = (hrp.Position - part.Position).Magnitude
-					if dist < shortestDist then
-						nearestBerry = obj
-						shortestDist = dist
-					end
-				end
-			end
-		end
-
-		if nearestBerry then
-			local part = nearestBerry.PrimaryPart or nearestBerry:FindFirstChildWhichIsA("BasePart")
-			if not nearestBerry.PrimaryPart and part then
-				pcall(function()
-					nearestBerry.PrimaryPart = part
-				end)
-			end
-
-			local prompt = nearestBerry:FindFirstChildWhichIsA("ProximityPrompt", true)
-				or nearestBerry:FindFirstChildWhichIsA("ClickDetector", true)
-				or nearestBerry:FindFirstChild("TouchInterest", true)
-
-			if prompt and part then
-				-- TP 1 lần
-				char:PivotTo(part.CFrame + Vector3.new(0, 7, 0))
-				task.wait(0.25)
-
-				-- Nhặt đủ số lần tại chỗ
-				for i = 1, 6095 do
-					pcall(function()
-						if prompt:IsA("ProximityPrompt") then
-							fireproximityprompt(prompt)
-						elseif prompt:IsA("ClickDetector") then
-							fireclickdetector(prompt)
-						elseif prompt.Name == "TouchInterest" then
-							firetouchinterest(hrp, part, 0)
-							task.wait()
-							firetouchinterest(hrp, part, 1)
-						end
-					end)
-				end
-
-				-- TP về chỗ cũ
-				task.wait(0.2)
-				char:PivotTo(originalCFrame)
-			end
-		end
-	end
-})
-
-MTab:CreateInput({
-	Name = "Collect Berry (Input berry number)",
-	PlaceholderText = "Enter quantity (100000 MAX)",
-	RemoveTextAfterFocusLost = false,
-	Callback = function(text)
-		local amount = tonumber(text)
-		if not amount or amount <= 0 then
-			warn("Số không hợp lệ")
-			return
-		end
-
-		-- Giới hạn tối đa 100000 berry
-		if amount > 100000 then
-			amount = 100000
-		end
-
-		-- Làm tròn lên bội số của 5
-		local rounded = math.ceil(amount / 5) * 5
-		local repeatCount = rounded / 5
-
-		local lp = game:GetService("Players").LocalPlayer
-		local char = lp.Character or lp.CharacterAdded:Wait()
-		local hrp = char:WaitForChild("HumanoidRootPart")
-		local hum = char:FindFirstChildOfClass("Humanoid")
-		if not (hrp and hum) then return end
-
-		local originalCFrame = hrp.CFrame
-
-		local nearestBerry, shortestDist = nil, math.huge
-		for _, obj in ipairs(workspace:GetDescendants()) do
-			if obj:IsA("Model") and obj.Name:lower() == "berry" then
-				local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-				if part then
-					local dist = (hrp.Position - part.Position).Magnitude
-					if dist < shortestDist then
-						nearestBerry = obj
-						shortestDist = dist
-					end
-				end
-			end
-		end
-
-		if nearestBerry then
-			local part = nearestBerry.PrimaryPart or nearestBerry:FindFirstChildWhichIsA("BasePart")
-			if not nearestBerry.PrimaryPart and part then
-				pcall(function()
-					nearestBerry.PrimaryPart = part
-				end)
-			end
-
-			local prompt = nearestBerry:FindFirstChildWhichIsA("ProximityPrompt", true)
-				or nearestBerry:FindFirstChildWhichIsA("ClickDetector", true)
-				or nearestBerry:FindFirstChild("TouchInterest", true)
-
-			if prompt and part then
-				char:PivotTo(part.CFrame + Vector3.new(0, 7, 0))
-				task.wait(0.25)
-
-				for i = 1, repeatCount do
-					pcall(function()
-						if prompt:IsA("ProximityPrompt") then
-							fireproximityprompt(prompt)
-						elseif prompt:IsA("ClickDetector") then
-							fireclickdetector(prompt)
-						elseif prompt.Name == "TouchInterest" then
-							firetouchinterest(hrp, part, 0)
-							task.wait()
-							firetouchinterest(hrp, part, 1)
-						end
-					end)
-				end
-
-				task.wait(0.2)
-				char:PivotTo(originalCFrame)
-			end
-		end
-	end
-})
-
-
-
-MTab:CreateSection("Blood moon")
-
-
-local toggleRunning = false
-local connection
-
-MTab:CreateToggle({
-	Name = "Get Blood Bark [INF]",
-	CurrentValue = false,
-	Flag = "GetBerryINF",
-	Callback = function(state)
-		toggleRunning = state
-
-		local lp = game:GetService("Players").LocalPlayer
-		local RunService = game:GetService("RunService")
-
-		if connection then
-			connection:Disconnect()
-			connection = nil
-		end
-
-		local char = lp.Character or lp.CharacterAdded:Wait()
-		local hrp = char:WaitForChild("HumanoidRootPart")
-		local hum = char:FindFirstChildOfClass("Humanoid")
-		if not (hrp and hum) then return end
-
-		local originalCFrame = hrp.CFrame
-
-		if not state then
-			char:PivotTo(originalCFrame)
-			return
-		end
-
-		connection = RunService.Heartbeat:Connect(function()
-			if not toggleRunning then return end
-
-			char = lp.Character or lp.CharacterAdded:Wait()
-			hrp = char:FindFirstChild("HumanoidRootPart")
-			hum = char:FindFirstChildOfClass("Humanoid")
-			if not (hrp and hum) then return end
-
-			local nearestBerry, shortestDist = nil, math.huge
-			for _, obj in ipairs(workspace:GetDescendants()) do
-				if obj:IsA("Model") and obj.Name:lower() == "blood_bark" then
-					local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-					if part then
-						local dist = (hrp.Position - part.Position).Magnitude
-						if dist < shortestDist then
-							nearestBerry = obj
-							shortestDist = dist
-						end
-					end
-				end
-			end
-
-			if nearestBerry then
-				local part = nearestBerry.PrimaryPart or nearestBerry:FindFirstChildWhichIsA("BasePart")
-				if not nearestBerry.PrimaryPart and part then
-					pcall(function()
-						nearestBerry.PrimaryPart = part
-					end)
-				end
-
-				local prompt = nearestBerry:FindFirstChildWhichIsA("ProximityPrompt", true)
-					or nearestBerry:FindFirstChildWhichIsA("ClickDetector", true)
-					or nearestBerry:FindFirstChild("TouchInterest", true)
-
-				if prompt and part then
-					char:PivotTo(part.CFrame + Vector3.new(0, 7, 0))
-					task.wait(0.25)
-
-					for i = 1, 50 do
-						pcall(function()
-							if prompt:IsA("ProximityPrompt") then
-								fireproximityprompt(prompt)
-							elseif prompt:IsA("ClickDetector") then
-								fireclickdetector(prompt)
-							elseif prompt.Name == "TouchInterest" then
-								firetouchinterest(hrp, part, 0)
-								task.wait()
-								firetouchinterest(hrp, part, 1)
-							end
-						end)
-						task.wait(0.05)
-					end
-
-					task.wait(0.2)
-					char:PivotTo(originalCFrame)
-					task.wait(1) -- Chờ 1 giây trước lần lặp kế tiếp
-				end
-			else
-				task.wait(1)
-			end
-		end)
-	end
-})
-
-MTab:CreateButton({
-	Name = "Get Blood Bark [30/04/1975]",
-	Callback = function()
-		local lp = game:GetService("Players").LocalPlayer
-		local char = lp.Character or lp.CharacterAdded:Wait()
-		local hrp = char:WaitForChild("HumanoidRootPart")
-		local hum = char:FindFirstChildOfClass("Humanoid")
-		if not (hrp and hum) then return end
-
-		local originalCFrame = hrp.CFrame
-
-		local nearestBerry, shortestDist = nil, math.huge
-		for _, obj in ipairs(workspace:GetDescendants()) do
-			if obj:IsA("Model") and obj.Name:lower() == "blood_bark" then
-				local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-				if part then
-					local dist = (hrp.Position - part.Position).Magnitude
-					if dist < shortestDist then
-						nearestBerry = obj
-						shortestDist = dist
-					end
-				end
-			end
-		end
-
-		if nearestBerry then
-			local part = nearestBerry.PrimaryPart or nearestBerry:FindFirstChildWhichIsA("BasePart")
-			if not nearestBerry.PrimaryPart and part then
-				pcall(function()
-					nearestBerry.PrimaryPart = part
-				end)
-			end
-
-			local prompt = nearestBerry:FindFirstChildWhichIsA("ProximityPrompt", true)
-				or nearestBerry:FindFirstChildWhichIsA("ClickDetector", true)
-				or nearestBerry:FindFirstChild("TouchInterest", true)
-
-			if prompt and part then
-				-- TP 1 lần
-				char:PivotTo(part.CFrame + Vector3.new(0, 7, 0))
-				task.wait(0.25)
-
-				-- Nhặt đủ số lần tại chỗ
-				for i = 1, 6095 do
-					pcall(function()
-						if prompt:IsA("ProximityPrompt") then
-							fireproximityprompt(prompt)
-						elseif prompt:IsA("ClickDetector") then
-							fireclickdetector(prompt)
-						elseif prompt.Name == "TouchInterest" then
-							firetouchinterest(hrp, part, 0)
-							task.wait()
-							firetouchinterest(hrp, part, 1)
-						end
-					end)
-				end
-
-				-- TP về chỗ cũ
-				task.wait(0.2)
-				char:PivotTo(originalCFrame)
-			end
-		end
-	end
-})
-
-MTab:CreateInput({
-	Name = "Collect Blood Bark (Input berry number)",
-	PlaceholderText = "Enter quantity (100000 MAX)",
-	RemoveTextAfterFocusLost = false,
-	Callback = function(text)
-		local amount = tonumber(text)
-		if not amount or amount <= 0 then
-			warn("Số không hợp lệ")
-			return
-		end
-
-		-- Giới hạn tối đa 100000 berry
-		if amount > 100000 then
-			amount = 100000
-		end
-
-		-- Làm tròn lên bội số của 5
-		local rounded = math.ceil(amount / 5) * 5
-		local repeatCount = rounded / 5
-
-		local lp = game:GetService("Players").LocalPlayer
-		local char = lp.Character or lp.CharacterAdded:Wait()
-		local hrp = char:WaitForChild("HumanoidRootPart")
-		local hum = char:FindFirstChildOfClass("Humanoid")
-		if not (hrp and hum) then return end
-
-		local originalCFrame = hrp.CFrame
-
-		local nearestBerry, shortestDist = nil, math.huge
-		for _, obj in ipairs(workspace:GetDescendants()) do
-			if obj:IsA("Model") and obj.Name:lower() == "blood_bark" then
-				local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-				if part then
-					local dist = (hrp.Position - part.Position).Magnitude
-					if dist < shortestDist then
-						nearestBerry = obj
-						shortestDist = dist
-					end
-				end
-			end
-		end
-
-		if nearestBerry then
-			local part = nearestBerry.PrimaryPart or nearestBerry:FindFirstChildWhichIsA("BasePart")
-			if not nearestBerry.PrimaryPart and part then
-				pcall(function()
-					nearestBerry.PrimaryPart = part
-				end)
-			end
-
-			local prompt = nearestBerry:FindFirstChildWhichIsA("ProximityPrompt", true)
-				or nearestBerry:FindFirstChildWhichIsA("ClickDetector", true)
-				or nearestBerry:FindFirstChild("TouchInterest", true)
-
-			if prompt and part then
-				char:PivotTo(part.CFrame + Vector3.new(0, 7, 0))
-				task.wait(0.25)
-
-				for i = 1, repeatCount do
-					pcall(function()
-						if prompt:IsA("ProximityPrompt") then
-							fireproximityprompt(prompt)
-						elseif prompt:IsA("ClickDetector") then
-							fireclickdetector(prompt)
-						elseif prompt.Name == "TouchInterest" then
-							firetouchinterest(hrp, part, 0)
-							task.wait()
-							firetouchinterest(hrp, part, 1)
-						end
-					end)
-				end
-
-				task.wait(0.2)
-				char:PivotTo(originalCFrame)
-			end
-		end
-	end
-})
-]]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- Tạo Tab Visual
-local VTab = Window:CreateTab("Visual", "eye")
-VTab:CreateSection("Main Visual")
-
-VTab:CreateButton({
-    Name = "Players 👥",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Playeresp"))()
-    end,
-})
-
--- Esp house button (Rayfield GUI - VTab)
-VTab:CreateButton({
-    Name = "House 🏠",
-    Callback = function()
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Home"))()
     end
+
+Library:SetDPIScale(85)
+
+local Window = Library:CreateWindow({
+    Title = "The Caves",
+    Center = true,
+    AutoShow = true,
+    Resizable = true,
+    Footer = "Script by IganhK [Beta Version]",
+	   Icon = nil, -- ID logo
+
+    AutoLock = false,
+    ShowCustomCursor = true,
+    NotifySide = "Right",
+    TabPadding = 2,
+    MenuFadeTime = 0
 })
 
-VTab:CreateButton({
-    Name = "Easter egg 🥚 (Fishing)",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/Eastereggesp"))()
-    end,
-})
-
-VTab:CreateButton({
-Name = "Glass",
-Callback = function()
-task.spawn(function()
-	local espName = "ItemESP" -- Tên node ESP trong BillboardGui
-	local highlightName = "ItemHighlight" -- Tên node highlight
-	local itemName = "glass" -- 🔁 ← Tên object cần ESP (VD: "Tble", "Flower", "scrap")
-
-	local labelText = "glass" -- 🔁 ← Văn bản hiện trên ESP
-	local espColor = Color3.fromRGB(255, 255, 255)
-	local outlineColor = Color3.fromRGB(0, 0, 0)
-	local highlightColor = Color3.fromRGB(255, 255, 255)
-
-	-- Tạo ESP
-	local function createESP(item)
-		if item:FindFirstChild(espName) then return end
-
-		local billboard = Instance.new("BillboardGui")
-		billboard.Name = espName
-		billboard.AlwaysOnTop = true
-		billboard.Size = UDim2.new(0, 200, 0, 50)
-		billboard.StudsOffset = Vector3.new(0, 3, 0)
-		billboard.MaxDistance = math.huge
-		billboard.Parent = item
-
-		local textLabel = Instance.new("TextLabel", billboard)
-		textLabel.Text = labelText
-		textLabel.TextColor3 = espColor
-		textLabel.TextStrokeColor3 = outlineColor
-		textLabel.TextStrokeTransparency = 0
-		textLabel.BackgroundTransparency = 1
-		textLabel.Size = UDim2.new(1, 0, 1, 0)
-		textLabel.TextSize = 12
-		textLabel.Font = Enum.Font.SourceSansBold
-
-		local highlight = Instance.new("Highlight")
-		highlight.Name = highlightName
-		highlight.FillColor = highlightColor
-		highlight.FillTransparency = 0.5
-		highlight.OutlineColor = highlightColor
-		highlight.OutlineTransparency = 0
-		highlight.Parent = item
-	end
-
-	-- Quét ban đầu
-	for _, item in ipairs(workspace:GetDescendants()) do
-		if item.Name == itemName and not item:FindFirstChild(espName) then
-			createESP(item)
-		end
-	end
-
-	-- Lắng nghe khi object mới xuất hiện
-	workspace.DescendantAdded:Connect(function(descendant)
-		if descendant.Name == itemName and not descendant:FindFirstChild(espName) then
-			task.wait(0.1)
-			createESP(descendant)
-		end
-	end)
-end)
-end,
-})
-
-VTab:CreateSection("ESP Toggles")
-
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local Camera = Workspace.CurrentCamera
-local LocalPlayer = Players.LocalPlayer
-
-local activeESPList = {}
-local espObjects = {}
-
--- Cấu hình
-local itemSettings = {
-	flax = {label = "Cordage", color = Color3.fromRGB(18, 111, 0)},
-	carrot = {label = "Carrot", color = Color3.fromRGB(255, 137, 64)},
-	flower = {label = "Flower", color = Color3.fromRGB(255, 185, 215)},
-	pebbles = {label = "Pebble", color = Color3.fromRGB(200, 200, 200)},
-	cabin = {label = "Cabin", color = Color3.fromRGB(137, 80, 0)},
-	scrap = {label = "Scrap", color = Color3.fromRGB(136, 69, 53)},
-	stone = {label = "Stone", color = Color3.fromRGB(200, 200, 200)},
- Turret = {label = "Turret", color = Color3.fromRGB(0, 0, 0)},
-	abandoned_shack = {label = "Materials", color = Color3.fromRGB(137, 80, 0)},
-	heli_crash = {label = "Heli Crash", color = Color3.fromRGB(255, 212, 143)},
-	well = {label = "Well", color = Color3.fromRGB(150, 150, 150)},
-	cross = {label = "Cross", color = Color3.fromRGB(150, 75, 0)},
-	dead_house = {label = "House", color = Color3.fromRGB(150, 75, 0)},
-	stair = {label = "Stair", color = Color3.fromRGB(99, 95, 98)},
-	campsite1 = {label = "Campsite [Working?]", color = Color3.fromRGB(255, 50, 0)},
+Tabs = {
+	Tab = Window:AddTab("Game", "rbxassetid://7734053426"),
+	["UI Settings"] = Window:AddTab("UI Settings", "rbxassetid://7733955511")
 }
 
---[[
- Object = {label = "Name", color = Color3.fromRGB(255,255,255)
--- nếu object có khoảng trắng:  Enemy Model
- ["Enemy Model"] = {label = "Enemy Model", color = Color3.fromRGB(255,255,255)
+--== Tabs
+local Main1Group = Tabs.Tab:AddLeftGroupbox("-=< Main >=-")
+local Main1o5Group = Tabs.Tab:AddLeftTabbox() -- hoặc :AddLeftTabbox()
 
--- -- sao chép nhanh
+local Main2Group = Tabs.Tab:AddRightGroupbox("-=< Visual >=-")
+local Main2o5Group = Tabs.Tab:AddRightTabbox() -- hoặc :AddLeftTabbox()
 
-  = {label = "", color = Color3.fromRGB()
 
--- nếu object có khoảng trắng
+--== Mini Tabs [Tabbox]
+local M105One = Main1o5Group:AddTab("--== Locations ==--")
+local M105Two = Main1o5Group:AddTab("--== Ore ==--")
 
- [""] = {label = "", color = Color3.fromRGB()
+local M205One = Main2o5Group:AddTab("--== Misc ==--")
+local M205Two = Main2o5Group:AddTab("--== Load ==--")
 
-]]
 
--- Tạo ESP Billboard
-local function createESP(item, text, color)
-	if espObjects[item] then return end
-	local part = item:FindFirstChildWhichIsA("BasePart") or item.PrimaryPart
-	if not part then return end
 
-	local gui = Instance.new("BillboardGui")
-	gui.Name = "ItemESP"
-	gui.AlwaysOnTop = true
-	gui.Size = UDim2.new(0, 100, 0, 40)
-	gui.StudsOffset = Vector3.new(0, 2, 0)
-	gui.MaxDistance = 500 -- Giới hạn hiển thị xa
-	gui.Adornee = part
-	gui.Parent = item
 
-	local label = Instance.new("TextLabel", gui)
-	label.BackgroundTransparency = 1
-	label.Size = UDim2.new(1, 0, 1, 0)
-	label.Text = text
-	label.TextColor3 = color
-	label.Font = Enum.Font.Bodoni
-	label.TextStrokeColor3 = Color3.new(0, 0, 0)
-	label.TextStrokeTransparency = 0
-	label.TextSize = 20
 
-	espObjects[item] = {gui = gui, label = label}
-end
 
--- Xoá ESP
-local function removeESP(item)
-	local data = espObjects[item]
-	if data then
-		if data.gui then data.gui:Destroy() end
-		espObjects[item] = nil
-	end
-end
 
--- Update TextSize theo khoảng cách
-RunService.RenderStepped:Connect(function()
-	for item, data in pairs(espObjects) do
-		if not item:IsDescendantOf(Workspace) or not activeESPList[item.Name] then
-			removeESP(item)
-		else
-			local pos = item:GetPivot().Position
-			local dist = (Camera.CFrame.Position - pos).Magnitude
-			data.label.TextSize = math.clamp(25 * (1 - dist / 200), 10, 25)
-		end
-	end
-end)
 
--- Theo dõi spawn mới
-Workspace.DescendantAdded:Connect(function(obj)
-	if obj:IsA("Model") and itemSettings[obj.Name] and activeESPList[obj.Name] then
-		task.wait(0.05)
-		local setting = itemSettings[obj.Name]
-		createESP(obj, setting.label, setting.color)
-	end
-end)
 
--- Tạo toggle từng loại
-for objName, setting in pairs(itemSettings) do
-	VTab:CreateToggle({
-		Name = "ESP: " .. setting.label,
-		CurrentValue = false,
-		Callback = function(state)
-			activeESPList[objName] = state
 
-			if not state then
-				for obj in pairs(espObjects) do
-					if obj.Name == objName then
-						removeESP(obj)
-					end
-				end
-			else
-				-- Quét toàn bộ Descendants thay vì chỉ GetChildren
-				for _, obj in ipairs(Workspace:GetDescendants()) do
-					if obj:IsA("Model") and obj.Name == objName and not espObjects[obj] then
-						createESP(obj, setting.label, setting.color)
-					end
-				end
-			end
-		end
-	})
-end
+-- Tạo tiêu đề phân khu (Thay thế cho CreateSection của Rayfield)
+M105One:AddDivider()
 
-local bloodRunning = false
-local bloodConnection
-
-VTab:CreateToggle({
-	Name = "ESP: Campsite [Fixed?]",
-	CurrentValue = false,
-	Flag = "BloodESP",
-	Callback = function(state)
-		bloodRunning = state
-
-		if bloodConnection then
-			bloodConnection:Disconnect()
-			bloodConnection = nil
-		end
-
-		local player = game:GetService("Players").LocalPlayer
-		local camera = workspace.CurrentCamera
-
-		-- Xoá ESP cũ nếu có
-		for _, v in ipairs(workspace:GetDescendants()) do
-			if v:FindFirstChild("BloodESP") then
-				v.BloodESP:Destroy()
-			end
-			if v:FindFirstChild("BloodHighlight") then
-				v.BloodHighlight:Destroy()
-			end
-		end
-
-		if not state then return end
-
-		local function createESP(item)
-			if item:FindFirstChild("BloodESP") then return end
-
-			local billboard = Instance.new("BillboardGui")
-			billboard.Name = "BloodESP"
-			billboard.AlwaysOnTop = true
-			billboard.Size = UDim2.new(0, 200, 0, 50)
-			billboard.StudsOffset = Vector3.new(0, 3, 0)
-			billboard.MaxDistance = math.huge
-			billboard.Parent = item
-
-			local textLabel = Instance.new("TextLabel")
-			textLabel.Parent = billboard
-			textLabel.Text = "Blood bark"
-			textLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-			textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-			textLabel.TextStrokeTransparency = 0
-			textLabel.BackgroundTransparency = 1
-			textLabel.Size = UDim2.new(1, 0, 1, 0)
-			textLabel.TextScaled = false
-			textLabel.Font = Enum.Font.Bodoni
-			textLabel.TextSize = 25
-
-			local highlight = Instance.new("Highlight")
-			highlight.Name = "BloodHighlight"
-			highlight.FillColor = Color3.fromRGB(180, 0, 0)
-			highlight.FillTransparency = 0.9
-			highlight.OutlineColor = Color3.fromRGB(100, 0, 0)
-			highlight.OutlineTransparency = 0
-			highlight.Parent = item
-
-			task.spawn(function()
-				while bloodRunning and billboard and billboard.Parent do
-					local distance = (camera.CFrame.Position - item:GetPivot().Position).Magnitude
-					local size = math.clamp(25 * (1 - distance / 200), 10, 25)
-					textLabel.TextSize = size
-					task.wait(0.2)
-				end
-			end)
-		end
-
-		local function checkForBloodBark()
-			for _, item in ipairs(workspace:GetDescendants()) do
-				if item:IsA("BasePart") and item.Name == "campsite1" then
-					createESP(item)
-				end
-			end
-		end
-
-		bloodConnection = workspace.DescendantAdded:Connect(function(descendant)
-			if descendant:IsA("BasePart") and descendant.Name == "campsite1" then
-				task.wait(0.1)
-				createESP(descendant)
-			end
-		end)
-
-		checkForBloodBark()
-	end
-})
-
-
-local bloodRunning = false
-local bloodConnection
-
-VTab:CreateToggle({
-	Name = "ESP: Blood bark [Bloodmoon]",
-	CurrentValue = false,
-	Flag = "BloodESP",
-	Callback = function(state)
-		bloodRunning = state
-
-		if bloodConnection then
-			bloodConnection:Disconnect()
-			bloodConnection = nil
-		end
-
-		local player = game:GetService("Players").LocalPlayer
-		local camera = workspace.CurrentCamera
-
-		-- Xoá ESP cũ nếu có
-		for _, v in ipairs(workspace:GetDescendants()) do
-			if v:FindFirstChild("BloodESP") then
-				v.BloodESP:Destroy()
-			end
-			if v:FindFirstChild("BloodHighlight") then
-				v.BloodHighlight:Destroy()
-			end
-		end
-
-		if not state then return end
-
-		local function createESP(item)
-			if item:FindFirstChild("BloodESP") then return end
-
-			local billboard = Instance.new("BillboardGui")
-			billboard.Name = "BloodESP"
-			billboard.AlwaysOnTop = true
-			billboard.Size = UDim2.new(0, 200, 0, 50)
-			billboard.StudsOffset = Vector3.new(0, 3, 0)
-			billboard.MaxDistance = math.huge
-			billboard.Parent = item
-
-			local textLabel = Instance.new("TextLabel")
-			textLabel.Parent = billboard
-			textLabel.Text = "Blood bark"
-			textLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-			textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-			textLabel.TextStrokeTransparency = 0
-			textLabel.BackgroundTransparency = 1
-			textLabel.Size = UDim2.new(1, 0, 1, 0)
-			textLabel.TextScaled = false
-			textLabel.Font = Enum.Font.Bodoni
-			textLabel.TextSize = 25
-
-			local highlight = Instance.new("Highlight")
-			highlight.Name = "BloodHighlight"
-			highlight.FillColor = Color3.fromRGB(180, 0, 0)
-			highlight.FillTransparency = 0.9
-			highlight.OutlineColor = Color3.fromRGB(100, 0, 0)
-			highlight.OutlineTransparency = 0
-			highlight.Parent = item
-
-			task.spawn(function()
-				while bloodRunning and billboard and billboard.Parent do
-					local distance = (camera.CFrame.Position - item:GetPivot().Position).Magnitude
-					local size = math.clamp(25 * (1 - distance / 200), 10, 25)
-					textLabel.TextSize = size
-					task.wait(0.2)
-				end
-			end)
-		end
-
-		local function checkForBloodBark()
-			for _, item in ipairs(workspace:GetDescendants()) do
-				if item:IsA("Model") and item.Name == "blood_bark" then
-					createESP(item)
-				end
-			end
-		end
-
-		bloodConnection = workspace.DescendantAdded:Connect(function(descendant)
-			if descendant:IsA("Model") and descendant.Name == "blood_bark" then
-				task.wait(0.1)
-				createESP(descendant)
-			end
-		end)
-
-		checkForBloodBark()
-	end
-})
-
-VTab:CreateSection("Animal, SCPs")
-
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local Camera = Workspace.CurrentCamera
-local LocalPlayer = Players.LocalPlayer
-
-local activeESPList = {}
-local espObjects = {} -- Key: DebugId -> Value: gui info
-
--- Danh sách loại trừ SCP
-local excludedNPCs = {
-	bear = true,
-	deer = true,
-	mammoth = true,
- spy = true
-}
-
--- Cấu hình từng loại
-local itemSettings = {
-	deer = {label = "Deer", color = Color3.fromRGB(0, 255, 0)},
-	bear = {label = "Bear", color = Color3.fromRGB(255, 255, 0)},
- spy = {label = "Spy", color = Color3.fromRGB(255,155,0)},
-	mammoth = {label = "Mammoth", color = Color3.fromRGB(155, 0, 0)},
-}
-
--- Xoá ESP
-local function removeESP(item)
-	local id = item:GetDebugId()
-	local data = espObjects[id]
-	if data and data.gui then
-		data.gui:Destroy()
-	end
-	espObjects[id] = nil
-end
-
--- Tạo ESP Billboard
-local function createESP(item, baseText, color)
-	local id = item:GetDebugId()
-	if espObjects[id] then return end
-	local humanoid = item:FindFirstChildOfClass("Humanoid")
-	if not humanoid or humanoid.Health <= 0 then return end
-
-	local part = item.PrimaryPart or item:FindFirstChild("Head") or item:FindFirstChildWhichIsA("BasePart")
-	if not part then return end
-
-	local gui = Instance.new("BillboardGui")
-	gui.Name = "ItemESP"
-	gui.AlwaysOnTop = true
-	gui.Size = UDim2.new(0, 100, 0, 40)
-	gui.StudsOffset = Vector3.new(0, 2, 0)
-	gui.MaxDistance = math.huge
-	gui.Adornee = part
-	gui.Parent = item
-
-	local label = Instance.new("TextLabel", gui)
-	label.BackgroundTransparency = 1
-	label.Size = UDim2.new(1, 0, 1, 0)
-	label.Text = baseText
-	label.TextColor3 = color
-	label.Font = Enum.Font.Bodoni
-	label.TextStrokeColor3 = Color3.new(0, 0, 0)
-	label.TextStrokeTransparency = 0
-	label.TextSize = 20
-
-	espObjects[id] = {gui = gui, label = label, humanoid = humanoid, baseText = baseText, model = item}
-
-	task.spawn(function()
-		humanoid.Died:Connect(function()
-			removeESP(item)
-		end)
-		item.AncestryChanged:Connect(function(_, parent)
-			if not parent then
-				removeESP(item)
-			end
-		end)
-	end)
-end
-
--- Cập nhật textsize + máu mammoth
-RunService.RenderStepped:Connect(function()
-	for id, data in pairs(espObjects) do
-		local item = data.model
-		if not item or not item:IsDescendantOf(Workspace) then
-			removeESP(item)
-		else
-			local pos = item:GetPivot().Position
-			local dist = (Camera.CFrame.Position - pos).Magnitude
-			data.label.TextSize = math.clamp(25 * (1 - dist / 500), 10, 25)
-
-			if item.Name:lower() == "mammoth" then
-				local hp = math.floor(data.humanoid.Health)
-				local max = math.floor(data.humanoid.MaxHealth)
-				data.label.Text = data.baseText .. " | " .. hp .. "/" .. max
-			end
-		end
-	end
-end)
-
--- Theo dõi NPC mới spawn
-Workspace.DescendantAdded:Connect(function(obj)
-	local model = obj:FindFirstAncestorOfClass("Model")
-	if model and model:FindFirstChildOfClass("Humanoid") and not Players:GetPlayerFromCharacter(model) then
-		task.wait(0.05)
-		local name = model.Name:lower()
-
-		if activeESPList["scps"] and not excludedNPCs[name] then
-			createESP(model, model.Name, Color3.fromRGB(255, 255, 255))
-		elseif itemSettings[name] and activeESPList[name] then
-			local setting = itemSettings[name]
-			createESP(model, setting.label, setting.color)
-		end
-	end
-end)
-
--- Toggle SCPs
-VTab:CreateToggle({
-	Name = "ESP: SCPs",
-	CurrentValue = false,
-	Callback = function(state)
-		activeESPList["scps"] = state
-
-		for _, model in ipairs(Workspace:GetDescendants()) do
-			if model:IsA("Model") and model:FindFirstChildOfClass("Humanoid") and not Players:GetPlayerFromCharacter(model) then
-				local name = model.Name:lower()
-				local isExcluded = excludedNPCs[name]
-				local isSpecific = itemSettings[name]
-
-				if state and not isExcluded then
-					createESP(model, model.Name, Color3.fromRGB(255, 255, 255))
-				elseif not state and not isSpecific and not isExcluded then
-					removeESP(model)
-				end
-			end
-		end
-	end
-})
-
--- Toggle riêng từng loại
-for objName, setting in pairs(itemSettings) do
-	VTab:CreateToggle({
-		Name = "ESP: " .. setting.label,
-		CurrentValue = false,
-		Callback = function(state)
-			activeESPList[objName] = state
-
-			for _, model in ipairs(Workspace:GetDescendants()) do
-				if model:IsA("Model") and model.Name:lower() == objName and model:FindFirstChildOfClass("Humanoid") then
-					if state then
-						createESP(model, setting.label, setting.color)
-					else
-						removeESP(model)
-					end
-				end
-			end
-		end
-	})
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-local TeleportTab = Window:CreateTab("Teleport", "map")
-TeleportTab:CreateSection("Main Location")
-TeleportTab:CreateParagraph({
-	Title = "Note",
-	Content = " Teleportation may not be correct because 7DTL currently uses Random map",
-})
--- Vị trí chính
+-- Danh sách vị trí (Đã để sẵn form để bạn tiện copy/thêm tọa độ mới)
 local locations = {
-    {Name = "House", Position = Vector3.new(1328.45, 29.15, 1320.02)}, 
-    {Name = "House balcony 🏠", Position = Vector3.new(1305.69, 42.51, 1319.58)},
-    {Name = "House roof 🏠", Position = Vector3.new(1328.53, 56.30, 1319.72)},
-    {Name = "House balcony 🏠[Map2]", Position = Vector3.new(1307.94, 69.88, 1321.95)},
-    {Name = "House roof 🏠[Map2]", Position = Vector3.new(1326.80, 84.83, 1322.15)},
-    {Name = "House[Map3]", Position = Vector3.new(1326.74, 42.57, 1322.02)},
-    {Name = "House balcony [Map3]", Position = Vector3.new(1305.78, 53.57, 1321.77)}, 
-    {Name = "House roof [Map3]", Position = Vector3.new(1326.80, 66.57, 1322.15)}, 
+    {Name = "Sell Ore 💰", Position = Vector3.new(-57.96, 93.92, 13.34)}, 
+    {Name = "Item Shop 💸", Position = Vector3.new(-80.87, 93.84, 59.07)},
+    {Name = "Premium Shop 💸💸💸", Position = Vector3.new(-6.41, 93.83, 55.31)},
+    {Name = "Cave Gate ⛩️", Position = Vector3.new(-73.75, 93.28, 95.39)},
 }
 
+-- Vòng lặp tự động tạo nút bấm theo chuẩn Obsidian Lib
 for _, loc in ipairs(locations) do
-    TeleportTab:CreateButton({
-        Name = "Go to " .. loc.Name,
-        Callback = function()
-            local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    M105One:AddButton({
+        Text = "Go to: " .. loc.Name,
+        Func = function()
+            local player = game:GetService("Players").LocalPlayer
+            local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
             if hrp then
                 hrp.CFrame = CFrame.new(loc.Position)
             end
-        end
+        end,
+        DoubleClick = false, -- Click 1 phát bay luôn, không cần click đúp
+        Tooltip = "Dịch chuyển đến " .. loc.Name
     })
 end
 
-TeleportTab:CreateSection("Misc")
 
-TeleportTab:CreateButton({
-        Name = "Go to Void",
-        Callback = function()
-            local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                hrp.CFrame = CFrame.new(1374.68, 2.50, 1415.18)
-            end
-        end
-    })
+M105One:AddDivider()
+-- Biến lưu vị trí gốc (Để bên ngoài để lưu dữ liệu xuyên suốt)
+local originalPos = nil
 
-local usedTargets = {}
-local pendingTargets = {} -- Tự động cập nhật nếu có object mới
-local allowedNames = {
-	["abandoned_shack"] = true,
-	["cabin"] = true,
- ["dead_house"] = true,
-}
-
-TeleportTab:CreateButton({
-	Name = "Go to Materials [Limited][Day >2]",
-	Callback = function()
-		local Players = game:GetService("Players")
-		local LocalPlayer = Players.LocalPlayer
-		local Workspace = game:GetService("Workspace")
-
-		local function getHRP()
-			local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-			return char:WaitForChild("HumanoidRootPart", 5)
-		end
-
-		local function getUnvisitedTarget()
-			local nearest, minDist = nil, math.huge
-			local hrp = getHRP()
-			if not hrp then return end
-
-			for _, obj in ipairs(workspace:GetDescendants()) do
-				if obj:IsA("Model") and allowedNames[obj.Name] and not usedTargets[obj] then
-					local part = obj:FindFirstChildWhichIsA("BasePart")
-					if part then
-						local dist = (hrp.Position - part.Position).Magnitude
-						if dist < minDist then
-							minDist = dist
-							nearest = obj
-						end
-					end
-				end
-			end
-			return nearest, minDist
-		end
-
-		local function safeTeleport(cf)
-			local hrp = getHRP()
-			if not hrp then return end
-
-			for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
-				if v:IsA("BasePart") then
-					v.CanCollide = false
-					v.Velocity = Vector3.zero
-					v.RotVelocity = Vector3.zero
-				end
-			end
-
-			task.wait()
-			hrp.Anchored = true
-			hrp.CFrame = cf * CFrame.new(0, 3, 0)
-			task.wait(0.15)
-			hrp.Anchored = false
-		end
-
-		local target, dist = getUnvisitedTarget()
-		if target then
-			local mainPart = target:FindFirstChildWhichIsA("BasePart")
-			if mainPart then
-				safeTeleport(mainPart.CFrame)
-				print("Đã dịch chuyển đến:", target.Name, "| Dist:", math.floor(dist))
-				usedTargets[target] = true
-			end
-		else
-			warn("Không còn target để dịch chuyển.")
-			error("Limit reached.") -- Gọi lỗi để vô hiệu hoá nút
-		end
-	end
-})
-
--- Theo dõi object mới
-workspace.DescendantAdded:Connect(function(obj)
-	if obj:IsA("Model") and allowedNames[obj.Name] then
-		if not usedTargets[obj] then
-			pendingTargets[obj] = true -- nếu sau này cần dùng
-		end
-	end
-end)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-local CTab = Window:CreateTab("Craft", "wrench")
-
--- Section: Builds
-CTab:CreateSection("Builds Wood")
-local builds = {
-	{Name = "Planter", Requires = "15 Wood"},
-	{Name = "Campfire", Requires = "4 Wood, 9 Stone"},
-	{Name = "Chair", Requires = "2 Wood"},
-	{Name = "Ladder", Requires = "5 Wood"},
-	{Name = "Table", Requires = "4 Wood"},
-	{Name = "Torch", Requires = "1 Wood, 1 Stone"},
-	{Name = "Wall", Requires = "3 Wood"},
-	{Name = "Wide Wall", Requires = "5 Wood"},
- {Name = "Window Wide Wall", Requires = "5 Wood, 2 Glass"},
- {Name = "Door", Requires = "6 Wood"},
- {Name = "Totem", Requires = "30 Wood"},
- {Name = "Stone Workbench", Requires = "8 Wood, 30 Stone, 4 Glass"},
- {Name = "Building Stone", Requires = "---------------------------------------------"},
- {Name = "Cauldron", Requires = "2 Wood, 15 Stone"},
- {Name = "Stone Chair", Requires = "2 Stone"},
- {Name = "Stone Door", Requires = "6 Stone"},
- {Name = "Stone Ladder", Requires = "5 Stone"},
- {Name = "Stone Table", Requires = "4 Stone"},
- {Name = "Stone Wall", Requires = "3 Stone"},
- {Name = "Stone Wide Wall", Requires = "5 Stone"},
- {Name = "Stone Window Wide Wall", Requires = "5 Stone, 2 Glass"},
-} 
-
---[[
- {Name = "", Requires = ""},
-]]
-
-for _, b in ipairs(builds) do
-	CTab:CreateButton({
-		Name = "Craft " .. b.Name .. " [" .. b.Requires .. "]",
-		Callback = function()
-			game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(b.Name)
-		end
-	})
-end
-
--- Section: Items
-CTab:CreateSection("Items Wood")
-local items = {
-	{Name = "Left Leather Pad", Requires = "5 Leather, 3 Cordage"},
-	{Name = "Right Leather Pad", Requires = "5 Leather, 3 Cordage"},
- {Name = "Left Wood Kneepad", Requires = "6 Wood, 4 Cordage"},
- {Name = "Right Wood Kneepad", Requires = "6 Wood, 4 Cordage"},
-	{Name = "Leather Jacket", Requires = "15 Leather, 10 Cordage"},
-	{Name = "Fishing Rod", Requires = "1 Wood, 12 Cordage"},
- {Name = "Wood Pickaxe", Requires = "10 Wood, 3 Cordage"},
- {Name = "Flower Crown", Requires = "1 Wood, 6 Corbage, 6 Flower"},
- {Name = " Items Stone  ", Requires = "---------------------------------------------"},
- {Name = "Makeshift Sickle", Requires = "7 Wood, 4 Stone, 3 Cordage"},
- {Name = "Repair Hammer", Requires = "13 Wood, 5 Stone, 3 Cordage"},
- {Name = "Stone Pickaxe", Requires = "2 Wood, 7 Stone, 3 Cordage"},
- {Name = "Stone Axe", Requires = "2 Wood, 7 Stone, 3 Cordage"},
-}
-
-for _, i in ipairs(items) do
-	CTab:CreateButton({
-		Name = "Craft " .. i.Name .. " [" .. i.Requires .. "]",
-		Callback = function()
-			game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(i.Name)
-		end
-	})
-end
-
--- Section: Misc
-CTab:CreateSection("Misc")
-local items = {
-	{Name = "Bonemeal", Requires = "12 Bone"},
-}
-
-for _, i in ipairs(items) do
-	CTab:CreateButton({
-		Name = "Craft " .. i.Name .. " [" .. i.Requires .. "]",
-		Callback = function()
-			game:GetService("ReplicatedStorage"):WaitForChild("remotes"):WaitForChild("craft"):FireServer(i.Name)
-		end
-	})
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-local KTab = Window:CreateTab("Misc", "package")
-KTab:CreateSection("Player")
-
-local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
-local speaker = Players.LocalPlayer
-local flyjump
-
-KTab:CreateToggle({
-	Name = "Inf Jump",
-	CurrentValue = false,
-	Flag = "InfJumpToggle",
-	Callback = function(state)
-		if flyjump then
-			flyjump:Disconnect()
-			flyjump = nil
-		end
-
-		if state then
-			flyjump = UserInputService.JumpRequest:Connect(function()
-				local humanoid = speaker.Character and speaker.Character:FindFirstChildWhichIsA("Humanoid")
-				if humanoid then
-					humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-				end
-			end)
-		end
-	end
-})
-
--- Khai báo các dịch vụ cần thiết
-local PromptService = game:GetService("ProximityPromptService")
-local Workspace = game:GetService("Workspace")
-
--- Tạo Toggle để kích hoạt và tắt chức năng Instant Prompt
-local InstantPromptToggle = KTab:CreateToggle({
-    Name = "Instant interact",
-    CurrentValue = false,  -- Mặc định tắt
-    Callback = function(enabled)
-        if enabled then
-            -- Khi toggle bật, thiết lập tất cả ProximityPrompt có HoldDuration = 0
-            for _, v in ipairs(Workspace:GetDescendants()) do
-                if v:IsA("ProximityPrompt") then
-                    v.HoldDuration = 0
-                end
-            end
+-- Nút 1: Lưu vị trí hiện tại
+M105One:AddButton({
+    Text = "Save current location",
+    DoubleClick = false,
+    Tooltip = "Lưu lại tọa độ hiện tại nhân vật đang đứng",
+    Func = function()
+        local character = game:GetService("Players").LocalPlayer.Character
+        local hrp = character and character:FindFirstChild("HumanoidRootPart")
+        
+        if hrp then
+            originalPos = hrp.CFrame
             
-            -- Tự động thiết lập HoldDuration = 0 khi có Prompt mới bắt đầu
-            PromptService.PromptButtonHoldBegan:Connect(function(prompt)
-                if prompt:IsA("ProximityPrompt") then
-                    prompt.HoldDuration = 0
-                end
-            end)
-
-            Rayfield:Notify({
-                Title = "Instant Prompt Enabled",
-                Content = "All proximity prompts now require no hold duration.",
-                Duration = 2
-            })
-        else
-            -- Khi toggle tắt, không thay đổi gì
-            Rayfield:Notify({
-                Title = "Instant Prompt Disabled",
-                Content = "Proximity prompts will use default hold duration.",
-                Duration = 2
+            -- Đổi Rayfield:Notify thành Library:Notify của Obsidian
+            Library:Notify({
+                Title = "Original location",
+                Description = "Current location saved",
+                Time = 2
             })
         end
-    end,
+    end
 })
 
-local RunService = game:GetService("RunService")
-local speaker = game.Players.LocalPlayer
-local noclipConnection
-local diedConnection
-
-KTab:CreateToggle({
-	Name = "Noclip",
-	Default = false,
-	Flag = "NoclipToggle",
-	Callback = function(state)
-		if state then
-			local char = speaker.Character or speaker.CharacterAdded:Wait()
-			local humanoid = char:FindFirstChildOfClass("Humanoid")
-
-			-- Kích hoạt Noclip
-			noclipConnection = RunService.Stepped:Connect(function()
-				local c = speaker.Character
-				if not c then return end
-				for _, part in ipairs(c:GetDescendants()) do
-					if part:IsA("BasePart") then
-						part.CanCollide = false
-					end
-				end
-			end)
-
-			-- Nếu chết thì tắt
-			if humanoid then
-				diedConnection = humanoid.Died:Connect(function()
-					if noclipConnection then
-						noclipConnection:Disconnect()
-						noclipConnection = nil
-					end
-					if diedConnection then
-						diedConnection:Disconnect()
-						diedConnection = nil
-					end
-					-- Tắt nút
-					KTab.Flags["NoclipToggle"] = false
-				end)
-			end
-		else
-			-- Hủy kết nối nếu đang bật
-			if noclipConnection then
-				noclipConnection:Disconnect()
-				noclipConnection = nil
-			end
-			if diedConnection then
-				diedConnection:Disconnect()
-				diedConnection = nil
-			end
-		end
-	end
-})
-
-local Lighting = game:GetService("Lighting")
-local RunService = game:GetService("RunService")
-
-local brightLoop = nil
-local oldLighting = {}
-
-KTab:CreateToggle({
-    Name = "Full Bright",
-    CurrentValue = false,
-    Callback = function(state)
-        if state then
-            -- 🌕 Lưu thông số gốc
-            oldLighting = {
-                Brightness = Lighting.Brightness,
-                ClockTime = Lighting.ClockTime,
-                FogEnd = Lighting.FogEnd,
-                GlobalShadows = Lighting.GlobalShadows,
-                OutdoorAmbient = Lighting.OutdoorAmbient,
-            }
-
-            -- 🌞 Bật ánh sáng
-            local function brightFunc()
-                Lighting.Brightness = 2
-                Lighting.ClockTime = 14
-                Lighting.FogEnd = 100000
-                Lighting.GlobalShadows = false
-                Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
-            end
-
-            brightFunc()
-            brightLoop = RunService.RenderStepped:Connect(brightFunc)
-        else
-            -- 🌑 Tắt ánh sáng và khôi phục lại
-            if brightLoop then brightLoop:Disconnect() end
-
-            if oldLighting then
-                pcall(function()
-                    Lighting.Brightness = oldLighting.Brightness
-                    Lighting.ClockTime = oldLighting.ClockTime
-                    Lighting.FogEnd = oldLighting.FogEnd
-                    Lighting.GlobalShadows = oldLighting.GlobalShadows
-                    Lighting.OutdoorAmbient = oldLighting.OutdoorAmbient
-                end)
+-- Nút 2: Quay lại vị trí đã lưu
+M105One:AddButton({
+    Text = "Return to original position",
+    DoubleClick = false,
+    Tooltip = "Dịch chuyển về tọa độ đã lưu trước đó",
+    Func = function()
+        local character = game:GetService("Players").LocalPlayer.Character
+        local hrp = character and character:FindFirstChild("HumanoidRootPart")
+        
+        if hrp then
+            if originalPos then
+                hrp.CFrame = originalPos
+                
+                Library:Notify({
+                    Title = "Teleport",
+                    Description = "Teleported to saved location",
+                    Time = 2
+                })
+            else
+                -- Thêm thông báo báo lỗi nếu lỡ bấm mà chưa save vị trí
+                Library:Notify({
+                    Title = "ERROR",
+                    Description = "Bro, you didn't save a damn thing and now you want a TP?",
+                    Time = 3
+                })
             end
         end
     end
 })
 
-KTab:CreateButton({
-    Name = "Anti-Void",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/AntiVoid"))()
-    end,
-})
 
 
 
-KTab:CreateSection("Other")
-
-
-KTab:CreateButton({
-    Name = "Eat Button (Full Hungry)",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/refs/heads/main/EatBerryButton"))()
-    end,
-})
-
-KTab:CreateButton({
-    Name = "Collect Aura",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/CollectAura"))()
-    end,
-})
-  
-  KTab:CreateButton({
-    Name = "Inf Yield Edit",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/infedit"))()
-    end,
-  })
-
-KTab:CreateButton({
-     Name = "Herkle Hub (Error)",
-     Callback = function()
-         loadstring(game:HttpGet("https://raw.githubusercontent.com/decryp1/Herkle-Hub/refs/heads/main/game%20redirect"))()
-     end,
-})
 
 
 
-KTab:CreateButton({
-    Name = "Xomar Hub",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/omaromar242/7-days-Op-omarXwiet-Works/refs/heads/main/.gitignore"))()
-task.spawn(function()
-if setclipboard then
-    setclipboard("wietXomar_Hub") -- thay bằng nội dung cần copy
-    print("Copied Key: wietXomar_Hub!")
-game:GetService("StarterGui"):
-SetCore("SendNotification", {
-    Title = "Bypass Key",
-    Text = "Key copied",
-    Duration = 5 
-})
-else
-    warn("Executor not supported setclipboard")
+
+Main1Group:AddDivider()
+
+
+
+
+
+
+
+
+
+_G.ESP_Items_Enabled = false
+_G.ESP_Enemy_Enabled = false
+_G.ShadowMan_Color = Color3.fromRGB(255, 0, 0)
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+
+local OreList = {"Nickel", "Cobalt", "Coal", "Tin", "Copper", "Minerals", "Iron", "Diamond", "Lead", "Silver", "Gold"}
+
+-- Bộ nhớ đệm lưu trữ quặng (Tránh GetDescendants liên tục gây lag)
+-- Bộ nhớ đệm lưu trữ quặng
+local CachedOres = {}
+
+-- Hàm kiểm tra và nạp quặng (Đã thêm bộ lọc chống rác)
+local function CheckAndCache(obj)
+    -- NẾU LÀ TOOL (Quặng lẻ) HOẶC ĐANG NẰM TRONG NGƯỜI CHƠI -> BỎ QUA NGAY
+    if obj:IsA("Tool") or obj:FindFirstAncestorOfClass("Model") and Players:GetPlayerFromCharacter(obj:FindFirstAncestorOfClass("Model")) then 
+        return 
+    end
+
+    if (obj:IsA("Model") or obj:IsA("BasePart")) and table.find(OreList, obj.Name) then
+        if not table.find(CachedOres, obj) then
+            table.insert(CachedOres, obj)
+        end
+    end
 end
-end)
-    end,
-})
 
-KTab:CreateButton({
-    Name = "Killaura (Best killaura script)",
-    Callback = function()
-        loadstring(game:HttpGet('https://raw.githubusercontent.com/zamzamzan/test/refs/heads/main/7days'))()
-    end,
-})
+-- Quét ban đầu khi mở script
+for _, obj in ipairs(Workspace:GetDescendants()) do
+    CheckAndCache(obj)
+end
 
-KTab:CreateButton({
-    Name = "Dot Aim",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/DotAim"))()
-    end,
-})
-
-KTab:CreateButton({
-Name = "AutoCollectItemsGUI",
-Callback = function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/7DayToLive/main/autocollectitems"))()
-end,
-})
-
-
-KTab:CreateSection("Save location")
-local originalPos = nil
-
-KTab:CreateButton({
-    Name = "Save current location",
-    Callback = function()
-        local hrp = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            originalPos = hrp.CFrame
-            Rayfield:Notify({
-                Title = "Original location",
-                Content = "Current location saved",
-                Duration = 2
-            })
-        end
-    end,
-})
-
-KTab:CreateButton({
-    Name = "Return to original position",
-    Callback = function()
-        local hrp = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if originalPos and hrp then
-            hrp.CFrame = originalPos
-            Rayfield:Notify({
-                Title = "Teleport",
-                Content = "Teleported to saved location",
-                Duration = 2
-            })
-        end
-    end,
-})
-  
+-- Lắng nghe khi có quặng mới rơi ra map
+Workspace.DescendantAdded:Connect(function(descendant)
+    CheckAndCache(descendant)
 end)
 
---// Yêu cầu: Đảm bảo bạn đã tạo KTab = Window:CreateTab("Tên Tab")
+local function GetPart(obj)
+    if obj:IsA("BasePart") then return obj end
+    return obj:FindFirstChild("ore") or obj:FindFirstChild("Ore") or obj:FindFirstChild("Rock") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+end
+
+-- Hàm check quặng đào (Cập nhật siêu chuẩn)
+local function IsMined(obj)
+    if not obj or not obj.Parent then return true end
+    
+    -- 1. Nếu nó trở thành Tool (Quặng rớt ra để nhặt) hoặc bị cầm trên tay -> Đã đào xong
+    if obj:IsA("Tool") or obj:IsDescendantOf(LocalPlayer.Character) then return true end
+    
+    -- 2. Nếu là cục lẻ BasePart
+    if obj:IsA("BasePart") then
+        -- Nếu nó bị tàng hình HOẶC nó không bị đóng băng (Anchored = false tức là đang lăn lóc trên đất)
+        if obj.Transparency >= 1 or not obj.Anchored then return true end
+        return false
+    end
+    
+    -- 3. Kiểm tra Model lớn (Rock + Ore)
+    local corePart = obj:FindFirstChild("ore") or obj:FindFirstChild("Ore")
+    if corePart and corePart:IsA("BasePart") then
+        if corePart.Transparency >= 1 then return true end
+    end
+    
+    -- 4. Quét dự phòng mảnh quặng màu
+    local hasValidOre = false
+    for _, child in ipairs(obj:GetChildren()) do
+        if child:IsA("BasePart") and child.Name ~= "Rock" and child.Name ~= "Stone" then
+            -- Mảnh quặng phải hiển thị VÀ PHẢI ĐÓNG BĂNG trên tường (Anchored = true)
+            if child.Transparency < 1 and child.Anchored then
+                hasValidOre = true
+                break
+            end
+        end
+    end
+    
+    return not hasValidOre
+end
+
+
+
+--======================================================
+-- ORE (ITEM) ESP LOGIC
+--======================================================
+local function CreateESP(obj)
+    local part = GetPart(obj)
+    if not part or IsMined(obj) then return end
+    if part:FindFirstChild("ESP_Gui") or obj:FindFirstChild("ESP_Outline") then return end
+
+    -- LẤY MÀU CHUẨN: Ưu tiên tuyệt đối cục "ore"/"Ore", bỏ qua hoàn toàn "Rock" màu xám
+    local color = Color3.new(1, 1, 1) -- Màu mặc định nếu không quét được
+    
+    if obj:IsA("BasePart") then
+        color = obj.Color
+    else
+        -- Kiểm tra xem Model có chứa mảnh quặng màu (ore/Ore) không
+        local oreChild = obj:FindFirstChild("ore") or obj:FindFirstChild("Ore")
+        if oreChild and oreChild:IsA("BasePart") then
+            color = oreChild.Color
+        else
+            -- Vòng lặp quét dự phòng: Lấy màu của part bất kỳ KHÔNG PHẢI là đá (Rock/Stone)
+            for _, child in ipairs(obj:GetChildren()) do
+                if child:IsA("BasePart") and child.Name ~= "Rock" and child.Name ~= "Stone" then
+                    color = child.Color
+                    break
+                end
+            end
+        end
+    end
+
+    -- Billboard UI
+    local gui = Instance.new("BillboardGui")
+    gui.Name = "ESP_Gui"
+    gui.Adornee = part
+    gui.Size = UDim2.new(0,100,0,40)
+    gui.StudsOffset = Vector3.new(0,2,0)
+    gui.AlwaysOnTop = true
+    gui.Parent = part
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Name = "MainLabel"
+    lbl.Size = UDim2.new(1,0,1,0)
+    lbl.BackgroundTransparency = 1
+    lbl.Font = Enum.Font.Code
+    lbl.TextSize = 14
+    lbl.TextColor3 = color
+    lbl.TextStrokeTransparency = 0
+    lbl.Text = obj.Name.."\nDist: 0.0"
+    lbl.Parent = gui
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.new(0,0,0)
+    stroke.Thickness = 1.5
+    stroke.Parent = lbl
+
+    -- Outline Highlight
+    local hl = Instance.new("Highlight")
+    hl.Name = "ESP_Outline"
+    hl.Adornee = obj
+    hl.FillTransparency = 1
+    hl.OutlineTransparency = 0
+    hl.OutlineColor = color
+    hl.Parent = obj
+end
+
+local function ClearESP(obj)
+    local part = GetPart(obj)
+    if part and part:FindFirstChild("ESP_Gui") then part.ESP_Gui:Destroy() end
+    if obj:FindFirstChild("ESP_Outline") then obj.ESP_Outline:Destroy() end
+end
+
+-- Vòng lặp cập nhật Quặng
+task.spawn(function()
+    while true do
+        task.wait(0.3) -- Tốc độ quét 0.3s mượt mà hơn để check khoảng cách Slider
+        
+        -- Dọn dẹp quặng đã biến mất hoàn toàn khỏi map ra khỏi bộ nhớ đệm
+        for i = #CachedOres, 1, -1 do
+            if not CachedOres[i] or not CachedOres[i].Parent then
+                table.remove(CachedOres, i)
+            end
+        end
+        
+        -- Lấy giá trị khoảng cách tối đa từ Slider UI (Mặc định 1000 nếu không tìm thấy slider)
+        local maxDist = Options.ESPDistanceSlider and Options.ESPDistanceSlider.Value or 1000
+        
+        if _G.ESP_Items_Enabled and Options.ESPOresDropdown then
+            local selectedOres = Options.ESPOresDropdown.Value
+            
+            for _, obj in ipairs(CachedOres) do
+                -- Điều kiện: Quặng được chọn trong danh sách VÀ chưa bị đào xong
+                if selectedOres[obj.Name] and not IsMined(obj) then
+                    local part = GetPart(obj)
+                    if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        local dist = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                        
+                        -- KIỂM TRA KHOẢNG CÁCH SLIDER
+                        if dist <= maxDist then
+                            CreateESP(obj)
+                            local gui = part:FindFirstChild("ESP_Gui")
+                            if gui and gui:FindFirstChild("MainLabel") then
+                                gui.MaxDistance = maxDist -- Giới hạn tầm nhìn phần cứng của Roblox
+                                gui.MainLabel.Text = obj.Name..string.format("\nDist: %.1f", dist)
+                            end
+                        else
+                            ClearESP(obj) -- Quá xa thì xóa tạm thời cho đỡ rối mắt
+                        end
+                    end
+                else
+                    ClearESP(obj) -- Bỏ chọn hoặc quặng đã vỡ hoàn toàn thì xóa ESP
+                end
+            end
+        else
+            -- Tắt nút chính tắt hết
+            for _, obj in ipairs(CachedOres) do
+                ClearESP(obj)
+            end
+        end
+    end
+end)
+
+--======================================================
+-- ENEMY (MONSTERS FOLDER) ESP LOGIC
+--======================================================
+local function CreateEnemyESP(obj)
+    if obj:FindFirstChild("ESP_Gui") or obj:FindFirstChild("ESP_Outline") then return end
+    local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+    if not part then return end
+
+    local color = _G.ShadowMan_Color or Color3.new(1,0,0)
+    local hum = obj:FindFirstChildOfClass("Humanoid")
+    local hp = hum and math.floor(hum.Health) or "?"
+
+    local gui = Instance.new("BillboardGui")
+    gui.Name = "ESP_Gui"
+    gui.Adornee = part
+    gui.Size = UDim2.new(0,120,0,50)
+    gui.StudsOffset = Vector3.new(0,2,0)
+    gui.AlwaysOnTop = true
+    gui.Parent = part
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Name = "MainLabel"
+    lbl.Size = UDim2.new(1,0,1,0)
+    lbl.BackgroundTransparency = 1
+    lbl.Font = Enum.Font.Code
+    lbl.TextSize = 14
+    lbl.TextColor3 = color
+    lbl.TextStrokeTransparency = 0
+    lbl.Text = obj.Name.."\nHP: "..hp.."\nDist: 0.0"
+    lbl.Parent = gui
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.new(0,0,0)
+    stroke.Thickness = 1.5
+    stroke.Parent = lbl
+
+    local hl = Instance.new("Highlight")
+    hl.Name = "ESP_Outline"
+    hl.Adornee = obj
+    hl.FillTransparency = 1
+    hl.OutlineTransparency = 0
+    hl.OutlineColor = color
+    hl.Parent = obj
+end
+
+local function ClearEnemyESP(obj)
+    local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+    if part and part:FindFirstChild("ESP_Gui") then part.ESP_Gui:Destroy() end
+    if obj:FindFirstChild("ESP_Outline") then obj.ESP_Outline:Destroy() end
+end
+
+-- Vòng lặp cập nhật Quái vật
+task.spawn(function()
+    local trackedEnemies = {}
+
+    while true do
+        task.wait(0.3)
+        local maxDist = Options.ESPDistanceSlider and Options.ESPDistanceSlider.Value or 1000
+        
+        if _G.ESP_Enemy_Enabled then
+            local MonstersFolder = Workspace:FindFirstChild("Monsters") or Workspace:FindFirstChild("monsters")
+            
+            if MonstersFolder then
+                for _, enemy in ipairs(MonstersFolder:GetChildren()) do
+                    if enemy:IsA("Model") then
+                        local part = enemy.PrimaryPart or enemy:FindFirstChildWhichIsA("BasePart")
+                        if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                            local dist = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                            
+                            if dist <= maxDist then
+                                CreateEnemyESP(enemy)
+                                trackedEnemies[enemy] = true
+
+                                local gui = part:FindFirstChild("ESP_Gui")
+                                local lbl = gui and gui:FindFirstChild("MainLabel")
+                                local hum = enemy:FindFirstChildOfClass("Humanoid")
+                                local hp = hum and math.floor(hum.Health) or "?"
+                                
+                                if lbl then
+                                    gui.MaxDistance = maxDist
+                                    lbl.Text = enemy.Name.."\nHP: "..hp..string.format("\nDist: %.1f", dist)
+                                end
+                            else
+                                ClearEnemyESP(enemy)
+                            end
+                        end
+                    end
+                end
+            end
+            
+            for enemy, _ in pairs(trackedEnemies) do
+                local currentFolder = Workspace:FindFirstChild("Monsters") or Workspace:FindFirstChild("monsters")
+                if not enemy or not enemy.Parent or (currentFolder and not enemy:IsDescendantOf(currentFolder)) then
+                    ClearEnemyESP(enemy)
+                    trackedEnemies[enemy] = nil
+                end
+            end
+        else
+            for enemy, _ in pairs(trackedEnemies) do
+                if enemy and enemy.Parent then ClearEnemyESP(enemy) end
+            end
+            table.clear(trackedEnemies)
+        end
+    end
+end)
+
+--======================================================    
+--  UI CONFIGURATION (Main2Group - LinoriaLib)    
+--======================================================    
+Main2Group:AddToggle("ESPItemsToggle", {
+    Text = "ESP Ores Master",
+    Default = false,
+    Callback = function(v)
+        _G.ESP_Items_Enabled = v
+    end
+})
+
+Main2Group:AddDropdown("ESPOresDropdown", {
+    Values = OreList,
+    Default = 1, 
+    Multi = true, 
+    Text = "Select Ores to Show",
+    Tooltip = "Chọn quặng muốn hiển thị",
+    Callback = function(Value) end,
+})
+
+-- SLIDER ĐIỀU CHỈNH KHOẢNG CÁCH (100 -> 2000)
+Main2Group:AddSlider("ESPDistanceSlider", {
+    Text = "Max ESP Distance",
+    Default = 1000,
+    Min = 100,
+    Max = 2000,
+    Rounding = 0,
+    Compact = false,
+    Callback = function(Value) end
+})
+    
+Main2Group:AddToggle("ESPEnemyToggle", {
+    Text = "ESP Monsters",
+    Default = false,
+    Callback = function(v)
+        _G.ESP_Enemy_Enabled = v
+    end
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--======================================================    
+--  AUTO MINE LOGIC (Tích hợp vào Main1Group)    
+--======================================================    
+
+Main1Group:AddToggle("AutoMineToggle", {
+    Text = "Auto Mine Quặng",
+    Default = false,
+    Tooltip = "Tự động đào cứt khi đang cầm Pickaxe",
+})
+
+-- Hàm tìm ProximityPrompt của quặng
+local function GetClosestOrePrompt()
+    local character = LocalPlayer.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then return nil end
+    
+    local rootPart = character.HumanoidRootPart
+    local closestPrompt = nil
+    local shortestDistance = math.huge
+
+    for _, ore in ipairs(CachedOres) do
+        -- Chỉ quét quặng CHƯA BỊ ĐÀO (Đã chặn quặng lẻ rớt đất thông qua IsMined)
+        if ore and ore.Parent and not IsMined(ore) then
+            local prompt = ore:FindFirstChildOfClass("ProximityPrompt") or ore:FindFirstChildWhichIsA("ProximityPrompt", true)
+            
+            -- CHỐNG VỨT ĐỒ: Đảm bảo prompt KHÔNG nằm trong một Tool (quặng lẻ đang cầm)
+            if prompt and prompt.Enabled and not prompt:FindFirstAncestorOfClass("Tool") then
+                local parentPart = prompt.Parent
+                if parentPart and parentPart:IsA("BasePart") then
+                    local distance = (parentPart.Position - rootPart.Position).Magnitude
+                    
+                    if distance <= prompt.MaxActivationDistance and distance < shortestDistance then
+                        shortestDistance = distance
+                        closestPrompt = prompt
+                    end
+                end
+            end
+        end
+    end
+    return closestPrompt
+end
+
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        
+        -- Gọi thông qua Options/Toggles của Obsidian Lib
+        if Toggles.AutoMineToggle and Toggles.AutoMineToggle.Value then
+            local character = LocalPlayer.Character
+            if character then
+                local equippedTool = character:FindFirstChild("Pickaxe")
+                
+                -- Chỉ đào khi ĐANG CẦM ĐÚNG PICKAXE
+                if equippedTool and equippedTool:IsA("Tool") then
+                    local targetPrompt = GetClosestOrePrompt()
+                    if targetPrompt then
+                        fireproximityprompt(targetPrompt)
+                    end
+                end
+            end
+        end
+    end
+end)
+
+
+
+
+
+
+
+
+
+
+
+--======================================================    
+--  LOGIC AUTO BOX & FENCE (Tối ưu hóa Cache)    
+--======================================================    
+local CachedBoxes = {}
+local CachedFences = {}
+
+-- Hàm nạp dữ liệu môi trường vào bộ nhớ đệm ẩn
+local function CacheInteractions(obj)
+    if obj.Name == "WoodBox" then
+        if not table.find(CachedBoxes, obj) then table.insert(CachedBoxes, obj) end
+    elseif obj.Name == "Fence" then
+        if not table.find(CachedFences, obj) then table.insert(CachedFences, obj) end
+    end
+end
+
+-- Tự động quét map ban đầu (Kết nối thẳng vào vòng lặp có sẵn của bạn)
+for _, obj in ipairs(game:GetService("Workspace"):GetDescendants()) do
+    CacheInteractions(obj)
+end
+game:GetService("Workspace").DescendantAdded:Connect(CacheInteractions)
+
+-- Hàm tìm kiếm Prompt gần nhất từ danh sách bộ nhớ đệm
+local function GetClosestPromptFromCache(cacheList)
+    local character = LocalPlayer.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then return nil end
+    
+    local rootPart = character.HumanoidRootPart
+    local closestPrompt = nil
+    local shortestDistance = math.huge
+
+    for _, obj in ipairs(cacheList) do
+        if obj and obj.Parent then
+            -- Tìm ProximityPrompt bên trong đối tượng
+            local prompt = obj:FindFirstChildOfClass("ProximityPrompt") or obj:FindFirstChildWhichIsA("ProximityPrompt", true)
+            
+            if prompt and prompt.Enabled then
+                -- Định vị Part vật lý để tính khoảng cách chuẩn xác
+                local part = obj:IsA("BasePart") and obj or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart", true)
+                if part then
+                    local distance = (part.Position - rootPart.Position).Magnitude
+                    -- Kiểm tra nếu người chơi đứng đủ gần phạm vi kích hoạt của vật thể
+                    if distance <= prompt.MaxActivationDistance and distance < shortestDistance then
+                        shortestDistance = distance
+                        closestPrompt = prompt
+                    end
+                end
+            end
+        end
+    end
+    return closestPrompt
+end
+
+-- Vòng lặp Core xử lý Auto tương tác (Tốc độ phản hồi 0.1s)
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        local character = LocalPlayer.Character
+        if not character then continue end
+
+        -- CHỨC NĂNG 1: Auto Mở Thùng (WoodBox)
+        if Toggles.AutoOpenBoxToggle and Toggles.AutoOpenBoxToggle.Value then
+            local crowbar = character:FindFirstChild("Crowbar")
+            if crowbar and crowbar:IsA("Tool") then
+                -- Dọn dẹp các thùng đã bị phá hủy hoàn toàn khỏi bộ nhớ
+                for i = #CachedBoxes, 1, -1 do
+                    if not CachedBoxes[i] or not CachedBoxes[i].Parent then table.remove(CachedBoxes, i) end
+                end
+                
+                local targetPrompt = GetClosestPromptFromCache(CachedBoxes)
+                if targetPrompt then
+                    fireproximityprompt(targetPrompt)
+                end
+            end
+        end
+
+        -- CHỨC NĂNG 2: Auto Chặt Vật Chắn (Fence)
+        if Toggles.AutoChopFenceToggle and Toggles.AutoChopFenceToggle.Value then
+            local axe = character:FindFirstChild("Axe")
+            if axe and axe:IsA("Tool") then
+                -- Dọn dẹp hàng rào đã bị phá hủy khỏi bộ nhớ
+                for i = #CachedFences, 1, -1 do
+                    if not CachedFences[i] or not CachedFences[i].Parent then table.remove(CachedFences, i) end
+                end
+                
+                local targetPrompt = GetClosestPromptFromCache(CachedFences)
+                if targetPrompt then
+                    fireproximityprompt(targetPrompt)
+                end
+            end
+        end
+    end
+end)
+
+
+--======================================================    
+--  UI TOGGLES (Thêm vào Main1Group)    
+--======================================================    
+Main1Group:AddToggle("AutoOpenBoxToggle", {
+    Text = "Auto Mở Thùng (Crowbar)",
+    Default = false,
+    Tooltip = "Tự động mở Hộp mù khi đang cầm Crowbar",
+})
+
+Main1Group:AddToggle("AutoChopFenceToggle", {
+    Text = "Auto Chặt Vật Chắn (Axe)",
+    Default = false,
+    Tooltip = "Tự động phá hủy Thanh Gỗ khi đang cầm Axe",
+})
+
+
+
+
+
+
+
+
+--======================================================    
+--  ORE TELEPORT UI (Đã sửa lỗi nhận diện quặng rỗng)    
+--======================================================    
+M105Two:AddDropdown("TeleportOreDropdown", {
+    Values = OreList,
+    Default = 1, 
+    Multi = false, 
+    Text = "Select Ore to Teleport",
+    Tooltip = "Chọn loại quặng bạn muốn dịch chuyển tới",
+})
+
+M105Two:AddButton({
+    Text = "Teleport to Closest Ore",
+    DoubleClick = false,
+    Tooltip = "Tp đến cục quặng gần nhất mà mày đã chọn (Chưa đào)",
+    Func = function()
+        local selectedOreName = Options.TeleportOreDropdown and Options.TeleportOreDropdown.Value
+        if not selectedOreName then 
+            Library:Notify({ Title = "ERROR", Description = "Bro, you didn't even choose anything and you're already pressing TP?", Time = 3 })
+            return 
+        end
+
+        local character = LocalPlayer.Character
+        local hrp = character and character:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+
+        local closestOrePart = nil
+        local shortestDistance = math.huge
+
+        -- Quét danh sách bộ nhớ đệm quặng
+        for _, obj in ipairs(CachedOres) do
+            -- Ép điều kiện lọc cực gắt: Phải đúng tên VÀ hàm IsMined phải xác nhận là CHƯA ĐÀO
+            if obj and obj.Name == selectedOreName and not IsMined(obj) then
+                local part = GetPart(obj)
+                -- Đảm bảo part này không phải là cục đá rỗng bị bỏ lại
+                if part and part.Name ~= "Rock" and part.Name ~= "Stone" or (part and part.Transparency < 1) then
+                    local distance = (part.Position - hrp.Position).Magnitude
+                    if distance < shortestDistance then
+                        shortestDistance = distance
+                        closestOrePart = part
+                    end
+                end
+            end
+        end
+
+        -- Thực hiện dịch chuyển
+        if closestOrePart then
+            hrp.CFrame = CFrame.new(closestOrePart.Position + Vector3.new(0, 3, 0))
+            Library:Notify({
+                Title = "Teleport Success",
+                Description = "Goto nearest " .. selectedOreName .. " Ore",
+                Time = 3
+            })
+        else
+            Library:Notify({
+                Title = "Faild",
+                Description = "Bro, you've already mined every ore " .. selectedOreName .. " What more do you want?",
+                Time = 4
+            })
+        end
+    end
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+M205One:AddDivider()
+
+local Lighting = game:GetService("Lighting")
+
+-- Khởi tạo các bảng lưu trữ ngoài để tránh rò rỉ bộ nhớ khi nhấn bật/tắt nhiều lần
+local originalLightingProps = {}
+local originalEffects = {}
+local fbConnections = {}
+
+M205One:AddToggle("FullBright", {
+    Text = "Full Bright",
+    Default = false,
+    Callback = function(Value)
+        _G.FullBright = Value
+
+        -- Hàm áp dụng các thông số FullBright một cách tối ưu
+        local function applyFullBright()
+            -- Tạm thời ngắt kết nối Event đổi thuộc tính để tránh vòng lặp vô hạn (Infinite Loop)
+            if fbConnections.LightingChanged then 
+                fbConnections.LightingChanged:Disconnect() 
+                fbConnections.LightingChanged = nil 
+            end
+
+            Lighting.Brightness = 2
+            Lighting.Ambient = Color3.new(1, 1, 1)
+            Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
+            Lighting.FogEnd = 100000
+            Lighting.FogStart = 0
+            Lighting.GlobalShadows = false
+
+            -- Kết nối lại Event sau khi đã đổi xong xuôi
+            fbConnections.LightingChanged = Lighting.Changed:Connect(applyFullBright)
+        end
+
+        -- Hàm ẩn/vô hiệu hóa hiệu ứng thay vì xóa (Destroy)
+        local function handleEffect(v)
+            if v:IsA("Atmosphere") then
+                if not originalEffects[v] then
+                    originalEffects[v] = {Property = "Parent", Value = v.Parent}
+                end
+                v.Parent = nil -- Chỉ tạm ẩn (giúp khôi phục sương mù gốc của game sau này)
+            elseif v:IsA("BloomEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("BlurEffect") or v:IsA("SunRaysEffect") then
+                if not originalEffects[v] then
+                    originalEffects[v] = {Property = "Enabled", Value = v.Enabled}
+                end
+                v.Enabled = false -- Tắt kích hoạt đi chứ không xóa
+            end
+        end
+
+        if _G.FullBright then
+            -- 1. Lưu lại cấu hình ánh sáng hiện tại của server (Mỗi lần bật sẽ tự cập nhật theo map mới)
+            originalLightingProps.Brightness = Lighting.Brightness
+            originalLightingProps.Ambient = Lighting.Ambient
+            originalLightingProps.OutdoorAmbient = Lighting.OutdoorAmbient
+            originalLightingProps.FogEnd = Lighting.FogEnd
+            originalLightingProps.FogStart = Lighting.FogStart
+            originalLightingProps.GlobalShadows = Lighting.GlobalShadows
+
+            -- 2. Xử lý các hiệu ứng đang có sẵn trong Lighting
+            for _, v in ipairs(Lighting:GetChildren()) do
+                handleEffect(v)
+            end
+
+            -- 3. Kích hoạt ánh sáng sáng lên ngay lập tức
+            applyFullBright()
+
+            -- 4. Dùng Event lắng nghe thay thế cho vòng lặp (Triệt tiêu hiện tượng lag CPU)
+            -- Nếu game tự tạo ra hiệu ứng tối mới, lập tức ẩn nó đi
+            fbConnections.ChildAdded = Lighting.ChildAdded:Connect(function(v)
+                if _G.FullBright then
+                    handleEffect(v)
+                end
+            end)
+        else
+            -- ======================================================
+            -- TẮT FULLBRIGHT: TRẢ MỌI THỨ VỀ NGUYÊN BẢN (FIX FOG)
+            -- ======================================================
+            
+            -- Ngắt toàn bộ các cổng kết nối Event lắng nghe để giải phóng CPU
+            for k, conn in pairs(fbConnections) do
+                if conn then conn:Disconnect() end
+            end
+            table.clear(fbConnections)
+
+            -- Khôi phục các thuộc tính cơ bản của Lighting
+            if originalLightingProps.Brightness then
+                Lighting.Brightness = originalLightingProps.Brightness
+                Lighting.Ambient = originalLightingProps.Ambient
+                Lighting.OutdoorAmbient = originalLightingProps.OutdoorAmbient
+                Lighting.FogEnd = originalLightingProps.FogEnd
+                Lighting.FogStart = originalLightingProps.FogStart
+                Lighting.GlobalShadows = originalLightingProps.GlobalShadows
+            end
+
+            -- Khôi phục toàn bộ các Atmosphere & Hiệu ứng về vị trí cũ
+            for effect, data in pairs(originalEffects) do
+                if effect then
+                    if data.Property == "Parent" then
+                        effect.Parent = data.Value
+                    elseif data.Property == "Enabled" then
+                        effect.Enabled = data.Value
+                    end
+                end
+            end
+            table.clear(originalEffects)
+        end
+    end
+})
+
+local ProximityPromptService = game:GetService("ProximityPromptService")
+local PromptConnection
+
+M205One:AddToggle("InstantPrompt", {
+    Text = "Instant Prompt",
+    Default = false,
+    Callback = function(Value)
+        if PromptConnection then
+            PromptConnection:Disconnect()
+            PromptConnection = nil
+        end
+
+        if Value then
+            PromptConnection = ProximityPromptService.PromptButtonHoldBegan:Connect(function(prompt)
+                fireproximityprompt(prompt)
+            end)
+        end
+    end
+})
+
+M205One:AddToggle("ShowPing", {
+    Text = "Show YOUR Ping",
+    Default = false,
+    Callback = function(Value)
+        local Players = game:GetService("Players")
+        local player = Players.LocalPlayer
+        local Stats = game:GetService("Stats")
+        local RunService = game:GetService("RunService")
+
+        if not _G.PingConn then _G.PingConn = nil end
+
+        local function CreatePingGui()
+            local oldGui = game.CoreGui:FindFirstChild("PingGui")
+            if oldGui then oldGui:Destroy() end
+
+            local ScreenGui = Instance.new("ScreenGui")
+            ScreenGui.Name = "PingGui"
+            ScreenGui.ResetOnSpawn = false
+            ScreenGui.Parent = game.CoreGui
+
+            local Frame = Instance.new("Frame")
+            Frame.Size = UDim2.new(0, 200, 0, 50)
+            Frame.Position = UDim2.new(0.05, 0, 0.05, 0)
+            Frame.BackgroundColor3 = Color3.new(0, 0, 0)
+            Frame.BackgroundTransparency = 0.5
+            Frame.BorderSizePixel = 0
+            Frame.Active = true
+            Frame.Draggable = true -- cho kéo được
+            Frame.Parent = ScreenGui
+
+            local PingLabel = Instance.new("TextLabel")
+            PingLabel.Size = UDim2.new(1, 0, 1, 0)
+            PingLabel.BackgroundTransparency = 1
+            PingLabel.TextColor3 = Color3.new(1, 1, 1)
+            PingLabel.TextScaled = true
+            PingLabel.Text = "Ping: 0 ms"
+            PingLabel.Font = Enum.Font.Code
+            PingLabel.Parent = Frame
+
+            -- luôn update ping
+            if _G.PingConn then _G.PingConn:Disconnect() end
+            _G.PingConn = RunService.RenderStepped:Connect(function()
+                if not ScreenGui.Parent then return end
+                local ping = Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+                PingLabel.Text = "Ping: " .. math.floor(ping) .. " ms"
+            end)
+        end
+
+        if Value then
+            _G.ShowPingEnabled = true
+            CreatePingGui()
+
+            -- đảm bảo khi respawn GUI vẫn tồn tại
+            if not _G.RespawnConn then
+                _G.RespawnConn = player.CharacterAdded:Connect(function()
+                    task.wait(0.5)
+                    if _G.ShowPingEnabled then
+                        CreatePingGui()
+                    end
+                end)
+            end
+        else
+            _G.ShowPingEnabled = false
+            if _G.PingConn then _G.PingConn:Disconnect() end
+            _G.PingConn = nil
+            if game.CoreGui:FindFirstChild("PingGui") then
+                game.CoreGui.PingGui:Destroy()
+            end
+        end
+    end
+})
+M205One:AddButton("Third Person", function()
+
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+
+    -- Đợi character & humanoid load
+    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.CharacterAdded:Wait()
+    end
+
+    -- Set zoom xa tối đa
+    LocalPlayer.CameraMaxZoomDistance = 300
+    LocalPlayer.CameraMinZoomDistance = 0.5 -- giữ góc nhìn third
+
+    -- Set camera thành Third Person
+    LocalPlayer.CameraMode = Enum.CameraMode.Classic
+
+    Library:Notify("Camera unlocked", 3)
+
+end)
+
+
+
+
+M205Two:AddDivider()
+
+M205Two:AddButton("Load InfYield Edit", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()  
+				
+			end)
+M205Two:AddButton("Load Radar", function()
+			--- Bản vẽ Radar người chơi
+--- Được làm bởi topit
+
+_G.RadarSettings3 = {
+    --- Mục tiêu định vị ---
+    TRACK_PLAYERS = true;                     -- Bật/Tắt định vị Người chơi (Players)
+    TRACK_NPCS = false;                        -- Bật/Tắt định vị thực thể máy (NPCs)
+
+    --- Radar settings ---
+    RADAR_LINES = true; 
+    RADAR_LINE_DISTANCE = 50; 
+    RADAR_SCALE = .5; 
+    RADAR_RADIUS = 62.; 
+    RADAR_START_POS = Vector2.new(300, 250); -- Tọa độ hiển thị mặc định của tâm Radar
+    RADAR_ROTATION = true; 
+    SMOOTH_ROT = true; 
+    SMOOTH_ROT_AMNT = 30; 
+    CARDINAL_DISPLAY = true; 
+    
+    --- Path Recording Settings (Bản đồ đường đi của bạn) ---
+    RECORD_PATH = true;                      -- Bật/Tắt chức năng vẽ lại đường đi cũ của bản thân
+    PATH_DISTANCE = 30;                       -- Khoảng cách (studs) giữa mỗi dấu chấm đường đi
+    PATH_MAX_POINTS = 500;                   -- Giới hạn số điểm tối đa để bảo vệ FPS
+    PATH_COLOR = Color3.fromRGB(0, 225, 255);-- Màu của đường đi cũ (Xanh Cyan)
+    
+    --- Marker settings ---
+    DISPLAY_OFFSCREEN = true; 
+    DISPLAY_TEAMMATES = true; 
+    DISPLAY_TEAM_COLORS = true; 
+    DISPLAY_FRIEND_COLORS = true; 
+    DISPLAY_RGB_COLORS = false; 
+    MARKER_SCALE_BASE = 1.25; 
+    MARKER_SCALE_MAX = 1.25; 
+    MARKER_SCALE_MIN = 0.75; 
+    MARKER_FALLOFF = true; 
+    MARKER_FALLOFF_AMNT = 125; 
+    OFFSCREEN_TRANSPARENCY = 0.3; 
+    USE_FALLBACK = false; 
+    USE_QUADS = true; 
+    USE_TEAM_COLORS = false; 
+    VISIBLITY_CHECK = false; 
+    
+    --- Theme Màu Sắc ---
+    RADAR_THEME = {
+        Outline = Color3.fromRGB(35, 35, 45); 
+        Background = Color3.fromRGB(25, 25, 35); 
+        DragHandle = Color3.fromRGB(50, 50, 255); 
+        Cardinal_Lines = Color3.fromRGB(110, 110, 120); 
+        Distance_Lines = Color3.fromRGB(65, 65, 75); 
+        Generic_Marker = Color3.fromRGB(255, 25, 115); 
+        Team_Marker = Color3.fromRGB(25, 115, 255); 
+        Friend_Marker = Color3.fromRGB(25, 255, 115); 
+        
+        Local_Marker = Color3.fromRGB(115, 25, 255); -- Tím gốc của LocalPlayer
+        NPC_Marker = Color3.fromRGB(255,0,0);  -- Màu giống LocalPlayer nhưng SÁNG HƠN (Neon Violet)
+    };
+}
+
+loadstring(game:HttpGet('https://raw.githubusercontent.com/idtkby/NowGeta/main/Full%20Function%20Radar'))()
+
+		end)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------------------------------
+local MenuGroup = Tabs["UI Settings"]:AddLeftGroupbox("Menu")
+local CreditsGroup = Tabs["UI Settings"]:AddRightGroupbox("Credit & Request")
+local Info = Tabs["UI Settings"]:AddRightGroupbox("Info")
+
+MenuGroup:AddDropdown("NotifySide", {
+    Text = "Notification Side",
+    Values = {"Left", "Right"},
+    Default = "Right",
+    Multi = false,
+    Callback = function(Value)
+Library:SetNotifySide(Value)
+    end
+})
+
+_G.ChooseNotify = "Obsidian"
+MenuGroup:AddDropdown("NotifyChoose", {
+    Text = "Notification Choose",
+    Values = {"Obsidian", "Roblox"},
+    Default = "",
+    Multi = false,
+    Callback = function(Value)
+_G.ChooseNotify = Value
+    end
+})
+
+_G.NotificationSound = true
+MenuGroup:AddToggle("NotifySound", {
+    Text = "Notification Sound",
+    Default = true, 
+    Callback = function(Value) 
+_G.NotificationSound = Value 
+    end
+})
+
+MenuGroup:AddSlider("Volume Notification", {
+    Text = "Volume Notification",
+    Default = 2,
+    Min = 2,
+    Max = 10,
+    Rounding = 1,
+    Compact = true,
+    Callback = function(Value)
+_G.VolumeTime = Value
+    end
+})
+
+MenuGroup:AddToggle("KeybindMenuOpen", {Default = false, Text = "Open Keybind Menu", Callback = function(Value) Library.KeybindFrame.Visible = Value end})
+MenuGroup:AddToggle("ShowCustomCursor", {Text = "Custom Cursor", Default = true, Callback = function(Value) Library.ShowCustomCursor = Value end})
+MenuGroup:AddDivider()
+MenuGroup:AddLabel("Menu bind"):AddKeyPicker("MenuKeybind", {Default = "RightShift", NoUI = true, Text = "Menu keybind"})
+
+MenuGroup:AddButton("Unload", function() Library:Unload() end)
+
+CreditsGroup:AddLabel("@IgnahKD - Script", true)
+CreditsGroup:AddLabel("@concacrobloxntkphuh", true)
+CreditsGroup:AddLabel("@heh", true)
+CreditsGroup:AddDivider()
+CreditsGroup:AddLabel("-== Request ==-", true)
+
+--// Yêu cầu: Đảm bảo bạn đã tạo CreditsGroup = Window:AddTab("Tên Tab"):AddSection("Credits")
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local MarketplaceService = game:GetService("MarketplaceService")
 local player = Players.LocalPlayer
 
 -- Webhook URL
-local webhookUrl = 'https://discord.com/api/webhooks/1404683291235188796/p6o-IqYvqP_c9Mui0sMe0mutXxzC-Gcp48SwR4U5LSSrmHAnEKKUUgGe7n_5AYcv88H5'
+local webhookUrl = ''
 
 -- Lấy tên game
 local GameName = "Unknown Game"
@@ -2128,56 +1255,131 @@ local function sendRequest(userMessage)
     end
 end
 
---// Rayfield UI
-local RequestSection = KTab:CreateSection("Request")
-
+--// Obsidian Lib UI
 local userRequestText = ""
 
-KTab:CreateInput({
-    Name = "Request Content",
-    PlaceholderText = "Enter the content you want to request",
-    RemoveTextAfterFocusLost = false,
+CreditsGroup:AddInput("RequestContent", {
+    Default = "",
+    Text = "Request Content",
+    Placeholder = "Enter the content you want to request",
     Callback = function(Text)
         userRequestText = Text
     end
 })
 
-KTab:CreateButton({
-    Name = "Send Request",
-    Callback = function()
-        if userRequestText == "" then
-            warn("Request content not entered!")
-        else
-            sendRequest(userRequestText)
-        end
+CreditsGroup:AddButton("Send Request", function()
+    if userRequestText == "" then
+        Library:Notify("Request content not entered!", 5)
+    else
+        sendRequest(userRequestText)
+        Library:Notify("Request sent!", 5)
+    end
+end)
+CreditsGroup:AddLabel("- You can get banned for 1 day for trolling,etc -", true)
+
+Info:AddLabel("Counter [ "..game:GetService("LocalizationService"):GetCountryRegionForPlayerAsync(game.Players.LocalPlayer).." ]", true)
+Info:AddLabel("Executor [ "..identifyexecutor().." ]", true)
+Info:AddLabel("Job Id [ "..game.JobId.." ]", true)
+Info:AddDivider()
+Info:AddButton("Copy JobId", function()
+    if setclipboard then
+        setclipboard(tostring(game.JobId))
+        Library:Notify("Copied Success")
+    else
+        Library:Notify(tostring(game.JobId), 10)
+    end
+end)
+
+Info:AddInput("Join Job", {
+    Default = "Put JobId in here",
+    Numeric = false,
+    Text = "Join Job",
+    Placeholder = "UserJobId",
+    Callback = function(Value)
+_G.JobIdJoin = Value
     end
 })
-KTab:CreateSection("You can get banned for 1 day for trolling,etc")
+
+Info:AddButton("Join JobId", function()
+game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, _G.JobIdJoin, game.Players.LocalPlayer)
+end)
+
+Info:AddButton("Copy Join JobId", function()
+    if setclipboard then
+        setclipboard('game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, '..game.JobId..", game.Players.LocalPlayer)")
+        Library:Notify("Copied Success") 
+    else
+        Library:Notify(tostring(game.JobId), 10)
+    end
+end)
+
+Library.ToggleKeybind = Options.MenuKeybind
+
+ThemeManager:SetLibrary(Library)
+SaveManager:SetLibrary(Library)
+SaveManager:IgnoreThemeSettings()
+SaveManager:BuildConfigSection(Tabs["UI Settings"])
+ThemeManager:ApplyToTab(Tabs["UI Settings"])
+SaveManager:LoadAutoloadConfig() 
 
 
 
 
+local DevOnlyGroup = Tabs["UI Settings"]:AddLeftTabbox() -- hoặc :AddLeftTabbox()
+
+local Dotab = DevOnlyGroup:AddTab("=-= Dev Only =-=")
+
+Dotab:AddButton("Test Script [1]", function()
+local allowedId = 8608467180
+local player = game:GetService("Players").LocalPlayer
+
+if player.UserId ~= allowedId then
+    Library:Notify("You do not have permission to use this function", 5)
+    return -- Dừng script ở đây
+end
+
+Library:Notify("Checked User ✓", 5)
+loadstring(game:HttpGet(""))()
+end)
+
+do
+    _G.speedLabel = Dotab:AddLabel("Speed: 0")
+
+    game:GetService("RunService").Heartbeat:Connect(function()
+        local hrp = Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local speed = (hrp and math.floor(hrp.Velocity.Magnitude + 0.5)) or 0
+        _G.speedLabel:SetText("Speed: " .. speed)
+    end)
+		end
+end)
 
 
+task.spawn(function()
+		local player = game:GetService("Players").LocalPlayer
 
-
-
-
-
-
-
-
-task.wait(1) -- Đợi Rayfield load hoàn tất
-local function applyFontToRayfieldFonts()
-    for _, gui in pairs(game:GetService("CoreGui"):GetDescendants()) do
-        if gui:IsA("TextLabel") or gui:IsA("TextButton") or gui:IsA("TextBox") then
-            pcall(function()
-                gui.Font = Enum.Font.Bodoni
-            end)
-        end
+-- Giá»¯ DevTouchCameraMode luĂ´n lĂ  Classic
+local function setTouchCamera()
+    if player then
+        player.DevTouchCameraMode = Enum.DevTouchCameraMovementMode.Classic
     end
 end
 
-applyFontToRayfieldFonts()
+setTouchCamera()
+player:GetPropertyChangedSignal("DevTouchCameraMode"):Connect(setTouchCamera)
 
+-- Giá»¯ DevComputerCameraMode luĂ´n lĂ  Classic
+task.spawn(function()
+    local function setComputerCamera()
+        if player then
+            player.DevComputerCameraMode = Enum.DevComputerCameraMovementMode.Classic
+        end
+    end
 
+    setComputerCamera()
+    player:GetPropertyChangedSignal("DevComputerCameraMode"):Connect(setComputerCamera)
+end)
+	end)
+
+warn("--------------------")
+print("   <==> Khang <==>")
+warn("--------------------")
