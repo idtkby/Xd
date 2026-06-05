@@ -671,8 +671,8 @@ _G.RadarSettings3 = {
     --- Radar settings ---
     RADAR_LINES = true; 
     RADAR_LINE_DISTANCE = 50; 
-    RADAR_SCALE = .3; 
-    RADAR_RADIUS = 80; 
+    RADAR_SCALE = .5; 
+    RADAR_RADIUS = 62.; 
     RADAR_START_POS = Vector2.new(300, 250); -- Tọa độ hiển thị mặc định của tâm Radar
     RADAR_ROTATION = true; 
     SMOOTH_ROT = true; 
@@ -681,7 +681,7 @@ _G.RadarSettings3 = {
     
     --- Path Recording Settings (Bản đồ đường đi của bạn) ---
     RECORD_PATH = true;                      -- Bật/Tắt chức năng vẽ lại đường đi cũ của bản thân
-    PATH_DISTANCE = 8;                       -- Khoảng cách (studs) giữa mỗi dấu chấm đường đi
+    PATH_DISTANCE = 12;                       -- Khoảng cách (studs) giữa mỗi dấu chấm đường đi
     PATH_MAX_POINTS = 500;                   -- Giới hạn số điểm tối đa để bảo vệ FPS
     PATH_COLOR = Color3.fromRGB(0, 225, 255);-- Màu của đường đi cũ (Xanh Cyan)
     
