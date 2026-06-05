@@ -1,6 +1,6 @@
 -- Kiểm tra ID game
-if game.PlaceId ~= 138103330716004 then
-    return warn("Script only works in the specified game (ID: 138103330716004){After 3 AM - Main}")
+if game.PlaceId ~= 107206090336891 then
+    return warn("Script only works in the specified game (ID: 107206090336891){The Caves - Game}")
 end
 
 -- Thông báo khi đúng ID game
@@ -42,7 +42,7 @@ if _G.NotificationSound then
 Library:SetDPIScale(85)
 
 local Window = Library:CreateWindow({
-    Title = "After 3 am",
+    Title = "The Caves",
     Center = true,
     AutoShow = true,
     Resizable = true,
