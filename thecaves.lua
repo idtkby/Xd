@@ -531,6 +531,8 @@ Main1Group:AddToggle("AutoShotgunToggle", {
 
 
 _G.ESP_Items_Enabled = false
+_G.ESP_Enemy_Enabled = false
+_G.ShadowMan_Color = Color3.fromRGB(255, 0, 0) -- Màu mặc định cho quái nếu cần
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -539,30 +541,33 @@ local LocalPlayer = Players.LocalPlayer
 
 local PickupsFolder = Workspace:WaitForChild("Pickups")
 
-local ItemColors = {
-    ["Repair Kit"] = Color3.fromRGB(0,255,0),
-    ["Shotgun Ammo"] = Color3.fromRGB(255,215,0),
-    ["Flashlight"] = Color3.fromRGB(155,155,155),
-    ["Fuel"] = Color3.fromRGB(255,0,0),
-    ["Flare Gun Ammo"] = Color3.fromRGB(255,0,0),
-    ["Flare Gun"] = Color3.fromRGB(255,0,0),
-    ["Shotgun"] = Color3.fromRGB(200,200,200),
-    ["Handgun"] = Color3.fromRGB(195,195,195),
-}
+-- Danh sách quặng mới
+local OreList = {"Nickel", "Cobalt", "Coal", "Tin", "Copper", "Minerals", "Iron", "Diamond", "Lead", "Silver", "Gold"}
 
 local function GetPart(obj)
-    -- Lấy PrimaryPart nếu có, nếu không lấy BasePart đầu tiên
-    return obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+    -- Ưu tiên part tên "ore", sau đó tới PrimaryPart hoặc BasePart bất kỳ
+    return obj:FindFirstChild("ore") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
 end
 
+--======================================================
+-- ORE (ITEM) ESP LOGIC
+--======================================================
 local function CreateESP(obj)
-    if obj:FindFirstChild("ESP_Gui") or obj:FindFirstChild("ESP_Outline") then return end
     local part = GetPart(obj)
     if not part then return end
+    
+    -- Nếu quặng đã đào (Transparency = 1) thì không tạo ESP
+    local oreChild = obj:FindFirstChild("ore")
+    if oreChild and oreChild:IsA("BasePart") and oreChild.Transparency == 1 then 
+        return 
+    end
+    
+    if part:FindFirstChild("ESP_Gui") or obj:FindFirstChild("ESP_Outline") then return end
 
-    local color = ItemColors[obj.Name] or Color3.new(1,1,1)
+    -- Lấy màu động từ quặng.ore.Color, nếu không có thì lấy màu của part chính, bí quá thì màu trắng
+    local color = (oreChild and oreChild:IsA("BasePart")) and oreChild.Color or part.Color or Color3.new(1,1,1)
 
-    -- Billboard
+    -- Billboard UI
     local gui = Instance.new("BillboardGui")
     gui.Name = "ESP_Gui"
     gui.Adornee = part
@@ -599,59 +604,72 @@ end
 
 local function ClearESP(obj)
     local part = GetPart(obj)
-    if not part then return end
-    if part:FindFirstChild("ESP_Gui") then part.ESP_Gui:Destroy() end
+    if part and part:FindFirstChild("ESP_Gui") then part.ESP_Gui:Destroy() end
     if obj:FindFirstChild("ESP_Outline") then obj.ESP_Outline:Destroy() end
 end
 
+-- Vòng lặp quét Quặng (Ores)
 task.spawn(function()
-    local tracked = {}
+    local trackedOres = {}
 
     while true do
-        task.wait(2)
-        if _G.ESP_Items_Enabled then
+        task.wait(0.5) -- Tăng tần suất quét lên 0.5s để cập nhật khoảng cách mượt hơn
+        
+        if _G.ESP_Items_Enabled and Options.ESPOresDropdown then
+            local selectedOres = Options.ESPOresDropdown.Value -- Lấy bảng các quặng được chọn từ UI
+            
             for _, obj in ipairs(PickupsFolder:GetChildren()) do
-                if obj:IsA("Model") then
-                    CreateESP(obj)
-                    tracked[obj] = true
+                if obj:IsA("Model") and table.find(OreList, obj.Name) then
+                    local oreChild = obj:FindFirstChild("ore")
+                    
+                    -- Điều kiện hiển thị: Được tích chọn trong Dropdown VÀ chưa bị đào (Transparency < 1)
+                    if selectedOres[obj.Name] and (not oreChild or (oreChild:IsA("BasePart") and oreChild.Transparency < 1)) then
+                        CreateESP(obj)
+                        trackedOres[obj] = true
 
-                    local part = GetPart(obj)
-                    if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                        local gui = part:FindFirstChild("ESP_Gui")
-                        if gui and gui:FindFirstChild("MainLabel") then
-                            local dist = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-                            gui.MainLabel.Text = obj.Name..string.format("\nDist: %.1f", dist)
+                        local part = GetPart(obj)
+                        if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                            local gui = part:FindFirstChild("ESP_Gui")
+                            if gui and gui:FindFirstChild("MainLabel") then
+                                local dist = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                                gui.MainLabel.Text = obj.Name..string.format("\nDist: %.1f", dist)
+                            end
+                        end
+                    else
+                        -- Nếu bỏ chọn trong dropdown HOẶC quặng đã bị đào (Transparency = 1) -> Xóa ESP
+                        if trackedOres[obj] then
+                            ClearESP(obj)
+                            trackedOres[obj] = nil
                         end
                     end
                 end
             end
-        else
-            for obj,_ in pairs(tracked) do
-                if obj and obj.Parent then
-                    ClearESP(obj)
+            
+            -- Dọn dẹp các mục biến mất khỏi Folder
+            for obj, _ in pairs(trackedOres) do
+                if not obj or not obj.Parent then
+                    trackedOres[obj] = nil
                 end
             end
-            table.clear(tracked)
+        else
+            -- Tắt toàn bộ khi toggle chính OFF
+            for obj, _ in pairs(trackedOres) do
+                if obj and obj.Parent then ClearESP(obj) end
+            end
+            table.clear(trackedOres)
         end
     end
 end)
 
 --======================================================
--- ENEMY ESP LOOP (ShadowMan)
+-- ENEMY (MONSTERS FOLDER) ESP LOGIC
 --======================================================
-_G.ESP_Enemy_Enabled = false
-_G.ShadowMan_Color = Color3.fromRGB(155,0,0)
-
-local function GetPart(obj)
-    return obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-end
-
 local function CreateEnemyESP(obj)
     if obj:FindFirstChild("ESP_Gui") or obj:FindFirstChild("ESP_Outline") then return end
-    local part = GetPart(obj)
+    local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
     if not part then return end
 
-    local color = _G.ShadowMan_Color or Color3.new(1,1,1)
+    local color = _G.ShadowMan_Color or Color3.new(1,0,0)
     local hum = obj:FindFirstChildOfClass("Humanoid")
     local hp = hum and math.floor(hum.Health) or "?"
 
@@ -672,7 +690,7 @@ local function CreateEnemyESP(obj)
     lbl.TextSize = 14
     lbl.TextColor3 = color
     lbl.TextStrokeTransparency = 0
-    lbl.Text = "ShadowMan\nHP: "..hp.."\nDist: 0.0"
+    lbl.Text = obj.Name.."\nHP: "..hp.."\nDist: 0.0"
     lbl.Parent = gui
 
     local stroke = Instance.new("UIStroke")
@@ -691,65 +709,92 @@ local function CreateEnemyESP(obj)
 end
 
 local function ClearEnemyESP(obj)
-    local part = GetPart(obj)
-    if not part then return end
-    if part:FindFirstChild("ESP_Gui") then part.ESP_Gui:Destroy() end
+    local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+    if part and part:FindFirstChild("ESP_Gui") then part.ESP_Gui:Destroy() end
     if obj:FindFirstChild("ESP_Outline") then obj.ESP_Outline:Destroy() end
 end
 
+-- Vòng lặp quét Quái vật qua Folder chuyên dụng (Monsters / monsters)
 task.spawn(function()
     local trackedEnemies = {}
 
     while true do
-        task.wait(1)
+        task.wait(0.5)
+        
         if _G.ESP_Enemy_Enabled then
-            for _, enemy in ipairs(Workspace:GetDescendants()) do
-                if enemy:IsA("Model") and enemy.Name == "ShadowMan" then
-                    CreateEnemyESP(enemy)
-                    trackedEnemies[enemy] = true
+            -- Tự động tìm kiếm folder viết hoa hoặc viết thường
+            local MonstersFolder = Workspace:FindFirstChild("Monsters") or Workspace:FindFirstChild("monsters")
+            
+            if MonstersFolder then
+                for _, enemy in ipairs(MonstersFolder:GetChildren()) do
+                    if enemy:IsA("Model") then
+                        CreateEnemyESP(enemy)
+                        trackedEnemies[enemy] = true
 
-                    -- Update HP + distance
-                    local part = GetPart(enemy)
-                    local gui = part and part:FindFirstChild("ESP_Gui")
-                    local lbl = gui and gui:FindFirstChild("MainLabel")
-                    local hum = enemy:FindFirstChildOfClass("Humanoid")
-                    local hp = hum and math.floor(hum.Health) or "?"
-                    if lbl and part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                        local dist = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-                        lbl.Text = "ShadowMan\nHP: "..hp..string.format("\nDist: %.1f", dist)
+                        local part = enemy.PrimaryPart or enemy:FindFirstChildWhichIsA("BasePart")
+                        local gui = part and part:FindFirstChild("ESP_Gui")
+                        local lbl = gui and gui:FindFirstChild("MainLabel")
+                        local hum = enemy:FindFirstChildOfClass("Humanoid")
+                        local hp = hum and math.floor(hum.Health) or "?"
+                        
+                        if lbl and part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                            local dist = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                            lbl.Text = enemy.Name.."\nHP: "..hp..string.format("\nDist: %.1f", dist)
+                        end
                     end
                 end
             end
-        else
-            for enemy,_ in pairs(trackedEnemies) do
-                if enemy and enemy.Parent then
+            
+            -- Xóa các quái đã chết hoặc bị xóa khỏi folder
+            for enemy, _ in pairs(trackedEnemies) do
+                local MonstersFolder = Workspace:FindFirstChild("Monsters") or Workspace:FindFirstChild("monsters")
+                if not enemy or not enemy.Parent or (MonstersFolder and not enemy:IsDescendantOf(MonstersFolder)) then
                     ClearEnemyESP(enemy)
+                    trackedEnemies[enemy] = nil
                 end
+            end
+        else
+            -- Tắt toàn bộ khi toggle Enemy OFF
+            for enemy, _ in pairs(trackedEnemies) do
+                if enemy and enemy.Parent then ClearEnemyESP(enemy) end
             end
             table.clear(trackedEnemies)
         end
     end
 end)
+
 --======================================================    
---  UI (Main2Group)    
+--  UI CONFIGURATION (Main2Group)    
 --======================================================    
+-- Toggle Bật/Tắt ESP Quặng chính
 Main2Group:AddToggle("ESPItemsToggle", {
-    Text = "ESP Items",
+    Text = "ESP Ores Master",
     Default = false,
     Callback = function(v)
         _G.ESP_Items_Enabled = v
     end
 })
+
+-- Dropdown chọn nhiều (Multi Dropdown) cho từng loại quặng cụ thể
+Main2Group:AddDropdown("ESPOresDropdown", {
+    Values = OreList,
+    Default = 1, 
+    Multi = true, -- Cho phép chọn nhiều mục cùng lúc
+    Text = "Select Ores to Show",
+    Tooltip = "Chọn những loại quặng bạn muốn hiển thị trên màn hình",
+    Callback = function(Value)
+        -- LinoriaLib tự cập nhật Options.ESPOresDropdown.Value thành một dictionary dạng { ["Coal"] = true, ["Iron"] = false }
+    end,
+})
     
--- Toggle riêng
+-- Toggle riêng cho Enemy (Quét theo folder Monsters)
 Main2Group:AddToggle("ESPEnemyToggle", {
-    Text = "ESP Enemy",
+    Text = "ESP Monsters",
     Default = false,
     Callback = function(v)
         _G.ESP_Enemy_Enabled = v
     end
 })
-    
     
 
 
@@ -765,56 +810,109 @@ Main2Group:AddToggle("ESPEnemyToggle", {
 
 M205One:AddDivider()
 
+local Lighting = game:GetService("Lighting")
+
+-- Khởi tạo các bảng lưu trữ ngoài để tránh rò rỉ bộ nhớ khi nhấn bật/tắt nhiều lần
+local originalLightingProps = {}
+local originalEffects = {}
+local fbConnections = {}
+
 M205One:AddToggle("FullBright", {
     Text = "Full Bright",
     Default = false,
     Callback = function(Value)
         _G.FullBright = Value
-        local Lighting = game:GetService("Lighting")
 
-        -- Lưu giá trị gốc để khôi phục khi tắt
-        if not _G._LightingSaved then
-            _G._LightingSaved = {
-                Brightness = Lighting.Brightness,
-                Ambient = Lighting.Ambient,
-                OutdoorAmbient = Lighting.OutdoorAmbient,
-                FogEnd = Lighting.FogEnd,
-                FogStart = Lighting.FogStart,
-                GlobalShadows = Lighting.GlobalShadows
-            }
+        -- Hàm áp dụng các thông số FullBright một cách tối ưu
+        local function applyFullBright()
+            -- Tạm thời ngắt kết nối Event đổi thuộc tính để tránh vòng lặp vô hạn (Infinite Loop)
+            if fbConnections.LightingChanged then 
+                fbConnections.LightingChanged:Disconnect() 
+                fbConnections.LightingChanged = nil 
+            end
+
+            Lighting.Brightness = 2
+            Lighting.Ambient = Color3.new(1, 1, 1)
+            Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
+            Lighting.FogEnd = 100000
+            Lighting.FogStart = 0
+            Lighting.GlobalShadows = false
+
+            -- Kết nối lại Event sau khi đã đổi xong xuôi
+            fbConnections.LightingChanged = Lighting.Changed:Connect(applyFullBright)
+        end
+
+        -- Hàm ẩn/vô hiệu hóa hiệu ứng thay vì xóa (Destroy)
+        local function handleEffect(v)
+            if v:IsA("Atmosphere") then
+                if not originalEffects[v] then
+                    originalEffects[v] = {Property = "Parent", Value = v.Parent}
+                end
+                v.Parent = nil -- Chỉ tạm ẩn (giúp khôi phục sương mù gốc của game sau này)
+            elseif v:IsA("BloomEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("BlurEffect") or v:IsA("SunRaysEffect") then
+                if not originalEffects[v] then
+                    originalEffects[v] = {Property = "Enabled", Value = v.Enabled}
+                end
+                v.Enabled = false -- Tắt kích hoạt đi chứ không xóa
+            end
         end
 
         if _G.FullBright then
-            task.spawn(function()
-                while _G.FullBright do
-                    -- Set ánh sáng
-                    Lighting.Brightness = 2
-                    Lighting.Ambient = Color3.new(1, 1, 1)
-                    Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
-                    Lighting.FogEnd = 100000
-                    Lighting.FogStart = 0
-                    Lighting.GlobalShadows = false
+            -- 1. Lưu lại cấu hình ánh sáng hiện tại của server (Mỗi lần bật sẽ tự cập nhật theo map mới)
+            originalLightingProps.Brightness = Lighting.Brightness
+            originalLightingProps.Ambient = Lighting.Ambient
+            originalLightingProps.OutdoorAmbient = Lighting.OutdoorAmbient
+            originalLightingProps.FogEnd = Lighting.FogEnd
+            originalLightingProps.FogStart = Lighting.FogStart
+            originalLightingProps.GlobalShadows = Lighting.GlobalShadows
 
-                    -- Xoá hiệu ứng gây mờ tối nếu có
-                    for _, v in ipairs(Lighting:GetChildren()) do
-                        if v:IsA("Atmosphere") or v:IsA("BloomEffect") or v:IsA("ColorCorrectionEffect") then
-                            v:Destroy()
-                        end
-                    end
+            -- 2. Xử lý các hiệu ứng đang có sẵn trong Lighting
+            for _, v in ipairs(Lighting:GetChildren()) do
+                handleEffect(v)
+            end
 
-                    task.wait(10) -- Lặp lại mỗi 10s
+            -- 3. Kích hoạt ánh sáng sáng lên ngay lập tức
+            applyFullBright()
+
+            -- 4. Dùng Event lắng nghe thay thế cho vòng lặp (Triệt tiêu hiện tượng lag CPU)
+            -- Nếu game tự tạo ra hiệu ứng tối mới, lập tức ẩn nó đi
+            fbConnections.ChildAdded = Lighting.ChildAdded:Connect(function(v)
+                if _G.FullBright then
+                    handleEffect(v)
                 end
             end)
         else
-            -- Khôi phục Lighting gốc
-            if _G._LightingSaved then
-                Lighting.Brightness = _G._LightingSaved.Brightness
-                Lighting.Ambient = _G._LightingSaved.Ambient
-                Lighting.OutdoorAmbient = _G._LightingSaved.OutdoorAmbient
-                Lighting.FogEnd = _G._LightingSaved.FogEnd
-                Lighting.FogStart = _G._LightingSaved.FogStart
-                Lighting.GlobalShadows = _G._LightingSaved.GlobalShadows
+            -- ======================================================
+            -- TẮT FULLBRIGHT: TRẢ MỌI THỨ VỀ NGUYÊN BẢN (FIX FOG)
+            -- ======================================================
+            
+            -- Ngắt toàn bộ các cổng kết nối Event lắng nghe để giải phóng CPU
+            for k, conn in pairs(fbConnections) do
+                if conn then conn:Disconnect() end
             end
+            table.clear(fbConnections)
+
+            -- Khôi phục các thuộc tính cơ bản của Lighting
+            if originalLightingProps.Brightness then
+                Lighting.Brightness = originalLightingProps.Brightness
+                Lighting.Ambient = originalLightingProps.Ambient
+                Lighting.OutdoorAmbient = originalLightingProps.OutdoorAmbient
+                Lighting.FogEnd = originalLightingProps.FogEnd
+                Lighting.FogStart = originalLightingProps.FogStart
+                Lighting.GlobalShadows = originalLightingProps.GlobalShadows
+            end
+
+            -- Khôi phục toàn bộ các Atmosphere & Hiệu ứng về vị trí cũ
+            for effect, data in pairs(originalEffects) do
+                if effect then
+                    if data.Property == "Parent" then
+                        effect.Parent = data.Value
+                    elseif data.Property == "Enabled" then
+                        effect.Enabled = data.Value
+                    end
+                end
+            end
+            table.clear(originalEffects)
         end
     end
 })
