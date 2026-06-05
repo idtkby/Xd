@@ -113,6 +113,61 @@ for _, loc in ipairs(locations) do
 end
 
 
+M105One:AddDivider()
+-- Biến lưu vị trí gốc (Để bên ngoài để lưu dữ liệu xuyên suốt)
+local originalPos = nil
+
+-- Nút 1: Lưu vị trí hiện tại
+M105One:AddButton({
+    Text = "Save current location",
+    DoubleClick = false,
+    Tooltip = "Lưu lại tọa độ hiện tại nhân vật đang đứng",
+    Func = function()
+        local character = game:GetService("Players").LocalPlayer.Character
+        local hrp = character and character:FindFirstChild("HumanoidRootPart")
+        
+        if hrp then
+            originalPos = hrp.CFrame
+            
+            -- Đổi Rayfield:Notify thành Library:Notify của Obsidian
+            Library:Notify({
+                Title = "Original location",
+                Description = "Current location saved",
+                Time = 2
+            })
+        end
+    end
+})
+
+-- Nút 2: Quay lại vị trí đã lưu
+M105One:AddButton({
+    Text = "Return to original position",
+    DoubleClick = false,
+    Tooltip = "Dịch chuyển về tọa độ đã lưu trước đó",
+    Func = function()
+        local character = game:GetService("Players").LocalPlayer.Character
+        local hrp = character and character:FindFirstChild("HumanoidRootPart")
+        
+        if hrp then
+            if originalPos then
+                hrp.CFrame = originalPos
+                
+                Library:Notify({
+                    Title = "Teleport",
+                    Description = "Teleported to saved location",
+                    Time = 2
+                })
+            else
+                -- Thêm thông báo báo lỗi nếu lỡ bấm mà chưa save vị trí
+                Library:Notify({
+                    Title = "ERROR",
+                    Description = "Bro, you didn't save a damn thing and now you want a TP?",
+                    Time = 3
+                })
+            end
+        end
+    end
+})
 
 
 
@@ -502,7 +557,7 @@ Main2Group:AddToggle("ESPEnemyToggle", {
 Main1Group:AddToggle("AutoMineToggle", {
     Text = "Auto Mine Quặng",
     Default = false,
-    Tooltip = "Tự động kích hoạt Prompt đào khi đang cầm Pickaxe",
+    Tooltip = "Tự động đào cứt khi đang cầm Pickaxe",
 })
 
 -- Hàm tìm ProximityPrompt của quặng
@@ -668,13 +723,13 @@ end)
 Main1Group:AddToggle("AutoOpenBoxToggle", {
     Text = "Auto Mở Thùng (Crowbar)",
     Default = false,
-    Tooltip = "Tự động mở WoodBox khi đang cầm Crowbar",
+    Tooltip = "Tự động mở Hộp mù khi đang cầm Crowbar",
 })
 
 Main1Group:AddToggle("AutoChopFenceToggle", {
     Text = "Auto Chặt Vật Chắn (Axe)",
     Default = false,
-    Tooltip = "Tự động phá hủy Fence khi đang cầm Axe",
+    Tooltip = "Tự động phá hủy Thanh Gỗ khi đang cầm Axe",
 })
 
 
@@ -698,11 +753,11 @@ M105Two:AddDropdown("TeleportOreDropdown", {
 M105Two:AddButton({
     Text = "Teleport to Closest Ore",
     DoubleClick = false,
-    Tooltip = "Biến đến cục quặng gần nhất thuộc loại đã chọn (Chưa đào)",
+    Tooltip = "Tp đến cục quặng gần nhất mà mày đã chọn (Chưa đào)",
     Func = function()
         local selectedOreName = Options.TeleportOreDropdown and Options.TeleportOreDropdown.Value
         if not selectedOreName then 
-            Library:Notify({ Title = "Lỗi", Description = "Vui lòng chọn một loại quặng trước!", Time = 3 })
+            Library:Notify({ Title = "ERROR", Description = "Bro, you didn't even choose anything and you're already pressing TP?", Time = 3 })
             return 
         end
 
@@ -734,13 +789,13 @@ M105Two:AddButton({
             hrp.CFrame = CFrame.new(closestOrePart.Position + Vector3.new(0, 3, 0))
             Library:Notify({
                 Title = "Teleport Success",
-                Description = "Đã đến " .. selectedOreName .. " chưa đào gần nhất!",
+                Description = "Goto nearest " .. selectedOreName .. " Ore",
                 Time = 3
             })
         else
             Library:Notify({
-                Title = "Thất bại",
-                Description = "Không tìm thấy cục " .. selectedOreName .. " nào thực sự chưa đào xung quanh!",
+                Title = "Faild",
+                Description = "Bro, you've already mined every ore " .. selectedOreName .. " What more do you want?",
                 Time = 4
             })
         end
