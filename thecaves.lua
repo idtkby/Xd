@@ -497,7 +497,7 @@ end)
 --  UI CONFIGURATION (Main2Group - LinoriaLib)    
 --======================================================    
 Main2Group:AddToggle("ESPItemsToggle", {
-    Text = "ESP Ores Master",
+    Text = "ESP Ores",
     Default = false,
     Callback = function(v)
         _G.ESP_Items_Enabled = v
