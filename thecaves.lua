@@ -90,8 +90,8 @@ M105One:AddDivider()
 
 -- Danh sách vị trí (Đã để sẵn form để bạn tiện copy/thêm tọa độ mới)
 local locations = {
-    {Name = "Sell Ore 💰", Position = Vector3.new(-57.96, 93.92, 13.34)}, 
-    {Name = "Item Shop 💸", Position = Vector3.new(-80.87, 93.84, 59.07)},
+    {Name = "Sell Ore 💰", Position = Vector3.new(-80.87, 93.84, 59.07)}, 
+    {Name = "Item Shop 💸", Position = Vector3.new(-57.96, 93.92, 13.34)},
     {Name = "Premium Shop 💸💸💸", Position = Vector3.new(-6.41, 93.83, 55.31)},
     {Name = "Cave Gate ⛩️", Position = Vector3.new(-73.75, 93.28, 95.39)},
 }
@@ -555,7 +555,7 @@ Main2Group:AddToggle("ESPEnemyToggle", {
 --======================================================    
 
 Main1Group:AddToggle("AutoMineToggle", {
-    Text = "Auto Mine Quặng",
+    Text = "Auto Mine Ore",
     Default = false,
     Tooltip = "Tự động đào cứt khi đang cầm Pickaxe",
 })
@@ -721,13 +721,13 @@ end)
 --  UI TOGGLES (Thêm vào Main1Group)    
 --======================================================    
 Main1Group:AddToggle("AutoOpenBoxToggle", {
-    Text = "Auto Mở Thùng (Crowbar)",
+    Text = "Auto Open Box (Crowbar)",
     Default = false,
     Tooltip = "Tự động mở Hộp mù khi đang cầm Crowbar",
 })
 
 Main1Group:AddToggle("AutoChopFenceToggle", {
-    Text = "Auto Chặt Vật Chắn (Axe)",
+    Text = "Auto fence breaking (Axe)",
     Default = false,
     Tooltip = "Tự động phá hủy Thanh Gỗ khi đang cầm Axe",
 })
