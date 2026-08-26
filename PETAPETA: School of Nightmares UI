@@ -71,2002 +71,1534 @@ print("----    ---- ----    ----    ------    ----    ---- ------------ ") print
 end)
 
 task.spawn(function()
--- Khai báo các dịch vụ cần thiết
-local player = game.Players.LocalPlayer
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local camera = workspace.CurrentCamera
-
--- Tải và khởi tạo thư viện GUI Rayfield
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-
--- Tạo cửa sổ giao diện chính
-local Window = Rayfield:CreateWindow({
-    Name = "Script By IgnahK [PETAPETA: School of Nightmares]",
-    LoadingTitle = "Loading Script...",
-    LoadingSubtitle = "Please wait",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "MyHubFolder",
-        FileName = "MyHubConfig"
-    },
-    Discord = {
-        Enabled = false,
-        Invite = "",
-        RememberJoins = false
-    },
-    KeySystem = false,
-})
-
--- Thông báo đã tải
-Rayfield:Notify({
-    Title = "Welcome!",
-    Content = "Script Loaded",
-    Duration = 2
-})
-
-
--- Tạo hàm ESP chung
-local function autoESP(filterFn, color, labelText)
-	task.spawn(function()
-		while true do
-			for _, obj in ipairs(workspace:GetDescendants()) do
-				if filterFn(obj) then
-					if not obj:FindFirstChild("AutoESP") then
-						local hl = Instance.new("Highlight")
-						hl.Name = "AutoESP"
-						hl.OutlineColor = color
-						hl.OutlineTransparency = 0
-						hl.FillTransparency = 1
-						hl.Parent = obj
-					end
-					if not obj:FindFirstChild("ESPLabel") and obj:IsA("BasePart") then
-						local bill = Instance.new("BillboardGui", obj)
-						bill.Name = "ESPLabel"
-						bill.Size = UDim2.new(0, 100, 0, 40)
-						bill.StudsOffset = Vector3.new(0, 2, 0)
-						bill.AlwaysOnTop = true
-						local txt = Instance.new("TextLabel", bill)
-						txt.Size = UDim2.new(1, 0, 1, 0)
-						txt.BackgroundTransparency = 1
-						txt.TextColor3 = color
-						txt.TextStrokeTransparency = 0.5
-						txt.Text = labelText or obj.Name
-						txt.Font = Enum.Font.Bodoni
-						txt.TextScaled = true
-					end
-				end
-			end
-			task.wait(5)
-		end
-	end)
-end
-
--- Tab chính
-local mainTab = Window:CreateTab("Visual", eye)
-
--- ESP Buttons
-mainTab:CreateButton({
-    Name = "Esp Player",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/PlayerEsp"))()
-    end,
-})
-
-mainTab:CreateSection("—————————————————————————————————————————")
-mainTab:CreateButton({
-	Name = "Esp PetaPeta",
-	Callback = function()
-task.spawn(function()
-	local espColor = Color3.fromRGB(255, 133, 145) -- Đỏ
-	local outlineColor = Color3.fromRGB(0, 0, 0) -- Viền chữ màu đen
-
-	-- Tạo ESP
-	local function createESP(item)
-		local billboard = Instance.new("BillboardGui")
-		billboard.Name = "EnemyESP"
-		billboard.AlwaysOnTop = true
-		billboard.Size = UDim2.new(0, 100, 0, 40)
-		billboard.StudsOffset = Vector3.new(0, 2, 0)
-		billboard.MaxDistance = math.huge
-		billboard.Parent = item
-
-		local textLabel = Instance.new("TextLabel")
-		textLabel.Parent = billboard
-		textLabel.Text = "Peta Peta"
-		textLabel.TextColor3 = espColor
-		textLabel.TextStrokeColor3 = outlineColor
-		textLabel.TextStrokeTransparency = 0
-		textLabel.BackgroundTransparency = 1
-		textLabel.Size = UDim2.new(1, 0, 1, 0)
-		textLabel.Font = Enum.Font.Bodoni
-		textLabel.TextScaled = true
-	end
-
-	local function checkForEnemies()
-		for _, item in ipairs(workspace:GetDescendants()) do
-			if item:IsA("Model") and item.Name == "EnemyModel" and not item:FindFirstChild("EnemyESP") then
-				createESP(item)
-			end
-		end
-	end
-
-	workspace.DescendantAdded:Connect(function(descendant)
-		if descendant:IsA("Model") and descendant.Name == "EnemyModel" then
-			createESP(descendant)
-		end
-	end)
-
-	checkForEnemies()
-end)
-	loadstring(game:HttpGet("https://protected-roblox-scripts.onrender.com/4ff8c4ca4bd5179cd082f640899fc8f3"))()
-	end,
-})
-
-mainTab:CreateButton({
-    Name = "Hard Mode",
-    Callback = function()
-        task.spawn(function()
-	local function createESP(item, text, color)
-		local billboard = Instance.new("BillboardGui")
-		billboard.Name = "PetaESP"
-		billboard.AlwaysOnTop = true
-		billboard.Size = UDim2.new(0, 100, 0, 40)
-		billboard.StudsOffset = Vector3.new(0, 2, 0)
-		billboard.MaxDistance = math.huge
-		billboard.Parent = item
-
-		local textLabel = Instance.new("TextLabel")
-		textLabel.Parent = billboard
-		textLabel.Text = text
-		textLabel.TextColor3 = color
-		textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-		textLabel.TextStrokeTransparency = 0
-		textLabel.BackgroundTransparency = 1
-		textLabel.Size = UDim2.new(1, 0, 1, 0)
-		textLabel.Font = Enum.Font.Bodoni
-		textLabel.TextScaled = true
-
-		local highlight = Instance.new("Highlight")
-		highlight.Name = "PetaHighlight"
-		highlight.FillTransparency = 1
-		highlight.OutlineColor = color
-		highlight.OutlineTransparency = 0
-		highlight.Parent = item
-	end
-
-	local function check()
-		for _, item in ipairs(workspace:GetDescendants()) do
-			if item:IsA("Model") then
-				if item.Name == "Petapeta_02" and not item:FindFirstChild("PetaESP") then
-					createESP(item, "Peta Peta", Color3.fromRGB(255, 0, 0))
-				elseif item.Name == "Petapeta_03" and not item:FindFirstChild("PetaESP") then
-					createESP(item, "Peta Peta", Color3.fromRGB(93, 0, 73))
-				end
-			end
-		end
-	end
-
-	workspace.DescendantAdded:Connect(function(desc)
-		if desc:IsA("Model") then
-			if desc.Name == "Petapeta_02" then
-				createESP(desc, "Peta Peta", Color3.fromRGB(255, 0, 0))
-			elseif desc.Name == "Petapeta_03" then
-				createESP(desc, "Peta Peta", Color3.fromRGB(93, 0, 73))
-			end
-		end
-	end)
-
-	check()
-end)
-    end,
-})
-
-mainTab:CreateButton({
-    Name = "SuperHard Mode",
-    Callback = function()
-        task.spawn(function()
-	local espColor = Color3.fromRGB(93, 0, 73) -- Màu chữ và highlight fill
-	local outlineColor = Color3.fromRGB(0, 0, 0) -- Viền chữ màu đen
-
-	local function createESP(item)
-		if item:FindFirstChild("EnemyESP") or item:FindFirstChild("ESPHighlight") then return end
-
-		-- BillboardGui
-		local billboard = Instance.new("BillboardGui")
-		billboard.Name = "EnemyESP"
-		billboard.AlwaysOnTop = true
-		billboard.Size = UDim2.new(0, 100, 0, 40)
-		billboard.StudsOffset = Vector3.new(0, 2, 0)
-		billboard.MaxDistance = math.huge
-		billboard.Parent = item:FindFirstChildWhichIsA("BasePart") or item
-
-		local textLabel = Instance.new("TextLabel")
-		textLabel.Parent = billboard
-		textLabel.Text = "Peta Peta"
-		textLabel.TextColor3 = espColor
-		textLabel.TextStrokeColor3 = outlineColor -- viền đen
-		textLabel.TextStrokeTransparency = 0
-		textLabel.BackgroundTransparency = 1
-		textLabel.Size = UDim2.new(1, 0, 1, 0)
-		textLabel.Font = Enum.Font.Bodoni
-		textLabel.TextScaled = true
-
-		-- Highlight
-		local hl = Instance.new("Highlight")
-		hl.Name = "ESPHighlight"
-		hl.FillColor = espColor
-		hl.FillTransparency = 0.5
-		hl.OutlineColor = espColor -- viền cùng màu chữ
-		hl.OutlineTransparency = 0
-		hl.Adornee = item
-		hl.Parent = item
-	end
-
-	local function isEnemyModel(model)
-		return model:IsA("Model") and model.Name == "petapeta_03"
-	end
-
-	local function checkExisting()
-		for _, item in ipairs(workspace:GetDescendants()) do
-			if isEnemyModel(item) then
-				createESP(item)
-			end
-		end
-	end
-
-	workspace.DescendantAdded:Connect(function(descendant)
-		if isEnemyModel(descendant) then
-			createESP(descendant)
-		end
-	end)
-
-	checkExisting()
-end)
-    end,
-})
-
-mainTab:CreateSection("--------------------------------------------")
-
-mainTab:CreateButton({
-	Name = "Esp Key",
-	Callback = function()
-		task.spawn(function()
-	local Players = game:GetService("Players")
-	local LocalPlayer = Players.LocalPlayer
-	local espColor = Color3.fromRGB(255, 255, 255)
-	local outlineColor = Color3.fromRGB(0, 0, 0)
-
-	local function getDistance(pos)
-		local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-		local hrp = char:WaitForChild("HumanoidRootPart", 3)
-		if hrp then
-			return math.floor((hrp.Position - pos).Magnitude)
-		end
-		return 0
-	end
-
-	local function createESP(obj)
-		if obj:FindFirstChild("ExitKeyESP") then return end
-
-		local part = obj:IsA("BasePart") and obj or obj:FindFirstChildWhichIsA("BasePart")
-		if not part then return end
-
-		-- Billboard
-		local billboard = Instance.new("BillboardGui")
-		billboard.Name = "ExitKeyESP"
-		billboard.AlwaysOnTop = true
-		billboard.Size = UDim2.new(0, 100, 0, 40)
-		billboard.StudsOffset = Vector3.new(0, 2, 0)
-		billboard.MaxDistance = math.huge
-		billboard.Parent = part
-
-		local textLabel = Instance.new("TextLabel")
-		textLabel.Parent = billboard
-		textLabel.Text = "Key | Dis: ..."
-		textLabel.TextColor3 = espColor
-		textLabel.TextStrokeColor3 = outlineColor
-		textLabel.TextStrokeTransparency = 0
-		textLabel.BackgroundTransparency = 1
-		textLabel.Size = UDim2.new(1, 0, 1, 0)
-		textLabel.Font = Enum.Font.Bodoni
-		textLabel.TextScaled = true
-
-		-- Cập nhật khoảng cách liên tục
-		task.spawn(function()
-			while billboard.Parent and textLabel.Parent do
-				local success, dist = pcall(function()
-					return getDistance(part.Position)
-				end)
-				if success then
-					textLabel.Text = "Key | Dis: " .. dist
-				end
-				task.wait(0.3)
-			end
-		end)
-
-		-- Highlight
-		local highlight = Instance.new("Highlight")
-		highlight.Name = "ExitKeyESP"
-		highlight.FillTransparency = 1
-		highlight.OutlineTransparency = 0
-		highlight.OutlineColor = espColor
-		highlight.Parent = obj
-	end
-
-	local function checkAll()
-		for _, obj in ipairs(workspace:GetDescendants()) do
-			if (obj:IsA("Model") or obj:IsA("BasePart")) and obj.Name == "ExitKey" then
-				createESP(obj)
-			end
-		end
-	end
-
-	workspace.DescendantAdded:Connect(function(descendant)
-		task.wait(0.1)
-		if (descendant:IsA("Model") or descendant:IsA("BasePart")) and descendant.Name == "ExitKey" then
-			createESP(descendant)
-		end
-	end)
-
-	checkAll()
-end)
-	end,
-})
-
-mainTab:CreateParagraph({
-	Title = "KeyEsp note",
-	Content = " The key is in the sky because it can appear in the *shoe shelf*",
-})
-
-mainTab:CreateButton({
-    Name = "Esp Shoe shelf",
-    Callback = function()
-        local positions = {
-	Vector3.new(-87.43, 19.75, -109.25),
-	Vector3.new(14.15, 21.37, -77.56),
-	Vector3.new(-87.08, 19.75, 109.10),
-	Vector3.new(87.18, 19.75, -97.31),
-	Vector3.new(10.72, 4.47, 110.44),
-	Vector3.new(-87.34, 4.90, 109.36),
-}
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-
-for _, pos in ipairs(positions) do
-	local part = Instance.new("Part")
-	part.Name = "Shoe shelf"
-	part.Anchored = true
-	part.CanCollide = false
-	part.Transparency = 1
-	part.Size = Vector3.new(2, 3, 2)
-	part.Position = pos
-	part.Parent = workspace
-
-	local gui = Instance.new("BillboardGui")
-	gui.Name = "ShoeShelfTag"
-	gui.Adornee = part
-	gui.AlwaysOnTop = true
-	gui.Size = UDim2.new(0, 100, 0, 40)
-	gui.StudsOffset = Vector3.new(0, 2, 0)
-	gui.Parent = part
-
-	local label = Instance.new("TextLabel", gui)
-	label.Size = UDim2.new(1, 0, 1, 0)
-	label.BackgroundTransparency = 1
-	label.TextColor3 = Color3.fromRGB(185, 209, 255)
-	label.TextStrokeTransparency = 0
-	label.Font = Enum.Font.Bodoni
-	label.TextScaled = true
-	label.Text = "Shoe shelf | Dis: ..."
-
-	-- Tự cập nhật khoảng cách
-	RunService.RenderStepped:Connect(function()
-		local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-		if hrp and part and part.Parent then
-			local dist = (part.Position - hrp.Position).Magnitude
-			label.Text = string.format("Shoe shelf | Dis: %.1f", dist)
-		end
-	end)
-end
-    end,
-})
-
-mainTab:CreateButton({
-	Name = "Esp RareShardSpawnPoint",
-	Callback = function()
-		autoESP(function(p)
-			return p:IsA("BasePart") and p.Name == "RareShardSpawnPoint"
-		end, Color3.fromRGB(0, 255, 0), "RareShardSpawnPoint")
-	end,
-})
-
-mainTab:CreateButton({
-	Name = "Esp Mini Peta",
-	Callback = function()
-task.spawn(function()
-	local highlightName = "ItemHighlight" -- Tên node highlight
-	local itemName = "Visual_Minipeta_1" or "Visual_Minipeta_2" or "Visual_Minipeta_3" or "Visual_Minipeta_4"
-
-	local espName = itemName -- Tên node ESP trong BillboardGui
-	local labelText = itemName -- 🔁 ← Văn bản hiện trên ESP
-	local espColor = Color3.fromRGB(255,0,0)
-	local outlineColor = Color3.fromRGB(0, 0, 0)
-	local highlightColor = Color3.fromRGB(255, 255,255)
-
-	-- Tạo ESP
-	local function createESP(item)
-		if item:FindFirstChild(espName) then return end
-
-		local billboard = Instance.new("BillboardGui")
-		billboard.Name = espName
-		billboard.AlwaysOnTop = true
-		billboard.Size = UDim2.new(0, 200, 0, 50)
-		billboard.StudsOffset = Vector3.new(0, 3, 0)
-		billboard.MaxDistance = math.huge
-		billboard.Parent = item
-
-		local textLabel = Instance.new("TextLabel", billboard)
-		textLabel.Text = labelText
-		textLabel.TextColor3 = espColor
-		textLabel.TextStrokeColor3 = outlineColor
-		textLabel.TextStrokeTransparency = 0
-		textLabel.BackgroundTransparency = 1
-		textLabel.Size = UDim2.new(1, 0, 1, 0)
-		textLabel.TextSize = 12
-		textLabel.Font = Enum.Font.SourceSansBold
-
-		local highlight = Instance.new("Highlight")
-		highlight.Name = highlightName
-		highlight.FillColor = highlightColor
-		highlight.FillTransparency = 0.5
-		highlight.OutlineColor = highlightColor
-		highlight.OutlineTransparency = 0
-		highlight.Parent = item
-	end
-
-	-- Quét ban đầu
-	for _, item in ipairs(workspace:GetDescendants()) do
-		if item.Name == itemName and not item:FindFirstChild(espName) then
-			createESP(item)
-		end
-	end
-
-	-- Lắng nghe khi object mới xuất hiện
-	workspace.DescendantAdded:Connect(function(descendant)
-		if descendant.Name == itemName and not descendant:FindFirstChild(espName) then
-			task.wait(10)
-			createESP(descendant)
-		end
-	end)
-end)
-	end,
-})
-
-
-mainTab:CreateButton({
-Name = "Esp Portal [Lv 3]",
-    Callback = function()
-        autoESP(function(p)
-			return p:IsA("BasePart") and p.Name == "petapeta_circleeffect_A"
-		end, Color3.fromRGB(0, 255, 0), "Portal")
-    end,
-})
-
-
-mainTab:CreateButton({
-    Name = "Esp Shoe Shelf [Lv 3]",
-    Callback = function()
-        local positions = {
-	Vector3.new(-52.95, 34.65, 79.25),
-	Vector3.new(89.46, 34.65, -49.66),
- Vector3.new(-97.82, 34.65, 111.77),
-
-}
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-
-for _, pos in ipairs(positions) do
-	local part = Instance.new("Part")
-	part.Name = "Shoe shelf"
-	part.Anchored = true
-	part.CanCollide = false
-	part.Transparency = 1
-	part.Size = Vector3.new(2, 3, 2)
-	part.Position = pos
-	part.Parent = workspace
-
-	local gui = Instance.new("BillboardGui")
-	gui.Name = "ShoeShelfTag"
-	gui.Adornee = part
-	gui.AlwaysOnTop = true
-	gui.Size = UDim2.new(0, 100, 0, 40)
-	gui.StudsOffset = Vector3.new(0, 2, 0)
-	gui.Parent = part
-
-	local label = Instance.new("TextLabel", gui)
-	label.Size = UDim2.new(1, 0, 1, 0)
-	label.BackgroundTransparency = 1
-	label.TextColor3 = Color3.fromRGB(185, 209, 255)
-	label.TextStrokeTransparency = 0
-	label.Font = Enum.Font.Bodoni
-	label.TextScaled = true
-	label.Text = "Shoe shelf | Dis: ..."
-
-	-- Tự cập nhật khoảng cách
-	RunService.RenderStepped:Connect(function()
-		local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-		if hrp and part and part.Parent then
-			local dist = (part.Position - hrp.Position).Magnitude
-			label.Text = string.format("Shoe shelf | Dis: %.1f", dist)
-		end
-	end)
-end
-    end,
-})
-
-mainTab:CreateButton({
-	Name = "Esp Fire Extinguisher [SupHard]",
-	Callback = function()
-		task.spawn(function()
-	local espColor = Color3.fromRGB(255, 0, 0) -- Màu chữ và highlight fill
-	local outlineColor = Color3.fromRGB(0, 0, 0) -- Viền chữ màu đen
-
-	local function createESP(item)
-		if item:FindFirstChild("EnemyESP") or item:FindFirstChild("ESPHighlight") then return end
-
-		-- BillboardGui
-		local billboard = Instance.new("BillboardGui")
-		billboard.Name = "EnemyESP"
-		billboard.AlwaysOnTop = true
-		billboard.Size = UDim2.new(0, 100, 0, 40)
-		billboard.StudsOffset = Vector3.new(0, 2, 0)
-		billboard.MaxDistance = math.huge
-		billboard.Parent = item:FindFirstChildWhichIsA("BasePart") or item
-
-		local textLabel = Instance.new("TextLabel")
-		textLabel.Parent = billboard
-		textLabel.Text = "Fire Extinguisher"
-		textLabel.TextColor3 = espColor
-		textLabel.TextStrokeColor3 = outlineColor -- viền đen
-		textLabel.TextStrokeTransparency = 0
-		textLabel.BackgroundTransparency = 1
-		textLabel.Size = UDim2.new(1, 0, 1, 0)
-		textLabel.Font = Enum.Font.Bodoni
-		textLabel.TextScaled = true
-
-		-- Highlight
-		local hl = Instance.new("Highlight")
-		hl.Name = "ESPHighlight"
-		hl.FillColor = espColor
-		hl.FillTransparency = 0.5
-		hl.OutlineColor = espColor -- viền cùng màu chữ
-		hl.OutlineTransparency = 0
-		hl.Adornee = item
-		hl.Parent = item
-	end
-
-	local function isEnemyModel(model)
-		return model:IsA("Model") and model.Name == "FireExtinguisher"
-	end
-
-	local function checkExisting()
-		for _, item in ipairs(workspace:GetDescendants()) do
-			if isEnemyModel(item) then
-				createESP(item)
-			end
-		end
-	end
-
-	workspace.DescendantAdded:Connect(function(descendant)
-		if isEnemyModel(descendant) then
-			createESP(descendant)
-		end
-	end)
-
-	checkExisting()
-end)
-	end,
-})
-mainTab:CreateParagraph({
-	Title = "Esp Fire Ex.. Note",
-	Content = "You can turn on instant interact to put out the fire because it doesn't need fire ex..",
-})
-
-mainTab:CreateSection("ESP Boost Items")
-
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local Camera = Workspace.CurrentCamera
-local LocalPlayer = Players.LocalPlayer
-
-local activeESPList = {}
-local espObjects = {}
-
--- Cấu hình
-local itemSettings = {
-	["Speed shoes"] = {label = "Speed Boost", color = Color3.fromRGB(0, 255, 185)},
-	["Peta choco"] = {label = "Chocolate", color = Color3.fromRGB(128, 68, 0)},
-	["Reinforcement nails"] = {label = "Nail", color = Color3.fromRGB(128, 128, 128)},
-}
-
--- Tạo ESP Billboard
-local function createESP(item, text, color)
-	if espObjects[item] then return end
-	local part = item:FindFirstChildWhichIsA("BasePart") or item.PrimaryPart
-	if not part then return end
-
-	local gui = Instance.new("BillboardGui")
-	gui.Name = "ItemESP"
-	gui.AlwaysOnTop = true
-	gui.Size = UDim2.new(0, 100, 0, 40)
-	gui.StudsOffset = Vector3.new(0, 2, 0)
-	gui.MaxDistance = 700 -- Giới hạn hiển thị xa
-	gui.Adornee = part
-	gui.Parent = item
-
-	local label = Instance.new("TextLabel", gui)
-	label.BackgroundTransparency = 1
-	label.Size = UDim2.new(1, 0, 1, 0)
-	label.Text = text
-	label.TextColor3 = color
-	label.Font = Enum.Font.Bodoni
-	label.TextStrokeColor3 = Color3.new(0, 0, 0)
-	label.TextStrokeTransparency = 0
-	label.TextSize = 20
-
-	espObjects[item] = {gui = gui, label = label}
-end
-
--- Xoá ESP
-local function removeESP(item)
-	local data = espObjects[item]
-	if data then
-		if data.gui then data.gui:Destroy() end
-		espObjects[item] = nil
-	end
-end
-
--- Update TextSize theo khoảng cách
-RunService.RenderStepped:Connect(function()
-	for item, data in pairs(espObjects) do
-		if not item:IsDescendantOf(Workspace) or not activeESPList[item.Name] then
-			removeESP(item)
-		else
-			local pos = item:GetPivot().Position
-			local dist = (Camera.CFrame.Position - pos).Magnitude
-			data.label.TextSize = math.clamp(25 * (1 - dist / 200), 10, 25)
-		end
-	end
-end)
-
--- Theo dõi spawn mới
-Workspace.DescendantAdded:Connect(function(obj)
-	if obj:IsA("Model") and itemSettings[obj.Name] and activeESPList[obj.Name] then
-		task.wait(0.05)
-		local setting = itemSettings[obj.Name]
-		createESP(obj, setting.label, setting.color)
-	end
-end)
-
--- Tạo toggle từng loại
-for objName, setting in pairs(itemSettings) do
-	mainTab:CreateToggle({
-		Name = "ESP: " .. setting.label,
-		CurrentValue = false,
-		Callback = function(state)
-			activeESPList[objName] = state
-
-			if not state then
-				for obj in pairs(espObjects) do
-					if obj.Name == objName then
-						removeESP(obj)
-					end
-				end
-			else
-				-- Quét toàn bộ Descendants thay vì chỉ GetChildren
-				for _, obj in ipairs(Workspace:GetDescendants()) do
-					if obj:IsA("Model") and obj.Name == objName and not espObjects[obj] then
-						createESP(obj, setting.label, setting.color)
-					end
-				end
-			end
-		end
-	})
-end
-
-mainTab:CreateParagraph({
-	Title = ":3",
-	Content = "Instead of rewriting the script, I directly copied the scr of 7dtl and changed the obj",
-})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-local TeleportTab = Window:CreateTab("Teleport", "map")
-TeleportTab:CreateSection("Main Location")
-
-local locations = {
-    {Name = "Door", Position = Vector3.new(10.35, 4.51, 116.89)},
-    {Name = "Safe Room", Position = Vector3.new(-62.83, 4.95, 114.93)},
-    {Name = "Music Room", Position = Vector3.new(117.54, 19.80, -125.32)},
-    {Name = "Teacher's Room", Position = Vector3.new(7.24, 19.80, 108.62)},
-    {Name = "Secret [Lv 2]", Position = Vector3.new(-46.67, 19.8, -94.98)},
-    {Name = "Secret 2 [Lv 3]", Position = Vector3.new(-46.54, 34.65, -90.76)},
-    {Name = "Secret Room [Lv 2]", Position = Vector3.new(62.95, 19.80, 118.94)},
-    {Name = "Secret Room 2 [Lv 2]", Position = Vector3.new(-119.27, 4.95, -90.83)},
-    {Name = "Secret Room 3 [Lv 3]", Position = Vector3.new(-116.11, 34.65, 23.35)}
-}
-
-for _, loc in ipairs(locations) do
-    TeleportTab:CreateButton({
-        Name = "Go to " .. loc.Name,
-        Callback = function()
-            local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                hrp.CFrame = CFrame.new(loc.Position)
-            end
-        end
+    -- Khai báo các dịch vụ cần thiết
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local UserInputService = game:GetService("UserInputService")
+    local RunService = game:GetService("RunService")
+    local camera = workspace.CurrentCamera
+
+    -- Tải và khởi tạo thư viện GUI Rayfield
+    local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+    -- Tạo cửa sổ giao diện chính
+    local Window = Rayfield:CreateWindow({
+        Name = "Script By IgnahK [PETAPETA: School of Nightmares]",
+        LoadingTitle = "Loading Script...",
+        LoadingSubtitle = "Please wait",
+        ConfigurationSaving = {
+            Enabled = true,
+            FolderName = "MyHubFolder",
+            FileName = "MyHubConfig"
+        },
+        Discord = {
+            Enabled = false,
+            Invite = "",
+            RememberJoins = false
+        },
+        KeySystem = false,
     })
-end
 
-TeleportTab:CreateButton({
-	Name = "Go to nearest key",
-	Callback = function()
-		local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-
-local function getHRP()
-	local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-	return char:WaitForChild("HumanoidRootPart", 5)
-end
-
-local function getExitKeyNearest()
-	local nearest, minDist = nil, math.huge
-	local hrp = getHRP()
-	if not hrp then return end
-
-	for _, obj in ipairs(workspace:GetDescendants()) do
-		if obj:IsA("Model") and obj.Name == "ExitKey" then
-			local part = obj:FindFirstChildWhichIsA("BasePart")
-			if part then
-				local dist = (hrp.Position - part.Position).Magnitude
-				if dist < minDist then
-					minDist = dist
-					nearest = part
-				end
-			end
-		elseif obj:IsA("BasePart") and obj.Name == "ExitKey" then
-			local dist = (hrp.Position - obj.Position).Magnitude
-			if dist < minDist then
-				minDist = dist
-				nearest = obj
-			end
-		end
-	end
-
-	return nearest, minDist
-end
-
-local function safeTeleport(targetCFrame)
-	local hrp = getHRP()
-	if not hrp then return end
-
-	-- Gỡ vật lý có thể gây trip
-	for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
-		if v:IsA("BasePart") then
-			v.CanCollide = false
-			v.Velocity = Vector3.zero
-			v.RotVelocity = Vector3.zero
-		end
-	end
-
-	task.wait() -- chờ vật lý ổn định
-	hrp.Anchored = true
-	hrp.CFrame = targetCFrame * CFrame.new(6, 6, 0)
-	task.wait(0.1)
-	hrp.Anchored = false
-end
-
-local function teleportToExitKey()
-	local target, dist = getExitKeyNearest()
-	if target then
-		safeTeleport(target.CFrame)
-		print("Đã dịch chuyển đến ExitKey | Dist:", math.floor(dist))
-	else
-		warn("Không tìm thấy ExitKey.")
-	end
-end
-
-teleportToExitKey()
-	end,
-})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-local KTab = Window:CreateTab("Misc", "package")
-KTab:CreateSection("Game")
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-local AutoZeniRunning = false
-local ZeniConnection
-local ZeniList = {}
-
-KTab:CreateToggle({
-	Name = "Auto Collect Cursed Shard",
-	CurrentValue = false,
-	Callback = function(state)
-		AutoZeniRunning = state
-		if state then
-			local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-			local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-			local lastTriggerTime = {}
-
-			local function scanZeni()
-				ZeniList = {}
-				for _, obj in ipairs(workspace:GetDescendants()) do
-					if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(LocalPlayer.Character) then
-						local model = obj:FindFirstAncestorWhichIsA("Model")
-						if model and model.Name:match("^Zeni_[1-3]$") then
-							table.insert(ZeniList, {model = model, obj = obj})
-						end
-					end
-				end
-			end
-
-			scanZeni()
-			workspace.DescendantAdded:Connect(function(desc)
-				if AutoZeniRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") then
-					local model = desc:FindFirstAncestorWhichIsA("Model")
-					if model and model.Name:match("^Zeni_[1-3]$") then
-						table.insert(ZeniList, {model = model, obj = desc})
-					end
-				end
-			end)
-
-			local function triggerPrompt(obj)
-				if not obj or not obj:IsDescendantOf(workspace) then return false end
-				local success = false
-				pcall(function()
-					if obj:IsA("ProximityPrompt") then
-						fireproximityprompt(obj, math.huge)
-						success = true
-					elseif obj:IsA("ClickDetector") then
-						fireclickdetector(obj)
-						success = true
-					elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
-						local part = obj.Parent
-						if part and part:IsA("BasePart") then
-							firetouchinterest(HumanoidRootPart, part, 0)
-							task.wait()
-							firetouchinterest(HumanoidRootPart, part, 1)
-							success = true
-						end
-					end
-				end)
-				return success
-			end
-
-			local function getClosestPart(model, refPos)
-				local closest, minDist = nil, math.huge
-				for _, part in ipairs(model:GetChildren()) do
-					if part:IsA("BasePart") then
-						local dist = (part.Position - refPos).Magnitude
-						if dist < minDist then
-							minDist = dist
-							closest = part
-						end
-					end
-				end
-				return closest, minDist
-			end
-
-			ZeniConnection = RunService.Heartbeat:Connect(function()
-				if not AutoZeniRunning or not LocalPlayer.Character then return end
-				local HRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-				if not HRP then return end
-
-				local now = tick()
-				for i = #ZeniList, 1, -1 do
-					local data = ZeniList[i]
-					local model = data.model
-					local obj = data.obj
-
-					if not model or not model:IsDescendantOf(workspace) or not obj or not obj:IsDescendantOf(model) then
-						table.remove(ZeniList, i)
-						continue
-					end
-
-					if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
-						continue
-					end
-
-					local _, dist = getClosestPart(model, HRP.Position)
-					if dist and dist <= 5 then
-						local success = triggerPrompt(obj)
-						if success then
-							lastTriggerTime[model] = now
-						else
-							table.remove(ZeniList, i)
-						end
-					end
-				end
-			end)
-		else
-			if ZeniConnection then
-				ZeniConnection:Disconnect()
-				ZeniConnection = nil
-			end
-			ZeniList = {}
-		end
-	end
-})
-
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-local AutoKeyRunning = false
-local KeyConnection
-local KeyList = {}
-
-KTab:CreateToggle({
-	Name = "Auto Collect Key",
-	CurrentValue = false,
-	Callback = function(state)
-		AutoKeyRunning = state
-		if state then
-			local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-			local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-			local lastTriggerTime = {}
-
-			local function scanKeys()
-				KeyList = {}
-				for _, obj in ipairs(workspace:GetDescendants()) do
-					if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(LocalPlayer.Character) then
-						local model = obj:FindFirstAncestorWhichIsA("Model")
-						if model and model.Name == "ExitKey" then
-							table.insert(KeyList, {model = model, obj = obj})
-						end
-					end
-				end
-			end
-
-			scanKeys()
-			workspace.DescendantAdded:Connect(function(desc)
-				if AutoKeyRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") then
-					local model = desc:FindFirstAncestorWhichIsA("Model")
-					if model and model.Name == "ExitKey" then
-						table.insert(KeyList, {model = model, obj = desc})
-					end
-				end
-			end)
-
-			local function triggerPrompt(obj)
-				if not obj or not obj:IsDescendantOf(workspace) then return false end
-				local success = false
-				pcall(function()
-					if obj:IsA("ProximityPrompt") then
-						fireproximityprompt(obj, math.huge)
-						success = true
-					elseif obj:IsA("ClickDetector") then
-						fireclickdetector(obj)
-						success = true
-					elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
-						local part = obj.Parent
-						if part and part:IsA("BasePart") then
-							firetouchinterest(HumanoidRootPart, part, 0)
-							task.wait()
-							firetouchinterest(HumanoidRootPart, part, 1)
-							success = true
-						end
-					end
-				end)
-				return success
-			end
-
-			local function getClosestPart(model, refPos)
-				local closest, minDist = nil, math.huge
-				for _, part in ipairs(model:GetChildren()) do
-					if part:IsA("BasePart") then
-						local dist = (part.Position - refPos).Magnitude
-						if dist < minDist then
-							minDist = dist
-							closest = part
-						end
-					end
-				end
-				return closest, minDist
-			end
-
-			KeyConnection = RunService.Heartbeat:Connect(function()
-				if not AutoKeyRunning or not LocalPlayer.Character then return end
-				local HRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-				if not HRP then return end
-
-				local now = tick()
-				for i = #KeyList, 1, -1 do
-					local data = KeyList[i]
-					local model = data.model
-					local obj = data.obj
-
-					if not model or not model:IsDescendantOf(workspace) or not obj or not obj:IsDescendantOf(model) then
-						table.remove(KeyList, i)
-						continue
-					end
-
-					if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
-						continue
-					end
-
-					local _, dist = getClosestPart(model, HRP.Position)
-					if dist and dist <= 3 then
-						local success = triggerPrompt(obj)
-						if success then
-							lastTriggerTime[model] = now
-						else
-							table.remove(KeyList, i)
-						end
-					end
-				end
-			end)
-		else
-			if KeyConnection then
-				KeyConnection:Disconnect()
-				KeyConnection = nil
-			end
-			KeyList = {}
-		end
-	end
-})
-
-local HumanModCons = {}  
-local Camera = workspace.CurrentCamera
-local DefaultFOV = Camera.FieldOfView
-local TargetFOV = 104
-local ExitKeyNear = false
-local active = false
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local speaker = Players.LocalPlayer
-
--- Hàm lấy ExitKey Part gần nhất
-local function getNearestExitKey()
-	local nearest, minDist = nil, math.huge
-	local hrp = speaker.Character and speaker.Character:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
-
-	for _, obj in ipairs(workspace:GetDescendants()) do
-		if obj:IsA("Tool") and obj.Name == "ExitKey" then
-			continue -- bỏ qua tool
-		end
-		if (obj:IsA("Model") and obj.Name == "ExitKey") or (obj:IsA("BasePart") and obj.Name == "ExitKey") then
-			local part = obj:IsA("BasePart") and obj or obj:FindFirstChildWhichIsA("BasePart")
-			if part then
-				local dist = (hrp.Position - part.Position).Magnitude
-				if dist < minDist then
-					minDist = dist
-					nearest = part
-				end
-			end
-		end
-	end
-
-	return nearest, minDist
-end
-
--- Hàm gán tốc độ và FOV
-local function applySpeedAndFOV(speed)
-	local char = speaker.Character
-	local human = char and char:FindFirstChildOfClass("Humanoid")
-	if not human then return end
-	human.WalkSpeed = speed
-	Camera.FieldOfView = speed == 22 and TargetFOV or DefaultFOV
-end
-
--- Theo dõi liên tục khoảng cách
-task.spawn(function()
-	while true do
-		if active then
-			local _, dist = getNearestExitKey()
-			if dist then
-				if dist <= 10 and not ExitKeyNear then
-					ExitKeyNear = true
-					applySpeedAndFOV(16)
-				elseif dist > 10 and ExitKeyNear then
-					ExitKeyNear = false
-					applySpeedAndFOV(22)
-				end
-			end
-		end
-		task.wait(0.3) -- Giảm tần suất xuống ~3 lần/giây
-	end
-end)
-
--- Toggle GUI
-KTab:CreateToggle({  
-	Name = "Inf Sprint (max upgrade)",  
-	CurrentValue = false,  
-	Flag = "SpeedToggle",  
-	Callback = function(state)  
-		active = state
-		if state then  
-			applySpeedAndFOV(22)
-
-			HumanModCons.fovChanged = Camera:GetPropertyChangedSignal("FieldOfView"):Connect(function()
-				if not ExitKeyNear and Camera.FieldOfView ~= TargetFOV then
-					Camera.FieldOfView = TargetFOV
-				end
-			end)
-
-			local function monitorWalkSpeed()
-				local char = speaker.Character
-				local human = char and char:FindFirstChildWhichIsA("Humanoid")
-				if human then
-					HumanModCons.wsLoop = human:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
-						if not ExitKeyNear and human.WalkSpeed ~= 22 then
-							human.WalkSpeed = 22
-						end
-					end)
-				end
-			end
-
-			monitorWalkSpeed()
-			HumanModCons.wsCA = speaker.CharacterAdded:Connect(function(char)
-				char:WaitForChild("Humanoid")
-				monitorWalkSpeed()
-			end)
-
-		else  
-			ExitKeyNear = false
-			Camera.FieldOfView = DefaultFOV
-			applySpeedAndFOV(16)
-
-			if HumanModCons.fovChanged then
-				HumanModCons.fovChanged:Disconnect()
-				HumanModCons.fovChanged = nil
-			end
-
-			if HumanModCons.wsLoop then
-				HumanModCons.wsLoop:Disconnect()
-				HumanModCons.wsLoop = nil
-			end
-
-			if HumanModCons.wsCA then
-				HumanModCons.wsCA:Disconnect()
-				HumanModCons.wsCA = nil
-			end
-		end  
-	end  
-})
-
-KTab:CreateSection("Player")
-
-local RunService = game:GetService("RunService")
-local speaker = game.Players.LocalPlayer
-local noclipConnection
-local diedConnection
-
-KTab:CreateToggle({
-	Name = "Noclip",
-	Default = false,
-	Flag = "NoclipToggle",
-	Callback = function(state)
-		if state then
-			local char = speaker.Character or speaker.CharacterAdded:Wait()
-			local humanoid = char:FindFirstChildOfClass("Humanoid")
-
-			-- Kích hoạt Noclip
-			noclipConnection = RunService.Stepped:Connect(function()
-				local c = speaker.Character
-				if not c then return end
-				for _, part in ipairs(c:GetDescendants()) do
-					if part:IsA("BasePart") then
-						part.CanCollide = false
-					end
-				end
-			end)
-
-			-- Nếu chết thì tắt
-			if humanoid then
-				diedConnection = humanoid.Died:Connect(function()
-					if noclipConnection then
-						noclipConnection:Disconnect()
-						noclipConnection = nil
-					end
-					if diedConnection then
-						diedConnection:Disconnect()
-						diedConnection = nil
-					end
-					-- Tắt nút
-					KTab.Flags["NoclipToggle"] = false
-				end)
-			end
-		else
-			-- Hủy kết nối nếu đang bật
-			if noclipConnection then
-				noclipConnection:Disconnect()
-				noclipConnection = nil
-			end
-			if diedConnection then
-				diedConnection:Disconnect()
-				diedConnection = nil
-			end
-		end
-	end
-})
-
--- Khai báo các dịch vụ cần thiết
-local PromptService = game:GetService("ProximityPromptService")
-local Workspace = game:GetService("Workspace")
-
--- Tạo Toggle để kích hoạt và tắt chức năng Instant Prompt
-local InstantPromptToggle = KTab:CreateToggle({
-    Name = "Instant interact",
-    CurrentValue = false,  -- Mặc định tắt
-    Callback = function(enabled)
-        if enabled then
-            -- Khi toggle bật, thiết lập tất cả ProximityPrompt có HoldDuration = 0
-            for _, v in ipairs(Workspace:GetDescendants()) do
-                if v:IsA("ProximityPrompt") then
-                    v.HoldDuration = 0
+    -- Thông báo đã tải
+    Rayfield:Notify({
+        Title = "Welcome!",
+        Content = "Script Loaded",
+        Duration = 2
+    })
+
+    -------------------------------------------------------------------------
+    -- HỆ THỐNG QUẢN LÝ ESP (TỐI ƯU CHO TOGGLE)
+    -------------------------------------------------------------------------
+    local ESP_Instances = {}
+    local ESP_Connections = {}
+
+    local function clearESP(tag)
+        if ESP_Instances[tag] then
+            for _, esp in ipairs(ESP_Instances[tag]) do
+                if esp and esp.Parent then
+                    esp:Destroy()
                 end
             end
-
-            -- Tự động thiết lập HoldDuration = 0 khi có Prompt mới bắt đầu
-            PromptService.PromptButtonHoldBegan:Connect(function(prompt)
-                if prompt:IsA("ProximityPrompt") then
-                    prompt.HoldDuration = 0
-                end
-            end)
-
-            Rayfield:Notify({
-                Title = "Instant Prompt Enabled",
-                Content = "All proximity prompts now require no hold duration.",
-                Duration = 2
-            })
-        else
-            -- Khi toggle tắt, không thay đổi gì
-            Rayfield:Notify({
-                Title = "Instant Prompt Disabled",
-                Content = "Proximity prompts will use default hold duration.",
-                Duration = 2
-            })
+            ESP_Instances[tag] = {}
         end
-    end,
-})
+        if ESP_Connections[tag] then
+            for _, conn in ipairs(ESP_Connections[tag]) do
+                conn:Disconnect()
+            end
+            ESP_Connections[tag] = {}
+        end
+    end
 
-local HumanModCons = {}
+    local function registerESP(tag, instance)
+        if not ESP_Instances[tag] then ESP_Instances[tag] = {} end
+        table.insert(ESP_Instances[tag], instance)
+    end
 
-KTab:CreateToggle({
-	Name = "Fast Speed (hard or Shard)",
-	CurrentValue = false,
-	Flag = "SpeedToggle",
-	Callback = function(state)
-		local speaker = game.Players.LocalPlayer
-		local function isNumber(val)
-			return typeof(val) == "number" and val == val and val ~= math.huge and val ~= -math.huge
-		end
+    local function registerConnection(tag, conn)
+        if not ESP_Connections[tag] then ESP_Connections[tag] = {} end
+        table.insert(ESP_Connections[tag], conn)
+    end
 
-		if state then
-			Rayfield:Notify({
-				Title = "Note",
-				Content = "Collecting while walking can cause a prompt error, causing the prompt to fail",
-				Duration = 4,
-				Image = 6026568198,
-			})
+    local function ToggleDynamicESP(state, tag, filterFunc, textStr, color)
+        if not state then
+            clearESP(tag)
+            return
+        end
 
-			local args = { true, 50 }
-			local speed = args[1] or 16
-			if args[2] then
-				speed = args[2]
-			end
+        local function addESP(item)
+            if filterFunc(item) and not item:FindFirstChild(tag.."_Bill") then
+                local targetPart = item:IsA("BasePart") and item or item:FindFirstChildWhichIsA("BasePart") or item
+                
+                local bill = Instance.new("BillboardGui")
+                bill.Name = tag.."_Bill"
+                bill.AlwaysOnTop = true
+                bill.Size = UDim2.new(0, 100, 0, 40)
+                bill.StudsOffset = Vector3.new(0, 2, 0)
+                bill.MaxDistance = math.huge
+                bill.Parent = targetPart
+                registerESP(tag, bill)
 
-			if isNumber(speed) then
-				local Char = speaker.Character or workspace:FindFirstChild(speaker.Name)
-				local Human = Char and Char:FindFirstChildWhichIsA("Humanoid")
+                local txt = Instance.new("TextLabel", bill)
+                txt.Size = UDim2.new(1, 0, 1, 0)
+                txt.BackgroundTransparency = 1
+                txt.TextColor3 = color
+                txt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+                txt.TextStrokeTransparency = 0
+                txt.Text = type(textStr) == "function" and textStr(item) or textStr
+                txt.Font = Enum.Font.Bodoni
+                txt.TextScaled = true
+                txt.Parent = bill
 
-				local function WalkSpeedChange()
-					if Char and Human then
-						Human.WalkSpeed = speed
-					end
-				end
+                if item:IsA("Model") or item:IsA("BasePart") then
+                    local hl = Instance.new("Highlight")
+                    hl.Name = tag.."_HL"
+                    hl.FillColor = color
+                    hl.FillTransparency = 0.5
+                    hl.OutlineColor = color
+                    hl.OutlineTransparency = 0
+                    hl.Parent = item
+                    registerESP(tag, hl)
+                end
+            end
+        end
 
-				WalkSpeedChange()
+        for _, desc in ipairs(workspace:GetDescendants()) do
+            addESP(desc)
+        end
 
-				HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)
-					or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)
+        local addConn = workspace.DescendantAdded:Connect(function(desc)
+            task.wait(0.1)
+            addESP(desc)
+        end)
+        registerConnection(tag, addConn)
+    end
 
-				HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false)
-					or speaker.CharacterAdded:Connect(function(nChar)
-						Char, Human = nChar, nChar:WaitForChild("Humanoid")
-						WalkSpeedChange()
-						HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)
-							or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)
-					end)
-			end
-		else
-			HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false) or nil
-			HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false) or nil
-		end
-	end
-})
+    -------------------------------------------------------------------------
+    -- TAB VISUAL
+    -------------------------------------------------------------------------
+    local mainTab = Window:CreateTab("Visual", "eye")
 
--- Hàm lấy RootPart an toàn
-local function getRoot(char)
-	return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
-end
+    mainTab:CreateToggle({
+        Name = "Esp Player",
+        CurrentValue = false,
+        Callback = function(state)
+            if state then
+                -- Lưu ý: Các script chạy qua loadstring từ github thường không tắt được
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/main/PlayerEsp"))()
+            end
+        end,
+    })
 
-local AmbientRunning = false
+    mainTab:CreateSection("—————————————————————————————————————————")
 
-KTab:CreateToggle({
-	Name = "Ambient Light",
-	Default = false,
-	Callback = function(state)
-		AmbientRunning = state
-		local speaker = game.Players.LocalPlayer
+    mainTab:CreateToggle({
+        Name = "Esp PetaPeta",
+        CurrentValue = false,
+        Callback = function(state)
+            ToggleDynamicESP(state, "PetaPetaESP", function(item)
+                return item.Name == "Enemy"
+            end, "Peta Sama", Color3.fromRGB(255, 133, 145))
+        end,
+    })
 
-		local function applyAmbient(char)
-			local root = char:WaitForChild("HumanoidRootPart", 3)
-			if not root then return end
+    mainTab:CreateToggle({
+        Name = "Hard Mode",
+        CurrentValue = false,
+        Callback = function(state)
+            ToggleDynamicESP(state, "HardModeESP", function(item)
+                return item:IsA("Model") and (item.Name == "Petapeta_02" or item.Name == "Petapeta_03")
+            end, "Peta Peta", Color3.fromRGB(255, 0, 0))
+        end,
+    })
 
-			if AmbientRunning then
-				if not root:FindFirstChild("AmbientLight") then
-					local light = Instance.new("PointLight")
-					light.Name = "AmbientLight"
-					light.Parent = root
-					light.Range = 100
-					light.Brightness = 0.1
-					light.Color = Color3.fromRGB(255, 255, 255)
-				end
-			else
-				local existing = root:FindFirstChild("AmbientLight")
-				if existing then existing:Destroy() end
-			end
-		end
+    mainTab:CreateToggle({
+        Name = "SuperHard Mode",
+        CurrentValue = false,
+        Callback = function(state)
+            ToggleDynamicESP(state, "SuperHardModeESP", function(item)
+                return item:IsA("Model") and item.Name == "petapeta_03"
+            end, "Peta Peta", Color3.fromRGB(93, 0, 73))
+        end,
+    })
 
-		local char = speaker.Character or speaker.CharacterAdded:Wait()
-		applyAmbient(char)
+    mainTab:CreateSection("--------------------------------------------")
 
-		-- Theo dõi khi respawn
-		if not AmbientConnection then
-			AmbientConnection = speaker.CharacterAdded:Connect(function(newChar)
-				if AmbientRunning then
-					task.wait(1)
-					applyAmbient(newChar)
-				end
-			end)
-		end
-	end
-})
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-
-local jumpGui
-
-KTab:CreateToggle({
-    Name = "Show Jump Button",
-    CurrentValue = false,
-    Callback = function(state)
-        if state then
-			Rayfield:Notify({
-				Title = "Note",
-				Content = " You can get a permanent trip if you jump in the closet",
-				Duration = 4, 
-				Image = 6026568198,
-			})
-            -- Nếu GUI đã tồn tại thì không tạo nữa
-            if jumpGui and jumpGui.Parent then
-                jumpGui.Enabled = true
+    mainTab:CreateToggle({
+        Name = "Esp Key",
+        CurrentValue = false,
+        Callback = function(state)
+            local tag = "ExitKeyESP"
+            if not state then
+                clearESP(tag)
                 return
             end
 
-            -- Tạo GUI mới
-            jumpGui = Instance.new("ScreenGui")
-            jumpGui.Name = "JumpButtonGui"
-            jumpGui.ResetOnSpawn = false
-            jumpGui.IgnoreGuiInset = true
-            jumpGui.Parent = game:GetService("CoreGui")
+            local function addKey(obj)
+                if (obj:IsA("Model") or obj:IsA("BasePart")) and obj.Name == "ExitKey" and not obj:FindFirstChild(tag.."_Bill") then
+                    local part = obj:IsA("BasePart") and obj or obj:FindFirstChildWhichIsA("BasePart")
+                    if not part then return end
 
-            local outer = Instance.new("Frame")
-            outer.Size = UDim2.new(0, 117 * 1.3, 0, 117 * 1.29)
-            outer.Position = UDim2.new(0, 1034 - ((117 * 1.29 - 117)/2), 0, 388 - ((117 * 1.29 - 117)/2))
-            outer.BackgroundColor3 = Color3.new(0, 0, 0)
-            outer.BackgroundTransparency = 1
-            outer.Parent = jumpGui
+                    local bill = Instance.new("BillboardGui")
+                    bill.Name = tag.."_Bill"
+                    bill.AlwaysOnTop = true
+                    bill.Size = UDim2.new(0, 100, 0, 40)
+                    bill.StudsOffset = Vector3.new(0, 2, 0)
+                    bill.MaxDistance = math.huge
+                    bill.Parent = part
+                    registerESP(tag, bill)
 
-            local outerCorner = Instance.new("UICorner")
-            outerCorner.CornerRadius = UDim.new(1, 0)
-            outerCorner.Parent = outer
+                    local txt = Instance.new("TextLabel")
+                    txt.Parent = bill
+                    txt.Size = UDim2.new(1, 0, 1, 0)
+                    txt.BackgroundTransparency = 1
+                    txt.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    txt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+                    txt.TextStrokeTransparency = 0
+                    txt.Font = Enum.Font.Bodoni
+                    txt.TextScaled = true
 
-            local inner = Instance.new("Frame")
-            inner.Size = UDim2.new(0, 99 * 1.3, 0, 99 * 1.29)
-            inner.Position = UDim2.new(0, 9 * 1.3, 0, 9 * 1.29)
-            inner.BackgroundColor3 = Color3.new(0, 0, 0)
-            inner.BackgroundTransparency = 1
-            inner.Parent = outer
+                    local rsConn = RunService.RenderStepped:Connect(function()
+                        if part and part.Parent and txt.Parent then
+                            local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                            if hrp then
+                                local dist = (hrp.Position - part.Position).Magnitude
+                                txt.Text = string.format("Key | Dis: %d", dist)
+                            end
+                        end
+                    end)
+                    registerConnection(tag, rsConn)
 
-            local innerCorner = Instance.new("UICorner")
-            innerCorner.CornerRadius = UDim.new(1, 0)
-            innerCorner.Parent = inner
-
-            local stroke = Instance.new("UIStroke")
-            stroke.Thickness = 4
-            stroke.Color = Color3.new(1, 1, 1)
-            stroke.Transparency = 1
-            stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-            stroke.Parent = inner
-
-            local btn = Instance.new("ImageButton")
-            btn.Size = UDim2.new(1, 0, 1, 0)
-            btn.BackgroundTransparency = 1
-            btn.Image = "rbxasset://textures/ui/Input/TouchControlsSheetV2.png"
-            btn.ImageRectOffset = Vector2.new(1, 146)
-            btn.ImageRectSize = Vector2.new(144, 144)
-            btn.Parent = inner
-
-            local flag = Instance.new("StringValue")
-            flag.Name = "ButtonType"
-            flag.Value = "Jump"
-            flag.Parent = btn
-
-            local holding = false
-
-            local function jumpLoop()
-                while holding do
-                    local char = LocalPlayer.Character
-                    local hum = char and char:FindFirstChildWhichIsA("Humanoid")
-                    if hum and hum:GetState() ~= Enum.HumanoidStateType.Jumping and hum:GetState() ~= Enum.HumanoidStateType.Freefall then
-                        hum:ChangeState(Enum.HumanoidStateType.Jumping)
-                    end
-                    task.wait(0.2)
+                    local hl = Instance.new("Highlight")
+                    hl.Name = tag.."_HL"
+                    hl.FillTransparency = 1
+                    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                    hl.OutlineTransparency = 0
+                    hl.Parent = obj
+                    registerESP(tag, hl)
                 end
             end
 
-            btn.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    if not holding then
-                        holding = true
-                        task.spawn(jumpLoop)
-                    end
-                end
-            end)
+            for _, obj in ipairs(workspace:GetDescendants()) do addKey(obj) end
+            local addConn = workspace.DescendantAdded:Connect(function(desc) task.wait(0.1) addKey(desc) end)
+            registerConnection(tag, addConn)
+        end,
+    })
 
-            btn.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    holding = false
-                end
-            end)
+    mainTab:CreateParagraph({
+        Title = "KeyEsp note",
+        Content = " The key is in the sky because it can appear in the *shoe shelf*",
+    })
 
-        else
-            if jumpGui then
-                jumpGui:Destroy()
-                jumpGui = nil
-            end
+    local function ToggleStaticShelves(state, tag, positions)
+        if not state then
+            clearESP(tag)
+            return
         end
-task.spawn(function()
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
 
-local function setJumpHeight()
-	local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-	local hum = char:WaitForChild("Humanoid")
+        for _, pos in ipairs(positions) do
+            local part = Instance.new("Part")
+            part.Name = tag.."_Part"
+            part.Anchored = true
+            part.CanCollide = false
+            part.Transparency = 1
+            part.Size = Vector3.new(2, 3, 2)
+            part.Position = pos
+            part.Parent = workspace
+            registerESP(tag, part)
 
-	-- Đặt độ cao nhảy thành 3 stud
-	hum.UseJumpPower = false
-	hum.JumpHeight = 3
-end
+            local gui = Instance.new("BillboardGui")
+            gui.Name = tag.."_Bill"
+            gui.Adornee = part
+            gui.AlwaysOnTop = true
+            gui.Size = UDim2.new(0, 100, 0, 40)
+            gui.StudsOffset = Vector3.new(0, 2, 0)
+            gui.Parent = part
+            registerESP(tag, gui)
 
--- Áp dụng ngay lập tức
-setJumpHeight() 
+            local label = Instance.new("TextLabel", gui)
+            label.Size = UDim2.new(1, 0, 1, 0)
+            label.BackgroundTransparency = 1
+            label.TextColor3 = Color3.fromRGB(185, 209, 255)
+            label.TextStrokeTransparency = 0
+            label.Font = Enum.Font.Bodoni
+            label.TextScaled = true
 
--- Đảm bảo khi respawn vẫn giữ JumpHeight
-LocalPlayer.CharacterAdded:Connect(function()
-	setJumpHeight()
-end)
-end)
-    end
-})
-
-KTab:CreateSection("Other")
-
-KTab:CreateButton({
-    Name = "Enable Anti-Void",
-    Callback = function()
-        task.spawn(function()
-            local Players = game:GetService("Players")
-            local LocalPlayer = Players.LocalPlayer
-            local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-
-            -- Tạo Anti-Void Part
-            local antiVoid = Instance.new("Part")
-            antiVoid.Anchored = true
-            antiVoid.CanCollide = false
-            antiVoid.Transparency = 1
-            antiVoid.Size = Vector3.new(5000, 1, 5000)
-            antiVoid.Position = Vector3.new(94.80, -113.40, 409.71)
-            antiVoid.Name = "AntiVoidPlatform"
-            antiVoid.Parent = workspace
-
-            -- Kết nối sự kiện chạm
-            antiVoid.Touched:Connect(function(hit)
-                if hit and hit:IsDescendantOf(LocalPlayer.Character) then
-                    local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                    if hrp then
-                        hrp.CFrame = CFrame.new(-44.42, 6.22, 96.75)
-                    end
+            local rsConn = RunService.RenderStepped:Connect(function()
+                local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if hrp and part and part.Parent then
+                    local dist = (part.Position - hrp.Position).Magnitude
+                    label.Text = string.format("Shoe shelf | Dis: %.1f", dist)
                 end
             end)
-        end)
-    end,
-})
+            registerConnection(tag, rsConn)
+        end
+    end
 
-KTab:CreateButton({
-    Name = "Safe Button(hard or shard",
-    Callback = function()
-        local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+    mainTab:CreateToggle({
+        Name = "Esp Shoe shelf",
+        CurrentValue = false,
+        Callback = function(state)
+            local positions = {
+                Vector3.new(-87.43, 19.75, -109.25),
+                Vector3.new(14.15, 21.37, -77.56),
+                Vector3.new(-87.08, 19.75, 109.10),
+                Vector3.new(87.18, 19.75, -97.31),
+                Vector3.new(10.72, 4.47, 110.44),
+                Vector3.new(-87.34, 4.90, 109.36),
+            }
+            ToggleStaticShelves(state, "ShoeShelfESP", positions)
+        end,
+    })
 
--- Xóa GUI cũ nếu có
-if PlayerGui:FindFirstChild("SafeZGui") then
-	PlayerGui.SafeZGui:Destroy()
-end
+    mainTab:CreateToggle({
+        Name = "Esp RareShardSpawnPoint",
+        CurrentValue = false,
+        Callback = function(state)
+            ToggleDynamicESP(state, "RareShardESP", function(item)
+                return item:IsA("BasePart") and item.Name == "RareShardSpawnPoint"
+            end, "RareShardSpawnPoint", Color3.fromRGB(0, 255, 0))
+        end,
+    })
 
--- Tạo ScreenGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "SafeZGui"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = PlayerGui
+    mainTab:CreateToggle({
+        Name = "Esp Mini Peta",
+        CurrentValue = false,
+        Callback = function(state)
+            ToggleDynamicESP(state, "MiniPetaESP", function(item)
+                return item.Name == "Visual_Minipeta_1" or item.Name == "Visual_Minipeta_2" or item.Name == "Visual_Minipeta_3" or item.Name == "Visual_Minipeta_4"
+            end, function(item) return item.Name end, Color3.fromRGB(255, 0, 0))
+        end,
+    })
 
--- Tạo Frame (nền của GUI), tăng kích thước 1.3 lần
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 260, 0, 65) -- 200x50 * 1.3
-frame.Position = UDim2.new(0, 100, 0, 100)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.BorderSizePixel = 0
-frame.Active = true
-frame.Draggable = true
-frame.Parent = screenGui
+    mainTab:CreateToggle({
+        Name = "Esp Portal [Lv 3]",
+        CurrentValue = false,
+        Callback = function(state)
+            ToggleDynamicESP(state, "PortalESP", function(item)
+                return item:IsA("BasePart") and item.Name == "petapeta_circleeffect_A"
+            end, "Portal", Color3.fromRGB(0, 255, 0))
+        end,
+    })
 
--- Bo góc cho Frame
-local frameCorner = Instance.new("UICorner")
-frameCorner.CornerRadius = UDim.new(0, 3)
-frameCorner.Parent = frame
+    mainTab:CreateToggle({
+        Name = "Esp Shoe Shelf [Lv 3]",
+        CurrentValue = false,
+        Callback = function(state)
+            local positions = {
+                Vector3.new(-52.95, 34.65, 79.25),
+                Vector3.new(89.46, 34.65, -49.66),
+                Vector3.new(-97.82, 34.65, 111.77),
+            }
+            ToggleStaticShelves(state, "ShoeShelfLv3ESP", positions)
+        end,
+    })
 
--- Tạo TextButton
-local button = Instance.new("TextButton")
-button.Size = UDim2.new(0.7, 0, 0.9, 0) -- Nhỏ hơn Frame một chút để không che
-button.Position = UDim2.new(0.025, 0, 0.05, 0)
-button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-button.TextColor3 = Color3.fromRGB(255, 255, 255)
-button.Font = Enum.Font.SourceSans
-button.TextScaled = true
-button.Text = "SafeZone"
-button.Parent = frame
+    mainTab:CreateToggle({
+        Name = "Esp Fire Extinguisher [SupHard]",
+        CurrentValue = false,
+        Callback = function(state)
+            ToggleDynamicESP(state, "FireExtinguisherESP", function(item)
+                return item:IsA("Model") and item.Name == "FireExtinguisher"
+            end, "Fire Extinguisher", Color3.fromRGB(255, 0, 0))
+        end,
+    })
 
--- Bo góc cho nút
-local buttonCorner = Instance.new("UICorner")
-buttonCorner.CornerRadius = UDim.new(0, 3)
-buttonCorner.Parent = button
+    mainTab:CreateParagraph({
+        Title = "Esp Fire Ex.. Note",
+        Content = "You can turn on instant interact to put out the fire because it doesn't need fire ex..",
+    })
+    
+    -------------------------------------------------------------------------
+    -- ESP NEW EVENT & BODY PARTS (Phần Thêm Mới)
+    -------------------------------------------------------------------------
+    mainTab:CreateSection("ESP Event & Body Parts")
+    
+    mainTab:CreateToggle({
+        Name = "Esp Event",
+        CurrentValue = false,
+        Callback = function(state)
+            ToggleDynamicESP(state, "NewPartsESP", function(item)
+                local n = item.Name
+                -- Lọc các part mới mà bạn yêu cầu
+                return n == "ShavedIceRed"
+            end, function(item) return item.Name end, Color3.fromRGB(255, 255, 0)) -- Màu vàng cho dễ nhìn'
+        end,
+    })
+    mainTab:CreateToggle({
+        Name = "Esp body part",
+        CurrentValue = false,
+        Callback = function(state)
+            ToggleDynamicESP(state, "BodypESP", function(item)
+                local n = item.Name
+                -- Lọc các part mới mà bạn yêu cầu
+                return n == "breakable_bodymodel" or (n:match("^bodyPart_[1-7]$") ~= nil)
+            end, function(item) return item.Name end, Color3.fromRGB(255, 0,0)) -- Màu vàng cho dễ nhìn
+        end,
+    })
+    mainTab:CreateToggle({
+        Name = "Esp mega phone",
+        CurrentValue = false,
+        Callback = function(state)
+            ToggleDynamicESP(state, "mgpESP", function(item)
+                local n = item.Name
+                -- Lọc các part mới mà bạn yêu cầu
+                return n == "Megaphone"
+            end, function(item) return item.Name end, Color3.fromRGB(255, 255, 255)) -- Màu vàng cho dễ nhìn
+        end,
+    })
 
--- Tạo biến lưu vị trí gốc
-local savedPosition = nil
-local teleported = false
+    -------------------------------------------------------------------------
+    -- ESP BOOST ITEMS
+    -------------------------------------------------------------------------
+    mainTab:CreateSection("ESP Boost Items")
 
-button.MouseButton1Click:Connect(function()
-	local char = LocalPlayer.Character
-	local hrp = char and char:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
+    local Workspace = game:GetService("Workspace")
+    local Camera = Workspace.CurrentCamera
 
-	if not teleported then
-		-- Lưu lại vị trí ban đầu
-		savedPosition = hrp.CFrame
-		-- TP đến SafeZ
-		hrp.Velocity = Vector3.zero -- Ngăn trip
-		hrp.CFrame = CFrame.new(1.65, 4.95, 34.88)
-		teleported = true
-		button.Text = "Back"
-	else
-		-- TP về vị trí cũ
-		if savedPosition then
-			hrp.Velocity = Vector3.zero -- Ngăn trip khi trở lại
-			hrp.CFrame = savedPosition
-		end
-		teleported = false
-		button.Text = "SafeZone"
-	end
-end)
-end,
-})
+    local activeESPList = {}
+    local espObjects = {}
 
-KTab:CreateButton({
-    Name = "interact aura",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/CollectAura"))()
-    end,
-})
-
-KTab:CreateButton({
-Name = "Tp to Key&Exit Gui",
-    Callback = function()
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local LocalPlayer = Players.LocalPlayer
-
-local function getHRP()
-	local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-	return char:WaitForChild("HumanoidRootPart", 5)
-end
-
--- ===== EXIT KEY =====
-local function getExitKeyNearest()
-	local nearest, minDist = nil, math.huge
-	local hrp = getHRP()
-	if not hrp then return end
-
-	for _, obj in ipairs(workspace:GetDescendants()) do
-		if obj:IsA("Model") and obj.Name == "ExitKey" then
-			local part = obj:FindFirstChildWhichIsA("BasePart")
-			if part then
-				local dist = (hrp.Position - part.Position).Magnitude
-				if dist < minDist then
-					minDist = dist
-					nearest = part
-				end
-			end
-		elseif obj:IsA("BasePart") and obj.Name == "ExitKey" then
-			local dist = (hrp.Position - obj.Position).Magnitude
-			if dist < minDist then
-				minDist = dist
-				nearest = obj
-			end
-		end
-	end
-
-	return nearest, minDist
-end
-
-local function safeTeleport(cf)
-	local hrp = getHRP()
-	if not hrp then return end
-	hrp.Anchored = true
-	hrp.CFrame = cf
-	task.wait(0.1)
-	hrp.Anchored = false
-end
-
-local function teleportToExitKey()
-	local target, dist = getExitKeyNearest()
-	if target and dist <= 450 then
-		safeTeleport(target.CFrame * CFrame.new(0,5,0))
-	end
-end
-
--- ===== DOOR (giữ lại nhưng đổi CFrame) =====
-local function teleportToDoor()
-	safeTeleport(CFrame.new(11, 4, 117))
-end
-
--- ===== EXITBLOCK (tp thật + tắt va chạm block, không bật lại) =====
-local function teleportToExit()
-	local hrp = getHRP()
-	if not hrp then return end
-
-	local exitBlock = workspace:FindFirstChild("ExitBlock", true)
-	if exitBlock and exitBlock:IsA("BasePart") then
-		exitBlock.CanCollide = false -- tắt vĩnh viễn
-		safeTeleport(exitBlock.CFrame * CFrame.new(0,3,0))
-	else
-		warn("Không tìm thấy ExitBlock")
-	end
-end
-
--- ===== GUI =====
-local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "TpGUI"
-gui.ResetOnSpawn = false
-
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 180, 0, 160)
-frame.Position = UDim2.new(0, 10, 0.5, -80)
-frame.BackgroundColor3 = Color3.new(0, 0, 0)
-frame.BackgroundTransparency = 0.3
-frame.Active = true
-frame.Draggable = true
-
-Instance.new("UICorner", frame)
-
-local function createBtn(text, posY, callback)
-	local btn = Instance.new("TextButton", frame)
-	btn.Size = UDim2.new(1, -20, 0, 40)
-	btn.Position = UDim2.new(0, 10, 0, posY)
-	btn.Text = text
-	btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-	btn.TextColor3 = Color3.new(1, 1, 1)
-	btn.Font = Enum.Font.SourceSansBold
-	btn.TextScaled = true
-	Instance.new("UICorner", btn)
-	btn.MouseButton1Click:Connect(callback)
-end
-
-createBtn("Tp to Key", 10, teleportToExitKey)
-createBtn("Tp to Door", 60, teleportToDoor)
-createBtn("Tp to Exit", 110, teleportToExit)
-
--- ===== HOTKEY =====
-UserInputService.InputBegan:Connect(function(input, gp)
-	if gp then return end
-	if input.KeyCode == Enum.KeyCode.B then
-		teleportToExitKey()
-	elseif input.KeyCode == Enum.KeyCode.N then
-		teleportToDoor()
-	elseif input.KeyCode == Enum.KeyCode.M then
-		teleportToExit()
-	end
-end)
-
-game:GetService("StarterGui"):SetCore("SendNotification", {
-	Title = "Window",
-	Text = "B: Key | N: Door | M: Exit",
-	Duration = 5
-})
-    end,
-})
-
-KTab:CreateButton({
-    Name = "maxtnt05",
-    Callback = function()
-        loadstring(game:HttpGet("https://pastebin.com/raw/RLzFFC9z"))()
-    end,
-})
-  
-  KTab:CreateButton({
-    Name = "Inf Yield Edit",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()
-    end,
-  })
-
-
---// Yêu cầu: Đảm bảo bạn đã tạo KTab = Window:CreateTab("Tên Tab")
-local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
-local MarketplaceService = game:GetService("MarketplaceService")
-local player = Players.LocalPlayer
-
--- Webhook URL
-local webhookUrl = 'https://discord.com/api/webhooks/1404682749259944086/RGpRuNQjjSri3OHuF7Z2YYIg1A2ZKnhiZA6ZlTEg2tKszv0dAiyu4bxtrOg7vB9BS2CB'
-
--- Lấy tên game
-local GameName = "Unknown Game"
-local success, info = pcall(function()
-    return MarketplaceService:GetProductInfo(game.PlaceId)
-end)
-if success and info and info.Name then
-    GameName = info.Name
-end
-
--- Hàm gửi request
-local function sendRequest(userMessage)
-    local OSTime = os.time()
-    local Time = os.date('!*t', OSTime)
-
-    local Embed = {
-        title = 'Info',
-        color = 0xFF0000,
-        footer = { text = "🔍 JobId: " .. (game.JobId or "No JobId") },
-        author = {
-            name = 'Click Link - Subscribe! (IgnahKD)',
-            url = 'https://youtube.com/@IgnahKD'
-        },
-        thumbnail = {
-            url = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId .. "&width=420&height=420&format=png"
-        },
-        fields = {
-            { name = '🎯 Roblox Username', value = "@" .. player.Name, inline = true },
-            { name = '📛 Display Name', value = player.DisplayName, inline = true },
-            { name = '🆔 User ID', value = tostring(player.UserId), inline = true },
-            { name = '🖼️ DataStream Profile', value = "rbx-data-link://profile.image.access:" .. tostring(player.UserId), inline = false },
-            { name = '🎮 Game', value = string.format("Name: %s | ID: %d", GameName, game.PlaceId), inline = true },
-            { name = '🔗 Game Link', value = "https://www.roblox.com/games/" .. tostring(game.PlaceId), inline = true },
-            { name = '🔗 Profile Link', value = "https://www.roblox.com/users/" .. tostring(player.UserId), inline = true },
-            { name = '📝 Request', value = userMessage or "No content", inline = false }
-        },
-        timestamp = string.format('%d-%02d-%02dT%02d:%02d:%02dZ', Time.year, Time.month, Time.day, Time.hour, Time.min, Time.sec)
+    local itemSettings = {
+        ["Speed shoes"] = {label = "Speed Boost", color = Color3.fromRGB(0, 255, 185)},
+        ["Peta choco"] = {label = "Chocolate", color = Color3.fromRGB(128, 68, 0)},
+        ["Reinforcement nails"] = {label = "Nail", color = Color3.fromRGB(128, 128, 128)},
     }
 
-    local requestFunction = syn and syn.request or http_request or http and http.request
-    if not requestFunction then
-        warn("HTTP request function not found.")
-        return
+    local function createBoostESP(item, text, color)
+        if espObjects[item] then return end
+        local part = item:FindFirstChildWhichIsA("BasePart") or item.PrimaryPart
+        if not part then return end
+
+        local gui = Instance.new("BillboardGui")
+        gui.Name = "ItemESP"
+        gui.AlwaysOnTop = true
+        gui.Size = UDim2.new(0, 100, 0, 40)
+        gui.StudsOffset = Vector3.new(0, 2, 0)
+        gui.MaxDistance = 700 
+        gui.Adornee = part
+        gui.Parent = item
+
+        local label = Instance.new("TextLabel", gui)
+        label.BackgroundTransparency = 1
+        label.Size = UDim2.new(1, 0, 1, 0)
+        label.Text = text
+        label.TextColor3 = color
+        label.Font = Enum.Font.Bodoni
+        label.TextStrokeColor3 = Color3.new(0, 0, 0)
+        label.TextStrokeTransparency = 0
+        label.TextSize = 20
+
+        espObjects[item] = {gui = gui, label = label}
     end
 
-    local success, response = pcall(function()
-        return requestFunction({
-            Url = webhookUrl,
-            Method = 'POST',
-            Headers = { ['Content-Type'] = 'application/json' },
-            Body = HttpService:JSONEncode({ content = "# Requested", embeds = { Embed } })
-        })
-    end)
-
-    if success and response and (response.StatusCode == 204 or response.StatusCode == 200) then
-        print("Request sent successfully.")
-    else
-        warn("Send failed:", response and response.StatusCode)
-    end
-end
-
---// Rayfield UI
-local RequestSection = KTab:CreateSection("Request")
-
-local userRequestText = ""
-
-KTab:CreateInput({
-    Name = "Request Content",
-    PlaceholderText = "Enter the content you want to request",
-    RemoveTextAfterFocusLost = false,
-    Callback = function(Text)
-        userRequestText = Text
-    end
-})
-
-KTab:CreateButton({
-    Name = "Send Request",
-    Callback = function()
-        if userRequestText == "" then
-            warn("Request content not entered!")
-        else
-            sendRequest(userRequestText)
+    local function removeBoostESP(item)
+        local data = espObjects[item]
+        if data then
+            if data.gui then data.gui:Destroy() end
+            espObjects[item] = nil
         end
     end
-})
 
-KTab:CreateSection("You can get banned for 1 day for trolling,etc")
-local evt = Window:CreateTab("Event", "eye")
+    RunService.RenderStepped:Connect(function()
+        for item, data in pairs(espObjects) do
+            if not item:IsDescendantOf(Workspace) or not activeESPList[item.Name] then
+                removeBoostESP(item)
+            else
+                local pos = item:GetPivot().Position
+                local dist = (Camera.CFrame.Position - pos).Magnitude
+                data.label.TextSize = math.clamp(25 * (1 - dist / 200), 10, 25)
+            end
+        end
+    end)
 
+    Workspace.DescendantAdded:Connect(function(obj)
+        if obj:IsA("Model") and itemSettings[obj.Name] and activeESPList[obj.Name] then
+            task.wait(0.05)
+            local setting = itemSettings[obj.Name]
+            createBoostESP(obj, setting.label, setting.color)
+        end
+    end)
 
+    for objName, setting in pairs(itemSettings) do
+        mainTab:CreateToggle({
+            Name = "ESP: " .. setting.label,
+            CurrentValue = false,
+            Callback = function(state)
+                activeESPList[objName] = state
 
-
-end)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-task.spawn(function()
-local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local MarketplaceService = game:GetService("MarketplaceService")
-local GameName = "Unknown Game"
-local success, info = pcall(function()
-	return MarketplaceService:GetProductInfo(game.PlaceId)
-end)
-if success and info and info.Name then
-	GameName = info.Name
-end
-
-local OSTime = os.time()
-local Time = os.date('!*t', OSTime)
-
-local Content = '# **🛡️ PETA School Using | IgnahK**'
-
-local Embed = {
-    title = '🔔 IgnahK | Execution Log',
-    color = 0xFF0000,
-    footer = { text = "🔍 JobId: " .. (game.JobId or "No JobId") },
-    author = {
-        name = 'Click Link - Subscribe! (IgnahKD)',
-        url = 'https://youtube.com/@officialdyhub'
-    },
-    thumbnail = {
-        url = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId .. "&width=420&height=420&format=png"
-    },
-    fields = {
-        { name = '🎯 Roblox Username', value = "@" .. player.Name, inline = true },
-        { name = '📛 Display Name', value = player.DisplayName, inline = true },
-        { name = '🆔 User ID', value = tostring(player.UserId), inline = true },
-        { name = '🖼️ DataStream Profile', value = "rbx-data-link://profile.image.access:" .. tostring(player.UserId), inline = false },
-        { name = '🎮 Game', value = string.format("Name: %s | ID: %d", GameName, game.PlaceId), inline = true },
-        { name = '🔗 Game Link', value = "https://www.roblox.com/games/" .. tostring(game.PlaceId), inline = true },
-        { name = '🔗 Profile Link', value = "https://www.roblox.com/users/" .. tostring(player.UserId), inline = true }
-    },
-    timestamp = string.format('%d-%02d-%02dT%02d:%02d:%02dZ', Time.year, Time.month, Time.day, Time.hour, Time.min, Time.sec)
-}
-
-local webhookUrl = 'https://discord.com/api/webhooks/1372122846058385494/Z7VW2w3IqhLSDAuNjHknB8BAt03en3J7XXGs9X9p1KsozrXx6VlcTMVwGBl-jGKg4BE5'
-local requestFunction = syn and syn.request or http_request or http and http.request
-
-local function loadNextScript()
-    task.wait(0.1)
-    print("Working")
-end
-
-local success, response = pcall(function()
-    return requestFunction({
-        Url = webhookUrl,
-        Method = 'POST',
-        Headers = { ['Content-Type'] = 'application/json' },
-        Body = HttpService:JSONEncode({ content = Content, embeds = { Embed } })
-    })
-end)
-
-if success and response and (response.StatusCode == 204 or response.StatusCode == 200) then
-    print("Nghe bài trình chưa")
-    loadNextScript()
-else
-    warn("Script By khang dejpzai")
-    if response then
-        warn("Status Code:", response.StatusCode)
-        warn("Body:", response.Body)
+                if not state then
+                    for obj in pairs(espObjects) do
+                        if obj.Name == objName then
+                            removeBoostESP(obj)
+                        end
+                    end
+                else
+                    for _, obj in ipairs(Workspace:GetDescendants()) do
+                        if obj:IsA("Model") and obj.Name == objName and not espObjects[obj] then
+                            createBoostESP(obj, setting.label, setting.color)
+                        end
+                    end
+                end
+            end
+        })
     end
-end
+
+    mainTab:CreateParagraph({
+        Title = ":3",
+        Content = "Instead of rewriting the script, I directly copied the scr of 7dtl and changed the obj",
+    })
+
+    -------------------------------------------------------------------------
+    -- TAB TELEPORT (Giữ nguyên gốc)
+    -------------------------------------------------------------------------
+    local TeleportTab = Window:CreateTab("Teleport", "map")
+    TeleportTab:CreateSection("Main Location")
+
+    local locations = {
+        {Name = "Door", Position = Vector3.new(10.35, 4.51, 116.89)},
+        {Name = "Safe Room", Position = Vector3.new(-62.83, 4.95, 114.93)},
+        {Name = "Music Room", Position = Vector3.new(117.54, 19.80, -125.32)},
+        {Name = "Teacher's Room", Position = Vector3.new(7.24, 19.80, 108.62)},
+        {Name = "Secret [Lv 2]", Position = Vector3.new(-46.67, 19.8, -94.98)},
+        {Name = "Secret 2 [Lv 3]", Position = Vector3.new(-46.54, 34.65, -90.76)},
+        {Name = "Secret Room [Lv 2]", Position = Vector3.new(62.95, 19.80, 118.94)},
+        {Name = "Secret Room 2 [Lv 2]", Position = Vector3.new(-119.27, 4.95, -90.83)},
+        {Name = "Secret Room 3 [Lv 3]", Position = Vector3.new(-116.11, 34.65, 23.35)}
+    }
+
+    for _, loc in ipairs(locations) do
+        TeleportTab:CreateButton({
+            Name = "Go to " .. loc.Name,
+            Callback = function()
+                local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    hrp.CFrame = CFrame.new(loc.Position)
+                end
+            end
+        })
+    end
+
+    TeleportTab:CreateButton({
+        Name = "Go to nearest key",
+        Callback = function()
+            local Players = game:GetService("Players")
+            local RunService = game:GetService("RunService")
+            local LocalPlayer = Players.LocalPlayer
+
+            local function getHRP()
+                local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                return char:WaitForChild("HumanoidRootPart", 5)
+            end
+
+            local function getExitKeyNearest()
+                local nearest, minDist = nil, math.huge
+                local hrp = getHRP()
+                if not hrp then return end
+
+                for _, obj in ipairs(workspace:GetDescendants()) do
+                    if obj:IsA("Model") and obj.Name == "ExitKey" then
+                        local part = obj:FindFirstChildWhichIsA("BasePart")
+                        if part then
+                            local dist = (hrp.Position - part.Position).Magnitude
+                            if dist < minDist then
+                                minDist = dist
+                                nearest = part
+                            end
+                        end
+                    elseif obj:IsA("BasePart") and obj.Name == "ExitKey" then
+                        local dist = (hrp.Position - obj.Position).Magnitude
+                        if dist < minDist then
+                            minDist = dist
+                            nearest = obj
+                        end
+                    end
+                end
+                return nearest, minDist
+            end
+
+            local function safeTeleport(targetCFrame)
+                local hrp = getHRP()
+                if not hrp then return end
+
+                for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
+                    if v:IsA("BasePart") then
+                        v.CanCollide = false
+                        v.Velocity = Vector3.zero
+                        v.RotVelocity = Vector3.zero
+                    end
+                end
+
+                task.wait()
+                hrp.Anchored = true
+                hrp.CFrame = targetCFrame * CFrame.new(6, 6, 0)
+                task.wait(0.1)
+                hrp.Anchored = false
+            end
+
+            local function teleportToExitKey()
+                local target, dist = getExitKeyNearest()
+                if target then
+                    safeTeleport(target.CFrame)
+                    print("Đã dịch chuyển đến ExitKey | Dist:", math.floor(dist))
+                else
+                    warn("Không tìm thấy ExitKey.")
+                end
+            end
+            teleportToExitKey()
+        end,
+    })
+
+    -------------------------------------------------------------------------
+    -- TAB MISC (Giữ nguyên gốc)
+    -------------------------------------------------------------------------
+    local KTab = Window:CreateTab("Misc", "package")
+    KTab:CreateSection("Game")
+    local RunService = game:GetService("RunService")
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+
+    local AutoZeniRunning = false
+    local ZeniConnection
+    local ZeniList = {}
+
+    KTab:CreateToggle({
+        Name = "Auto Collect Cursed Shard",
+        CurrentValue = false,
+        Callback = function(state)
+            AutoZeniRunning = state
+            if state then
+                local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+                local lastTriggerTime = {}
+
+                local function scanZeni()
+                    ZeniList = {}
+                    for _, obj in ipairs(workspace:GetDescendants()) do
+                        if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(LocalPlayer.Character) then
+                            local model = obj:FindFirstAncestorWhichIsA("Model")
+                            if model and model.Name:match("^Zeni_[1-3]$") then
+                                table.insert(ZeniList, {model = model, obj = obj})
+                            end
+                        end
+                    end
+                end
+
+                scanZeni()
+                workspace.DescendantAdded:Connect(function(desc)
+                    if AutoZeniRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") then
+                        local model = desc:FindFirstAncestorWhichIsA("Model")
+                        if model and model.Name:match("^Zeni_[1-3]$") then
+                            table.insert(ZeniList, {model = model, obj = desc})
+                        end
+                    end
+                end)
+
+                local function triggerPrompt(obj)
+                    if not obj or not obj:IsDescendantOf(workspace) then return false end
+                    local success = false
+                    pcall(function()
+                        if obj:IsA("ProximityPrompt") then
+                            fireproximityprompt(obj, math.huge)
+                            success = true
+                        elseif obj:IsA("ClickDetector") then
+                            fireclickdetector(obj)
+                            success = true
+                        elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
+                            local part = obj.Parent
+                            if part and part:IsA("BasePart") then
+                                firetouchinterest(HumanoidRootPart, part, 0)
+                                task.wait()
+                                firetouchinterest(HumanoidRootPart, part, 1)
+                                success = true
+                            end
+                        end
+                    end)
+                    return success
+                end
+
+                local function getClosestPart(model, refPos)
+                    local closest, minDist = nil, math.huge
+                    for _, part in ipairs(model:GetChildren()) do
+                        if part:IsA("BasePart") then
+                            local dist = (part.Position - refPos).Magnitude
+                            if dist < minDist then
+                                minDist = dist
+                                closest = part
+                            end
+                        end
+                    end
+                    return closest, minDist
+                end
+
+                ZeniConnection = RunService.Heartbeat:Connect(function()
+                    if not AutoZeniRunning or not LocalPlayer.Character then return end
+                    local HRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    if not HRP then return end
+
+                    local now = tick()
+                    for i = #ZeniList, 1, -1 do
+                        local data = ZeniList[i]
+                        local model = data.model
+                        local obj = data.obj
+
+                        if not model or not model:IsDescendantOf(workspace) or not obj or not obj:IsDescendantOf(model) then
+                            table.remove(ZeniList, i)
+                            continue
+                        end
+
+                        if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
+                            continue
+                        end
+
+                        local _, dist = getClosestPart(model, HRP.Position)
+                        if dist and dist <= 5 then
+                            local success = triggerPrompt(obj)
+                            if success then
+                                lastTriggerTime[model] = now
+                            else
+                                table.remove(ZeniList, i)
+                            end
+                        end
+                    end
+                end)
+            else
+                if ZeniConnection then
+                    ZeniConnection:Disconnect()
+                    ZeniConnection = nil
+                end
+                ZeniList = {}
+            end
+        end
+    })
+
+    local AutoKeyRunning = false
+    local KeyConnection
+    local KeyList = {}
+
+    KTab:CreateToggle({
+        Name = "Auto Collect Key",
+        CurrentValue = false,
+        Callback = function(state)
+            AutoKeyRunning = state
+            if state then
+                local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+                local lastTriggerTime = {}
+
+                local function scanKeys()
+                    KeyList = {}
+                    for _, obj in ipairs(workspace:GetDescendants()) do
+                        if (obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj.Name == "TouchInterest") and not obj:IsDescendantOf(LocalPlayer.Character) then
+                            local model = obj:FindFirstAncestorWhichIsA("Model")
+                            if model and model.Name == "ExitKey" then
+                                table.insert(KeyList, {model = model, obj = obj})
+                            end
+                        end
+                    end
+                end
+
+                scanKeys()
+                workspace.DescendantAdded:Connect(function(desc)
+                    if AutoKeyRunning and (desc:IsA("ProximityPrompt") or desc:IsA("ClickDetector") or desc.Name == "TouchInterest") then
+                        local model = desc:FindFirstAncestorWhichIsA("Model")
+                        if model and model.Name == "ExitKey" then
+                            table.insert(KeyList, {model = model, obj = desc})
+                        end
+                    end
+                end)
+
+                local function triggerPrompt(obj)
+                    if not obj or not obj:IsDescendantOf(workspace) then return false end
+                    local success = false
+                    pcall(function()
+                        if obj:IsA("ProximityPrompt") then
+                            fireproximityprompt(obj, math.huge)
+                            success = true
+                        elseif obj:IsA("ClickDetector") then
+                            fireclickdetector(obj)
+                            success = true
+                        elseif obj:IsA("TouchTransmitter") or obj.Name == "TouchInterest" then
+                            local part = obj.Parent
+                            if part and part:IsA("BasePart") then
+                                firetouchinterest(HumanoidRootPart, part, 0)
+                                task.wait()
+                                firetouchinterest(HumanoidRootPart, part, 1)
+                                success = true
+                            end
+                        end
+                    end)
+                    return success
+                end
+
+                local function getClosestPart(model, refPos)
+                    local closest, minDist = nil, math.huge
+                    for _, part in ipairs(model:GetChildren()) do
+                        if part:IsA("BasePart") then
+                            local dist = (part.Position - refPos).Magnitude
+                            if dist < minDist then
+                                minDist = dist
+                                closest = part
+                            end
+                        end
+                    end
+                    return closest, minDist
+                end
+
+                KeyConnection = RunService.Heartbeat:Connect(function()
+                    if not AutoKeyRunning or not LocalPlayer.Character then return end
+                    local HRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    if not HRP then return end
+
+                    local now = tick()
+                    for i = #KeyList, 1, -1 do
+                        local data = KeyList[i]
+                        local model = data.model
+                        local obj = data.obj
+
+                        if not model or not model:IsDescendantOf(workspace) or not obj or not obj:IsDescendantOf(model) then
+                            table.remove(KeyList, i)
+                            continue
+                        end
+
+                        if lastTriggerTime[model] and now - lastTriggerTime[model] < 2 then
+                            continue
+                        end
+
+                        local _, dist = getClosestPart(model, HRP.Position)
+                        if dist and dist <= 3 then
+                            local success = triggerPrompt(obj)
+                            if success then
+                                lastTriggerTime[model] = now
+                            else
+                                table.remove(KeyList, i)
+                            end
+                        end
+                    end
+                end)
+            else
+                if KeyConnection then
+                    KeyConnection:Disconnect()
+                    KeyConnection = nil
+                end
+                KeyList = {}
+            end
+        end
+    })
+
+    local HumanModCons = {}  
+    local Camera = workspace.CurrentCamera
+    local DefaultFOV = Camera.FieldOfView
+    local TargetFOV = 104
+    local ExitKeyNear = false
+    local active = false
+    local speaker = Players.LocalPlayer
+
+    local function getNearestExitKey()
+        local nearest, minDist = nil, math.huge
+        local hrp = speaker.Character and speaker.Character:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            if obj:IsA("Tool") and obj.Name == "ExitKey" then
+                continue
+            end
+            if (obj:IsA("Model") and obj.Name == "ExitKey") or (obj:IsA("BasePart") and obj.Name == "ExitKey") then
+                local part = obj:IsA("BasePart") and obj or obj:FindFirstChildWhichIsA("BasePart")
+                if part then
+                    local dist = (hrp.Position - part.Position).Magnitude
+                    if dist < minDist then
+                        minDist = dist
+                        nearest = part
+                    end
+                end
+            end
+        end
+
+        return nearest, minDist
+    end
+
+    local function applySpeedAndFOV(speed)
+        local char = speaker.Character
+        local human = char and char:FindFirstChildOfClass("Humanoid")
+        if not human then return end
+        human.WalkSpeed = speed
+        Camera.FieldOfView = speed == 22 and TargetFOV or DefaultFOV
+    end
+
+    task.spawn(function()
+        while true do
+            if active then
+                local _, dist = getNearestExitKey()
+                if dist then
+                    if dist <= 10 and not ExitKeyNear then
+                        ExitKeyNear = true
+                        applySpeedAndFOV(16)
+                    elseif dist > 10 and ExitKeyNear then
+                        ExitKeyNear = false
+                        applySpeedAndFOV(22)
+                    end
+                end
+            end
+            task.wait(0.3)
+        end
+    end)
+
+    KTab:CreateToggle({  
+        Name = "Inf Sprint (max upgrade)",  
+        CurrentValue = false,  
+        Flag = "SpeedToggle",  
+        Callback = function(state)  
+            active = state
+            if state then  
+                applySpeedAndFOV(22)
+
+                HumanModCons.fovChanged = Camera:GetPropertyChangedSignal("FieldOfView"):Connect(function()
+                    if not ExitKeyNear and Camera.FieldOfView ~= TargetFOV then
+                        Camera.FieldOfView = TargetFOV
+                    end
+                end)
+
+                local function monitorWalkSpeed()
+                    local char = speaker.Character
+                    local human = char and char:FindFirstChildWhichIsA("Humanoid")
+                    if human then
+                        HumanModCons.wsLoop = human:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                            if not ExitKeyNear and human.WalkSpeed ~= 22 then
+                                human.WalkSpeed = 22
+                            end
+                        end)
+                    end
+                end
+
+                monitorWalkSpeed()
+                HumanModCons.wsCA = speaker.CharacterAdded:Connect(function(char)
+                    char:WaitForChild("Humanoid")
+                    monitorWalkSpeed()
+                end)
+
+            else  
+                ExitKeyNear = false
+                Camera.FieldOfView = DefaultFOV
+                applySpeedAndFOV(16)
+
+                if HumanModCons.fovChanged then
+                    HumanModCons.fovChanged:Disconnect()
+                    HumanModCons.fovChanged = nil
+                end
+
+                if HumanModCons.wsLoop then
+                    HumanModCons.wsLoop:Disconnect()
+                    HumanModCons.wsLoop = nil
+                end
+
+                if HumanModCons.wsCA then
+                    HumanModCons.wsCA:Disconnect()
+                    HumanModCons.wsCA = nil
+                end
+            end  
+        end  
+    })
+
+    KTab:CreateSection("Player")
+
+    local noclipConnection
+    local diedConnection
+
+    KTab:CreateToggle({
+        Name = "Noclip",
+        CurrentValue = false,
+        Flag = "NoclipToggle",
+        Callback = function(state)
+            if state then
+                local char = speaker.Character or speaker.CharacterAdded:Wait()
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+
+                noclipConnection = RunService.Stepped:Connect(function()
+                    local c = speaker.Character
+                    if not c then return end
+                    for _, part in ipairs(c:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end)
+
+                if humanoid then
+                    diedConnection = humanoid.Died:Connect(function()
+                        if noclipConnection then
+                            noclipConnection:Disconnect()
+                            noclipConnection = nil
+                        end
+                        if diedConnection then
+                            diedConnection:Disconnect()
+                            diedConnection = nil
+                        end
+                        KTab.Flags["NoclipToggle"] = false
+                    end)
+                end
+            else
+                if noclipConnection then
+                    noclipConnection:Disconnect()
+                    noclipConnection = nil
+                end
+                if diedConnection then
+                    diedConnection:Disconnect()
+                    diedConnection = nil
+                end
+            end
+        end
+    })
+
+    local PromptService = game:GetService("ProximityPromptService")
+    local Workspace = game:GetService("Workspace")
+
+    KTab:CreateToggle({
+        Name = "Instant interact",
+        CurrentValue = false, 
+        Callback = function(enabled)
+            if enabled then
+                for _, v in ipairs(Workspace:GetDescendants()) do
+                    if v:IsA("ProximityPrompt") then
+                        v.HoldDuration = 0
+                    end
+                end
+
+                PromptService.PromptButtonHoldBegan:Connect(function(prompt)
+                    if prompt:IsA("ProximityPrompt") then
+                        prompt.HoldDuration = 0
+                    end
+                end)
+
+                Rayfield:Notify({
+                    Title = "Instant Prompt Enabled",
+                    Content = "All proximity prompts now require no hold duration.",
+                    Duration = 2
+                })
+            else
+                Rayfield:Notify({
+                    Title = "Instant Prompt Disabled",
+                    Content = "Proximity prompts will use default hold duration.",
+                    Duration = 2
+                })
+            end
+        end,
+    })
+
+    KTab:CreateToggle({
+        Name = "Fast Speed (hard or Shard)",
+        CurrentValue = false,
+        Flag = "SpeedToggle2",
+        Callback = function(state)
+            local function isNumber(val)
+                return typeof(val) == "number" and val == val and val ~= math.huge and val ~= -math.huge
+            end
+
+            if state then
+                Rayfield:Notify({
+                    Title = "Note",
+                    Content = "Collecting while walking can cause a prompt error, causing the prompt to fail",
+                    Duration = 4,
+                    Image = 6026568198,
+                })
+
+                local args = { true, 50 }
+                local speed = args[1] or 16
+                if args[2] then
+                    speed = args[2]
+                end
+
+                if isNumber(speed) then
+                    local Char = speaker.Character or workspace:FindFirstChild(speaker.Name)
+                    local Human = Char and Char:FindFirstChildWhichIsA("Humanoid")
+
+                    local function WalkSpeedChange()
+                        if Char and Human then
+                            Human.WalkSpeed = speed
+                        end
+                    end
+
+                    WalkSpeedChange()
+
+                    HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)
+                        or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)
+
+                    HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false)
+                        or speaker.CharacterAdded:Connect(function(nChar)
+                            Char, Human = nChar, nChar:WaitForChild("Humanoid")
+                            WalkSpeedChange()
+                            HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false)
+                                or Human:GetPropertyChangedSignal("WalkSpeed"):Connect(WalkSpeedChange)
+                        end)
+                end
+            else
+                HumanModCons.wsLoop = (HumanModCons.wsLoop and HumanModCons.wsLoop:Disconnect() and false) or nil
+                HumanModCons.wsCA = (HumanModCons.wsCA and HumanModCons.wsCA:Disconnect() and false) or nil
+            end
+        end
+    })
+
+    local AmbientRunning = false
+    local AmbientConnection
+
+    KTab:CreateToggle({
+        Name = "Ambient Light",
+        CurrentValue = false,
+        Callback = function(state)
+            AmbientRunning = state
+
+            local function applyAmbient(char)
+                local root = char:WaitForChild("HumanoidRootPart", 3)
+                if not root then return end
+
+                if AmbientRunning then
+                    if not root:FindFirstChild("AmbientLight") then
+                        local light = Instance.new("PointLight")
+                        light.Name = "AmbientLight"
+                        light.Parent = root
+                        light.Range = 100
+                        light.Brightness = 0.1
+                        light.Color = Color3.fromRGB(255, 255, 255)
+                    end
+                else
+                    local existing = root:FindFirstChild("AmbientLight")
+                    if existing then existing:Destroy() end
+                end
+            end
+
+            local char = speaker.Character or speaker.CharacterAdded:Wait()
+            applyAmbient(char)
+
+            if not AmbientConnection then
+                AmbientConnection = speaker.CharacterAdded:Connect(function(newChar)
+                    if AmbientRunning then
+                        task.wait(1)
+                        applyAmbient(newChar)
+                    end
+                end)
+            end
+        end
+    })
+
+    local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+    local jumpGui
+
+    KTab:CreateToggle({
+        Name = "Show Jump Button",
+        CurrentValue = false,
+        Callback = function(state)
+            if state then
+                Rayfield:Notify({
+                    Title = "Note",
+                    Content = " You can get a permanent trip if you jump in the closet",
+                    Duration = 4, 
+                    Image = 6026568198,
+                })
+                
+                if jumpGui and jumpGui.Parent then
+                    jumpGui.Enabled = true
+                    return
+                end
+
+                jumpGui = Instance.new("ScreenGui")
+                jumpGui.Name = "JumpButtonGui"
+                jumpGui.ResetOnSpawn = false
+                jumpGui.IgnoreGuiInset = true
+                jumpGui.Parent = game:GetService("CoreGui")
+
+                local outer = Instance.new("Frame")
+                outer.Size = UDim2.new(0, 117 * 1.3, 0, 117 * 1.29)
+                outer.Position = UDim2.new(0, 1034 - ((117 * 1.29 - 117)/2), 0, 388 - ((117 * 1.29 - 117)/2))
+                outer.BackgroundColor3 = Color3.new(0, 0, 0)
+                outer.BackgroundTransparency = 1
+                outer.Parent = jumpGui
+
+                local outerCorner = Instance.new("UICorner")
+                outerCorner.CornerRadius = UDim.new(1, 0)
+                outerCorner.Parent = outer
+
+                local inner = Instance.new("Frame")
+                inner.Size = UDim2.new(0, 99 * 1.3, 0, 99 * 1.29)
+                inner.Position = UDim2.new(0, 9 * 1.3, 0, 9 * 1.29)
+                inner.BackgroundColor3 = Color3.new(0, 0, 0)
+                inner.BackgroundTransparency = 1
+                inner.Parent = outer
+
+                local innerCorner = Instance.new("UICorner")
+                innerCorner.CornerRadius = UDim.new(1, 0)
+                innerCorner.Parent = inner
+
+                local stroke = Instance.new("UIStroke")
+                stroke.Thickness = 4
+                stroke.Color = Color3.new(1, 1, 1)
+                stroke.Transparency = 1
+                stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                stroke.Parent = inner
+
+                local btn = Instance.new("ImageButton")
+                btn.Size = UDim2.new(1, 0, 1, 0)
+                btn.BackgroundTransparency = 1
+                btn.Image = "rbxasset://textures/ui/Input/TouchControlsSheetV2.png"
+                btn.ImageRectOffset = Vector2.new(1, 146)
+                btn.ImageRectSize = Vector2.new(144, 144)
+                btn.Parent = inner
+
+                local flag = Instance.new("StringValue")
+                flag.Name = "ButtonType"
+                flag.Value = "Jump"
+                flag.Parent = btn
+
+                local holding = false
+
+                local function jumpLoop()
+                    while holding do
+                        local char = LocalPlayer.Character
+                        local hum = char and char:FindFirstChildWhichIsA("Humanoid")
+                        if hum and hum:GetState() ~= Enum.HumanoidStateType.Jumping and hum:GetState() ~= Enum.HumanoidStateType.Freefall then
+                            hum:ChangeState(Enum.HumanoidStateType.Jumping)
+                        end
+                        task.wait(0.2)
+                    end
+                end
+
+                btn.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        if not holding then
+                            holding = true
+                            task.spawn(jumpLoop)
+                        end
+                    end
+                end)
+
+                btn.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        holding = false
+                    end
+                end)
+
+            else
+                if jumpGui then
+                    jumpGui:Destroy()
+                    jumpGui = nil
+                end
+            end
+            task.spawn(function()
+                local function setJumpHeight()
+                    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                    local hum = char:WaitForChild("Humanoid")
+                    hum.UseJumpPower = false
+                    hum.JumpHeight = 3
+                end
+                setJumpHeight() 
+                LocalPlayer.CharacterAdded:Connect(function()
+                    setJumpHeight()
+                end)
+            end)
+        end
+    })
+
+    KTab:CreateSection("Other")
+
+    KTab:CreateButton({
+        Name = "Enable Anti-Void",
+        Callback = function()
+            task.spawn(function()
+                local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+
+                local antiVoid = Instance.new("Part")
+                antiVoid.Anchored = true
+                antiVoid.CanCollide = false
+                antiVoid.Transparency = 1
+                antiVoid.Size = Vector3.new(5000, 1, 5000)
+                antiVoid.Position = Vector3.new(94.80, -113.40, 409.71)
+                antiVoid.Name = "AntiVoidPlatform"
+                antiVoid.Parent = workspace
+
+                antiVoid.Touched:Connect(function(hit)
+                    if hit and hit:IsDescendantOf(LocalPlayer.Character) then
+                        local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            hrp.CFrame = CFrame.new(-44.42, 6.22, 96.75)
+                        end
+                    end
+                end)
+            end)
+        end,
+    })
+
+    KTab:CreateButton({
+        Name = "Safe Button(hard or shard",
+        Callback = function()
+            local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+            if PlayerGui:FindFirstChild("SafeZGui") then
+                PlayerGui.SafeZGui:Destroy()
+            end
+
+            local screenGui = Instance.new("ScreenGui")
+            screenGui.Name = "SafeZGui"
+            screenGui.ResetOnSpawn = false
+            screenGui.Parent = PlayerGui
+
+            local frame = Instance.new("Frame")
+            frame.Size = UDim2.new(0, 260, 0, 65)
+            frame.Position = UDim2.new(0, 100, 0, 100)
+            frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            frame.BorderSizePixel = 0
+            frame.Active = true
+            frame.Draggable = true
+            frame.Parent = screenGui
+
+            local frameCorner = Instance.new("UICorner")
+            frameCorner.CornerRadius = UDim.new(0, 3)
+            frameCorner.Parent = frame
+
+            local button = Instance.new("TextButton")
+            button.Size = UDim2.new(0.7, 0, 0.9, 0)
+            button.Position = UDim2.new(0.025, 0, 0.05, 0)
+            button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            button.TextColor3 = Color3.fromRGB(255, 255, 255)
+            button.Font = Enum.Font.SourceSans
+            button.TextScaled = true
+            button.Text = "SafeZone"
+            button.Parent = frame
+
+            local buttonCorner = Instance.new("UICorner")
+            buttonCorner.CornerRadius = UDim.new(0, 3)
+            buttonCorner.Parent = button
+
+            local savedPosition = nil
+            local teleported = false
+
+            button.MouseButton1Click:Connect(function()
+                local char = LocalPlayer.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                if not hrp then return end
+
+                if not teleported then
+                    savedPosition = hrp.CFrame
+                    hrp.Velocity = Vector3.zero 
+                    hrp.CFrame = CFrame.new(1.65, 4.95, 34.88)
+                    teleported = true
+                    button.Text = "Back"
+                else
+                    if savedPosition then
+                        hrp.Velocity = Vector3.zero 
+                        hrp.CFrame = savedPosition
+                    end
+                    teleported = false
+                    button.Text = "SafeZone"
+                end
+            end)
+        end,
+    })
+
+    KTab:CreateButton({
+        Name = "interact aura",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/CollectAura"))()
+        end,
+    })
+
+    KTab:CreateButton({
+        Name = "Tp to Key&Exit Gui",
+        Callback = function()
+            local function getHRP()
+                local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                return char:WaitForChild("HumanoidRootPart", 5)
+            end
+
+            local function getExitKeyNearest()
+                local nearest, minDist = nil, math.huge
+                local hrp = getHRP()
+                if not hrp then return end
+
+                for _, obj in ipairs(workspace:GetDescendants()) do
+                    if obj:IsA("Model") and obj.Name == "ExitKey" then
+                        local part = obj:FindFirstChildWhichIsA("BasePart")
+                        if part then
+                            local dist = (hrp.Position - part.Position).Magnitude
+                            if dist < minDist then
+                                minDist = dist
+                                nearest = part
+                            end
+                        end
+                    elseif obj:IsA("BasePart") and obj.Name == "ExitKey" then
+                        local dist = (hrp.Position - obj.Position).Magnitude
+                        if dist < minDist then
+                            minDist = dist
+                            nearest = obj
+                        end
+                    end
+                end
+
+                return nearest, minDist
+            end
+
+            local function safeTeleport(cf)
+                local hrp = getHRP()
+                if not hrp then return end
+                hrp.Anchored = true
+                hrp.CFrame = cf
+                task.wait(0.1)
+                hrp.Anchored = false
+            end
+
+            local function teleportToExitKey()
+                local target, dist = getExitKeyNearest()
+                if target and dist <= 450 then
+                    safeTeleport(target.CFrame * CFrame.new(0,5,0))
+                end
+            end
+
+            local function teleportToDoor()
+                safeTeleport(CFrame.new(11, 4, 117))
+            end
+
+            local function teleportToExit()
+                local hrp = getHRP()
+                if not hrp then return end
+
+                local exitBlock = workspace:FindFirstChild("ExitBlock", true)
+                if exitBlock and exitBlock:IsA("BasePart") then
+                    exitBlock.CanCollide = false 
+                    safeTeleport(exitBlock.CFrame * CFrame.new(0,3,0))
+                else
+                    warn("Không tìm thấy ExitBlock")
+                end
+            end
+
+            local gui = Instance.new("ScreenGui", game.CoreGui)
+            gui.Name = "TpGUI"
+            gui.ResetOnSpawn = false
+
+            local frame = Instance.new("Frame", gui)
+            frame.Size = UDim2.new(0, 180, 0, 160)
+            frame.Position = UDim2.new(0, 10, 0.5, -80)
+            frame.BackgroundColor3 = Color3.new(0, 0, 0)
+            frame.BackgroundTransparency = 0.3
+            frame.Active = true
+            frame.Draggable = true
+            Instance.new("UICorner", frame)
+
+            local function createBtn(text, posY, callback)
+                local btn = Instance.new("TextButton", frame)
+                btn.Size = UDim2.new(1, -20, 0, 40)
+                btn.Position = UDim2.new(0, 10, 0, posY)
+                btn.Text = text
+                btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                btn.TextColor3 = Color3.new(1, 1, 1)
+                btn.Font = Enum.Font.SourceSansBold
+                btn.TextScaled = true
+                Instance.new("UICorner", btn)
+                btn.MouseButton1Click:Connect(callback)
+            end
+
+            createBtn("Tp to Key", 10, teleportToExitKey)
+            createBtn("Tp to Door", 60, teleportToDoor)
+            createBtn("Tp to Exit", 110, teleportToExit)
+
+            UserInputService.InputBegan:Connect(function(input, gp)
+                if gp then return end
+                if input.KeyCode == Enum.KeyCode.B then
+                    teleportToExitKey()
+                elseif input.KeyCode == Enum.KeyCode.N then
+                    teleportToDoor()
+                elseif input.KeyCode == Enum.KeyCode.M then
+                    teleportToExit()
+                end
+            end)
+
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Window",
+                Text = "B: Key | N: Door | M: Exit",
+                Duration = 5
+            })
+        end,
+    })
+
+    KTab:CreateButton({
+        Name = "maxtnt05",
+        Callback = function()
+            loadstring(game:HttpGet("https://pastebin.com/raw/RLzFFC9z"))()
+        end,
+    })
+      
+    KTab:CreateButton({
+        Name = "Inf Yield Edit",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()
+        end,
+    })
+    
+        -------------------------------------------------------------------------
+    -- TAB ADVANCED
+    -------------------------------------------------------------------------
+    local AdvancedTab = Window:CreateTab("Advanced (Test)", "sliders")
+    
+    AdvancedTab:CreateSection("Cleanup System")
+
+    local lastClearTime = 0
+    local CLEAR_COOLDOWN = 1 -- Thời gian chờ (giây) giữa các lần xóa để chống spam
+
+    AdvancedTab:CreateButton({
+        Name = "Remove Enemy & EnemyModel",
+        Callback = function()
+            local currentTime = tick()
+            
+            -- Cơ chế chống spam (Cooldown)
+            if currentTime - lastClearTime < CLEAR_COOLDOWN then
+                Rayfield:Notify({
+                    Title = "Cảnh báo",
+                    Content = "Bạn đang bấm quá nhanh! Vui lòng đợi chút.",
+                    Duration = 1.5,
+                    Image = 6026568198,
+                })
+                return
+            end
+            lastClearTime = currentTime
+
+            local deletedCount = 0
+
+            -- Quét và xóa các đối tượng thuộc diện Enemy hoặc EnemyModel trong Workspace
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if obj and obj.Parent then
+                    local name = obj.Name
+                    -- Kiểm tra nếu tên khớp với Enemy hoặc EnemyModel (bao gồm cả dạng Model hoặc BasePart)
+                    if name == "Enemy" or name == "EnemyModel" or name:match("^Enemy") then
+                        pcall(function()
+                            obj:Destroy()
+                            deletedCount = deletedCount + 1
+                        end)
+                    end
+                end
+            end
+
+            -- Thông báo kết quả
+            Rayfield:Notify({
+                Title = "Dọn dẹp thành công",
+                Content = string.format("Đã xóa bỏ %d đối tượng Enemy.", deletedCount),
+                Duration = 2,
+            })
+        end,
+    })
+    
 end)
