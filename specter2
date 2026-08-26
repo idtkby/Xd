@@ -7,7 +7,7 @@ end
 
 -- Script cho game KHÁC (sai ID thì chạy)
 print("Loaded!")
--- code còn lại ở đây
+
 -- [ KHAI BÁO TOÀN CỤC - Đặt cái này ở dòng trên cùng của Script ] --
 local HuntGui_Main = nil
 local HuntLabel_Text = nil
@@ -17,7 +17,7 @@ local function InitHuntGUI()
 
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "HuntStatusGui_Global"
-    -- Thử CoreGui trước, nếu lỗi thì dùng PlayerGui (để tránh lỗi ở một số executor)
+    -- Thử CoreGui trước, nếu lỗi thì dùng PlayerGui
     local success, _ = pcall(function() ScreenGui.Parent = game:GetService("CoreGui") end)
     if not success then ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui") end
     
@@ -62,40 +62,35 @@ end
 -- Gọi hàm tạo ngay lập tức
 InitHuntGUI()
 
-local KINGHUB01 = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
+-- ===== OBSIDIAN LIBRARY IMPORTS =====
+local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
+local Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
+local ThemeManager = loadstring(game:HttpGet(repo .. "addons/ThemeManager.lua"))()
+local SaveManager = loadstring(game:HttpGet(repo .. "addons/SaveManager.lua"))()
 
-local library = loadstring(game:HttpGet('https://raw.githubusercontent.com/mabdu21/YWVATBAUBAK-FISH-IT/refs/heads/main/dfadasdas.lua'))()
-local theme_manager = loadstring(game:HttpGet('https://raw.githubusercontent.com/mabdu21/YWVATBAUBAK-FISH-IT/refs/heads/main/jjadjasdhja.lua'))()
-local save_manager = loadstring(game:HttpGet(KINGHUB01 .. 'Gui%20Lib%20%5BSaveManager%5D'))()
+local Options = Library.Options
+local Toggles = Library.Toggles
 
 if not game:IsLoaded() then
-    library:Notify("Waiting for game to load...")
+    Library:Notify("Waiting for game to load...")
     game.Loaded:Wait()
-    library:Notify("Loaded Game")
+    Library:Notify("Loaded Game")
 end
 
-local window = library:CreateWindow({
+local window = Library:CreateWindow({
     Title = "[UPDATE] SPECTER",
-    Center = true,
-    AutoShow = true,
-    Resizable = true,
     Footer = "Script by IganhK [Beta Version]",
-           Icon = nil, -- ID logo
-
-    AutoLock = false,
-    ShowCustomCursor = true,
+    Icon = nil,
     NotifySide = "Right",
-    TabPadding = 2,
-    MenuFadeTime = 0
+    ShowCustomCursor = true,
 })
 
 local tabs = {
-    main = window:AddTab('Main'),
-    esp = window:AddTab('Esp'),
-    player = window:AddTab('Player'),
-    ['ui settings'] = window:AddTab('Settings')
+    main = window:AddTab('Main', 'ghost'),
+    esp = window:AddTab('Esp', 'eye'),
+    player = window:AddTab('Player', 'user'),
+    ['ui settings'] = window:AddTab('Settings', 'settings')
 }
-
 
 local evidence_group = tabs.main:AddRightGroupbox('Evidences')
 local ghost_group = tabs.main:AddRightGroupbox('Information')
@@ -124,10 +119,8 @@ local replicated_storage = game:GetService('ReplicatedStorage')
 local user_input_service = game:GetService('UserInputService')
 local text_chat_service = game:GetService('TextChatService')
 local teleport_service = game:GetService('TeleportService')
---[span_0](start_span)- Label hiển thị kết quả Ghost[span_0](end_span)
 
-
--- Bảng map bằng chứng (Dựa trên dữ liệu bạn cung cấp)
+-- Bảng map bằng chứng
 local ghostEvidenceMap = {
     Afarit    = {"Motion", "Orbs", "Freezing"},
     Aswang    = {"EMF5", "Fingerprints", "SpiritBox"},
@@ -187,47 +180,27 @@ local fuse_box = map:FindFirstChild("Fusebox"):FindFirstChild("Fusebox")
 local closets = map.Closets
 local rooms = map.Rooms
 
--- Hàm để lấy tất cả vật phẩm bị nguyền rủa + xương + vân tay
 local function getAllCursedItems()
     local all_items = {}
-    
-    -- Thêm các món trong folder cursed_object
     if cursed_objects then
         for _, v in pairs(cursed_objects:GetChildren()) do
             table.insert(all_items, v)
         end
     end
-    
-    -- Thêm Bone (nếu tồn tại)
-    if bone then
-        table.insert(all_items, bone)
-    end
-    
-    -- Thêm tất cả Fingerprints trong folder
+    if bone then table.insert(all_items, bone) end
     if fingerprints then
         for _, v in pairs(fingerprints:GetChildren()) do
             table.insert(all_items, v)
         end
     end
-    
     return all_items
 end
 
-
-
-
-
-
 local GhostInfo = workspace.Van.Objectives.SurfaceGui.Frame.Objectives.GhostInfo
-
 local cursed_object_highlight = false
-
 local found_writing = false
-
-local ghost_room_pos = nil -- Dùng để TP
+local ghost_room_pos = nil
 local ghost_room_found = false
-
-
 local cursed_object_name = false
 local found_fingerprint = false
 local player_highlight = false
@@ -245,11 +218,9 @@ local inf_stamina = false
 local anti_touch = true
 local show_ghost = false
 local got_motion = false
-local got_freezing = false -- Thêm dòng này vào khoảng dòng 140
-
+local got_freezing = false
 
 local ghost_name = false
-
 local no_motion = false
 local item_name = false
 local found_emf = false
@@ -261,36 +232,23 @@ local no_hold = false
 local nofog = false
 local fps = false
 
-
-
-
-
-
-
-
-
-local freezing_label = evidence_group:AddLabel('Freezing Temp: Not Found')
-local ghostwriting_label = evidence_group:AddLabel('Ghost Writing: Not Found')
-local fingerprint_label = evidence_group:AddLabel('Fingerprints: Not Found')
-local motion_label = evidence_group:AddLabel('Para Motion: Not Found')
-local spirit_box_label = evidence_group:AddLabel('Spirit Box: Not Found')
-local orb_label = evidence_group:AddLabel('Orbs: Not Found')
-
+local freezing_label = evidence_group:AddLabel("Freezing Temp: Not Found")
+local ghostwriting_label = evidence_group:AddLabel("Ghost Writing: Not Found")
+local fingerprint_label = evidence_group:AddLabel("Fingerprints: Not Found")
+local motion_label = evidence_group:AddLabel("Para Motion: Not Found")
+local spirit_box_label = evidence_group:AddLabel("Spirit Box: Not Found")
+local orb_label = evidence_group:AddLabel("Orbs: Not Found")
 
 evidence_group:AddDivider()
 
-local emf_label = evidence_group:AddLabel('EMF 5: Not Found')
-
-local last_emf_label = evidence_group:AddLabel('Last EMF: Not Found')
+local emf_label = evidence_group:AddLabel("EMF 5: Not Found")
+local last_emf_label = evidence_group:AddLabel("Last EMF: Not Found")
 evidence_group:AddDivider()
-local ghost_label = evidence_group:AddLabel('ghost: not found')
+local ghost_label = evidence_group:AddLabel("ghost: not found")
 
 local function updateGhostType()
-    -- Thêm dòng kiểm tra này
     if not ghost_label then return end 
-    
     local currentEvidences = {}
-    -- ... (giữ nguyên phần code bên trong)
 
     if found_emf then table.insert(currentEvidences, "EMF5") end
     if found_fingerprint then table.insert(currentEvidences, "Fingerprints") end
@@ -300,7 +258,6 @@ local function updateGhostType()
     if got_spirit_box then table.insert(currentEvidences, "SpiritBox") end
     if got_freezing then table.insert(currentEvidences, "Freezing") end
 
-    -- Duyệt qua Map để tìm Ghost khớp 3 bằng chứng
     for name, evidences in pairs(ghostEvidenceMap) do
         local matchCount = 0
         for _, ev in ipairs(evidences) do
@@ -319,12 +276,9 @@ local function updateGhostType()
     ghost_label:SetText('ghost: not found')
 end
 
-
 local found_name = "N/A"
-
 local touch_distance = 7
 local sprint_speed = 1
-
 local ghost_room = nil
 
 if game:IsLoaded() then
@@ -334,16 +288,14 @@ if game:IsLoaded() then
 
     if device or gid or join_time then
         print("====================================================")
-        print("Device: " .. device)
-        print("LocalPlayer GID: " .. gid)
-        print("Join Time: " .. os.date("%Y-%m-%d %H:%M:%S", join_time))
+        print("Device: " .. tostring(device))
+        print("LocalPlayer GID: " .. tostring(gid))
+        print("Join Time: " .. os.date("%Y-%m-%d %H:%M:%S", join_time or 0))
         print("====================================================")
     end
 else
-    local_player:Kick('Game failed to load, please rejoin and retry... (If it keeps happening please contact @DYHUB on discord!)')
+    local_player:Kick('Game failed to load, please rejoin and retry...')
 end
-
-
 
 ghost_group:AddDivider()
 
@@ -359,21 +311,21 @@ local sanity_label = ghost_group:AddLabel('Player Sanity:')
 emfs.ChildAdded:Connect(function(emf)
     if emf:IsA("Part") and emf.Name == 'EMF5' and not found_emf then
         emf_label:SetText('EMF 5: Yes')
-        library:Notify("Found EMF 5")
+        Library:Notify("Found EMF 5")
         found_emf = true
         updateGhostType()
     end
 
     if emf:IsA("Part") then
         last_emf_label:SetText('Last EMF: ' .. emf.Name)
-        library:Notify("Last EMF: " .. emf.Name)
+        Library:Notify("Last EMF: " .. emf.Name)
     end
 end)
 
 fingerprints.ChildAdded:Connect(function(fingerprint)
     if fingerprint:IsA("Part") and not found_fingerprint then
         fingerprint_label:SetText('Fingerprints: Yes')
-        library:Notify("Found Fingerprint")
+        Library:Notify("Found Fingerprint")
         found_fingerprint = true
         updateGhostType()
     end
@@ -382,36 +334,32 @@ end)
 orbs.ChildAdded:Connect(function(orb)
     if orb:IsA("Part") and not found_orb then
         orb_label:SetText('Orbs: Yes')
-        library:Notify("Found Orbs")
+        Library:Notify("Found Orbs")
         found_orb = true
         updateGhostType()
     end
 end)
 
-
 local function checkGhostWriting(item)
     if item.Name == "Book" then
         local rightPage = item:FindFirstChild("RightPage")
         if rightPage then
-            -- 1. Kiểm tra xem ĐÃ CÓ Decal nào chưa (Trường hợp ma viết xong trước khi script chạy)
             local existingDecal = rightPage:FindFirstChildOfClass("Decal")
             if existingDecal and not found_writing then
                 found_writing = true
                 ghostwriting_label:SetText('Ghost Writing: Yes')
-                library:Notify("Found Ghost Writing (Existing)")
+                Library:Notify("Found Ghost Writing (Existing)")
                 updateGhostType()
                 return
             end
 
-            -- 2. Kết nối sự kiện để chờ ma viết (Trường hợp ma sắp viết)
-            -- Sử dụng thuộc tính để tránh kết nối trùng lặp nhiều lần
             if not item:GetAttribute("Connected") then
                 item:SetAttribute("Connected", true)
                 rightPage.ChildAdded:Connect(function(child)
                     if child:IsA("Decal") and not found_writing then
                         found_writing = true
                         ghostwriting_label:SetText('Ghost Writing: Yes')
-                        library:Notify("Found Ghost Writing (New)")
+                        Library:Notify("Found Ghost Writing (New)")
                         updateGhostType()
                     end
                 end)
@@ -420,33 +368,22 @@ local function checkGhostWriting(item)
     end
 end
 
--- Tích hợp vào vòng lặp quét Equipment của bạn
 task.spawn(function()
     while true do
         task.wait(1)
         local equipment = workspace:FindFirstChild("Equipment")
         if equipment then
             for _, item in pairs(equipment:GetChildren()) do
-                -- Gọi hàm check cho mỗi cuốn sách tìm thấy
                 checkGhostWriting(item)
             end
-        end
-        
-        -- Nếu đã tìm thấy writing thì có thể dừng vòng lặp này hoặc cứ để nó chạy cho các bằng chứng khác
-        if found_writing then 
-            -- break -- Bỏ comment nếu muốn dừng quét sau khi tìm thấy
         end
     end
 end)
 
--- [[ LOGIC TÌM GHOST ROOM CHUẨN V4 ]] --
 task.spawn(function()
     local RoomScanService = game:GetService("RunService")
-    
-    -- Biến lưu tạm vị trí con ma khi mới vào game
     local found_ghost_pos = nil 
 
-    -- Vòng lặp 1: Tìm vị trí đứng của con ma (Lấy từ workspace.NPCs)
     local GhostFinderConnection
     GhostFinderConnection = RoomScanService.RenderStepped:Connect(function()
         if ghost_room_found then 
@@ -458,12 +395,11 @@ task.spawn(function()
         if npcs then
             for _, model in pairs(npcs:GetChildren()) do
                 if model:IsA("Model") then
-                    -- V4 tìm MeshPart tên là "Base" trong con ma
                     local base = model:FindFirstChild("Base") 
                     if base and base:IsA("MeshPart") then
-                        found_ghost_pos = base.Position -- Lưu tọa độ ma
-                        ghost_room_pos = base.CFrame    -- Lưu CFrame để TP
-                        GhostFinderConnection:Disconnect() -- Dừng quét ma, chuyển sang quét phòng
+                        found_ghost_pos = base.Position
+                        ghost_room_pos = base.CFrame
+                        GhostFinderConnection:Disconnect()
                         break
                     end
                 end
@@ -471,34 +407,28 @@ task.spawn(function()
         end
     end)
 
-    -- Vòng lặp 2: So sánh vị trí ma với Hitbox của các phòng để lấy tên
     while task.wait(1) do
         if ghost_room_found then break end
 
-        -- Chỉ chạy khi đã bắt được tọa độ con ma ở bước trên
         if found_ghost_pos then
-            local map = workspace:FindFirstChild("Map")
-            local rooms = map and map:FindFirstChild("Rooms")
+            local mapObj = workspace:FindFirstChild("Map")
+            local roomsObj = mapObj and mapObj:FindFirstChild("Rooms")
             
-            if rooms then
-                -- Quét tất cả Hitbox trong folder Rooms
-                for _, obj in pairs(rooms:GetDescendants()) do
+            if roomsObj then
+                for _, obj in pairs(roomsObj:GetDescendants()) do
                     if obj.Name == "Hitbox" and obj:IsA("BasePart") then
-                        -- Kiểm tra khoảng cách: Nếu ma đứng cách Hitbox phòng dưới 15 mét -> Đó là phòng ma
                         local distance = (found_ghost_pos - obj.Position).Magnitude
                         
-                        if distance < 15 then -- V4 dùng range 15
+                        if distance < 15 then
                             ghost_room_found = true
                             local realRoomName = obj.Parent.Name
                             
-                            -- Cập nhật UI Linoria
                             if ghost_room_label then
                                 ghost_room_label:SetText("Ghost Spawn: " .. realRoomName)
                             end
                             
-                            library:Notify("Ghost Spawn Found: " .. realRoomName)
+                            Library:Notify("Ghost Spawn Found: " .. realRoomName)
                             
-                            -- Thông báo hệ thống
                             game:GetService("StarterGui"):SetCore("SendNotification", {
                                 Title = "Specter 2 Finder",
                                 Text = "Spawn: " .. realRoomName,
@@ -513,22 +443,19 @@ task.spawn(function()
     end
 end)
 
-
-
-
 motionconnection = run_service.RenderStepped:Connect(function()
     for _, motion in pairs(motions:GetDescendants()) do
         if motion:IsA("Part") then
             if motion.Color == Color3.fromRGB(252, 52, 52) then
                 motion_label:SetText('Motion: Yes')
-                library:Notify("Found Motion")
+                Library:Notify("Found Motion")
                 got_motion = true
                 updateGhostType()
                 motionconnection:Disconnect()
                 break
             elseif motion.BrickColor == BrickColor.new("Toothpaste") then
                 motion_label:SetText('Motion: No')
-                library:Notify("No Motion Found")
+                Library:Notify("No Motion Found")
                 no_motion = true
                 motionconnection:Disconnect()
                 break
@@ -550,13 +477,8 @@ GhostInfo:GetPropertyChangedSignal("Text"):Connect(function()
     ghost_name_label:SetText("Ghost Name: " .. found_name)
 end)
 
-local run_service = game:GetService("RunService")
-local local_player = game:GetService("Players").LocalPlayer
-
--- สร้างการเชื่อมต่อ
 local sanityconnection
 sanityconnection = run_service.RenderStepped:Connect(function()
-    -- หา Player Sanity ของผู้เล่นปัจจุบัน
     local player_frame = workspace.Van.SanityBoard.SurfaceGui.Frame.Players:FindFirstChild(local_player.DisplayName)
     if player_frame then
         local sanity_val = player_frame.Entire.Val
@@ -565,7 +487,6 @@ sanityconnection = run_service.RenderStepped:Connect(function()
         end
     end
 
-    -- ตรวจสอบว่าผู้เล่นตายหรือยัง
     local character = local_player.Character
     if character and character:FindFirstChild("Humanoid") then
         if character.Humanoid.Health <= 0 then
@@ -575,21 +496,14 @@ sanityconnection = run_service.RenderStepped:Connect(function()
     end
 end)
 
-
-
-
-
 local lastUpdate = 0
-local UPDATE_DELAY = 0.15 -- ~6–7 lần/giây (đủ mượt, không lag)
-
+local UPDATE_DELAY = 0.15
 local cachedGhostHumanoid = nil
 
--- tìm ghost humanoid 1 lần
 local function getGhostHumanoid()
     if cachedGhostHumanoid and cachedGhostHumanoid.Parent then
         return cachedGhostHumanoid
     end
-
     if not ghost then return nil end
 
     for _, v in pairs(ghost:GetChildren()) do
@@ -619,10 +533,6 @@ ghostconnection = run_service.RenderStepped:Connect(function()
     end
 end)
 
-
-
-
-
 playerconnection = run_service.RenderStepped:Connect(function()
     if inf_stamina then
         local_player:SetAttribute('Stamina', 100)
@@ -632,11 +542,11 @@ playerconnection = run_service.RenderStepped:Connect(function()
         local_player:SetAttribute('Speed', sprint_speed)
     end
 
-    if noclip then
-        local_player.Character.HumanoidRootPart.CanCollide = false
-        local_player.Character.UpperTorso.CanCollide = false
-        local_player.Character.LowerTorso.CanCollide = false
-        local_player.Character.Head.CanCollide = false
+    if noclip and local_player.Character then
+        if local_player.Character:FindFirstChild("HumanoidRootPart") then local_player.Character.HumanoidRootPart.CanCollide = false end
+        if local_player.Character:FindFirstChild("UpperTorso") then local_player.Character.UpperTorso.CanCollide = false end
+        if local_player.Character:FindFirstChild("LowerTorso") then local_player.Character.LowerTorso.CanCollide = false end
+        if local_player.Character:FindFirstChild("Head") then local_player.Character.Head.CanCollide = false end
     end
 end)
 
@@ -647,7 +557,7 @@ espconnection = run_service.RenderStepped:Connect(function()
 
     if show_ghost then
         for _, silly_ghost in pairs(ghost:GetChildren()) do
-            if silly_ghost:IsA("Model") then
+            if silly_ghost:IsA("Model") and silly_ghost:FindFirstChildOfClass("MeshPart") then
                 silly_ghost:FindFirstChildOfClass("MeshPart").Transparency = 0
             end
         end
@@ -657,10 +567,10 @@ espconnection = run_service.RenderStepped:Connect(function()
                 if silly_ghost:IsA("Model") and not silly_ghost:FindFirstChild("Highlight") then
                     local Highlight = Instance.new("Highlight")
                     Highlight.Parent = silly_ghost
-                    Highlight.FillTransparency = 1        -- Làm trong suốt phần ruột
-    Highlight.OutlineTransparency = 0     -- Hiện viền đậm
-                    Highlight.FillColor = highlight_color_ghost
-                    Highlight.OutlineColor = highlight_color_ghost
+                    Highlight.FillTransparency = 1
+                    Highlight.OutlineTransparency = 0
+                    Highlight.FillColor = highlight_color_ghost or Color3.fromRGB(255, 255, 255)
+                    Highlight.OutlineColor = highlight_color_ghost or Color3.fromRGB(255, 255, 255)
                 end
             end
         end
@@ -682,9 +592,9 @@ espconnection = run_service.RenderStepped:Connect(function()
                     esp_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                     esp_text.Size = UDim2.new(1, 0, 1, 0)
                     esp_text.Text = "Ghost [" .. silly_ghost.Name .. "]"
-                    esp_text.TextColor3 = highlight_color_ghost
+                    esp_text.TextColor3 = highlight_color_ghost or Color3.fromRGB(255, 255, 255)
                     esp_text.TextSize = 14
-                    esp_text.Font = "SourceSansBold"
+                    esp_text.Font = Enum.Font.SourceSansBold
                     esp_text.BackgroundTransparency = 1
                     esp_text.TextStrokeTransparency = 0
                     esp_text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
@@ -712,9 +622,9 @@ espconnection = run_service.RenderStepped:Connect(function()
                     esp_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                     esp_text.Size = UDim2.new(1, 0, 1, 0)
                     esp_text.Text = player.DisplayName
-                    esp_text.TextColor3 = player_highlight_color
+                    esp_text.TextColor3 = player_highlight_color or Color3.fromRGB(255, 255, 255)
                     esp_text.TextSize = 14
-                    esp_text.Font = "SourceSansBold"
+                    esp_text.Font = Enum.Font.SourceSansBold
                     esp_text.BackgroundTransparency = 1
                     esp_text.TextStrokeTransparency = 0
                     esp_text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
@@ -730,10 +640,10 @@ espconnection = run_service.RenderStepped:Connect(function()
                 if humanoid.Health > 0 and not player.Character:FindFirstChild("Highlight") then
                     local Highlight = Instance.new("Highlight")
                     Highlight.Parent = player.Character
-                    Highlight.FillTransparency = 1        -- Làm trong suốt phần ruột
-    Highlight.OutlineTransparency = 0     -- Hiện viền đậm
-                    Highlight.FillColor = player_highlight_color
-                    Highlight.OutlineColor = player_highlight_color
+                    Highlight.FillTransparency = 1
+                    Highlight.OutlineTransparency = 0
+                    Highlight.FillColor = player_highlight_color or Color3.fromRGB(255, 255, 255)
+                    Highlight.OutlineColor = player_highlight_color or Color3.fromRGB(255, 255, 255)
                 end
             end
         end
@@ -756,17 +666,15 @@ espconnection = run_service.RenderStepped:Connect(function()
                 esp_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 esp_text.Size = UDim2.new(1, 0, 1, 0)
                 esp_text.Text = v.Name
-                esp_text.TextColor3 = item_highlight_color
+                esp_text.TextColor3 = item_highlight_color or Color3.fromRGB(255, 255, 255)
                 esp_text.TextSize = 14
-                esp_text.Font = "SourceSansBold"
+                esp_text.Font = Enum.Font.SourceSansBold
                 esp_text.BackgroundTransparency = 1
                 esp_text.TextStrokeTransparency = 0
                 esp_text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
             end
         end
-    end
 
-    if item_name then
         for _, v in next, dropped_equipment:GetChildren() do
             if v:IsA("Model") and not v:FindFirstChild("Esp BillBoard") then
                 local esp_billboard = Instance.new("BillboardGui")
@@ -783,9 +691,9 @@ espconnection = run_service.RenderStepped:Connect(function()
                 esp_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 esp_text.Size = UDim2.new(1, 0, 1, 0)
                 esp_text.Text = v.Name
-                esp_text.TextColor3 = item_highlight_color
+                esp_text.TextColor3 = item_highlight_color or Color3.fromRGB(255, 255, 255)
                 esp_text.TextSize = 14
-                esp_text.Font = "SourceSansBold"
+                esp_text.Font = Enum.Font.SourceSansBold
                 esp_text.BackgroundTransparency = 1
                 esp_text.TextStrokeTransparency = 0
                 esp_text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
@@ -798,30 +706,28 @@ espconnection = run_service.RenderStepped:Connect(function()
             if v:IsA("Model") and not v:FindFirstChild("Highlight") then
                 local Highlight = Instance.new("Highlight")
                 Highlight.Parent = v
-                Highlight.FillTransparency = 1        -- Làm trong suốt phần ruột
-    Highlight.OutlineTransparency = 0     -- Hiện viền đậm
-                Highlight.FillColor = item_highlight_color
-                Highlight.OutlineColor = item_highlight_color
+                Highlight.FillTransparency = 1
+                Highlight.OutlineTransparency = 0
+                Highlight.FillColor = item_highlight_color or Color3.fromRGB(255, 255, 255)
+                Highlight.OutlineColor = item_highlight_color or Color3.fromRGB(255, 255, 255)
             end
         end
-    end
 
-    if item_highlight then
         for _, v in next, van_equipment:GetChildren() do
             if v:IsA("Model") and not v:FindFirstChild("Highlight") then
                 local Highlight = Instance.new("Highlight")
                 Highlight.Parent = v
-                Highlight.FillTransparency = 1        -- Làm trong suốt phần ruột
-    Highlight.OutlineTransparency = 0     -- Hiện viền đậm
-                Highlight.FillColor = item_highlight_color
-                Highlight.OutlineColor = item_highlight_color
+                Highlight.FillTransparency = 1
+                Highlight.OutlineTransparency = 0
+                Highlight.FillColor = item_highlight_color or Color3.fromRGB(255, 255, 255)
+                Highlight.OutlineColor = item_highlight_color or Color3.fromRGB(255, 255, 255)
             end
         end
     end
     
     if cursed_object_name then
-for _, v in next, getAllCursedItems() do 
-        if (v:IsA("MeshPart") or v:IsA("Model") or v:IsA("Part")) and not (v.Name == "Chair" or v.Name == "Body" or v.Name == "Eye1" or v.Name == "Eye2") and not v:FindFirstChild("Esp BillBoard") then
+        for _, v in next, getAllCursedItems() do 
+            if (v:IsA("MeshPart") or v:IsA("Model") or v:IsA("Part")) and not (v.Name == "Chair" or v.Name == "Body" or v.Name == "Eye1" or v.Name == "Eye2") and not v:FindFirstChild("Esp BillBoard") then
                 local esp_billboard = Instance.new("BillboardGui")
                 esp_billboard.Parent = v
                 esp_billboard.Name = "Esp BillBoard"
@@ -836,9 +742,9 @@ for _, v in next, getAllCursedItems() do
                 esp_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 esp_text.Size = UDim2.new(1, 0, 1, 0)
                 esp_text.Text = v.Name
-                esp_text.TextColor3 = cursed_object_highlight_color
+                esp_text.TextColor3 = cursed_object_highlight_color or Color3.fromRGB(255, 255, 255)
                 esp_text.TextSize = 14
-                esp_text.Font = "SourceSansBold"
+                esp_text.Font = Enum.Font.SourceSansBold
                 esp_text.BackgroundTransparency = 1
                 esp_text.TextStrokeTransparency = 0
                 esp_text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
@@ -848,13 +754,13 @@ for _, v in next, getAllCursedItems() do
 
     if cursed_object_highlight then
         for _, v in next, getAllCursedItems() do
-        if (v:IsA("MeshPart") or v:IsA("Model") or v:IsA("Part")) and not (v.Name == "Chair" or v.Name == "Body") and not v:FindFirstChild("Highlight") then
+            if (v:IsA("MeshPart") or v:IsA("Model") or v:IsA("Part")) and not (v.Name == "Chair" or v.Name == "Body") and not v:FindFirstChild("Highlight") then
                 local Highlight = Instance.new("Highlight")
                 Highlight.Parent = v
-                Highlight.FillTransparency = 1        -- Làm trong suốt phần ruột
-    Highlight.OutlineTransparency = 0     -- Hiện viền đậm
-                Highlight.FillColor = cursed_object_highlight_color
-                Highlight.OutlineColor = cursed_object_highlight_color
+                Highlight.FillTransparency = 1
+                Highlight.OutlineTransparency = 0
+                Highlight.FillColor = cursed_object_highlight_color or Color3.fromRGB(255, 255, 255)
+                Highlight.OutlineColor = cursed_object_highlight_color or Color3.fromRGB(255, 255, 255)
             end
         end
     end
@@ -878,7 +784,7 @@ for _, v in next, getAllCursedItems() do
                 esp_text.Text = v.Name
                 esp_text.TextColor3 = Color3.fromRGB(255, 255, 255)
                 esp_text.TextSize = 14
-                esp_text.Font = "SourceSansBold"
+                esp_text.Font = Enum.Font.SourceSansBold
                 esp_text.BackgroundTransparency = 1
                 esp_text.TextStrokeTransparency = 0
                 esp_text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
@@ -905,7 +811,7 @@ for _, v in next, getAllCursedItems() do
                 esp_text.Text = v.Name
                 esp_text.TextColor3 = Color3.fromRGB(255, 255, 255)
                 esp_text.TextSize = 14
-                esp_text.Font = "SourceSansBold"
+                esp_text.Font = Enum.Font.SourceSansBold
                 esp_text.BackgroundTransparency = 1
                 esp_text.TextStrokeTransparency = 0
                 esp_text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
@@ -930,9 +836,9 @@ for _, v in next, getAllCursedItems() do
                 esp_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 esp_text.Size = UDim2.new(1, 0, 1, 0)
                 esp_text.Text = "Hiding Spot"
-                esp_text.TextColor3 = closet_highlight_color
+                esp_text.TextColor3 = closet_highlight_color or Color3.fromRGB(255, 255, 255)
                 esp_text.TextSize = 14
-                esp_text.Font = "SourceSansBold"
+                esp_text.Font = Enum.Font.SourceSansBold
                 esp_text.BackgroundTransparency = 1
                 esp_text.TextStrokeTransparency = 0
                 esp_text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
@@ -945,10 +851,10 @@ for _, v in next, getAllCursedItems() do
             if v:IsA("Model") and not v:FindFirstChild("Highlight") then
                 local highlight = Instance.new("Highlight")
                 highlight.Parent = v
-                highlight.FillTransparency = 1        -- Làm trong suốt phần ruột
-    highlight.OutlineTransparency = 0     -- Hiện viền đậm
-                highlight.FillColor = closet_highlight_color
-                highlight.OutlineColor = closet_highlight_color
+                highlight.FillTransparency = 1
+                highlight.OutlineTransparency = 0
+                highlight.FillColor = closet_highlight_color or Color3.fromRGB(255, 255, 255)
+                highlight.OutlineColor = closet_highlight_color or Color3.fromRGB(255, 255, 255)
             end
         end
     end
@@ -961,7 +867,7 @@ proximity_prompt_service.PromptButtonHoldBegan:Connect(function(prompt)
 end)
 
 user_input_service.JumpRequest:Connect(function()
-    if inf_jump then
+    if inf_jump and local_player.Character and local_player.Character:FindFirstChild("Humanoid") then
         local_player.Character.Humanoid:ChangeState("Jumping")
     end
 end)
@@ -970,11 +876,10 @@ game_group:AddDivider()
 
 game_group:AddButton({
     Text = 'Collect Bone',
-
     Func = function()
         if bone then
-            bone_prompt = bone:FindFirstChildOfClass("ProximityPrompt")
-            last_pos = local_player.Character.HumanoidRootPart.CFrame
+            local bone_prompt = bone:FindFirstChildOfClass("ProximityPrompt")
+            local last_pos = local_player.Character.HumanoidRootPart.CFrame
 
             if bone_prompt then
                 local_player.Character.HumanoidRootPart.CFrame = bone.CFrame + Vector3.new(0, 5, 0)
@@ -982,10 +887,10 @@ game_group:AddButton({
                 fireproximityprompt(bone_prompt)
                 task.wait(.25)
                 local_player.Character.HumanoidRootPart.CFrame = last_pos
-                library:Notify("Collected Bone")
+                Library:Notify("Collected Bone")
             end
         else
-            library:Notify("Bone not found")
+            Library:Notify("Bone not found")
         end
     end,
     DoubleClick = false,
@@ -994,13 +899,11 @@ game_group:AddButton({
 
 game_group:AddButton({
     Text = 'Report Dirty Water',
-
     Func = function()
         local active_water = nil
         local active_prompt = nil
         local active_beam = nil
         
-        -- 1. QUÉT TÌM CÁI NƯỚC ĐANG "ACTIVE" NHẤT
         local all_waters = {}
         for _, v in pairs(workspace:GetDescendants()) do
             if v.Name == "Water" and v:IsA("BasePart") then
@@ -1011,7 +914,6 @@ game_group:AddButton({
             end
         end
 
-        -- Ưu tiên chọn cái vòi nào đang xả (Beam == true)
         for _, obj in pairs(all_waters) do
             local f = obj.part:FindFirstChild("Faucet", true) or obj.part.Parent:FindFirstChild("Faucet", true)
             local b = f and f:FindFirstChildWhichIsA("Beam", true)
@@ -1020,42 +922,36 @@ game_group:AddButton({
                 active_water = obj.part
                 active_prompt = obj.prompt
                 active_beam = b
-                break -- Đã tìm thấy vòi đang hoạt động
+                break
             end
         end
 
-        -- 2. XỬ LÝ NẾU TÌM THẤY
         if active_water and active_prompt then
-            library:Notify("Found active dirty water! Checking status...")
+            Library:Notify("Found active dirty water! Checking status...")
 
-            -- Nếu Beam đang bật, bắt buộc đợi cho đến khi nó tắt hoặc tối đa 10s
             if active_beam and active_beam.Enabled == true then
-                library:Notify("Water is pumping... Waiting for it to finish.")
+                Library:Notify("Water is pumping... Waiting for it to finish.")
                 local wait_limit = 0
                 while active_beam.Enabled == true and wait_limit < 20 do
                     task.wait(0.5)
                     wait_limit = wait_limit + 1
                 end
-                task.wait(1) -- Đợi thêm 1s cho nước ổn định sau khi tắt vòi
+                task.wait(1)
             end
 
-            -- 3. VÒNG LẶP ĐỢI PROMPT HOẶC DỪNG DI CHUYỂN
             local is_ready = false
             local last_pos = active_water.Position
             
-            for i = 1, 30 do -- Đợi tối đa 15 giây
+            for i = 1, 30 do
                 task.wait(0.5)
                 
-                -- Nếu Prompt bật (Dấu hiệu quan trọng nhất)
                 if active_prompt.Enabled == true then
                     is_ready = true
                     break
                 end
                 
-                -- Check nếu nước đã dừng trồi lên/đổi size
                 local current_pos = active_water.Position
                 if (current_pos - last_pos).Magnitude < 0.001 and i > 4 then
-                    -- Nếu đứng yên và không còn Beam nữa
                     if not active_beam or active_beam.Enabled == false then
                         is_ready = true
                         break
@@ -1064,35 +960,33 @@ game_group:AddButton({
                 last_pos = current_pos
             end
 
-            -- 4. THỰC HIỆN TELEPORT
             if is_ready or active_prompt.Enabled then
                 local last_cframe = local_player.Character.HumanoidRootPart.CFrame
                 
-                -- Nhảy tới
                 local_player.Character.HumanoidRootPart.CFrame = active_water.CFrame + Vector3.new(0, 3, 0)
-                task.wait(0.6) -- Đợi lâu hơn chút để tránh lỗi vị trí
+                task.wait(0.6)
                 
                 if active_prompt.Enabled then
                     fireproximityprompt(active_prompt)
-                    library:Notify("Reported Dirty Water successfully!")
+                    Library:Notify("Reported Dirty Water successfully!")
                 else
-                    library:Notify("Dirty water is being pumped out, and a report cannot be made yet.")
+                    Library:Notify("Dirty water is being pumped out, and a report cannot be made yet.")
                 end
                 
                 task.wait(0.3)
                 local_player.Character.HumanoidRootPart.CFrame = last_cframe
             else
-                library:Notify("Dirty water is stuck or has not yet appeared.")
+                Library:Notify("Dirty water is stuck or has not yet appeared.")
             end
         else
-            library:Notify("Dirty Water not found")
+            Library:Notify("Dirty Water not found")
         end
     end,
     DoubleClick = false,
     Tooltip = 'Tp to the location with dirty water and report it.'
 })
 
-local auto_report_water = false -- Biến kiểm soát trạng thái toggle
+local auto_report_water = false
 
 game_group:AddToggle('AutoReportWater', {
     Text = 'Auto Report Dirty Water',
@@ -1105,22 +999,19 @@ game_group:AddToggle('AutoReportWater', {
         if auto_report_water then
             task.spawn(function()
                 while auto_report_water do
-                    task.wait(60) -- Quét mỗi 1p một lần để tránh lag
+                    task.wait(60)
                     
                     local active_water = nil
                     local active_prompt = nil
                     local active_beam = nil
                     
-                    -- 1. TÌM NƯỚC BẨN ĐANG HOẠT ĐỘNG
                     for _, v in pairs(workspace:GetDescendants()) do
                         if v.Name == "Water" and v:IsA("BasePart") then
                             local p = v:FindFirstChildOfClass("ProximityPrompt")
                             if p and (p.ObjectText == "Report dirty water" or p.ActionText == "Report dirty water") then
-                                -- Kiểm tra nếu vòi đang xả nước (Beam)
                                 local f = v:FindFirstChild("Faucet", true) or v.Parent:FindFirstChild("Faucet", true)
                                 local b = f and f:FindFirstChildWhichIsA("Beam", true)
                                 
-                                -- Nếu Prompt đã bật HOẶC Beam đang chạy thì đây là mục tiêu
                                 if p.Enabled or (b and b.Enabled) then
                                     active_water = v
                                     active_prompt = p
@@ -1131,36 +1022,28 @@ game_group:AddToggle('AutoReportWater', {
                         end
                     end
 
-                    -- 2. LOGIC XỬ LÝ TỰ ĐỘNG
                     if active_water and active_prompt then
-                        -- Nếu Beam đang bật, đợi cho đến khi tắt (tối đa 15s)
                         local timeout = 0
                         while active_beam and active_beam.Enabled and timeout < 30 do
                             task.wait(0.5)
                             timeout = timeout + 1
                         end
 
-                        -- Đợi thêm 1s cho nước ổn định vị trí/kích thước
                         task.wait(1)
 
-                        -- Kiểm tra lại Prompt trước khi bay tới
                         if active_prompt.Enabled and auto_report_water then
                             local last_cframe = local_player.Character.HumanoidRootPart.CFrame
                             
-                            -- Teleport & Fire
                             local_player.Character.HumanoidRootPart.CFrame = active_water.CFrame + Vector3.new(0, 3, 0)
                             task.wait(0.5)
                             
                             if active_prompt.Enabled then
                                 fireproximityprompt(active_prompt)
-                                library:Notify("Auto Reported Dirty Water!")
-                                -- Đợi một chút để game cập nhật, tránh loop teleport liên tục vào 1 chỗ
+                                Library:Notify("Auto Reported Dirty Water!")
                                 task.wait(0.5)
                             end
                             
                             local_player.Character.HumanoidRootPart.CFrame = last_cframe
-                            
-                            -- Sau khi report xong 1 cái, nghỉ 5s để tránh lỗi hoặc đợi ma làm bẩn bồn khác
                             task.wait(5)
                         end
                     end
@@ -1170,30 +1053,24 @@ game_group:AddToggle('AutoReportWater', {
     end
 })
 
-
-
-
-
-
 game_group:AddButton({
     Text = 'Enable Power',
-
     Func = function()
         for _, v in next, fuse_box:GetChildren() do
-            if v:IsA("ProximityPrompt") and v.name == "FuseboxPrompt" then
+            if v:IsA("ProximityPrompt") and v.Name == "FuseboxPrompt" then
                 local last_pos = local_player.Character.HumanoidRootPart.CFrame
                 local_player.Character.HumanoidRootPart.CFrame = v.Parent.CFrame
                 task.wait(.2)
                 fireproximityprompt(v)
                 task.wait(.2)
                 local_player.Character.HumanoidRootPart.CFrame = last_pos
-                local fuse_box_toggles = Workspace.Map.Fusebox
+                local fuse_box_toggles = workspace.Map.Fusebox
                 if fuse_box_toggles then
-                    if fuse_box_toggles:FindFirstChild("On").Transparency == 0 then
-                        library:Notify("Turned off power box.")
+                    if fuse_box_toggles:FindFirstChild("On") and fuse_box_toggles:FindFirstChild("On").Transparency == 0 then
+                        Library:Notify("Turned off power box.")
                     else
-                        if fuse_box_toggles:FindFirstChild("Off").Transparency == 0 then
-                            library:Notify("Turned on power box.")
+                        if fuse_box_toggles:FindFirstChild("Off") and fuse_box_toggles:FindFirstChild("Off").Transparency == 0 then
+                            Library:Notify("Turned on power box.")
                         end
                     end
                 end
@@ -1209,16 +1086,13 @@ game_group:AddDivider()
 local auto_scan_enabled = true
 local ghost_room_found = false
 local emf_active_timers = {}
-local emf_locking_room = {} -- Lưu trữ phòng đang được EMF lock
+local emf_locking_room = {}
 
-
--- Hàm kiểm tra màu đỏ đặc trưng của ma (170, 0, 0)
 local function isGhostColor(color)
     local target = Color3.fromRGB(170, 0, 0)
     return math.abs(color.R - target.R) + math.abs(color.G - target.G) + math.abs(color.B - target.B) < 0.02
 end
 
--- 1. LOGIC QUÉT KHUNG CHAT (Giữ nguyên)
 game:GetService("TextChatService").OnIncomingMessage = function(message)
     if not auto_scan_enabled or got_spirit_box then return end
     if message.Status == Enum.TextChatMessageStatus.Success then
@@ -1226,13 +1100,12 @@ game:GetService("TextChatService").OnIncomingMessage = function(message)
         if rawText:find("170") or rawText:find("rgb") or rawText:find("#aa0000") then
             got_spirit_box = true
             spirit_box_label:SetText("Spirit Box: Yes")
-            library:Notify("Evidence Found: Spirit Box (Chat)")
+            Library:Notify("Evidence Found: Spirit Box (Chat)")
             updateGhostType()
         end
     end
 end
 
--- 2. HÀM QUÉT BILLBOARD SPIRIT BOX
 local function checkSpiritBoxBillboard(desc)
     if desc:IsA("BillboardGui") and desc.Enabled then
         local textLabel = desc:FindFirstChildWhichIsA("TextLabel", true)
@@ -1241,7 +1114,7 @@ local function checkSpiritBoxBillboard(desc)
                 if not got_spirit_box then
                     got_spirit_box = true
                     spirit_box_label:SetText("Spirit Box: Yes")
-                    library:Notify("Evidence Found: Spirit Box (Billboard)")
+                    Library:Notify("Evidence Found: Spirit Box (Billboard)")
                     updateGhostType()
                 end
             end
@@ -1249,25 +1122,19 @@ local function checkSpiritBoxBillboard(desc)
     end
 end
 
--- 3. VÒNG LẶP QUÉT TỔNG HỢP
 task.spawn(function()
     while true do
         task.wait(0.5) 
         if not auto_scan_enabled then continue end
 
-        -- Gom tất cả item từ Workspace và Character vào một bảng để quét
         local items_to_scan = {}
-        
-        -- Quét dưới đất
         local ground_eq = workspace:FindFirstChild("Equipment")
         if ground_eq then
             for _, v in pairs(ground_eq:GetChildren()) do table.insert(items_to_scan, v) end
         end
         
-        -- Quét trên tay (Trong nhân vật)
         if local_player.Character then
             for _, v in pairs(local_player.Character:GetChildren()) do
-                -- Nếu là Model thiết bị trực tiếp hoặc nằm trong folder EquipmentModel
                 if v:IsA("Model") then
                     table.insert(items_to_scan, v)
                 elseif v.Name == "EquipmentModel" then
@@ -1277,7 +1144,6 @@ task.spawn(function()
         end
 
         for _, item in pairs(items_to_scan) do
-            -- A. LOGIC SPIRIT BOX (Cập nhật check đệ quy cho đồ trên tay)
             if item.Name == "Spirit Box" then
                 for _, desc in pairs(item:GetDescendants()) do
                     checkSpiritBoxBillboard(desc)
@@ -1292,7 +1158,6 @@ task.spawn(function()
                 end
             end
 
-            -- B. LOGIC EMF 2 & 5 (ĐÃ FIX LOCK HITBOX)
             if item.Name == "EMF Reader" then
                 local activeColor = Color3.fromRGB(131, 156, 49)
                 local emf_2 = item:FindFirstChild("2", true)
@@ -1300,75 +1165,61 @@ task.spawn(function()
                 
                 if emf_2 and emf_2:IsA("BasePart") then
                     if emf_2.Color == activeColor then
-                        -- Lấy Handle/Vị trí máy EMF
                         local handle = item:FindFirstChild("Handle", true) or item.PrimaryPart
                         
                         if handle then
-                            -- Nếu chưa lock phòng nào, tiến hành tìm phòng gần nhất để lock
                             if not emf_locking_room[item] then
                                 for _, room in pairs(rooms:GetChildren()) do
                                     local hitbox = room:FindFirstChild("Hitbox")
                                     if hitbox and (handle.Position - hitbox.Position).Magnitude < 12 then
-                                        emf_locking_room[item] = room -- Khóa mục tiêu vào phòng này
+                                        emf_locking_room[item] = room
                                         break
                                     end
                                 end
                             end
 
-                            -- Nếu đã lock được phòng, kiểm tra điều kiện duy trì
                             local lockedRoom = emf_locking_room[item]
                             if lockedRoom then
                                 local hb = lockedRoom:FindFirstChild("Hitbox")
-                                -- KIỂM TRA: Nếu đi quá xa khỏi Hitbox đã lock (vượt quá 12m) -> Reset
                                 if hb and (handle.Position - hb.Position).Magnitude < 100 then
                                     emf_active_timers[item] = (emf_active_timers[item] or 0) + 0.5
                                     
-                                    -- Nếu đủ 2.5s liên tục trong phòng đã lock
                                     if emf_active_timers[item] >= 2.5 and not ghost_room_found then
                                         ghost_room = hb.CFrame
                                         ghost_room_label2:SetText("Ghost Room: " .. lockedRoom.Name)
-                                        library:Notify("Ghost Room Identified: " .. lockedRoom.Name)
+                                        Library:Notify("Ghost Room Identified: " .. lockedRoom.Name)
                                         ghost_room_found = true
                                     end
                                 else
-                                    -- Rời khỏi phòng đã lock -> Reset ngay
                                     emf_active_timers[item] = 0
                                     emf_locking_room[item] = nil
                                 end
                             end
                         end
                     else
-                        -- EMF 2 Tắt -> Reset lock và timer ngay lập tức
                         emf_active_timers[item] = 0
                         emf_locking_room[item] = nil
                     end
                 end
 
-                -- EMF 5 (Giữ nguyên)
                 if emf_5 and emf_5:IsA("BasePart") and emf_5.Color == activeColor and not found_emf then
                     found_emf = true
                     emf_label:SetText("EMF 5: Yes")
-                    library:Notify("Evidence: EMF Level 5!")
+                    Library:Notify("Evidence: EMF Level 5!")
                     updateGhostType()
                 end
             end
 
-            
-
-            -- C. LOGIC THERMOMETER (Sửa lỗi không quét được trên tay)
             if item.Name == "Thermometer" or item:FindFirstChild("Temp") then
-                -- Tìm TextLabel sâu bên trong Model (cầm trên tay cấu trúc hay bị lồng Handle)
                 local tempLabel = item:FindFirstChildWhichIsA("TextLabel", true)
-                
-                if tempLabel and tempLabel.IsA(tempLabel, "TextLabel") then
+                if tempLabel then
                     local text = tempLabel.Text
-                    -- Lọc lấy số (chấp nhận cả số âm và số thập phân)
                     local tempNum = tonumber(text:match("[-%d.]+"))
                     
                     if tempNum and tempNum < 0 and not got_freezing then
                         got_freezing = true
                         freezing_label:SetText("Freezing: Yes")
-                        library:Notify("Evidence: Freezing (" .. tempNum .. "°C)")
+                        Library:Notify("Evidence: Freezing (" .. tempNum .. "°C)")
                         updateGhostType()
                     end
                 end
@@ -1377,18 +1228,15 @@ task.spawn(function()
     end
 end)
 
-
-
 game_group:AddButton({
     Text = 'Find Ghost Room',
-
     Func = function()
         local emf_tool = local_player.Character and local_player.Character:FindFirstChild("EquipmentModel") and local_player.Character.EquipmentModel:FindFirstChild("2")
         local emf = local_player.Character and local_player.Character:FindFirstChild("EquipmentModel") and local_player.Character.EquipmentModel:FindFirstChild("1")
         local last_pos = local_player.Character.HumanoidRootPart.CFrame
 
         if not emf_tool then
-            library:Notify("Equip EMF reader first!")
+            Library:Notify("Equip EMF reader first!")
             return
         end
 
@@ -1397,7 +1245,7 @@ game_group:AddButton({
         end
 
         if not ghost:FindFirstChildOfClass("Model") then
-            library:Notify("Open the van first!")
+            Library:Notify("Open the van first!")
             return
         end
 
@@ -1413,7 +1261,7 @@ game_group:AddButton({
                     if emf_tool.Color == Color3.fromRGB(131, 156, 49) then
                         ghost_room = hitbox.CFrame
                         ghost_room_label2:SetText("Ghost Room: " .. room.Name)
-                        library:Notify("Ghost Room: " .. room.Name .. " (It Not Might Be Always The Ghost Room!)")
+                        Library:Notify("Ghost Room: " .. room.Name .. " (It Not Might Be Always The Ghost Room!)")
                         local_player.Character.HumanoidRootPart.CFrame = last_pos
                         break
                     end
@@ -1423,7 +1271,7 @@ game_group:AddButton({
 
         if not ghost_room then
             task.wait(0.75)
-            library:Notify("Ghost room not found retrying...")
+            Library:Notify("Ghost room not found retrying...")
             for _, room in pairs(rooms:GetChildren()) do
                 if room:IsA("Folder") then
                     local hitbox = room:FindFirstChild("Hitbox")
@@ -1436,7 +1284,7 @@ game_group:AddButton({
                         if emf_tool.Color == Color3.fromRGB(131, 156, 49) then
                             ghost_room = hitbox.CFrame
                             ghost_room_label2:SetText("Ghost Room: " .. room.Name)
-                            library:Notify("Ghost Room: " .. room.Name .. " (It Not Might Be Always The Ghost Room!)")
+                            Library:Notify("Ghost Room: " .. room.Name .. " (It Not Might Be Always The Ghost Room!)")
                             local_player.Character.HumanoidRootPart.CFrame = last_pos
                             break
                         end
@@ -1445,7 +1293,7 @@ game_group:AddButton({
             end
 
             if not ghost_room then
-                library:Notify("Ghost room not found")
+                Library:Notify("Ghost room not found")
                 local_player.Character.HumanoidRootPart.CFrame = last_pos
             end
         end
@@ -1454,24 +1302,22 @@ game_group:AddButton({
     Tooltip = 'Searches for the ghost room with the EMF reader'
 })
 
-
-
-
 game_group:AddButton({
     Text = 'Tp Motion Sensor To Ghost',
-
     Func = function()
         local motion_grid = evidence_folder.MotionGrids:FindFirstChild("SensorGrid")
 
         if motion_grid then
-            library:Notify("Teleporting Motion Grids to the ghost...")
+            Library:Notify("Teleporting Motion Grids to the ghost...")
             local last_pos = {}
 
             for _, motion_grids in pairs(motion_grid:GetChildren()) do
                 if motion_grids:IsA("Part") then
                     last_pos[motion_grids] = motion_grids.CFrame
-                    local ghost = workspace.NPCs:FindFirstChildOfClass("Model")
-                    motion_grids.CFrame = ghost.HumanoidRootPart.CFrame + Vector3.new(1, 0, 0)
+                    local silly_ghost = workspace.NPCs:FindFirstChildOfClass("Model")
+                    if silly_ghost and silly_ghost:FindFirstChild("HumanoidRootPart") then
+                        motion_grids.CFrame = silly_ghost.HumanoidRootPart.CFrame + Vector3.new(1, 0, 0)
+                    end
                 end
             end
         
@@ -1480,10 +1326,8 @@ game_group:AddButton({
             for v, pos in pairs(last_pos) do
                 v.CFrame = pos
             end
-        end
-
-        if not motion_grid then
-            library:Notify("Motion Grids not found place one before using this feature!")
+        else
+            Library:Notify("Motion Grids not found place one before using this feature!")
         end
     end,
     DoubleClick = false,
@@ -1494,7 +1338,6 @@ game_group:AddDivider()
 
 game_group:AddButton({
     Text = 'Tp To Van',
-
     Func = function()
         local_player.Character.HumanoidRootPart.CFrame = van.PrimaryPart.CFrame + Vector3.new(0, 5, 0)
     end,
@@ -1504,7 +1347,6 @@ game_group:AddButton({
 
 game_group:AddButton({
     Text = 'Tp To Ghost Room',
-
     Func = function()
         if ghost_room then
             local_player.Character.HumanoidRootPart.CFrame = ghost_room
@@ -1517,38 +1359,24 @@ game_group:AddButton({
 })
 
 game_group:AddButton({
-    Text = 'Teleport to Ghost Spawm',
+    Text = 'Teleport to Ghost Spawn',
     Func = function()
         if ghost_room_pos then
             local character = local_player.Character
             if character and character:FindFirstChild("HumanoidRootPart") then
-                -- Teleport đến vị trí đã lưu từ con ma + cao lên 3 unit
                 character.HumanoidRootPart.CFrame = ghost_room_pos + Vector3.new(0, 3, 0)
-                library:Notify("Teleported to Ghost Spawn!")
+                Library:Notify("Teleported to Ghost Spawn!")
             end
         else
-            library:Notify("Ghost Spawn not found yet! Wait for ghost to spawn.")
+            Library:Notify("Ghost Spawn not found yet! Wait for ghost to spawn.")
         end
     end,
     DoubleClick = false,
     Tooltip = 'Teleports you to the identified ghost spawn'
 })
 
-
-
-
-
-
-
-
-
-
-
-
-
 objquest_group:AddDivider()
 
--- Hàm hỗ trợ ngắt dòng sau mỗi 18 ký tự
 local function wrapText(str, limit)
     limit = limit or 32
     if #str <= limit then return str end
@@ -1560,7 +1388,6 @@ local function wrapText(str, limit)
     return table.concat(lines, "\n")
 end
 
--- Khai báo các Label trong Group
 local obj_label_11 = objquest_group:AddLabel('')
 local obj_label_1 = objquest_group:AddLabel('Objective 1: Waiting...')
 local obj_label_12 = objquest_group:AddLabel('')
@@ -1589,7 +1416,6 @@ task.spawn(function()
                 if objectivePart and objectivePart:IsA("TextLabel") then
                     local currentLabel = (i == 1 and obj_label_1) or (i == 2 and obj_label_2) or obj_label_3
                     
-                    -- Màu hoàn thành: 85, 170, 127
                     local completedColor = Color3.fromRGB(85, 170, 127)
                     local currentColor = objectivePart.TextColor3
                     local diff = math.abs(currentColor.R - completedColor.R) + math.abs(currentColor.G - completedColor.G) + math.abs(currentColor.B - completedColor.B)
@@ -1597,7 +1423,6 @@ task.spawn(function()
                     if diff < 0.02 then
                         currentLabel:SetText("Objective " .. i .. ":\n  > > Completed < <")
                     else
-                        -- Áp dụng Wrap Text cho nội dung nhiệm vụ dài
                         local formattedText = wrapText(objectivePart.Text, 32)
                         currentLabel:SetText("Objective " .. i .. ":\n" .. formattedText)
                     end
@@ -1611,31 +1436,19 @@ task.spawn(function()
     end
 end)
 
-
-
-
-
-
-
-
-
 player_group:AddDivider()
 
 player_group:AddToggle('no_hold', {
     Text = 'No Hold',
     Default = false,
     Tooltip = 'Removes hold time from proximityprompts',
-
-    Callback = function(Value)
-        no_hold = Value
-    end
+    Callback = function(Value) no_hold = Value end
 })
 
 player_group:AddToggle('third_person', {
     Text = '3rd Person (Form)',
     Default = false,
     Tooltip = 'Change camera to 3rd person',
-
     Callback = function(Value)
         third_person = Value
         if Value then
@@ -1650,13 +1463,8 @@ player_group:AddToggle('third_person', {
     Mode = 'Toggle',
     Text = '3rd Person',
     NoUI = false,
-    Callback = function()
-    end,
+    Callback = function() end,
 })
-
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local camera = workspace.CurrentCamera
 
 local isFirstPerson = false
 
@@ -1664,17 +1472,13 @@ player_group:AddToggle('fp_tp', {
     Text = 'First / Third Person',
     Default = false,
     Tooltip = 'Switch real camera mode',
-
     Callback = function(Value)
         isFirstPerson = Value
-
         if isFirstPerson then
-            -- FIRST PERSON (KHÓA LUÔN)
-            player.CameraMode = Enum.CameraMode.LockFirstPerson
+            local_player.CameraMode = Enum.CameraMode.LockFirstPerson
             camera.CameraType = Enum.CameraType.Custom
         else
-            -- THIRD PERSON (MỞ TỰ DO)
-            player.CameraMode = Enum.CameraMode.Classic
+            local_player.CameraMode = Enum.CameraMode.Classic
             camera.CameraType = Enum.CameraType.Custom
         end
     end
@@ -1684,7 +1488,6 @@ player_group:AddToggle('allow_jumping', {
     Text = 'Enable Jumping',
     Default = false,
     Tooltip = 'Lets you jump',
-
     Callback = function(Value)
         jump_enabled = Value
         if Value then
@@ -1701,24 +1504,20 @@ player_group:AddToggle('inf_jump', {
     Text = 'Infinite Jump',
     Default = false,
     Tooltip = 'Lets you jump forever',
-
-    Callback = function(Value)
-        inf_jump = Value
-    end
+    Callback = function(Value) inf_jump = Value end
 })
 
 player_group:AddToggle('no_clip', {
     Text = 'No Clip',
     Default = false,
     Tooltip = 'Lets you clip through walls',
-
     Callback = function(Value)
         noclip = Value
-        if not Value then
-            local_player.Character.HumanoidRootPart.CanCollide = true
-            local_player.Character.UpperTorso.CanCollide = true
-            local_player.Character.LowerTorso.CanCollide = true
-            local_player.Character.Head.CanCollide = true
+        if not Value and local_player.Character then
+            if local_player.Character:FindFirstChild("HumanoidRootPart") then local_player.Character.HumanoidRootPart.CanCollide = true end
+            if local_player.Character:FindFirstChild("UpperTorso") then local_player.Character.UpperTorso.CanCollide = true end
+            if local_player.Character:FindFirstChild("LowerTorso") then local_player.Character.LowerTorso.CanCollide = true end
+            if local_player.Character:FindFirstChild("Head") then local_player.Character.Head.CanCollide = true end
         end
     end
 })
@@ -1729,10 +1528,7 @@ player_group:AddToggle('inf_stamina', {
     Text = 'Infinite Stamina',
     Default = false,
     Tooltip = 'Gives you inf stamina',
-
-    Callback = function(Value)
-        inf_stamina = Value
-    end
+    Callback = function(Value) inf_stamina = Value end
 })
 
 player_group:AddDivider()
@@ -1740,8 +1536,7 @@ player_group:AddDivider()
 if map:GetAttribute("MapName") == "Cargo" then
     player_group:AddLabel("Unlocks Plunge Badge With Skin On Click (Run This Before Round Start Or You Will Die.)", true)
     player_group:AddButton({
-        Text = 'Unlock Easeter Egg',
-    
+        Text = 'Unlock Easter Egg',
         Func = function()
             local easter_egg = map:FindFirstChild("EE"):FindFirstChild("Jump"):FindFirstChildOfClass("ProximityPrompt")
             if easter_egg then
@@ -1750,9 +1545,9 @@ if map:GetAttribute("MapName") == "Cargo" then
                 task.wait(0.1)
                 local_player.Character.HumanoidRootPart.CFrame = last_pos
                 fireproximityprompt(easter_egg)
-                library:Notify("Unlocked Plunge Easeter Egg")
+                Library:Notify("Unlocked Plunge Easter Egg")
             else
-                library:Notify("Plunge Easter Egg Not Found?? (Report On Discord)")
+                Library:Notify("Plunge Easter Egg Not Found?? (Report On Discord)")
             end
         end,
         DoubleClick = false,
@@ -1761,8 +1556,7 @@ if map:GetAttribute("MapName") == "Cargo" then
 elseif map:GetAttribute("MapName") == "Luxury Home" then
     player_group:AddLabel("Unlocks The Laptop Badge With Skin On Click", true)
     player_group:AddButton({
-        Text = 'Unlock Easeter Egg',
-    
+        Text = 'Unlock Easter Egg',
         Func = function()
             local laptop = map:FindFirstChild("EE"):FindFirstChild("Laptop"):FindFirstChild("Screen"):FindFirstChildOfClass("ProximityPrompt")
             if laptop then
@@ -1771,9 +1565,9 @@ elseif map:GetAttribute("MapName") == "Luxury Home" then
                 task.wait(0.1)
                 fireproximityprompt(laptop)
                 local_player.Character.HumanoidRootPart.CFrame = last_pos
-                library:Notify("Unlocked Laptop Easeter Egg")
+                Library:Notify("Unlocked Laptop Easter Egg")
             else
-                library:Notify("Laptop not found?? (Report On Discord)")
+                Library:Notify("Laptop not found?? (Report On Discord)")
             end
         end,
         DoubleClick = false,
@@ -1789,12 +1583,11 @@ ghost_esp_group:AddToggle('always_show', {
     Text = 'Always Show Ghost',
     Default = false,
     Tooltip = 'Shows the ghost at all times',
-
     Callback = function(Value)
         show_ghost = Value
         if not Value then
             for _, v in next, ghost:GetChildren() do
-                if v:IsA("Model") then
+                if v:IsA("Model") and v:FindFirstChildOfClass("MeshPart") then
                     v:FindFirstChildOfClass("MeshPart").Transparency = 1
                 end
             end
@@ -1806,7 +1599,6 @@ ghost_esp_group:AddToggle('ghost_name', {
     Text = 'Ghost Name Esp',
     Default = false,
     Tooltip = 'Shows the ghost name',
-
     Callback = function(Value)
         ghost_name = Value
         if not Value then
@@ -1823,7 +1615,6 @@ ghost_esp_group:AddToggle('highlight_ghost', {
     Text = 'Highlight Ghost',
     Default = false,
     Tooltip = 'Highlights the ghost',
-
     Callback = function(Value)
         highlight_ghost = Value
         if not Value then
@@ -1837,7 +1628,6 @@ ghost_esp_group:AddToggle('highlight_ghost', {
 }):AddColorPicker('highlight_color_ghost', {
     Default = Color3.fromRGB(255, 255, 255),
     Title = 'Highlight Color',
-
     Callback = function(Value)
         highlight_color_ghost = Value
         for _, v in next, ghost:GetChildren() do
@@ -1853,16 +1643,13 @@ player_esp_group:AddToggle('player_name', {
     Text = 'Player Name Esp',
     Default = false,
     Tooltip = 'Shows the player name',
-
     Callback = function(Value)
         player_name = Value
         if not Value then
             for _, v in next, players:GetPlayers() do
                 if v.Character and v.Character:FindFirstChild("Head") then
                     local esp_billboard = v.Character.Head:FindFirstChild("Esp BillBoard")
-                    if esp_billboard then
-                        espbillboard:Destroy()
-                    end
+                    if esp_billboard then esp_billboard:Destroy() end
                 end
             end
         end
@@ -1873,16 +1660,13 @@ player_esp_group:AddToggle('highlight_player', {
     Text = 'Highlight Player',
     Default = false,
     Tooltip = 'Highlights the player',
-
     Callback = function(Value)
         player_highlight = Value
         if not Value then
             for _, v in next, players:GetPlayers() do
                 if v.Character and v.Character:FindFirstChild("Highlight") then
                     local highlight = v.Character:FindFirstChild("Highlight")
-                    if highlight then
-                        highlight:Destroy()
-                    end
+                    if highlight then highlight:Destroy() end
                 end
             end
         end
@@ -1890,7 +1674,6 @@ player_esp_group:AddToggle('highlight_player', {
 }):AddColorPicker('highlight_color_player', {
     Default = Color3.fromRGB(255, 255, 255),
     Title = 'Highlight Color',
-
     Callback = function(Value)
         player_highlight_color = Value
         for _, v in next, players:GetPlayers() do
@@ -1909,7 +1692,6 @@ item_esp_group:AddToggle('item_name', {
     Text = 'Item Name Esp',
     Default = false,
     Tooltip = 'Shows the item name',
-
     Callback = function(Value)
         item_name = Value
         if not Value then
@@ -1932,7 +1714,6 @@ item_esp_group:AddToggle('highlight_item', {
     Text = 'Highlight Item',
     Default = false,
     Tooltip = 'Highlights the item',
-
     Callback = function(Value)
         item_highlight = Value
         if not Value then
@@ -1952,7 +1733,6 @@ item_esp_group:AddToggle('highlight_item', {
 }):AddColorPicker('highlight_color_item', {
     Default = Color3.fromRGB(255, 255, 255),
     Title = 'Highlight Color',
-
     Callback = function(Value)
         item_highlight_color = Value
         for _, v in next, van_equipment:GetChildren() do
@@ -1975,7 +1755,6 @@ cursed_esp_group:AddToggle('cursed_object_name', {
     Text = 'Cursed Object Name',
     Default = false,
     Tooltip = 'Shows the cursed object name',
-
     Callback = function(Value)
         cursed_object_name = Value
         if not Value then
@@ -1992,7 +1771,6 @@ cursed_esp_group:AddToggle('cursed_object_highlight', {
     Text = 'Cursed Object Highlight',
     Default = false,
     Tooltip = 'Highlights cursed objects',
-
     Callback = function(Value)
         cursed_object_highlight = Value
         if not Value then
@@ -2006,7 +1784,6 @@ cursed_esp_group:AddToggle('cursed_object_highlight', {
 }):AddColorPicker('cursed_object_highlight_color', {
     Default = Color3.fromRGB(255, 255, 255),
     Title = 'Highlight Color',
-
     Callback = function(Value)
         cursed_object_highlight_color = Value
         for _, v in next, cursed_objects:GetChildren() do
@@ -2022,7 +1799,6 @@ evidence_esp_group:AddToggle('emf_name', {
     Text = 'Show Active EMFs',
     Default = false,
     Tooltip = 'Shows active EMFs done by ghost',
-
     Callback = function(Value)
         emf_name = Value
         if not Value then
@@ -2039,7 +1815,6 @@ evidence_esp_group:AddToggle('orbs_name', {
     Text = 'Show Active Orbs',
     Default = false,
     Tooltip = 'Shows active orbs',
-
     Callback = function(Value)
         orbs_name = Value
         if not Value then
@@ -2056,7 +1831,6 @@ closet_esp_group:AddToggle('closet_name', {
     Text = 'Hiding Spot Esp Name',
     Default = false,
     Tooltip = 'Enables names to all closets',
-
     Callback = function(Value)
         closet_name = Value
         if not Value then
@@ -2073,7 +1847,6 @@ closet_esp_group:AddToggle('closet_highlight', {
     Text = 'Hiding Spot Esp Highlight',
     Default = false,
     Tooltip = 'Highlights closets',
-
     Callback = function(Value)
         closet_highlight = Value
         if not Value then
@@ -2087,7 +1860,6 @@ closet_esp_group:AddToggle('closet_highlight', {
 }):AddColorPicker('closet_highlight_color', {
     Default = Color3.fromRGB(255, 255, 255),
     Title = 'Highlight Color',
-
     Callback = function(Value)
         closet_highlight_color = Value
         for i, v in next, closets:GetChildren() do
@@ -2103,7 +1875,6 @@ world_group:AddToggle('fb', {
     Text = 'Full Bright',
     Default = false,
     Tooltip = 'full bright like cat!',
-
     Callback = function(Value)
         full_bright = Value
         if Value then
@@ -2135,11 +1906,7 @@ world_group:AddToggle('saturation', {
 })
 
 local Lighting = game:GetService("Lighting")
-
-local nofog = false
 local fogConn
-
--- lưu fog gốc
 local defaultFogEnd = Lighting.FogEnd
 local defaultFogStart = Lighting.FogStart
 
@@ -2147,7 +1914,6 @@ world_group:AddToggle('nf', {
     Text = 'No Fog',
     Default = false,
     Tooltip = 'Removes fog',
-
     Callback = function(Value)
         nofog = Value
 
@@ -2162,7 +1928,6 @@ world_group:AddToggle('nf', {
                 Lighting.FogEnd = 1e6
             end)
         else
-            -- trả về fog gốc
             Lighting.FogStart = defaultFogStart
             Lighting.FogEnd = defaultFogEnd
         end
@@ -2183,12 +1948,12 @@ world_group:AddButton({
 misc_group:AddButton({
     Text = 'Anti AFK',
     Func = function()
-        -- แบบง่ายโดยไม่ต้องใช้ exploit
+        local VirtualUser = game:GetService("VirtualUser")
         local_player.Idled:Connect(function()
             VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
             VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
         end)
-        library:Notify("Anti AFK Enabled!")
+        Library:Notify("Anti AFK Enabled!")
     end,
     DoubleClick = false,
     Tooltip = 'Anti Afk'
@@ -2198,16 +1963,15 @@ misc_group:AddButton({
     Text = 'Infinite Yield',
     Tooltip = 'Give Inf yield has edit',
     DoubleClick = false,
-
     Func = function()
         local success, err = pcall(function()
-                    loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/idtkby/Xd/refs/heads/main/infedit"))()
         end)
 
         if success then
-            library:Notify("Load Success")
+            Library:Notify("Load Success")
         else
-            library:Notify("Failed to load infYield\n" .. tostring(err))
+            Library:Notify("Failed to load infYield\n" .. tostring(err))
         end
     end
 })
@@ -2216,7 +1980,6 @@ boost_group:AddToggle('uf', {
     Text = 'Unlock Fps',
     Default = false,
     Tooltip = 'just unlock fps cap 60 to 360',
-
     Callback = function(Value)
         fps = Value
         if Value then
@@ -2227,12 +1990,6 @@ boost_group:AddToggle('uf', {
     end
 })
 
-
-
-
-
--- [ UI SETTINGS ] --
--- Các biến lưu setting
 getgenv().hunt_notif_enabled = false
 getgenv().hunt_notif_mode = "Notify"
 
@@ -2241,11 +1998,10 @@ misc_group:AddToggle('HuntNotifToggle', {
     Default = false,
     Callback = function(Value)
         hunt_notif_enabled = Value
-        -- Nếu tắt toggle thì ẩn Label ngay
         if HuntGui_Main and not Value then 
             HuntGui_Main.Enabled = false 
         elseif HuntGui_Main and Value and (hunt_notif_mode == "Label" or hunt_notif_mode == "Both") then
-            HuntGui_Main.Enabled = true -- Hiện lại nếu đang bật
+            HuntGui_Main.Enabled = true
         end
     end
 })
@@ -2257,7 +2013,6 @@ misc_group:AddDropdown('HuntNotifMode', {
     Text = 'Notification Mode',
     Callback = function(Value)
         hunt_notif_mode = Value
-        -- Cập nhật hiển thị ngay khi đổi chế độ
         if HuntGui_Main and hunt_notif_enabled then
             if Value == "Label" or Value == "Both" then
                 HuntGui_Main.Enabled = true
@@ -2268,28 +2023,26 @@ misc_group:AddDropdown('HuntNotifMode', {
     end
 })
 
-
-
-library:SetWatermarkVisibility(true)
+Library:SetWatermarkVisibility(true)
 
 local FrameTimer = tick()
-local FrameCounter = 0;
-local FPS = 60;
+local FrameCounter = 0
+local FPS = 60
 
 local watermark_connection = run_service.RenderStepped:Connect(function()
-    FrameCounter += 1;
+    FrameCounter += 1
 
     if (tick() - FrameTimer) >= 1 then
-        FPS = FrameCounter;
-        FrameTimer = tick();
-        FrameCounter = 0;
-    end;
+        FPS = FrameCounter
+        FrameTimer = tick()
+        FrameCounter = 0
+    end
 
-    library:SetWatermark(('IgnahK | %s fps | %s ms | Game: ' .. info.Name .. ''):format(
+    Library:SetWatermark(('IgnahK | %s fps | %s ms | Game: ' .. info.Name .. ''):format(
         math.floor(FPS),
         math.floor(stats.Network.ServerStatsItem['Data Ping']:GetValue())
-    ));
-end);
+    ))
+end)
 
 menu_group:AddButton('Unload', function()
     anti_touch = false
@@ -2312,12 +2065,11 @@ menu_group:AddButton('Unload', function()
     orbs_name = false
     emf_name = false
     found_writing = false
-    ghost_name = false
     closet_name = false
     closet_highlight = false
 
     for _, v in next, ghost:GetChildren() do
-        if v:IsA("Model") then
+        if v:IsA("Model") and v:FindFirstChildOfClass("MeshPart") then
             v:FindFirstChildOfClass("MeshPart").Transparency = 1
         end
     end
@@ -2328,13 +2080,15 @@ menu_group:AddButton('Unload', function()
         end
     end
 
-    local_player.Character.Humanoid.JumpPower = 0
-    local_player.Character.Humanoid.JumpHeight = 0
-    local_player.Character.Humanoid.CameraOffset = Vector3.new(0, 0, -1)
-    local_player.Character.HumanoidRootPart.CanCollide = true
-    local_player.Character.UpperTorso.CanCollide = true
-    local_player.Character.LowerTorso.CanCollide = true
-    local_player.Character.Head.CanCollide = true
+    if local_player.Character and local_player.Character:FindFirstChild("Humanoid") then
+        local_player.Character.Humanoid.JumpPower = 0
+        local_player.Character.Humanoid.JumpHeight = 0
+        local_player.Character.Humanoid.CameraOffset = Vector3.new(0, 0, -1)
+    end
+    if local_player.Character and local_player.Character:FindFirstChild("HumanoidRootPart") then
+        local_player.Character.HumanoidRootPart.CanCollide = true
+    end
+
     lighting.ClockTime = 0
     lighting.GlobalShadows = true
     watermark_connection:Disconnect()
@@ -2342,40 +2096,34 @@ menu_group:AddButton('Unload', function()
     sanityconnection:Disconnect()
     ghostconnection:Disconnect()
     playerconnection:Disconnect()
-    library:Unload()
+    Library:Unload()
 end)
 
 credits_group:AddLabel('IgnahK: Editor', true)
 credits_group:AddLabel('Credits: Idk', true)
 
-
 settings_group:AddToggle('keybind_visibility', {
     Text = 'Keybind Visibility',
     Default = false,
-    Tooltip = 'Enables/Disables the watermark',
-
+    Tooltip = 'Enables/Disables the keybind frame',
     Callback = function(Value)
-        library.KeybindFrame.Visible = Value
+        Library.KeybindFrame.Visible = Value
     end,
 })
 
 menu_group:AddLabel('Menu bind'):AddKeyPicker('MenuKeybind', { Default = 'End', NoUI = true, Text = 'Menu keybind' })
-library.ToggleKeybind = Options.MenuKeybind
-theme_manager:SetLibrary(library)
-save_manager:SetLibrary(library)
-save_manager:IgnoreThemeSettings()
-save_manager:SetIgnoreIndexes({ 'MenuKeybind' })
-theme_manager:SetFolder('Khanghubskssoo')
-save_manager:SetFolder('kk/Specter')
-save_manager:BuildConfigSection(tabs['ui settings'])
-theme_manager:ApplyToTab(tabs['ui settings'])
+Library.ToggleKeybind = Options.MenuKeybind
 
-save_manager:LoadAutoloadConfig()
+ThemeManager:SetLibrary(Library)
+SaveManager:SetLibrary(Library)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({ 'MenuKeybind' })
+ThemeManager:SetFolder('Khanghubskssoo')
+SaveManager:SetFolder('kk/Specter')
+SaveManager:BuildConfigSection(tabs['ui settings'])
+ThemeManager:ApplyToTab(tabs['ui settings'])
 
-
-
-
-
+SaveManager:LoadAutoloadConfig()
 
 -- ===== FIX HUNT DETECT DỰA TRÊN VOLUME =====
 
@@ -2398,10 +2146,9 @@ task.spawn(function()
     end
 
     local function setHuntState(active)
-        if isHunting == active then return end -- Tránh lặp lại thông báo nếu volume nhảy liên tục
+        if isHunting == active then return end
         isHunting = active
 
-        -- ===== CẬP NHẬT LABEL =====
         if HuntGui_Main and HuntLabel_Text and hunt_notif_enabled then
             if hunt_notif_mode == "Label" or hunt_notif_mode == "Both" then
                 HuntGui_Main.Enabled = true
@@ -2415,7 +2162,6 @@ task.spawn(function()
             end
         end
 
-        -- ===== GỬI NOTIFY =====
         if hunt_notif_enabled and (hunt_notif_mode == "Notify" or hunt_notif_mode == "Both") then
             if active then
                 notify("⚠️ WARNING ⚠️", "Ghost is HUNTING!")
@@ -2429,9 +2175,7 @@ task.spawn(function()
         if not snd:IsA("Sound") then return end
         if not tostring(snd.SoundId):find(HUNT_ID) then return end
 
-        -- Hàm kiểm tra âm lượng
         local function checkVolume()
-            -- Nếu Volume lớn hơn 0 (thường game sẽ set 0.5 hoặc 1 khi hunt)
             if snd.Volume > 0.31 then
                 setHuntState(true)
             else
@@ -2439,14 +2183,10 @@ task.spawn(function()
             end
         end
 
-        -- Lắng nghe sự thay đổi của thuộc tính Volume
         snd:GetPropertyChangedSignal("Volume"):Connect(checkVolume)
-        
-        -- Kiểm tra ngay lúc vừa tìm thấy sound
         checkVolume()
     end
 
-    -- Quét SoundService và Workspace
     local SoundService = game:GetService("SoundService")
     for _, v in ipairs(SoundService:GetDescendants()) do bindSound(v) end
     SoundService.DescendantAdded:Connect(bindSound)
@@ -2455,10 +2195,6 @@ task.spawn(function()
     workspace.DescendantAdded:Connect(bindSound)
 end)
 
-
-
 print("-- Specter 2 Script Note --")
 warn("I added a specter script and changed 50% of the structure, so it's not 100% my doing.")
 print("------------------- IgnahK -")
-
-
